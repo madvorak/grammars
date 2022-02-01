@@ -75,7 +75,3 @@ begin
   rw concaten at hyp_after,
   finish,
 end
-
-
-def asdf : list char := ['h', 'e', 'l', 'l', 'o']
-#print asdf

@@ -23,13 +23,13 @@ structure CFgrammar :=
 (initial : symbol)
 (rules : list (symbol × list symbol))
 
-#print CFgrammar
-
-def tranforms (gr : CFgrammar) (oldWord newWord : list symbol) : Prop :=
+def cfl_tranforms (gr : CFgrammar) (oldWord newWord : list symbol) : Prop :=
 ∃ r ∈ gr.rules, ∃ v w : list symbol, oldWord = v ++ [prod.fst r] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
 
---def derives (gr : CFgrammar) := relation.refl_trans_gen (λ x : list symbol, λ y : list symbol, transforms gr x y)
+def cfl_derives (gr : CFgrammar) := relation.refl_trans_gen (cfl_tranforms gr)
 
+def cfl_generates (gr : CFgrammar) (word : list symbol) : Prop :=
+cfl_derives gr [gr.initial] word
 
 
 -- Demonstrations
@@ -40,8 +40,8 @@ def gramatika := CFgrammar.mk symbol.S [
   (symbol.T, [symbol.b, symbol.T, symbol.c]),
   (symbol.T, []) ]
 
-example : tranforms gramatika [symbol.b, symbol.S, symbol.b, symbol.a]
-                    [symbol.b, symbol.a, symbol.S, symbol.c, symbol.b, symbol.a] :=
+example : cfl_tranforms gramatika [symbol.b, symbol.S, symbol.b, symbol.a]
+                        [symbol.b, symbol.a, symbol.S, symbol.c, symbol.b, symbol.a] :=
 begin
   unfold gramatika,
   use (symbol.S, [symbol.a, symbol.S, symbol.c]),
@@ -50,5 +50,44 @@ begin
     exact [symbol.b],
   fconstructor,
     exact [symbol.b, symbol.a],
+  finish,
+end
+
+example : cfl_generates gramatika [symbol.a, symbol.c] :=
+begin
+  have step_1 : cfl_tranforms gramatika [symbol.S] [symbol.a, symbol.S, symbol.c],
+  {
+    unfold gramatika,
+    use (symbol.S, [symbol.a, symbol.S, symbol.c]),
+    simp,
+    use [[],[]],
+    finish,
+  },
+  have step_2 : cfl_tranforms gramatika [symbol.a, symbol.S, symbol.c] [symbol.a, symbol.T, symbol.c],
+  {
+    unfold gramatika,
+    use (symbol.S, [symbol.T]),
+    simp,
+    use [[symbol.a], [symbol.c]],
+    finish,
+  },
+  have step_3 : cfl_tranforms gramatika [symbol.a, symbol.T, symbol.c] [symbol.a, symbol.c],
+  {
+    unfold gramatika,
+    use (symbol.T, []),
+    simp,
+    use [[symbol.a], [symbol.c]],
+    finish,
+  },
+  
+  have composed : cfl_derives gramatika [symbol.S] [symbol.a, symbol.c],
+  {
+    --simp [step_1, step_2, step_3],
+    fconstructor,
+      exact [symbol.a, symbol.S, symbol.c],
+    --simp [step_1],
+    sorry,
+    sorry,
+  },
   finish,
 end
