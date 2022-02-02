@@ -74,6 +74,31 @@ begin
   finish,
 end
 
+example : CF_derives gramatika [a, T] [a, b, c] :=
+begin
+  fconstructor,
+    exact [a, b, T, c],
+  fconstructor,
+    exact [a, T],
+  refl,
+  {
+    use (T, [b, T, c]),
+    split,
+      unfold gramatika,
+      simp,
+    use [[a], []],
+    finish,
+  },
+  {
+    use (T, []),
+    split,
+      unfold gramatika,
+      simp,
+    use [[a, b], [c]],
+    finish,
+  }
+end
+
 example : CF_generates gramatika [a, c] :=
 begin
   have step_1 : CF_tranforms gramatika [S] [a, S, c],
