@@ -1,7 +1,8 @@
 import tactic
 import logic.relation
 
--- Definitions
+
+-- Definitions (important)
 
 inductive symbol
 | _a
@@ -10,105 +11,97 @@ inductive symbol
 | _S
 | _T
 
+
 def is_terminal (x : symbol) : Prop := x ∈ [symbol._a, symbol._b, symbol._c]
 
-def terminal := {x : symbol // is_terminal x}
+@[reducible] def terminal := {x : symbol // is_terminal x}
 
-def nonterminal := {x : symbol // ¬ is_terminal x}
+@[reducible] def nonterminal := {x : symbol // ¬ is_terminal x}
 
-def a : terminal := subtype.mk symbol._a
-begin
-  unfold is_terminal,
-  finish,
-end
 
-def b : terminal := subtype.mk symbol._b
-begin
-  unfold is_terminal,
-  finish,
-end
-
-def c : terminal := subtype.mk symbol._c
-begin
-  unfold is_terminal,
-  finish,
-end
-
-def S : nonterminal := subtype.mk symbol._S
-begin
-  intro h,
-  unfold is_terminal at h,
-  finish,
-end
-
-def T : nonterminal := subtype.mk symbol._T
-begin
-  intro h,
-  unfold is_terminal at h,
-  finish,
-end
-
-structure CFgrammar :=
+structure CF_grammar :=
 (initial : nonterminal)
 (rules : list (nonterminal × list symbol))
 
-def cfl_tranforms (gr : CFgrammar) (oldWord newWord : list symbol) : Prop :=
-∃ r ∈ gr.rules, ∃ v w : list symbol, oldWord = v ++ [subtype.val (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
+def CF_tranforms (gr : CF_grammar) (oldWord newWord : list symbol) : Prop :=
+∃ r ∈ gr.rules, ∃ v w : list symbol, 
+  oldWord = v ++ [subtype.val (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
 
-def cfl_derives (gr : CFgrammar) := relation.refl_trans_gen (cfl_tranforms gr)
+def CF_derives (gr : CF_grammar) := relation.refl_trans_gen (CF_tranforms gr)
 
-def cfl_generates (gr : CFgrammar) (word : list terminal) : Prop :=
-cfl_derives gr [subtype.val gr.initial] (list.map subtype.val word)
+def CF_generates (gr : CF_grammar) (word : list terminal) : Prop :=
+CF_derives gr [subtype.val gr.initial] (list.map subtype.val word)
+
+
+-- Definitions (supplementary)
+
+meta def trivi_terminal : tactic unit :=
+`[ unfold is_terminal, finish ]
+
+def a : terminal := subtype.mk symbol._a (by trivi_terminal)
+
+def b : terminal := subtype.mk symbol._b (by trivi_terminal)
+
+def c : terminal := subtype.mk symbol._c (by trivi_terminal)
+
+
+meta def trivi_nonterminal : tactic unit :=
+`[ intro h, unfold is_terminal at h, finish ]
+
+def S : nonterminal := subtype.mk symbol._S (by trivi_nonterminal)
+
+def T : nonterminal := subtype.mk symbol._T (by trivi_nonterminal)
+
 
 
 -- Demonstrations
 
-def gramatika := CFgrammar.mk S [
-  (S, [a.1, S.1, c.1]),
-  (S, [T.1]),
-  (T, [b.1, T.1, c.1]),
+def gramatika := CF_grammar.mk S [
+  (S, [a, S, c]),
+  (S, [T]),
+  (T, [b, T, c]),
   (T, []) ]
 
-example : cfl_tranforms gramatika [b.1, S.1, b.1, a.1] [b.1, a.1, S.1, c.1, b.1, a.1] :=
+example : CF_tranforms gramatika [b, S, b, a] [b, a, S, c, b, a] :=
 begin
   unfold gramatika,
-  use (S, [a.1, S.1, c.1]),
+  use (S, [a, S, c]),
     simp,
   fconstructor,
-    exact [b.1],
+    exact [b],
   fconstructor,
-    exact [b.1, a.1],
+    exact [b, a],
   finish,
 end
 
-example : cfl_generates gramatika [a, c] :=
+example : CF_generates gramatika [a, c] :=
 begin
-  have step_1 : cfl_tranforms gramatika [S.1] [a.1, S.1, c.1],
+  have step_1 : CF_tranforms gramatika [S] [a, S, c],
   {
     unfold gramatika,
-    use (S, [a.1, S.1, c.1]),
+    use (S, [a, S, c]),
     simp,
     use [[],[]],
     finish,
   },
-  have step_2 : cfl_tranforms gramatika [a.1, S.1, c.1] [a.1, T.1, c.1],
+  have step_2 : CF_tranforms gramatika [a, S, c] [a, T, c],
   {
     unfold gramatika,
-    use (S, [T.1]),
+    use (S, [T]),
     simp,
-    use [[a.1], [c.1]],
+    use [[a], [c]],
     finish,
   },
-  have step_3 : cfl_tranforms gramatika [a.1, T.1, c.1] [a.1, c.1],
+  have step_3 : CF_tranforms gramatika [a, T, c] [a, c],
   {
     unfold gramatika,
     use (T, []),
     simp,
-    use [[a.1], [c.1]],
+    use [[a], [c]],
     finish,
   },
   
-  have composed : cfl_derives gramatika [S.1] [a.1, c.1],
+  have composed : CF_derives gramatika [S] [a, c],
   {
     sorry,
   },
