@@ -128,7 +128,16 @@ begin
   
   have composed : CF_derives gramatika [S] [a, c],
   {
-    sorry,
+    fconstructor,
+      exact [a, T, c],
+    fconstructor,
+      exact [a, S, c],
+    fconstructor,
+      exact [S],
+    refl,
+    exact step_1,
+    exact step_2,
+    exact step_3,
   },
   finish,
 end
