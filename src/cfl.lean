@@ -4,47 +4,57 @@ import logic.relation
 
 -- Definitions
 
-inductive symbol --: Type
-| a --: symbol
-| b --: symbol
-| c --: symbol
-| S --: symbol
-| T --: symbol
+inductive symbol
+| a
+| b
+| c
+| S
+| T
 
-def nonterminal := subtype (λ x : symbol, x = symbol.S ∨ x = symbol.T)
+def is_nonterminal (x : symbol) : Prop := x = symbol.S ∨ x = symbol.T
 
---def nonter := {x : symbol // x = symbol.S ∨ x = symbol.T}
---def n₁ : nonterminal := nonterminal.mk.S
---#print nonterminal
---#print nonter
---#eval nonter = nonterminal
+def nonterminal := {x : symbol // is_nonterminal x}
+
+def terminal := {x : symbol // ¬ is_nonterminal x}
+
+def nS : nonterminal := subtype.mk symbol.S
+begin
+  left,
+  refl,
+end
+
+def nT : nonterminal := subtype.mk symbol.T
+begin
+  right,
+  refl,
+end
 
 structure CFgrammar :=
-(initial : symbol)
-(rules : list (symbol × list symbol))
+(initial : nonterminal)
+(rules : list (nonterminal × list symbol))
 
 def cfl_tranforms (gr : CFgrammar) (oldWord newWord : list symbol) : Prop :=
-∃ r ∈ gr.rules, ∃ v w : list symbol, oldWord = v ++ [prod.fst r] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
+∃ r ∈ gr.rules, ∃ v w : list symbol, oldWord = v ++ [subtype.val (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
 
 def cfl_derives (gr : CFgrammar) := relation.refl_trans_gen (cfl_tranforms gr)
 
-def cfl_generates (gr : CFgrammar) (word : list symbol) : Prop :=
-cfl_derives gr [gr.initial] word
+def cfl_generates (gr : CFgrammar) (word : list terminal) : Prop :=
+cfl_derives gr [subtype.val gr.initial] (list.map subtype.val word)
 
 
 -- Demonstrations
 
-def gramatika := CFgrammar.mk symbol.S [
-  (symbol.S, [symbol.a, symbol.S, symbol.c]),
-  (symbol.S, [symbol.T]),
-  (symbol.T, [symbol.b, symbol.T, symbol.c]),
-  (symbol.T, []) ]
+def gramatika := CFgrammar.mk nS [
+  (nS, [symbol.a, symbol.S, symbol.c]),
+  (nS, [symbol.T]),
+  (nT, [symbol.b, symbol.T, symbol.c]),
+  (nT, []) ]
 
 example : cfl_tranforms gramatika [symbol.b, symbol.S, symbol.b, symbol.a]
                         [symbol.b, symbol.a, symbol.S, symbol.c, symbol.b, symbol.a] :=
 begin
   unfold gramatika,
-  use (symbol.S, [symbol.a, symbol.S, symbol.c]),
+  use (nS, [symbol.a, symbol.S, symbol.c]),
     simp,
   fconstructor,
     exact [symbol.b],
@@ -53,12 +63,12 @@ begin
   finish,
 end
 
-example : cfl_generates gramatika [symbol.a, symbol.c] :=
+example : cfl_generates gramatika [subtype.mk symbol.a sorry, subtype.mk symbol.c sorry] :=
 begin
   have step_1 : cfl_tranforms gramatika [symbol.S] [symbol.a, symbol.S, symbol.c],
   {
     unfold gramatika,
-    use (symbol.S, [symbol.a, symbol.S, symbol.c]),
+    use (nS, [symbol.a, symbol.S, symbol.c]),
     simp,
     use [[],[]],
     finish,
@@ -66,7 +76,7 @@ begin
   have step_2 : cfl_tranforms gramatika [symbol.a, symbol.S, symbol.c] [symbol.a, symbol.T, symbol.c],
   {
     unfold gramatika,
-    use (symbol.S, [symbol.T]),
+    use (nS, [symbol.T]),
     simp,
     use [[symbol.a], [symbol.c]],
     finish,
@@ -74,7 +84,7 @@ begin
   have step_3 : cfl_tranforms gramatika [symbol.a, symbol.T, symbol.c] [symbol.a, symbol.c],
   {
     unfold gramatika,
-    use (symbol.T, []),
+    use (nT, []),
     simp,
     use [[symbol.a], [symbol.c]],
     finish,
