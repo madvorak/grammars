@@ -64,58 +64,52 @@ cfl_derives gr [subtype.val gr.initial] (list.map subtype.val word)
 -- Demonstrations
 
 def gramatika := CFgrammar.mk S [
-  (S, [symbol._a, symbol._S, symbol._c]),
-  (S, [symbol._T]),
-  (T, [symbol._b, symbol._T, symbol._c]),
+  (S, [a.1, S.1, c.1]),
+  (S, [T.1]),
+  (T, [b.1, T.1, c.1]),
   (T, []) ]
 
-example : cfl_tranforms gramatika [symbol._b, symbol._S, symbol._b, symbol._a]
-                       [symbol._b, symbol._a, symbol._S, symbol._c, symbol._b, symbol._a] :=
+example : cfl_tranforms gramatika [b.1, S.1, b.1, a.1] [b.1, a.1, S.1, c.1, b.1, a.1] :=
 begin
   unfold gramatika,
-  use (S, [symbol._a, symbol._S, symbol._c]),
+  use (S, [a.1, S.1, c.1]),
     simp,
   fconstructor,
-    exact [symbol._b],
+    exact [b.1],
   fconstructor,
-    exact [symbol._b, symbol._a],
+    exact [b.1, a.1],
   finish,
 end
 
 example : cfl_generates gramatika [a, c] :=
 begin
-  have step_1 : cfl_tranforms gramatika [symbol._S] [symbol._a, symbol._S, symbol._c],
+  have step_1 : cfl_tranforms gramatika [S.1] [a.1, S.1, c.1],
   {
     unfold gramatika,
-    use (S, [symbol._a, symbol._S, symbol._c]),
+    use (S, [a.1, S.1, c.1]),
     simp,
     use [[],[]],
     finish,
   },
-  have step_2 : cfl_tranforms gramatika [symbol._a, symbol._S, symbol._c] [symbol._a, symbol._T, symbol._c],
+  have step_2 : cfl_tranforms gramatika [a.1, S.1, c.1] [a.1, T.1, c.1],
   {
     unfold gramatika,
-    use (S, [symbol._T]),
+    use (S, [T.1]),
     simp,
-    use [[symbol._a], [symbol._c]],
+    use [[a.1], [c.1]],
     finish,
   },
-  have step_3 : cfl_tranforms gramatika [symbol._a, symbol._T, symbol._c] [symbol._a, symbol._c],
+  have step_3 : cfl_tranforms gramatika [a.1, T.1, c.1] [a.1, c.1],
   {
     unfold gramatika,
     use (T, []),
     simp,
-    use [[symbol._a], [symbol._c]],
+    use [[a.1], [c.1]],
     finish,
   },
   
-  have composed : cfl_derives gramatika [symbol._S] [symbol._a, symbol._c],
+  have composed : cfl_derives gramatika [S.1] [a.1, c.1],
   {
-    --simp [step_1, step_2, step_3],
-    fconstructor,
-      exact [symbol._a, symbol._S, symbol._c],
-    --simp [step_1],
-    sorry,
     sorry,
   },
   finish,
