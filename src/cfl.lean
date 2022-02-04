@@ -23,11 +23,11 @@ structure CF_grammar :=
 (initial : nonterminal)
 (rules : list (nonterminal × list symbol))
 
-def CF_tranforms (gr : CF_grammar) (oldWord newWord : list symbol) : Prop :=
+def CF_transforms (gr : CF_grammar) (oldWord newWord : list symbol) : Prop :=
 ∃ r ∈ gr.rules, ∃ v w : list symbol, 
   oldWord = v ++ [subtype.val (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
 
-def CF_derives (gr : CF_grammar) := relation.refl_trans_gen (CF_tranforms gr)
+def CF_derives (gr : CF_grammar) := relation.refl_trans_gen (CF_transforms gr)
 
 def CF_generates (gr : CF_grammar) (word : list terminal) : Prop :=
 CF_derives gr [subtype.val gr.initial] (list.map subtype.val word)
@@ -62,7 +62,7 @@ def gramatika := CF_grammar.mk S [
   (T, [b, T, c]),
   (T, []) ]
 
-example : CF_tranforms gramatika [b, S, b, a] [b, a, S, c, b, a] :=
+example : CF_transforms gramatika [b, S, b, a] [b, a, S, c, b, a] :=
 begin
   unfold gramatika,
   use (S, [a, S, c]),
@@ -101,7 +101,7 @@ end
 
 example : CF_generates gramatika [a, c] :=
 begin
-  have step_1 : CF_tranforms gramatika [S] [a, S, c],
+  have step_1 : CF_transforms gramatika [S] [a, S, c],
   {
     unfold gramatika,
     use (S, [a, S, c]),
@@ -109,7 +109,7 @@ begin
     use [[],[]],
     finish,
   },
-  have step_2 : CF_tranforms gramatika [a, S, c] [a, T, c],
+  have step_2 : CF_transforms gramatika [a, S, c] [a, T, c],
   {
     unfold gramatika,
     use (S, [T]),
@@ -117,7 +117,7 @@ begin
     use [[a], [c]],
     finish,
   },
-  have step_3 : CF_tranforms gramatika [a, T, c] [a, c],
+  have step_3 : CF_transforms gramatika [a, T, c] [a, c],
   {
     unfold gramatika,
     use (T, []),
@@ -140,4 +140,134 @@ begin
     exact step_3,
   },
   finish,
+end
+
+example : ¬ CF_transforms gramatika [S, a, a, b, b] [c, c, c] :=
+begin
+  have necessary_suffix: ∀ u v : list symbol, ∀ x : symbol, 
+    (CF_transforms gramatika [S, a, a, b, b] v    ∧
+       v = u ++ [x]) → 
+        x = b,
+  {
+    unfold gramatika,
+    intros u v x h,
+    cases h with h_transf h_concat,
+    cases h_transf with usedrule hy,
+    cases hy with belongs foo,
+    cases foo with preffii bar,
+    cases bar with suffii hypot,
+    rw h_concat at hypot,
+    cases hypot with presubst postsubst,
+    have nonempty: list.length suffii > 0,
+    {
+      have cannotbb: usedrule.fst.val ≠ b,
+      {
+        finish,
+      },
+      by_contradiction,
+      have hn: suffii.length = 0,
+      {
+        finish,
+      },
+      have wosuffii: [↑S, ↑a, ↑a, ↑b, ↑b] = preffii ++ [usedrule.fst.val],
+      {
+        have hempty: suffii = [],
+        {
+          rw list.length_eq_zero at hn,
+          exact hn,
+        },
+        finish,
+      },
+      have deconcanat: [↑S, ↑a, ↑a, ↑b, ↑b] = [↑S, ↑a, ↑a, ↑b] ++ [↑b],
+      {
+        simp,
+      },
+      have lastlemma: [↑b] = [usedrule.fst.val],
+      {
+        rw deconcanat at wosuffii,
+        exact list.append_inj_right' wosuffii (by refl),
+      },
+      finish,
+    },
+    have ending: ∃ w : list symbol, suffii = w ++ [b],
+    {
+      cases classical.em ((list.length suffii) = 0),
+      {
+        rw h at nonempty,
+        exfalso,
+        exact false_of_ne (ne_of_gt nonempty),
+      },
+      have h1: suffii.length ≥ 1,
+      {
+        linarith,
+      },
+      /-
+      presubst: [↑S, ↑a, ↑a, ↑b, ↑b] = preffii ++ [usedrule.fst.val] ++ suffii
+      h1: suffii.length ≥ 1
+      ⊢ ∃ (w : list symbol), suffii = w ++ [↑b]
+      -/
+      have splitt: ∃ w' : list symbol, ∃ x' : symbol, suffii = w' ++ [x'],
+      {
+        use list.take ((list.length suffii) - 1) suffii,
+        cases list.nth suffii ((list.length suffii) - 1),
+        {
+          sorry,
+        },
+        use val,
+        sorry,
+      },
+      cases splitt with w' foo,
+      cases foo with x' splitted,
+      rw splitted at presubst,
+      have rearrang: [↑S, ↑a, ↑a, ↑b, ↑b] = (preffii ++ [usedrule.fst.val] ++ w') ++ [x'],
+      {
+        simp only [list.append_assoc],
+        finish,
+      },
+      have chopped: [↑S, ↑a, ↑a, ↑b] ++ [↑b] = (preffii ++ [usedrule.fst.val] ++ w') ++ [x'],
+      {
+        finish,
+      },
+      have almostthere: [↑b] = [x'],
+      {
+        exact list.append_inj_right' chopped (by refl),
+      },
+      rw splitted,
+      use w',
+      rw almostthere,
+    },
+    cases ending with w lastchar,
+    rw lastchar at postsubst,
+    have rearranged: u ++ [x] = (preffii ++ usedrule.snd ++ w) ++ [b],
+    {
+      simp only [list.append_assoc],
+      finish,
+    },
+    have lastone: [x] = [b],
+    {
+      exact list.append_inj_right' rearranged (by refl),
+    },
+    finish,
+  },
+  intro hyp,
+  specialize necessary_suffix [c, c] [c, c, c] c,
+  have conj: CF_transforms gramatika [↑S, ↑a, ↑a, ↑b, ↑b] [↑c, ↑c, ↑c] ∧
+                                    [↑c, ↑c, ↑c] = [↑c, ↑c] ++ [↑c],
+  {
+    split,
+    exact hyp,
+    finish,
+  },
+  specialize necessary_suffix conj,
+  finish,
+end
+
+example : ¬ CF_transforms gramatika [b, S, b, a] [b, S, c, b, a] :=
+begin
+  sorry,
+end
+
+example : ¬ CF_transforms gramatika [b, S, b, a] [b, b, S, c, b, a] :=
+begin
+  sorry,
 end
