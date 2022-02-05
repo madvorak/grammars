@@ -338,5 +338,22 @@ end
 
 example : ¬ CF_transforms gramatika [b, S, b, a] [b, b, S, c, b, a] :=
 begin
-  sorry,
+  unfold gramatika,
+  intro assum,
+  cases assum with rule foo,
+  cases foo with rule_in predicat,
+  cases predicat with v bar,
+  cases bar with w baz,
+  cases baz with befo afte,
+  repeat {cases rule_in};
+  {
+    simp at befo,
+    simp at afte,
+    -- this will probably be applicable only in the first two cases
+    have hv: v = [↑b], sorry,
+    have hw: w = [↑b, ↑a], sorry,
+    rw hv at afte,
+    rw hw at afte,
+    finish,
+  },
 end
