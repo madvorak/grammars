@@ -11,7 +11,6 @@ inductive symbol
 | _S
 | _T
 
-
 def is_terminal (x : symbol) : Prop := x ∈ [symbol._a, symbol._b, symbol._c]
 
 @[reducible] def terminal := {x : symbol // is_terminal x}
@@ -56,6 +55,8 @@ def T : nonterminal := subtype.mk symbol._T (by trivi_nonterminal)
 
 -- Demonstrations
 
+-- Positive examples
+
 def gramatika := CF_grammar.mk S [
   (S, [a, S, c]),
   (S, [T]),
@@ -98,6 +99,8 @@ begin
     finish,
   }
 end
+
+-- Negative examples
 
 example : CF_generates gramatika [a, c] :=
 begin
@@ -142,7 +145,7 @@ begin
   finish,
 end
 
-example : ¬ CF_transforms gramatika [S, a, a, b, b] [c, c, c] :=
+example : ¬ CF_transforms gramatika [S, a, a, b, b] [c, c, c, c, c] :=
 begin
   have necessary_suffix: ∀ u v : list symbol, ∀ x : symbol, 
     (CF_transforms gramatika [S, a, a, b, b] v    ∧
@@ -158,7 +161,7 @@ begin
     cases bar with suffii hypot,
     rw h_concat at hypot,
     cases hypot with presubst postsubst,
-    have nonempty: list.length suffii > 0,
+    have nonempty: suffii.length > 0,
     {
       have cannotbb: usedrule.fst.val ≠ b,
       {
@@ -191,7 +194,7 @@ begin
     },
     have ending: ∃ w : list symbol, suffii = w ++ [b],
     {
-      cases classical.em ((list.length suffii) = 0),
+      cases classical.em (suffii.length = 0),
       {
         rw h at nonempty,
         exfalso,
@@ -246,9 +249,9 @@ begin
     finish,
   },
   intro hyp,
-  specialize necessary_suffix [c, c] [c, c, c] c,
-  have conj: CF_transforms gramatika [↑S, ↑a, ↑a, ↑b, ↑b] [↑c, ↑c, ↑c] ∧
-                                     [↑c, ↑c, ↑c] = [↑c, ↑c] ++ [↑c],
+  specialize necessary_suffix [c, c, c, c] [c, c, c, c, c] c,
+  have conj: CF_transforms gramatika [↑S, ↑a, ↑a, ↑b, ↑b] [↑c, ↑c, ↑c, ↑c, ↑c] ∧
+                                     [↑c, ↑c, ↑c, ↑c, ↑c] = [↑c, ↑c, ↑c, ↑c] ++ [↑c],
   {
     split,
     exact hyp,
@@ -261,18 +264,75 @@ end
 example : ¬ CF_transforms gramatika [b, S, b, a] [b, S, c, b, a] :=
 begin
   unfold gramatika,
-  intro assum,
+
   have length_increment : ∀ before after : list symbol,
-    CF_transforms gramatika before after → 
-      list.length after ≠ 1 + list.length before,
+    CF_transforms gramatika before after → after.length ≠ 1 + before.length,
   {
-    sorry,
+    intros befo afte ass forcontra,
+    cases ass with rule_used foo,
+    cases foo with rule_present predicat,
+    rw gramatika at rule_present,
+    simp at rule_present,
+    cases predicat with v bar,
+    cases bar with w baz,
+    cases baz with prop_bef prop_aft,
+
+    have length_aft: afte.length = v.length + rule_used.snd.length + w.length,
+    {
+      rw prop_aft,
+      simp [list.length_append, add_assoc],
+    },
+    have length_bef: befo.length = v.length + 1 + w.length,
+    {
+      rw prop_bef,
+      simp [list.length_append],
+      ring,
+    },
+
+    have impossible_increment: afte.length ≠ v.length + 2 + w.length,
+    {
+      cases rule_present with case1 rest1,
+      {
+        rw case1 at length_aft,
+        simp at length_aft,
+        linarith,
+      },
+      cases rest1 with case2 rest2,
+      {
+        rw case2 at length_aft,
+        simp at length_aft,
+        linarith,
+      },
+      cases rest2 with case3 case4,
+      {
+        rw case3 at length_aft,
+        simp at length_aft,
+        linarith,
+      },
+      {
+        rw case4 at length_aft,
+        simp at length_aft,
+        linarith,
+      }
+    },
+
+    have necessary_increment: afte.length = v.length + 2 + w.length,
+    {
+      rw forcontra at length_aft,
+      rw length_bef at length_aft,
+      linarith,
+    },
+    
+    exact impossible_increment necessary_increment,
   },
+
   have actual_increment : list.length ([b, S, c, b, a] : list symbol) =
                          1 + list.length ([b, S, b, a] : list symbol),
   {
     finish,
   },
+
+  intro assum,
   exact length_increment ([b, S, b, a] : list symbol) ([b, S, c, b, a] : list symbol) assum actual_increment,
 end
 
