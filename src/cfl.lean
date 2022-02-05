@@ -201,20 +201,16 @@ begin
       {
         linarith,
       },
-      /-
-      presubst: [↑S, ↑a, ↑a, ↑b, ↑b] = preffii ++ [usedrule.fst.val] ++ suffii
-      h1: suffii.length ≥ 1
-      ⊢ ∃ (w : list symbol), suffii = w ++ [↑b]
-      -/
+      have isnt_empty: suffii ≠ [],
+      {
+        finish,
+      },
       have splitt: ∃ w' : list symbol, ∃ x' : symbol, suffii = w' ++ [x'],
       {
-        use list.take ((list.length suffii) - 1) suffii,
-        cases list.nth suffii ((list.length suffii) - 1),
-        {
-          sorry,
-        },
-        use val,
-        sorry,
+        use list.init suffii,
+        use list.last suffii isnt_empty,
+        symmetry,
+        exact list.init_append_last isnt_empty,
       },
       cases splitt with w' foo,
       cases foo with x' splitted,
@@ -252,7 +248,7 @@ begin
   intro hyp,
   specialize necessary_suffix [c, c] [c, c, c] c,
   have conj: CF_transforms gramatika [↑S, ↑a, ↑a, ↑b, ↑b] [↑c, ↑c, ↑c] ∧
-                                    [↑c, ↑c, ↑c] = [↑c, ↑c] ++ [↑c],
+                                     [↑c, ↑c, ↑c] = [↑c, ↑c] ++ [↑c],
   {
     split,
     exact hyp,
@@ -264,7 +260,20 @@ end
 
 example : ¬ CF_transforms gramatika [b, S, b, a] [b, S, c, b, a] :=
 begin
-  sorry,
+  unfold gramatika,
+  intro assum,
+  have length_increment : ∀ before after : list symbol,
+    CF_transforms gramatika before after → 
+      list.length after ≠ 1 + list.length before,
+  {
+    sorry,
+  },
+  have actual_increment : list.length ([b, S, c, b, a] : list symbol) =
+                         1 + list.length ([b, S, b, a] : list symbol),
+  {
+    finish,
+  },
+  exact length_increment ([b, S, b, a] : list symbol) ([b, S, c, b, a] : list symbol) assum actual_increment,
 end
 
 example : ¬ CF_transforms gramatika [b, S, b, a] [b, b, S, c, b, a] :=
