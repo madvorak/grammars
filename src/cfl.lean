@@ -1,5 +1,6 @@
-import tactic
 import logic.relation
+import tactic
+import computability.language
 
 
 -- Definitions (important)
@@ -30,6 +31,9 @@ def CF_derives (gr : CF_grammar) := relation.refl_trans_gen (CF_transforms gr)
 
 def CF_generates (gr : CF_grammar) (word : list terminal) : Prop :=
 CF_derives gr [subtype.val gr.initial] (list.map subtype.val word)
+
+def CF_language (gr : CF_grammar) : language terminal :=
+CF_generates gr
 
 
 -- Definitions (supplementary)
@@ -102,7 +106,7 @@ end
 
 -- Negative examples
 
-example : CF_generates gramatika [a, c] :=
+example : [a, c] ∈ CF_language gramatika :=
 begin
   have step_1 : CF_transforms gramatika [S] [a, S, c],
   {
