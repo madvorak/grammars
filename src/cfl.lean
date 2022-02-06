@@ -349,15 +349,68 @@ begin
   cases predicat with v bar,
   cases bar with w baz,
   cases baz with befo afte,
-  repeat {cases rule_in};
+  repeat {cases rule_in},
   {
     simp at befo,
     simp at afte,
-    -- this will probably be applicable only in the first two cases
+    have hv: v = [↑b], sorry,
+    have hw: w = [↑b, ↑a], 
+    {
+      rw hv at befo,
+      change [↑b] ++ [↑S, ↑b, ↑a] = [↑b] ++ ↑S :: w at befo,
+      rw list.append_right_inj [↑b] at befo,
+      change [↑S] ++ [↑b, ↑a] = [↑S] ++ w at befo,
+      rw list.append_right_inj [↑S] at befo,
+      exact eq.symm befo,
+    },
+    rw hv at afte,
+    rw hw at afte,
+    finish,
+  },
+  {
+    simp at befo,
+    simp at afte,
     have hv: v = [↑b], sorry,
     have hw: w = [↑b, ↑a], sorry,
     rw hv at afte,
     rw hw at afte,
     finish,
   },
+  {
+    simp at befo,
+    cases v.length,
+    {
+      have v_nil : v = [],
+      {
+        sorry,
+      },
+      rw v_nil at befo,
+      rw list.nil_append at befo,
+      have doesnt_start_with_T: list.head [↑b, ↑S, ↑b, ↑a] ≠ ↑T;
+      {
+        sorry,
+      },      
+      --sorry,
+    },
+    sorry,
+  },
+  {
+    simp at befo,
+
+    sorry,
+  }
+end
+
+-- Sandbox
+
+example : a ≠ b :=
+begin
+  intro equ,
+  injections_and_clear,
+  norm_cast at h_1,
+end
+
+example : (a : symbol) ≠ (b : symbol) :=
+begin
+  finish,
 end
