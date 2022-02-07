@@ -350,10 +350,61 @@ begin
   cases bar with w baz,
   cases baz with befo afte,
   repeat {cases rule_in},
+  iterate 2 
   {
     simp at befo,
     simp at afte,
-    have hv: v = [↑b], sorry,
+    have hv: v = [↑b],
+    {
+      have whichS: (v ++ ↑S :: w).nth v.length = ↑S,
+      {
+        have zeroth : (↑S :: w).nth 0 = some ↑S,
+        {
+          refl,
+        },
+        have awesome := @list.nth_append_right symbol v (↑S :: w) v.length (le_of_eq rfl),
+        have vl_sub_self := tsub_self (list.length v),
+        rw vl_sub_self at awesome,
+        rw awesome,
+        refl,
+      },
+      rw ← befo at whichS,
+      have secondS: v.length = 1,
+      {
+        cases v.length,
+        {
+          exfalso,
+          simp at whichS,
+          injections_and_clear,
+          finish,
+        },
+        cases n,
+        {
+          refl,
+        },
+        cases n,
+        {
+          exfalso,
+          simp at whichS,
+          injections_and_clear,
+          finish,
+        },
+        cases n,
+        {
+          exfalso,
+          simp at whichS,
+          injections_and_clear,
+          finish,
+        },
+        exfalso,
+        simp at whichS,
+        finish,
+      },
+      change [↑b] ++ [↑S, ↑b, ↑a] = v ++ (↑S :: w) at befo,
+      apply list.append_inj_left befo.symm,
+      rw secondS,
+      refl,
+    },
     have hw: w = [↑b, ↑a], 
     {
       rw hv at befo,
@@ -367,50 +418,14 @@ begin
     rw hw at afte,
     finish,
   },
+  iterate 2
   {
     simp at befo,
-    simp at afte,
-    have hv: v = [↑b], sorry,
-    have hw: w = [↑b, ↑a], sorry,
-    rw hv at afte,
-    rw hw at afte,
-    finish,
-  },
-  {
-    simp at befo,
-    cases v.length,
+    have T_must_be_there: T.val ∈ ([b, S, b, a] : list symbol),
     {
-      have v_nil : v = [],
-      {
-        sorry,
-      },
-      rw v_nil at befo,
-      rw list.nil_append at befo,
-      have doesnt_start_with_T: list.head [↑b, ↑S, ↑b, ↑a] ≠ ↑T;
-      {
-        sorry,
-      },      
-      --sorry,
+      sorry,
     },
-    sorry,
-  },
-  {
-    simp at befo,
-
-    sorry,
+    simp at T_must_be_there,
+    finish,
   }
-end
-
--- Sandbox
-
-example : a ≠ b :=
-begin
-  intro equ,
-  injections_and_clear,
-  norm_cast at h_1,
-end
-
-example : (a : symbol) ≠ (b : symbol) :=
-begin
-  finish,
 end
