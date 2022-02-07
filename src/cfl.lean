@@ -104,8 +104,6 @@ begin
   }
 end
 
--- Negative examples
-
 example : [a, c] ∈ CF_language gramatika :=
 begin
   have step_1 : CF_transforms gramatika [S] [a, S, c],
@@ -148,6 +146,8 @@ begin
   },
   finish,
 end
+
+-- Negative examples
 
 example : ¬ CF_transforms gramatika [S, a, a, b, b] [c, c, c, c, c] :=
 begin
@@ -423,7 +423,8 @@ begin
     simp at befo,
     have T_must_be_there: T.val ∈ ([b, S, b, a] : list symbol),
     {
-      sorry,
+      rw befo,
+      finish,
     },
     simp at T_must_be_there,
     finish,
