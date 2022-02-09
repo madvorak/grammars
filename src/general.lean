@@ -52,7 +52,10 @@ structure right_linear extends context_free T N :=
     {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
     (list (symbol T N))
   ), r ∈ rules → 
-    (∃ n : N, ∃ t : T, r.snd = [symbol.nonterminal n, symbol.terminal t])
+    (∃ n : N, ∃ ts : list T, or
+      (r.snd = list.map symbol.terminal ts)
+      (r.snd = symbol.nonterminal n :: (list.map symbol.terminal ts))
+    )
 )
 
 structure left_linear extends context_free T N :=
@@ -61,7 +64,10 @@ structure left_linear extends context_free T N :=
     {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
     (list (symbol T N))
   ), r ∈ rules → 
-    (∃ t : T, ∃ n : N, r.snd = [symbol.terminal t, symbol.nonterminal n])
+    (∃ ts : list T, ∃ n : N, or
+      (r.snd = list.map symbol.terminal ts)
+      (r.snd = (list.map symbol.terminal ts) ++ [symbol.nonterminal n])
+    )
 )
 
 end def_grammars
