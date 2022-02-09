@@ -3,35 +3,51 @@ import tactic
 import computability.language
 
 
---def is_terminal {alphabet : Type} (x : alphabet) : alphabet → Prop
+inductive symbol (τ : Type) (μ : Type) [fintype τ] [fintype μ]
+| terminal : τ → symbol
+| nonterminal : μ →  symbol
 
---variable {alphabet : Type}
+#check symbol
 
-structure CF_grammar (alphabet : Type) :=
-(is_terminal : alphabet → Prop)
-(initial : {x : alphabet // ¬ is_terminal x})
-(rules : list ({x : alphabet // ¬ is_terminal x} × list alphabet))
+#check list (ℕ × (list char))
 
-variables {alphabet : Type} {is_terminal : alphabet → Prop}
+def aa : (fin 5) := 2
+def bb : (fin 7) := 6
 
-def terminal := {x : alphabet // is_terminal x}
+#check symbol (fin 5) (fin 7)
 
-def nonterminal := {x : alphabet // ¬ is_terminal x}
+def tt := symbol (fin 5) (fin 7)
 
-def CF_transforms (gr : CF_grammar alphabet) (oldWord newWord : list alphabet) : Prop :=
-∃ r ∈ gr.rules, ∃ v w : list alphabet, 
-  oldWord = v ++ [subtype.val (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
+def tta : tt := symbol.terminal aa
+def ttb : tt := symbol.nonterminal bb
 
-def CF_derives (gr : CF_grammar alphabet) := relation.refl_trans_gen (CF_transforms gr)
-/-
-def CF_generates (gr : CF_grammar alphabet) (word : list terminal) : Prop :=
-CF_derives gr [subtype.val gr.initial] (list.map subtype.val word)
+#check tta
+#check ttb
 
-def CF_language (gr : CF_grammar alphabet) : language terminal :=
-CF_generates gr
--/
-def CF_generates (gr : CF_grammar alphabet) (word : list alphabet) : Prop :=
-CF_derives gr [subtype.val gr.initial] word
+def parek : ((fin 5) × (list tt)) := (aa, [tta, ttb])
 
-def CF_language (gr : CF_grammar alphabet) : language alphabet :=
+#check parek
+#print parek
+
+structure CF_grammar (terminal : Type) (nonterminal : Type)
+  [fintype terminal] [fintype nonterminal] :=
+(initial : nonterminal)
+(rules : list (nonterminal × (list (symbol terminal nonterminal))))
+
+
+def CF_transforms {T N : Type} [fintype T] [fintype N] 
+  (gr : CF_grammar T N) (oldWord newWord : list (symbol T N)) : Prop :=
+∃ r ∈ gr.rules, ∃ v w : list (symbol T N), 
+  oldWord = v ++ [symbol.nonterminal (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
+
+def CF_derives {T N : Type} [fintype T] [fintype N] 
+  (gr : CF_grammar T N) : list (symbol T N) → list (symbol T N) → Prop :=
+relation.refl_trans_gen (CF_transforms gr)
+
+def CF_generates {T N : Type} [fintype T] [fintype N]
+  (gr : CF_grammar T N) (word : list (symbol T N)) : Prop :=
+CF_derives gr [symbol.nonterminal gr.initial] word
+
+def CF_language {T N : Type} [fintype T] [fintype N]
+  (gr : CF_grammar T N) : language (symbol T N) :=
 CF_generates gr
