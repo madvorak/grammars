@@ -14,14 +14,14 @@ variables (T : Type) (N : Type) [fintype T] [fintype N]
 structure grammar :=
 (initial : N)
 (rules : list (prod
-  {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+  {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
   (list (symbol T N))
 ))
 
 structure noncontracting extends grammar T N :=
 (len_non_decr : 
   ∀ r : (prod
-    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
     (list (symbol T N))
   ), r ∈ rules → 
     (r.fst.val.length ≤ r.snd.length)
@@ -30,7 +30,7 @@ structure noncontracting extends grammar T N :=
 structure noncontracting_with_empty_word extends grammar T N :=
 (len_non_decr_or_snd_empty : 
   ∀ r : (prod
-    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
     (list (symbol T N))
   ), r ∈ rules → or
     ((r.fst.val.length ≤ r.snd.length) ∧ (symbol.nonterminal initial ∉ r.snd))
@@ -40,7 +40,7 @@ structure noncontracting_with_empty_word extends grammar T N :=
 structure kuroda_normal_form extends noncontracting_with_empty_word T N :=
 (kuroda_condition :
   ∀ r : (prod
-    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
     (list (symbol T N))
   ), r ∈ rules → (
     ∃ A B C D : N, and
@@ -62,7 +62,7 @@ structure kuroda_normal_form extends noncontracting_with_empty_word T N :=
 structure context_free extends grammar T N :=
 (fst_singleton_nonterminal :
   ∀ r : (prod
-    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
     (list (symbol T N))
   ), r ∈ rules → 
     (∃ n : N, r.fst.val = [symbol.nonterminal n])
@@ -71,7 +71,7 @@ structure context_free extends grammar T N :=
 structure left_linear extends context_free T N :=
 (snd_max_one_nonterminal :
   ∀ r : (prod
-    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
     (list (symbol T N))
   ), r ∈ rules → 
     (∃ n : N, ∃ ts : list T, or
@@ -83,7 +83,7 @@ structure left_linear extends context_free T N :=
 structure right_linear extends context_free T N :=
 (snd_max_one_nonterminal :
   ∀ r : (prod
-    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
     (list (symbol T N))
   ), r ∈ rules → 
     (∃ ts : list T, ∃ n : N, or
@@ -120,26 +120,117 @@ end def_derivations
 
 
 
-/-
-def gra : context_free (fin 3) (fin 2) := context_free.mk (grammar.mk (0 : fin 2) [
-  ⟨ ((symbol.nonterminal (0 : fin 2)), [(symbol.nonterminal (1 : fin 2))]) sorry ⟩  
-]) sorry
+section demo
+
+def a_ : fin 3 := 0
+def a : symbol (fin 3) (fin 2) := symbol.terminal a_
+
+def b_ : fin 3 := 1
+def b : symbol (fin 3) (fin 2) := symbol.terminal b_
+
+def c_ : fin 3 := 2
+def c : symbol (fin 3) (fin 2) := symbol.terminal c_
+
+def S_ : fin 2 := 0
+def S : symbol (fin 3) (fin 2) := symbol.nonterminal S_
+
+def R_ : fin 2 := 1
+def R : symbol (fin 3) (fin 2) := symbol.nonterminal R_
+
+def gramatika : grammar (fin 3) (fin 2) := grammar.mk S_ [
+  ((subtype.mk [S] (by { use S_, finish })), [a, S, c]),
+  ((subtype.mk [S] (by { use S_, finish })), [R]),
+  ((subtype.mk [R] (by { use R_, finish })), [b, R, c]),
+  ((subtype.mk [R] (by { use R_, finish })), [])
+]
+
+def bezkontextova : context_free (fin 3) (fin 2) := context_free.mk gramatika
+begin
+  intro r,
+  intro rr,
+  unfold gramatika at rr,
+  simp at rr,
+  cases rr with r1 foo,
+  {
+    use S_,
+    finish,
+  },
+  cases foo with r2 bar,
+  {
+    use S_,
+    finish,
+  },
+  cases bar with r3 r4;
+  {
+    use R_,
+    finish,
+  },
+end
 
 
-inductive alphabet
-| _a
-| _b
-| _c
-| _S
-| _T
+example : grammar_generates bezkontextova.to_grammar [a_, a_, b_, c_, c_, c_] :=
+begin
+  unfold bezkontextova,
+  simp,
+  unfold gramatika,
+  fconstructor,
+    exact [a, a, b, R, c, c, c],
+  fconstructor,
+    exact [a, a, R, c, c],
+  fconstructor,
+    exact [a, a, S, c, c],
+  fconstructor,
+    exact [a, S, c],
+  fconstructor,
+    exact [S],
+  refl,
+  {
+    use ((subtype.mk [S] (by { use S_, finish })), [a, S, c]),
+    split,
+    {
+      finish,
+    },
+    use [[], []],
+    simp,
+  },
+  {
+    use ((subtype.mk [S] (by { use S_, finish })), [a, S, c]),
+    split,
+    {
+      finish,
+    },
+    use [[a], [c]],
+    simp,
+  },
+  {
+    use ((subtype.mk [S] (by { use S_, finish })), [R]),
+    split,
+    {
+      finish,
+    },
+    use [[a, a], [c, c]],
+    simp,
+  },
+  {
+    use ((subtype.mk [R] (by { use R_, finish })), [b, R, c]),
+    split,
+    {
+      finish,
+    },
+    use [[a, a], [c, c]],
+    simp,
+  },
+  {
+    simp,
+    use ((subtype.mk [R] (by { use R_, finish })), []),
+    split,
+    {
+      finish,
+    },
+    use [[a, a, b], [c, c, c]],
+    simp,
+    finish,
+  },
+end
 
-def termi : fintype alphabet := (fintype alphabet).mk ((finset alphabet).mk {alphabet._a, alphabet._b, alphabet._c}) sorry
-
-
-def terminaly : fintype char := fintype.mk {'a', 'b', 'c'} sorry
-
-def neterminaly : fintype char := fintype.mk {'R', 'S'} sorry
-
-def gramatika : context_free terminaly neterminaly := context_free.mk ((symbol terminaly neterminaly).nonterminal 'S') [
-  ((symbol.nonterminal 'S'), [(symbol.nonterminal 'R')]) ]
--/
+end demo
