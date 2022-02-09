@@ -1,5 +1,5 @@
-import logic.relation
 import data.fintype.basic
+import logic.relation
 import computability.language
 
 
@@ -117,3 +117,29 @@ def grammar_language : language T :=
 grammar_generates g
 
 end def_derivations
+
+
+
+/-
+def gra : context_free (fin 3) (fin 2) := context_free.mk (grammar.mk (0 : fin 2) [
+  ⟨ ((symbol.nonterminal (0 : fin 2)), [(symbol.nonterminal (1 : fin 2))]) sorry ⟩  
+]) sorry
+
+
+inductive alphabet
+| _a
+| _b
+| _c
+| _S
+| _T
+
+def termi : fintype alphabet := (fintype alphabet).mk ((finset alphabet).mk {alphabet._a, alphabet._b, alphabet._c}) sorry
+
+
+def terminaly : fintype char := fintype.mk {'a', 'b', 'c'} sorry
+
+def neterminaly : fintype char := fintype.mk {'R', 'S'} sorry
+
+def gramatika : context_free terminaly neterminaly := context_free.mk ((symbol terminaly neterminaly).nonterminal 'S') [
+  ((symbol.nonterminal 'S'), [(symbol.nonterminal 'R')]) ]
+-/
