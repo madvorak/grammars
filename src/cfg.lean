@@ -7,10 +7,10 @@ inductive symbol (τ : Type) (ν : Type) [fintype τ] [fintype ν]
 | terminal    : τ → symbol
 | nonterminal : ν → symbol
 
-structure CF_grammar (terminal : Type) (nonterminal : Type)
-  [fintype terminal] [fintype nonterminal] :=
-(initial : nonterminal)
-(rules : list (nonterminal × (list (symbol terminal nonterminal))))
+structure CF_grammar (termin : Type) (nontermin : Type)
+  [fintype termin] [fintype nontermin] :=
+(initial : nontermin)
+(rules : list (nontermin × (list (symbol termin nontermin))))
 
 
 variables {T N : Type} [fintype T] [fintype N] (g : CF_grammar T N)

@@ -1,41 +1,91 @@
 import logic.relation
-import tactic
+import data.fintype.basic
 import computability.language
 
 
--- TODO require `is_terminal` to be `decidable`
-
-structure grammar (alphabet : Type) :=
-(is_terminal : alphabet → Prop)
-(initial : {s : alphabet // ¬ is_terminal s})
-(rules : list ({x : list alphabet // ∃ a ∈ x, ¬ is_terminal a} × list alphabet))
+inductive symbol (τ : Type) (ν : Type) [fintype τ] [fintype ν]
+| terminal    : τ → symbol
+| nonterminal : ν → symbol
 
 
-structure noncontracting (alphabet : Type) extends grammar alphabet :=
-(len_non_decr : ∀ r : ({x : list alphabet // ∃ a ∈ x, ¬ is_terminal a} × list alphabet), r ∈ rules →
-  r.fst.val.length ≤ r.snd.length)
+section def_grammars
+variables (T : Type) (N : Type) [fintype T] [fintype N]
 
-structure noncontracting_with_empty_word (alphabet : Type) extends grammar alphabet :=
-(len_non_decr_or_S_eps : ∀ r : ({x : list alphabet // ∃ a ∈ x, ¬ is_terminal a} × list alphabet), r ∈ rules →
-  (r.fst.val.length ≤ r.snd.length ∧ ∀ a : alphabet, a ∈ r.snd → a ≠ initial) ∨ (r.fst.val = [initial] ∧ r.snd = []))
+structure grammar :=
+(initial : N)
+(rules : list (prod
+  {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+  (list (symbol T N))
+))
+
+structure noncontracting extends grammar T N :=
+(len_non_decr : 
+  ∀ r : (prod
+    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    (list (symbol T N))
+  ), r ∈ rules → 
+    (r.fst.val.length ≤ r.snd.length)
+)
+
+structure noncontracting_with_empty_word extends grammar T N :=
+(len_non_decr_or_yields_empty : 
+  ∀ r : (prod
+    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    (list (symbol T N))
+  ), r ∈ rules → or
+    ((r.fst.val.length ≤ r.snd.length) ∧ (symbol.nonterminal initial ∉ r.snd))
+    ((r.fst.val = [symbol.nonterminal initial]) ∧ (r.snd = []))
+)
+
+structure context_free extends grammar T N :=
+(left_one_nonterminal :
+  ∀ r : (prod
+    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    (list (symbol T N))
+  ), r ∈ rules → 
+    (∃ n : N, r.fst.val = [symbol.nonterminal n])
+)
+
+structure right_linear extends context_free T N :=
+(right_one_terminal :
+  ∀ r : (prod
+    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    (list (symbol T N))
+  ), r ∈ rules → 
+    (∃ n : N, ∃ t : T, r.snd = [symbol.nonterminal n, symbol.terminal t])
+)
+
+structure left_linear extends context_free T N :=
+(right_one_terminal :
+  ∀ r : (prod
+    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    (list (symbol T N))
+  ), r ∈ rules → 
+    (∃ t : T, ∃ n : N, r.snd = [symbol.terminal t, symbol.nonterminal n])
+)
+
+end def_grammars
 
 
-variables {alphabet : Type} {is_terminal : alphabet → Prop}
+section def_derivations
+variables {T N : Type} [fintype T] [fintype N] (g : grammar T N)
 
-def grammar_transforms (gr : grammar alphabet) (oldWord newWord : list alphabet) : Prop :=
-∃ r ∈ gr.rules, ∃ v w : list alphabet, 
+def letter := symbol T N
+
+def grammar_transforms (oldWord newWord : list letter) : Prop :=
+∃ r ∈ g.rules, ∃ v w : list (symbol T N), 
   oldWord = v ++ (subtype.val (prod.fst r)) ++ w ∧ newWord = v ++ (prod.snd r) ++ w
 
-def CF_derives (gr : grammar alphabet) := relation.refl_trans_gen (grammar_transforms gr)
-/-
-def CF_generates (gr : grammar alphabet) (word : list {a : alphabet // is_terminal a}) : Prop :=
-CF_derives gr [subtype.val gr.initial] word ∧ (list.all word (λ a : alphabet, is_terminal a))
+def grammar_derives : list letter → list letter → Prop := 
+relation.refl_trans_gen (grammar_transforms g)
 
-def CF_language (gr : grammar alphabet) : language {a : alphabet // is_terminal a} :=
-CF_generates gr
--/
-def CF_generates (gr : grammar alphabet) (word : list alphabet) : Prop :=
-CF_derives gr [subtype.val gr.initial] word
+def grammar_generates_str (str : list letter) : Prop :=
+grammar_derives g [symbol.nonterminal g.initial] str
 
-def CF_language (gr : grammar alphabet) : language alphabet :=
-CF_generates gr
+def grammar_generates (word : list T) : Prop :=
+grammar_generates_str g (list.map symbol.terminal word)
+
+def grammar_language : language T :=
+grammar_generates g
+
+end def_derivations
