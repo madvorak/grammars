@@ -28,7 +28,7 @@ structure noncontracting extends grammar T N :=
 )
 
 structure noncontracting_with_empty_word extends grammar T N :=
-(len_non_decr_or_yields_empty : 
+(len_non_decr_or_snd_empty : 
   ∀ r : (prod
     {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
     (list (symbol T N))
@@ -37,8 +37,30 @@ structure noncontracting_with_empty_word extends grammar T N :=
     ((r.fst.val = [symbol.nonterminal initial]) ∧ (r.snd = []))
 )
 
+structure kuroda_normal_form extends noncontracting_with_empty_word T N :=
+(kuroda_condition :
+  ∀ r : (prod
+    {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
+    (list (symbol T N))
+  ), r ∈ rules → (
+    ∃ A B C D : N, and
+      (r.fst.val = [symbol.nonterminal A, symbol.nonterminal B])
+      (r.snd     = [symbol.nonterminal C, symbol.nonterminal D])
+  ) ∨ (
+    ∃ X Y Z : N, and
+      (r.fst.val = [symbol.nonterminal X])
+      (r.snd     = [symbol.nonterminal Y, symbol.nonterminal Z])
+  ) ∨ (
+    ∃ R : N, ∃ a : T, and
+      (r.fst.val = [symbol.nonterminal R])
+      (r.snd     = [symbol.terminal a])  
+  ) ∨ (  
+      (r.fst.val = [symbol.nonterminal initial]) ∧ (r.snd = [])
+  )
+)
+
 structure context_free extends grammar T N :=
-(left_one_nonterminal :
+(fst_singleton_nonterminal :
   ∀ r : (prod
     {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
     (list (symbol T N))
@@ -46,8 +68,8 @@ structure context_free extends grammar T N :=
     (∃ n : N, r.fst.val = [symbol.nonterminal n])
 )
 
-structure right_linear extends context_free T N :=
-(right_one_terminal :
+structure left_linear extends context_free T N :=
+(snd_max_one_nonterminal :
   ∀ r : (prod
     {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
     (list (symbol T N))
@@ -58,8 +80,8 @@ structure right_linear extends context_free T N :=
     )
 )
 
-structure left_linear extends context_free T N :=
-(right_one_terminal :
+structure right_linear extends context_free T N :=
+(snd_max_one_nonterminal :
   ∀ r : (prod
     {str : list (symbol T N) // ∃ t : T, (symbol.terminal t) ∈ str}
     (list (symbol T N))
@@ -80,7 +102,7 @@ def letter := symbol T N
 
 def grammar_transforms (oldWord newWord : list letter) : Prop :=
 ∃ r ∈ g.rules, ∃ v w : list (symbol T N), 
-  oldWord = v ++ (subtype.val (prod.fst r)) ++ w ∧ newWord = v ++ (prod.snd r) ++ w
+  oldWord = (v ++ subtype.val (prod.fst r) ++ w) ∧ (newWord = v ++ (prod.snd r) ++ w)
 
 def grammar_derives : list letter → list letter → Prop := 
 relation.refl_trans_gen (grammar_transforms g)
