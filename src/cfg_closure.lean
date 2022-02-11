@@ -27,18 +27,33 @@ begin
   have N_fin : fintype N, sorry,
   use N_fin,
   let root : N := (sum.inr (0 : fin 1)),
-  /-
-  let pokus : list (N × (list (@symbol T N T_fin N_fin))) :=
-    list.map (λ x, ((sum.inl (sum.inl (prod.fst x)),
-        list.map (λ vvv, @symbol.cases_on T N₁ T_fin N₁fin (λ _, @symbol T N T_fin N_fin) vvv
-          (λ st, (sum.inr (@symbol.terminal T N T_fin N_fin st)))
-          (λ snt, (sum.inl (sum.inl (@symbol.nonterminal T N T_fin N_fin snt))))
-        ) (prod.snd x)
-    ))) (@CF_grammar.rules T N₁ T_fin N₁fin g₁),
-  -/
-  use @CF_grammar.mk T N T_fin N_fin root [
+  
+  let rules₁ : list (N × (list (@symbol T N T_fin N_fin))) :=
+    list.map (λ x,
+      ((sum.inl (sum.inl (prod.fst x)),
+      list.map (λ elem : (@symbol T N₁ T_fin N₁fin), match elem with
+        | @symbol.terminal T N₁ T_fin N₁fin st := (@symbol.terminal T N T_fin N_fin st)
+        | @symbol.nonterminal T N₁ T_fin N₁fin snt := (@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl snt)))
+      end)
+      (prod.snd x)
+    )))
+    (@CF_grammar.rules T N₁ T_fin N₁fin g₁),
+
+  let rules₂ : list (N × (list (@symbol T N T_fin N_fin))) :=
+    list.map (λ x,
+      ((sum.inl (sum.inr (prod.fst x)),
+      list.map (λ elem : (@symbol T N₂ T_fin N₂fin), match elem with
+        | @symbol.terminal T N₂ T_fin N₂fin st := (@symbol.terminal T N T_fin N_fin st)
+        | @symbol.nonterminal T N₂ T_fin N₂fin snt := (@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inr snt)))
+      end)
+      (prod.snd x)
+    )))
+    (@CF_grammar.rules T N₂ T_fin N₂fin g₂),
+  
+  use @CF_grammar.mk T N T_fin N_fin root ([
     (root, [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl (@CF_grammar.initial T N₁ T_fin N₁fin g₁)))]),
     (root, [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inr (@CF_grammar.initial T N₂ T_fin N₂fin g₂)))])
-  ], -- ++ g₁.rules ++ g₂.rules
+  ] ++ rules₁ ++ rules₂),
+  
   sorry,
 end
