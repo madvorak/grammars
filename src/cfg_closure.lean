@@ -21,7 +21,12 @@ begin
 
   let N : Type := (N₁ ⊕ N₂) ⊕ (fin 1),
   use N,
-  have N_fin : fintype N, sorry,
+  have N_fin : fintype N,
+  {
+    have N₁N₂fin : fintype (N₁ ⊕ N₂) :=
+      @sum.fintype N₁ N₂ N₁fin N₂fin,
+    exact @sum.fintype (N₁ ⊕ N₂) (fin 1) N₁N₂fin _,
+  },
   use N_fin,
   let root : N := (sum.inr (0 : fin 1)),
   
@@ -55,10 +60,12 @@ begin
   
   apply set.eq_of_subset_of_subset,
   {
+    -- prove `CF_language g ⊆ L₁ + L₂`
     intros w h,
     sorry,
   },
 
+  -- prove `L₁ + L₂ ⊆ CF_language g`
   intros w h,
   rw language.mem_add at h,
   cases h with case₁ case₂,
@@ -92,14 +99,12 @@ begin
       [@symbol.nonterminal T N T_fin N_fin root]
       (list.map (@symbol.terminal T N T_fin N_fin) w),
     unfold CF_derives,
-    have tranz : is_trans _ (relation.refl_trans_gen (@CF_transforms T N T_fin N_fin g)),
-    {
-      sorry,
-    },
+    have tranz : is_trans _ (relation.refl_trans_gen (@CF_transforms T N T_fin N_fin g)) := 
+      is_trans.mk relation.transitive_refl_trans_gen,
     apply @trans _ (@CF_derives T N T_fin N_fin g) tranz,
       finish,
     exact deri_rest,
   },
 
-  sorry,
+  sorry, -- prove case₂ symmetrically
 end
