@@ -5,7 +5,7 @@ def is_CF {T : Type} [T_fin : fintype T] (L : language T) :=
 ∃ N : Type, ∃ N_fin : fintype N, ∃ g : @CF_grammar T N T_fin N_fin, @CF_language T N T_fin N_fin g = L
 
 
-theorem CF_of_CF_union_CF {T : Type} [T_fin : fintype T] (L₁ : language T) (L₂ : language T) :
+theorem CF_under_union {T : Type} [T_fin : fintype T] (L₁ : language T) (L₂ : language T) :
 is_CF L₁ ∧ is_CF L₂ → is_CF (L₁ + L₂) :=
 begin
   intro input,
@@ -62,6 +62,9 @@ begin
   {
     -- prove `CF_language g ⊆ L₁ + L₂`
     intros w h,
+    simp,
+    unfold CF_language at h,
+    change @CF_generates_str T N T_fin N_fin g (list.map (@symbol.terminal T N T_fin N_fin) w) at h,
     sorry,
   },
 
@@ -81,6 +84,19 @@ begin
                      [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl (@CF_grammar.initial T N₁ T_fin N₁fin g₁)))]
                      (list.map (@symbol.terminal T N T_fin N_fin) w),
     {
+      dsimp at *,
+      induction deri_orig,
+        sorry, -- base step
+      fconstructor,
+        exact list.map (λ s : @symbol T N₁ T_fin N₁fin, match s with
+          | @symbol.terminal T N₁ T_fin N₁fin st := (@symbol.terminal T N T_fin N_fin st)
+          | @symbol.nonterminal T N₁ T_fin N₁fin snt := (@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl snt)))
+        end) deri_orig_b,
+      {
+        simp,
+        sorry, -- almost exact `deri_orig_ᾰ`
+      },
+      -- how is `deri_orig_c` related to `w` ???
       sorry,
     },
 
@@ -88,7 +104,14 @@ begin
                       [@symbol.nonterminal T N T_fin N_fin root]
                       [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl (@CF_grammar.initial T N₁ T_fin N₁fin g₁)))],
     {
-      sorry,
+      fconstructor,
+        exact [@symbol.nonterminal T N T_fin N_fin root],
+      refl,
+      use (root, [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl (@CF_grammar.initial T N₁ T_fin N₁fin g₁)))]),
+      split,
+        finish,
+      use [[], []],
+      simp,
     },
 
     unfold CF_language,
@@ -102,7 +125,7 @@ begin
     have tranz : is_trans _ (relation.refl_trans_gen (@CF_transforms T N T_fin N_fin g)) := 
       is_trans.mk relation.transitive_refl_trans_gen,
     apply @trans _ (@CF_derives T N T_fin N_fin g) tranz,
-      finish,
+      finish, -- uses deri_start
     exact deri_rest,
   },
 
