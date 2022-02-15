@@ -1,61 +1,53 @@
 import cfg
+import computability.DFA
 
 
-def is_CF {T : Type} [T_fin : fintype T] (L : language T) :=
-∃ N : Type, ∃ N_fin : fintype N, ∃ g : @CF_grammar T N T_fin N_fin, @CF_language T N T_fin N_fin g = L
+def is_Reg {T : Type} (L : language T) :=
+∃ σ : Type, ∃ a : DFA T σ, a.accepts = L
+
+def is_CF {T : Type} (L : language T) :=
+∃ g : CF_grammar T, CF_language g = L
 
 
-theorem CF_under_union {T : Type} [T_fin : fintype T] (L₁ : language T) (L₂ : language T) :
+theorem CF_under_union {T : Type} (L₁ : language T) (L₂ : language T) :
 is_CF L₁ ∧ is_CF L₂ → is_CF (L₁ + L₂) :=
 begin
   intro input,
   cases input with cf₁ cf₂,
 
-  cases cf₁ with N₁ foo₁,
-  cases foo₁ with N₁fin bar₁,
-  cases bar₁ with g₁ h₁,
-  
-  cases cf₂ with N₂ foo₂,
-  cases foo₂ with N₂fin bar₂,
-  cases bar₂ with g₂ h₂,
+  cases cf₁ with g₁ h₁,
+  cases cf₂ with g₂ h₂,
 
-  let N : Type := (N₁ ⊕ N₂) ⊕ (fin 1),
-  use N,
-  have N_fin : fintype N,
-  {
-    have N₁N₂fin : fintype (N₁ ⊕ N₂) :=
-      @sum.fintype N₁ N₂ N₁fin N₂fin,
-    exact @sum.fintype (N₁ ⊕ N₂) (fin 1) N₁N₂fin _,
-  },
-  use N_fin,
-  let root : N := (sum.inr (0 : fin 1)),
+  let N₁ : Type := g₁.nt,
+  let N₂ : Type := g₂.nt,
+  let N : Type := option (N₁ ⊕ N₂),
   
-  let rules₁ : list (N × (list (@symbol T N T_fin N_fin))) :=
-    list.map (λ x,
-      ((sum.inl (sum.inl (prod.fst x)),
-      list.map (λ elem : (@symbol T N₁ T_fin N₁fin), match elem with
-        | @symbol.terminal T N₁ T_fin N₁fin st := (@symbol.terminal T N T_fin N_fin st)
-        | @symbol.nonterminal T N₁ T_fin N₁fin snt := (@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl snt)))
-      end)
-      (prod.snd x)
-    )))
-    (@CF_grammar.rules T N₁ T_fin N₁fin g₁),
+  let rules₁ : list (N × (list (symbol T N))) :=
+    list.map 
+      (λ x, (
+        (some (sum.inl (prod.fst x))),
+        (list.map (λ elem : (symbol T N₁), match elem with
+          | symbol.terminal st := (symbol.terminal st)
+          | symbol.nonterminal snt := (symbol.nonterminal (some (sum.inl snt)))
+        end) (prod.snd x))
+      ))
+      g₁.rules,
+  
+  let rules₂ : list (N × (list (symbol T N))) :=
+    list.map 
+      (λ x, (
+        (some (sum.inr (prod.fst x))),
+        (list.map (λ elem : (symbol T N₂), match elem with
+          | symbol.terminal st := (symbol.terminal st)
+          | symbol.nonterminal snt := (symbol.nonterminal (some (sum.inr snt)))
+        end) (prod.snd x))
+      ))
+      g₂.rules,
 
-  let rules₂ : list (N × (list (@symbol T N T_fin N_fin))) :=
-    list.map (λ x,
-      ((sum.inl (sum.inr (prod.fst x)),
-      list.map (λ elem : (@symbol T N₂ T_fin N₂fin), match elem with
-        | @symbol.terminal T N₂ T_fin N₂fin st := (@symbol.terminal T N T_fin N_fin st)
-        | @symbol.nonterminal T N₂ T_fin N₂fin snt := (@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inr snt)))
-      end)
-      (prod.snd x)
-    )))
-    (@CF_grammar.rules T N₂ T_fin N₂fin g₂),
-  
-  let g := @CF_grammar.mk T N T_fin N_fin root ([
-    (root, [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl (@CF_grammar.initial T N₁ T_fin N₁fin g₁)))]),
-    (root, [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inr (@CF_grammar.initial T N₂ T_fin N₂fin g₂)))])
-  ] ++ rules₁ ++ rules₂),
+  let g := CF_grammar.mk N none (
+    (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]) ::
+    (none, [symbol.nonterminal (some (sum.inr (g₂.initial)))]) ::
+    rules₁ ++ rules₂),
   use g,
   
   apply set.eq_of_subset_of_subset,
@@ -64,10 +56,10 @@ begin
     intros w h,
     simp,
     unfold CF_language at h,
-    change @CF_generates_str T N T_fin N_fin g (list.map (@symbol.terminal T N T_fin N_fin) w) at h,
+    change CF_generates_str g (list.map symbol.terminal w) at h,
     sorry,
   },
-
+  /-
   -- prove `L₁ + L₂ ⊆ CF_language g`
   intros w h,
   rw language.mem_add at h,
@@ -130,4 +122,16 @@ begin
   },
 
   sorry, -- prove case₂ symmetrically
+  -/
+  sorry
 end
+
+
+theorem CF_intersection_Reg {T : Type} [T_fin : fintype T] (L₁ : language T) (L₂ : language T) :
+is_CF L₁ ∧ is_Reg L₂ → is_CF (set.inter L₁ L₂) :=
+sorry
+
+
+theorem CF_under_concatenation {T : Type} [T_fin : fintype T] (L₁ : language T) (L₂ : language T) :
+is_CF L₁ ∧ is_CF L₂ → is_CF (L₁ * L₂) :=
+sorry

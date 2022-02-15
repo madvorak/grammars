@@ -3,30 +3,31 @@ import logic.relation
 import computability.language
 
 
-section cfg_grammars
+section cfg_def
 
-inductive symbol (τ : Type) (ν : Type) [fintype τ] [fintype ν]
+inductive symbol (τ : Type) (ν : Type)
 | terminal    : τ → symbol
 | nonterminal : ν → symbol
 
-structure CF_grammar (termin : Type) (nontermin : Type) [fintype termin] [fintype nontermin] :=
-(initial : nontermin)
-(rules : list (nontermin × (list (symbol termin nontermin))))
+structure CF_grammar (termi : Type) :=
+(nt : Type)
+(initial : nt)
+(rules : list (nt × (list (symbol termi nt))))
 
-end cfg_grammars
+end cfg_def
 
 
 section cfg_derivations
-variables {T N : Type} [fintype T] [fintype N] (g : CF_grammar T N)
+variables {T : Type} (g : CF_grammar T)
 
-def CF_transforms (oldWord newWord : list (symbol T N)) : Prop :=
-∃ r ∈ g.rules, ∃ v w : list (symbol T N), 
+def CF_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
+∃ r ∈ g.rules, ∃ v w : list (symbol T g.nt), 
   oldWord = v ++ [symbol.nonterminal (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
 
-def CF_derives : list (symbol T N) → list (symbol T N) → Prop :=
+def CF_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (CF_transforms g)
 
-def CF_generates_str (str : list (symbol T N)) : Prop :=
+def CF_generates_str (str : list (symbol T g.nt)) : Prop :=
 CF_derives g [symbol.nonterminal g.initial] str
 
 def CF_generates (word : list T) : Prop :=
@@ -56,7 +57,7 @@ def S : symbol (fin 3) (fin 2) := symbol.nonterminal S_
 def R_ : fin 2 := 1
 def R : symbol (fin 3) (fin 2) := symbol.nonterminal R_
 
-def gramatika : CF_grammar (fin 3) (fin 2) := CF_grammar.mk S_ [
+def gramatika : CF_grammar (fin 3) := CF_grammar.mk (fin 2) S_ [
   (S_, [a, S, c]),
   (S_, [R]),
   (R_, [b, R, c]),
@@ -65,6 +66,8 @@ def gramatika : CF_grammar (fin 3) (fin 2) := CF_grammar.mk S_ [
 
 example : CF_generates gramatika [a_, a_, b_, c_, c_, c_] :=
 begin
+  unfold gramatika,
+
   fconstructor,
     exact [a, a, b, R, c, c, c],
   fconstructor,
@@ -76,11 +79,11 @@ begin
   fconstructor,
     exact [S],
   refl,
+
   {
     use (S_, [a, S, c]),
     split,
     {
-      unfold gramatika,
       finish,
     },
     use [[], []],
@@ -91,7 +94,6 @@ begin
     use (S_, [a, S, c]),
     split,
     {
-      unfold gramatika,
       finish,
     },
     use [[a], [c]],
@@ -102,7 +104,6 @@ begin
     use (S_, [R]),
     split,
     {
-      unfold gramatika,
       finish,
     },
     use [[a, a], [c, c]],
@@ -113,7 +114,6 @@ begin
     use (R_, [b, R, c]),
     split,
     {
-      unfold gramatika,
       finish,
     },
     use [[a, a], [c, c]],
@@ -125,7 +125,6 @@ begin
     use (R_, []),
     split,
     {
-      unfold gramatika,
       finish,
     },
     use [[a, a, b], [c, c, c]],
