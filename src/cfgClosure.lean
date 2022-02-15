@@ -59,47 +59,30 @@ begin
     change CF_generates_str g (list.map symbol.terminal w) at h,
     sorry,
   },
-  /-
+  
   -- prove `L₁ + L₂ ⊆ CF_language g`
   intros w h,
   rw language.mem_add at h,
+  
   cases h with case₁ case₂,
   {
-    have deri_orig : @CF_derives T N₁ T_fin N₁fin g₁
-                     [@symbol.nonterminal T N₁ T_fin N₁fin (@CF_grammar.initial T N₁ T_fin N₁fin g₁)]
-                     (list.map (@symbol.terminal T N₁ T_fin N₁fin) w),
+    have deri_orig : CF_derives g₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal w),
     {
       finish,
     },
 
-    have deri_rest : @CF_derives T N T_fin N_fin g
-                     [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl (@CF_grammar.initial T N₁ T_fin N₁fin g₁)))]
-                     (list.map (@symbol.terminal T N T_fin N_fin) w),
+    have deri_rest : CF_derives g [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w),
     {
       dsimp at *,
-      induction deri_orig,
-        sorry, -- base step
-      fconstructor,
-        exact list.map (λ s : @symbol T N₁ T_fin N₁fin, match s with
-          | @symbol.terminal T N₁ T_fin N₁fin st := (@symbol.terminal T N T_fin N_fin st)
-          | @symbol.nonterminal T N₁ T_fin N₁fin snt := (@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl snt)))
-        end) deri_orig_b,
-      {
-        simp,
-        sorry, -- almost exact `deri_orig_ᾰ`
-      },
-      -- how is `deri_orig_c` related to `w` ???
       sorry,
     },
 
-    have deri_start : @CF_derives T N T_fin N_fin g
-                      [@symbol.nonterminal T N T_fin N_fin root]
-                      [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl (@CF_grammar.initial T N₁ T_fin N₁fin g₁)))],
+    have deri_start : CF_derives g [symbol.nonterminal none] [symbol.nonterminal (some (sum.inl g₁.initial))],
     {
       fconstructor,
-        exact [@symbol.nonterminal T N T_fin N_fin root],
+        exact [symbol.nonterminal none],
       refl,
-      use (root, [@symbol.nonterminal T N T_fin N_fin (sum.inl (sum.inl (@CF_grammar.initial T N₁ T_fin N₁fin g₁)))]),
+      use (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]),
       split,
         finish,
       use [[], []],
@@ -107,23 +90,15 @@ begin
     },
 
     unfold CF_language,
-    change @CF_generates_str T N T_fin N_fin g 
-      (list.map (@symbol.terminal T N T_fin N_fin) w),
+    change CF_generates_str g (list.map symbol.terminal w),
     unfold CF_generates_str,
-    change @CF_derives T N T_fin N_fin g 
-      [@symbol.nonterminal T N T_fin N_fin root]
-      (list.map (@symbol.terminal T N T_fin N_fin) w),
     unfold CF_derives,
-    have tranz : is_trans _ (relation.refl_trans_gen (@CF_transforms T N T_fin N_fin g)) := 
-      is_trans.mk relation.transitive_refl_trans_gen,
-    apply @trans _ (@CF_derives T N T_fin N_fin g) tranz,
-      finish, -- uses deri_start
+    apply @trans _ (CF_derives g) (is_trans.mk relation.transitive_refl_trans_gen),
+      finish, -- uses `deri_start` here
     exact deri_rest,
   },
 
   sorry, -- prove case₂ symmetrically
-  -/
-  sorry
 end
 
 
