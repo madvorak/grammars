@@ -1,5 +1,6 @@
 import cfg
 import computability.DFA
+import tactic
 
 
 def is_Reg {T : Type} (L : language T) :=
@@ -12,11 +13,16 @@ def is_CF {T : Type} (L : language T) :=
 
 lemma CF_derives_reflexive {T : Type} {g : CF_grammar T} {w : list (symbol T g.nt)} :
   CF_derives g w w :=
-by fconstructor
+relation.refl_trans_gen.refl
 
 lemma list_three_parts {T₁ T₂ : Type} {x y z : list T₁} {f : T₁ → T₂} :
   list.map f (x ++ y ++ z) = (list.map f x) ++ (list.map f y) ++ (list.map f z) :=
 by simp
+
+lemma unpack_transitive_closure {α : Type} {r : α → α → Prop} {x z : α}
+  (h : relation.refl_trans_gen r x z) (nontriv : x ≠ z) :
+    ∃ y : α, (r x y) ∧ (relation.refl_trans_gen r y z) :=
+(relation.refl_trans_gen.cases_head h).resolve_left nontriv
 
 
 theorem CF_under_union {T : Type} (L₁ : language T) (L₂ : language T) :
@@ -67,11 +73,113 @@ begin
   
   apply set.eq_of_subset_of_subset,
   {
+    let convert_sTN_sTN₂ : (symbol T N) → option (symbol T N₂) :=
+      λ s, match s with
+        | symbol.terminal st := some (symbol.terminal st)
+        | symbol.nonterminal none := none
+        | symbol.nonterminal (some (sum.inl _)) := none
+        | symbol.nonterminal (some (sum.inr nt)) := some (symbol.nonterminal nt)
+      end,
+
+    let convert_lsTN_lsTN₂ : list (symbol T N) → list (symbol T N₂) :=
+      list.filter_map convert_sTN_sTN₂,
+/-
+    let convert_rule_rule₂ : (N × (list (symbol T N))) → (N₂ × (list (symbol T N₂))) :=
+      λ r, (symbol.nonterminal (prod.fst r)), convert_lsTN_lsTN₂ (prod.snd r)),
+-/
     -- prove `CF_language g ⊆ L₁ + L₂`
     intros w h,
     simp,
     unfold CF_language at h,
     change CF_generates_str g (list.map symbol.terminal w) at h,
+    unfold CF_generates_str at h,
+    unfold CF_derives at h,
+    cases unpack_transitive_closure h sorry with ini foo,
+    cases foo with deri_head deri_tail,
+    cases deri_head with rule hhead,
+    cases hhead with ruleok h',
+    cases ruleok with g₁S bar,
+    {
+      left,
+      sorry,
+    },
+    cases bar with g₂S imposs,
+    {
+      right,
+      rw g₂S at h',
+      simp at h',
+      cases h' with u baz,
+      cases baz with v conju,
+      cases conju with bef aft,
+      have len := congr_arg list.length bef,
+      rw list.length_append u (symbol.nonterminal none :: v) at len,
+      simp at len,
+      have u_nil : u = [], 
+      {
+        by_contradiction,
+        rw ← list.length_eq_zero at h,
+        have ul : u.length ≥ 1 :=
+          nat.one_le_iff_ne_zero.mpr h,
+        linarith,
+      },
+      have v_nil : v = [], 
+      {
+        by_contradiction,
+        rw ← list.length_eq_zero at h,
+        have vl : v.length ≥ 1 :=
+          nat.one_le_iff_ne_zero.mpr h,
+        linarith,
+      },
+      rw u_nil at aft,
+      rw v_nil at aft,
+      rw list.nil_append at aft,
+      have deri_indu : ∀ input output : list (symbol T N),
+                         CF_derives g input output →
+                         CF_derives g₂ (convert_lsTN_lsTN₂ input) (convert_lsTN_lsTN₂ output),
+      {
+        intros inp outp hyp,
+        induction hyp with u v ih₂ orig ih,
+        {
+          apply CF_derives_reflexive,
+        },
+        apply @trans _ (CF_derives g₂) (is_trans.mk relation.transitive_refl_trans_gen),
+        {
+          exact ih,
+        },
+        fconstructor,
+          exact (convert_lsTN_lsTN₂ u),
+        refl,
+
+        cases orig with orig_rule orig_rest,
+        cases orig_rest with orig_in orig_prop,
+        cases orig_prop with prefi foo,
+        cases foo with postfi orig_two,
+        cases orig_two with orig_pre orig_post,
+
+        -- TODO continue here
+        sorry,
+      },
+      have start_word : [symbol.nonterminal g₂.initial] = (convert_lsTN_lsTN₂ ini),
+      {
+        rw aft,
+        refl,
+      },
+      have final_word : (list.map symbol.terminal w) = (convert_lsTN_lsTN₂ (list.map symbol.terminal w)),
+      {
+        
+        sorry,
+      },
+
+      rw ← h₂,
+      change CF_generates_str g₂ (list.map symbol.terminal w),
+      unfold CF_generates_str,
+      unfold CF_derives,
+      rw start_word,
+      rw final_word,
+      exact deri_indu ini (list.map symbol.terminal w) deri_tail,
+    },
+    exfalso,
+
     sorry,
   },
   
@@ -101,7 +209,7 @@ begin
       },
       dsimp at *,
       have deri_step : ∀ input output : list (symbol T N₁),
-                        CF_transforms g₁ input output → 
+                        CF_transforms g₁ input output →
                         CF_transforms g (convert_lsTN₁_lsTN input) (convert_lsTN₁_lsTN output),
       {
         intros inpu outpu ass,
@@ -197,7 +305,7 @@ begin
       },
       dsimp at *,
       have deri_step : ∀ input output : list (symbol T N₂),
-                        CF_transforms g₂ input output → 
+                        CF_transforms g₂ input output →
                         CF_transforms g (convert_lsTN₂_lsTN input) (convert_lsTN₂_lsTN output),
       {
         intros inpu outpu ass,
