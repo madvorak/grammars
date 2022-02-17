@@ -83,10 +83,14 @@ begin
 
     let convert_lsTN_lsTN₂ : list (symbol T N) → list (symbol T N₂) :=
       list.filter_map convert_sTN_sTN₂,
-/-
-    let convert_rule_rule₂ : (N × (list (symbol T N))) → (N₂ × (list (symbol T N₂))) :=
-      λ r, (symbol.nonterminal (prod.fst r)), convert_lsTN_lsTN₂ (prod.snd r)),
--/
+
+    let convert_rule_rule₂ : (N × (list (symbol T N))) → option (N₂ × (list (symbol T N₂))) :=
+      λ r, match r with
+        | (none, _) := none
+        | ((some (sum.inl _)), _) := none
+        | ((some (sum.inr nt)), lis) := some (nt, convert_lsTN_lsTN₂ lis)
+      end,
+
     -- prove `CF_language g ⊆ L₁ + L₂`
     intros w h,
     simp,
@@ -114,7 +118,7 @@ begin
       have len := congr_arg list.length bef,
       rw list.length_append u (symbol.nonterminal none :: v) at len,
       simp at len,
-      have u_nil : u = [], 
+      have u_nil : u = [],
       {
         by_contradiction,
         rw ← list.length_eq_zero at h,
@@ -122,7 +126,7 @@ begin
           nat.one_le_iff_ne_zero.mpr h,
         linarith,
       },
-      have v_nil : v = [], 
+      have v_nil : v = [],
       {
         by_contradiction,
         rw ← list.length_eq_zero at h,
@@ -156,6 +160,14 @@ begin
         cases foo with postfi orig_two,
         cases orig_two with orig_pre orig_post,
 
+        unfold CF_transforms,
+        cases convert_rule_rule₂ orig_rule with conve_rule, -- this line is probably wrong (losing information)
+        {
+          exfalso,
+          
+          sorry,
+        },
+
         -- TODO continue here
         sorry,
       },
@@ -180,13 +192,46 @@ begin
     },
     exfalso,
 
-    sorry,
+    cases h' with u baz,
+    cases baz with v conju,
+    cases conju with bef aft,
+    have len := congr_arg list.length bef,
+    rw list.length_append at len,
+    simp at len,
+    have u_nil : u = [],
+    {
+      by_contradiction,
+      rw ← list.length_eq_zero at h,
+      have ul : u.length ≥ 1 :=
+        nat.one_le_iff_ne_zero.mpr h,
+      linarith,
+    },
+    have v_nil : v = [],
+    {
+      by_contradiction,
+      rw ← list.length_eq_zero at h,
+      have vl : v.length ≥ 1 :=
+        nat.one_le_iff_ne_zero.mpr h,
+      linarith,
+    },
+    rw u_nil at bef,
+    rw v_nil at bef,
+    rw list.nil_append at bef,
+    rw list.append_nil at bef,
+    change [symbol.nonterminal none] = [symbol.nonterminal rule.fst] at bef,
+    have rule_root : rule.fst = none,
+    {
+      finish,
+    },
+    change rule ∈ (rules₁ ++ rules₂) at imposs,
+    rw list.mem_append at imposs,
+    cases imposs;
+    finish,
   },
   
   -- prove `L₁ + L₂ ⊆ CF_language g`
   intros w h,
   rw language.mem_add at h,
-  
   cases h with case₁ case₂,
   {
     have deri_start : CF_derives g [symbol.nonterminal none] [symbol.nonterminal (some (sum.inl g₁.initial))],
