@@ -23,13 +23,3 @@ lemma unpack_transitive_closure {α : Type} {r : α → α → Prop} {x z : α}
   (h : relation.refl_trans_gen r x z) (nontriv : x ≠ z) :
     ∃ y : α, (r x y) ∧ (relation.refl_trans_gen r y z) :=
 (relation.refl_trans_gen.cases_head h).resolve_left nontriv
-
-
-theorem CF_intersection_Reg {T : Type} [T_fin : fintype T] (L₁ : language T) (L₂ : language T) :
-  is_CF L₁ ∧ is_Reg L₂ → is_CF (set.inter L₁ L₂) :=
-sorry
-
-
-theorem CF_under_concatenation {T : Type} [T_fin : fintype T] (L₁ : language T) (L₂ : language T) :
-  is_CF L₁ ∧ is_CF L₂ → is_CF (L₁ * L₂) :=
-sorry
