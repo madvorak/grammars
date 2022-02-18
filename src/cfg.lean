@@ -39,6 +39,13 @@ CF_generates g
 end cfg_derivations
 
 
+section cfg_cfl
+
+def is_CF {T : Type} (L : language T) :=
+∃ g : CF_grammar T, CF_language g = L
+
+end cfg_cfl
+
 
 section cfg_demonstrations
 
