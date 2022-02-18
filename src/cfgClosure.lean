@@ -134,7 +134,14 @@ begin
     change CF_generates_str g (list.map symbol.terminal w) at h,
     unfold CF_generates_str at h,
     unfold CF_derives at h,
-    cases unpack_transitive_closure h sorry with ini foo,
+    cases unpack_transitive_closure h begin
+      by_contradiction hyp,
+      have zeroth := congr_arg (λ p, list.nth p 0) hyp,
+      simp at zeroth,
+      cases (w.nth 0);
+      finish,
+    end with ini foo,
+
     cases foo with deri_head deri_tail,
     cases deri_head with rule hhead,
     cases hhead with ruleok h',
@@ -156,19 +163,21 @@ begin
       simp at len,
       have u_nil : u = [],
       {
+sorry,/-
         by_contradiction,
         rw ← list.length_eq_zero at h,
         have ul : u.length ≥ 1 :=
           nat.one_le_iff_ne_zero.mpr h,
-        linarith,
+        linarith,-/
       },
       have v_nil : v = [],
       {
+sorry,/-
         by_contradiction,
         rw ← list.length_eq_zero at h,
         have vl : v.length ≥ 1 :=
           nat.one_le_iff_ne_zero.mpr h,
-        linarith,
+        linarith,-/
       },
       rw u_nil at aft,
       rw v_nil at aft,
@@ -183,11 +192,12 @@ begin
 
         induction hyp with i_intermediate i_output i_what orig_prop ih,
         {
+sorry,/-          
           split,
           {
             exact nni,
           },
-          apply CF_derives_reflexive,
+          apply CF_derives_reflexive,-/
         },
         cases ih with no_none i_hy,
 
@@ -200,6 +210,7 @@ begin
 
         split,
         {
+sorry,/-
           rw orig_before at no_none,
           simp only [list.mem_append] at no_none,
           push_neg at no_none,
@@ -264,7 +275,7 @@ begin
           rw orig_after,
           intro ass_in_orig,
           simp only [list.mem_append] at ass_in_orig,
-          tauto,
+          tauto,-/
         },
 
         fconstructor,
@@ -310,12 +321,43 @@ begin
           cases orig_in,
           {
             exfalso,
+/-
+IMPORTANT ITEMS FROM THE LOCAL CONTEXT
+
+i_hy:
+CF_derives g₂ (convert_lsTN_lsTN₂ inp) (convert_lsTN_lsTN₂ i_intermediate)
+
+orig_before:
+i_intermediate = orig_u ++ [symbol.nonterminal orig_rule.fst] ++ orig_v
+
+orig_in:
+orig_rule ∈ rules₁
+
+rules₁:
+list (N × list (symbol T N)) := list.map convert_rule₁_rule g₁.rules
+
+convert_rule₁_rule:
+N₁ × list (symbol T N₁) → N × list (symbol T N) :=
+λ (r : N₁ × list (symbol T N₁)), (some (sum.inl r.fst), convert_lsTN₁_lsTN r.snd)
+
+convert_lsTN₁_lsTN:
+list (symbol T N₁) → list (symbol T N) :=
+list.map convert_sTN₁_sTN
+
+convert_sTN₁_sTN:
+symbol T N₁ → symbol T N :=
+λ (s : symbol T N₁), (λ (_a : symbol T N₁), _a.cases_on (λ (ᾰ : T), id_rhs (symbol T N) (symbol.terminal ᾰ)) (λ (ᾰ : N₁), id_rhs (symbol T N) (symbol.nonterminal (some (sum.inl ᾰ))))) s
+
+⊢ false
+
+TODO
+-/            
 
             sorry,
           },
           exact orig_in,
         },
-
+sorry,/-
         unfold CF_transforms,
         let converted_rule := convert_rule_rule₂ orig_rule,
         have not_lost : ∃ converted_rule_val, converted_rule = some converted_rule_val,
@@ -336,6 +378,7 @@ begin
           
           sorry,
         },
+
         use list.filter_map convert_sTN_sTN₂ orig_u,
         use list.filter_map convert_sTN_sTN₂ orig_v,
         have converted_before := congr_arg (list.filter_map convert_sTN_sTN₂) orig_before,
@@ -357,9 +400,9 @@ begin
         },
         rw conversion_id_before at converted_before,
         rw conversion_id_after at converted_after,
-        tauto,
+        tauto,-/
       },
-
+sorry,/-
       have start_word : [symbol.nonterminal g₂.initial] = (convert_lsTN_lsTN₂ ini),
       {
         rw aft,
@@ -379,10 +422,10 @@ begin
       rw start_word,
       rw final_word,
       cases deri_indu ini (list.map symbol.terminal w) sorry deri_tail with irrelevant relevant,
-      exact relevant,
+      exact relevant,-/
     },
     exfalso,
-
+sorry,/-
     cases h' with u baz,
     cases baz with v conju,
     cases conju with bef aft,
@@ -417,9 +460,9 @@ begin
     change rule ∈ (rules₁ ++ rules₂) at imposs,
     rw list.mem_append at imposs,
     cases imposs;
-    finish,
+    finish,-/
   },
-
+sorry,/-
   -- prove `L₁ + L₂ ⊆ CF_language g`
   intros w h,
   rw language.mem_add at h,
@@ -614,7 +657,7 @@ begin
     apply @trans _ (CF_derives g) (is_trans.mk relation.transitive_refl_trans_gen),
       finish, -- uses `deri_start` here
     exact deri_rest,
-  },
+  },-/
 end
 
 
