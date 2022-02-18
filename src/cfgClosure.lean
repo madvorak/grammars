@@ -141,7 +141,6 @@ begin
       cases (w.nth 0);
       finish,
     end with ini foo,
-
     cases foo with deri_head deri_tail,
     cases deri_head with rule hhead,
     cases hhead with ruleok h',
@@ -241,34 +240,34 @@ sorry,/-
               change orig_rule ∈ list.map convert_rule₁_rule g₁.rules at orig_in,
               change orig_rule ∈ list.map (λ (r : N₁ × list (symbol T N₁)), (some (sum.inl r.fst), convert_lsTN₁_lsTN r.snd)) g₁.rules at orig_in,
               change orig_rule ∈ list.map (λ (r : N₁ × list (symbol T N₁)), (some (sum.inl r.fst), (list.map convert_sTN₁_sTN) r.snd)) g₁.rules at orig_in,
-              have uuuuu : orig_rule.snd ∈ list.map prod.snd (list.map (λ (r : N₁ × list (symbol T N₁)), (some (sum.inl r.fst), list.map convert_sTN₁_sTN r.snd)) g₁.rules),
+              have orig_snd : orig_rule.snd ∈ list.map prod.snd (list.map (λ (r : N₁ × list (symbol T N₁)), (some (sum.inl r.fst), list.map convert_sTN₁_sTN r.snd)) g₁.rules),
               {
                 exact list.mem_map_of_mem prod.snd orig_in,
               },
               {
-                simp at uuuuu,
-                cases uuuuu with uuuuu_a uuuuu_u,
-                cases uuuuu_u with uuuuu_b uuuuu_r,
-                cases uuuuu_r with uuuuu_ uuu,
-                rw ← uuu,
-                exact convert_sTN₁_sTN_nns uuuuu_b,
+                simp at orig_snd,
+                cases orig_snd with irr_a orig_snd_,
+                cases orig_snd_ with orig_rule_output orig_snd__,
+                cases orig_snd__ with orig_snd_in orig_snd_prop,
+                rw ← orig_snd_prop,
+                exact convert_sTN₁_sTN_nns orig_rule_output,
               },
             },
             {
               change orig_rule ∈ list.map convert_rule₂_rule g₂.rules at orig_in,
               change orig_rule ∈ list.map (λ (r : N₂ × list (symbol T N₂)), (some (sum.inr r.fst), convert_lsTN₂_lsTN r.snd)) g₂.rules at orig_in,
               change orig_rule ∈ list.map (λ (r : N₂ × list (symbol T N₂)), (some (sum.inr r.fst), (list.map convert_sTN₂_sTN) r.snd)) g₂.rules at orig_in,
-              have uuuuu : orig_rule.snd ∈ list.map prod.snd (list.map (λ (r : N₂ × list (symbol T N₂)), (some (sum.inr r.fst), list.map convert_sTN₂_sTN r.snd)) g₂.rules),
+              have orig_snd : orig_rule.snd ∈ list.map prod.snd (list.map (λ (r : N₂ × list (symbol T N₂)), (some (sum.inr r.fst), list.map convert_sTN₂_sTN r.snd)) g₂.rules),
               {
                 exact list.mem_map_of_mem prod.snd orig_in,
               },
               {
-                simp at uuuuu,
-                cases uuuuu with uuuuu_a uuuuu_u,
-                cases uuuuu_u with uuuuu_b uuuuu_r,
-                cases uuuuu_r with uuuuu_ uuu,
-                rw ← uuu,
-                exact convert_sTN₂_sTN_nns uuuuu_b,
+                simp at orig_snd,
+                cases orig_snd with irr_a orig_snd_,
+                cases orig_snd_ with orig_rule_output orig_snd__,
+                cases orig_snd__ with orig_snd_in orig_snd_prop,
+                rw ← orig_snd_prop,
+                exact convert_sTN₂_sTN_nns orig_rule_output,
               },
             },
           },
@@ -321,38 +320,6 @@ sorry,/-
           cases orig_in,
           {
             exfalso,
-/-
-IMPORTANT ITEMS FROM THE LOCAL CONTEXT
-
-i_hy:
-CF_derives g₂ (convert_lsTN_lsTN₂ inp) (convert_lsTN_lsTN₂ i_intermediate)
-
-orig_before:
-i_intermediate = orig_u ++ [symbol.nonterminal orig_rule.fst] ++ orig_v
-
-orig_in:
-orig_rule ∈ rules₁
-
-rules₁:
-list (N × list (symbol T N)) := list.map convert_rule₁_rule g₁.rules
-
-convert_rule₁_rule:
-N₁ × list (symbol T N₁) → N × list (symbol T N) :=
-λ (r : N₁ × list (symbol T N₁)), (some (sum.inl r.fst), convert_lsTN₁_lsTN r.snd)
-
-convert_lsTN₁_lsTN:
-list (symbol T N₁) → list (symbol T N) :=
-list.map convert_sTN₁_sTN
-
-convert_sTN₁_sTN:
-symbol T N₁ → symbol T N :=
-λ (s : symbol T N₁), (λ (_a : symbol T N₁), _a.cases_on (λ (ᾰ : T), id_rhs (symbol T N) (symbol.terminal ᾰ)) (λ (ᾰ : N₁), id_rhs (symbol T N) (symbol.nonterminal (some (sum.inl ᾰ))))) s
-
-⊢ false
-
-TODO
--/            
-
             sorry,
           },
           exact orig_in,
@@ -363,7 +330,7 @@ sorry,/-
         have not_lost : ∃ converted_rule_val, converted_rule = some converted_rule_val,
         {
           change orig_rule ∈ list.map convert_rule₂_rule g₂.rules at orig_rule_place,
-          have aaaaa : ∃ preconve_rule ∈ g₂.rules, convert_rule₂_rule preconve_rule = orig_rule,
+          have preconve_version : ∃ preconve_rule ∈ g₂.rules, convert_rule₂_rule preconve_rule = orig_rule,
           {
             
             sorry,
@@ -424,8 +391,8 @@ sorry,/-
       cases deri_indu ini (list.map symbol.terminal w) sorry deri_tail with irrelevant relevant,
       exact relevant,-/
     },
+
     exfalso,
-sorry,/-
     cases h' with u baz,
     cases baz with v conju,
     cases conju with bef aft,
@@ -460,7 +427,7 @@ sorry,/-
     change rule ∈ (rules₁ ++ rules₂) at imposs,
     rw list.mem_append at imposs,
     cases imposs;
-    finish,-/
+    finish,
   },
 sorry,/-
   -- prove `L₁ + L₂ ⊆ CF_language g`
