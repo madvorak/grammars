@@ -164,16 +164,48 @@ begin
         cases orig_rest with orig_v orig_prop, -- name resused !
         cases orig_prop with orig_before orig_after,
 
+        -- would be great to have an invariant that `i_intermediate` does not contain any `none`
+        have orig_rule_place: orig_rule ∈ rules₂,
+        {
+          cases orig_in,
+          {
+            exfalso,
+            
+            sorry,
+          },
+          cases orig_in,
+          {
+            exfalso,
+            sorry,
+          },
+          change orig_rule ∈ (rules₁ ++ rules₂) at orig_in,
+          rw list.mem_append at orig_in,
+          cases orig_in,
+          {
+            exfalso,
+            sorry,
+          },
+          exact orig_in,
+        },
+
         unfold CF_transforms,
         let converted_rule := convert_rule_rule₂ orig_rule,
         have not_lost : ∃ converted_rule_val, converted_rule = some converted_rule_val,
         {
+          change orig_rule ∈ list.map convert_rule₂_rule g₂.rules at orig_rule_place,
+          have aaaaa : ∃ preconve_rule ∈ g₂.rules, convert_rule₂_rule preconve_rule = orig_rule,
+          {
+            
+            sorry,
+          },
+
           sorry,
         },
         cases not_lost with converted_rule_val converted_rule_some,
         use converted_rule_val,
         split,
         {
+          
           sorry,
         },
         use list.filter_map convert_sTN_sTN₂ orig_u,
