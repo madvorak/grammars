@@ -81,8 +81,9 @@ begin
         | symbol.nonterminal (some (sum.inr nt)) := some (symbol.nonterminal nt)
       end,
 
-    let convert_lsTN_lsTN₂ : list (symbol T N) → list (symbol T N₂) :=
-      list.filter_map convert_sTN_sTN₂,
+    set! convert_lsTN_lsTN₂ : list (symbol T N) → list (symbol T N₂) :=
+      list.filter_map convert_sTN_sTN₂
+    with convert_lsTN_lsTN₂',
 
     let convert_rule_rule₂ : (N × (list (symbol T N))) → option (N₂ × (list (symbol T N₂))) :=
       λ r, match r with
@@ -142,69 +143,61 @@ begin
                          CF_derives g₂ (convert_lsTN_lsTN₂ input) (convert_lsTN_lsTN₂ output),
       {
         intros inp outp hyp,
-        induction hyp with u v ih₂ orig ih,
+-- hyp: CF_derives g inp outp
+-- ⊢   CF_derives g₂ (convert_lsTN_lsTN₂ inp) (convert_lsTN_lsTN₂ outp)
+        
+        induction hyp with i_intermediate i_output i_what orig_prop ih,
         {
           apply CF_derives_reflexive,
         },
-        apply @trans _ (CF_derives g₂) (is_trans.mk relation.transitive_refl_trans_gen),
+        fconstructor,
+          exact convert_lsTN_lsTN₂ i_intermediate,
         {
           exact ih,
         },
-        fconstructor,
-          exact (convert_lsTN_lsTN₂ u),
-        refl,
-
-        cases orig with orig_rule orig_rest,
-        cases orig_rest with orig_in orig_prop,
-        cases orig_prop with prefi foo,
-        cases foo with postfi orig_two,
-        cases orig_two with orig_pre orig_post,
+-- orig_prop: CF_transforms g i_intermediate i_output          
+-- ⊢         CF_transforms g₂ (convert_lsTN_lsTN₂ i_intermediate) (convert_lsTN_lsTN₂ i_output)
+        rw convert_lsTN_lsTN₂',
+        cases orig_prop with orig_rule orig_rest,
+        cases orig_rest with orig_in orig_prop, -- name resused !
+        cases orig_prop with orig_u orig_rest, -- name resused !
+        cases orig_rest with orig_v orig_prop, -- name resused !
+        cases orig_prop with orig_before orig_after,
 
         unfold CF_transforms,
-        have conversion₂ : ∃ val, (convert_rule_rule₂ orig_rule) = some val ∧ val ∈ g₂.rules,
+        let converted_rule := convert_rule_rule₂ orig_rule,
+        have not_lost : ∃ converted_rule_val, converted_rule = some converted_rule_val,
         {
           sorry,
         },
-        cases conversion₂ with converted_rule converted_conj,
-        cases converted_conj with converted_orig converted_in',
-        use converted_rule,
+        cases not_lost with converted_rule_val converted_rule_some,
+        use converted_rule_val,
         split,
         {
           sorry,
-          --exact converted_prop,
         },
-        use convert_lsTN_lsTN₂ prefi,
-        use convert_lsTN_lsTN₂ postfi,
-        split,
-        {
-          have converted_pre := congr_arg convert_lsTN_lsTN₂ orig_pre,
-          change list.filter_map convert_sTN_sTN₂ u = list.filter_map convert_sTN_sTN₂ (prefi ++ [symbol.nonterminal orig_rule.fst] ++ postfi) at converted_pre,
+        use list.filter_map convert_sTN_sTN₂ orig_u,
+        use list.filter_map convert_sTN_sTN₂ orig_v,
+        have converted_before := congr_arg (list.filter_map convert_sTN_sTN₂) orig_before,
+        have converted_after := congr_arg (list.filter_map convert_sTN_sTN₂) orig_after,
+        rw list.filter_map_append at converted_before,
+        rw list.filter_map_append at converted_before,
+        rw list.filter_map_append at converted_after,
+        rw list.filter_map_append at converted_after,
 
-          rw list.filter_map_append at converted_pre,
-          rw list.filter_map_append at converted_pre,
-          change list.filter_map convert_sTN_sTN₂ u = list.filter_map convert_sTN_sTN₂ prefi ++ [symbol.nonterminal converted_rule.fst] ++ list.filter_map convert_sTN_sTN₂ postfi,
-          
-          have wtf_conversion : list.filter_map convert_sTN_sTN₂ [symbol.nonterminal orig_rule.fst] = [symbol.nonterminal converted_rule.fst],
-          {
-            --have hope : convert_sTN_sTN₂ (symbol.nonterminal orig_rule.fst) = 
-            
-            sorry,
-          },
-          rw wtf_conversion at converted_pre,
-          exact converted_pre,
-        },
-        sorry,/-
-        have converted_post := congr_arg convert_lsTN_lsTN₂ orig_post,
-        change list.filter_map convert_sTN_sTN₂ v = list.filter_map convert_sTN_sTN₂ (prefi ++ orig_rule.snd ++ postfi) at converted_post,
-        rw list.filter_map_append at converted_post,
-        rw list.filter_map_append at converted_post,
-        change list.filter_map convert_sTN_sTN₂ v = list.filter_map convert_sTN_sTN₂ prefi ++ converted_rule.snd ++ list.filter_map convert_sTN_sTN₂ postfi,
-        have last_step : converted_rule.snd = list.filter_map convert_sTN_sTN₂ orig_rule.snd,
+        have conversion_id_before : 
+          list.filter_map convert_sTN_sTN₂ [symbol.nonterminal orig_rule.fst] = [symbol.nonterminal converted_rule_val.fst],
         {
           sorry,
         },
-        rw last_step,
-        exact converted_post,-/
+        have conversion_id_after : 
+          list.filter_map convert_sTN_sTN₂ orig_rule.snd = converted_rule_val.snd,
+        {
+          sorry,
+        },
+        rw conversion_id_before at converted_before,
+        rw conversion_id_after at converted_after,
+        tauto,
       },
       sorry,/-
       have start_word : [symbol.nonterminal g₂.initial] = (convert_lsTN_lsTN₂ ini),
@@ -214,6 +207,7 @@ begin
       },
       have final_word : (list.map symbol.terminal w) = (convert_lsTN_lsTN₂ (list.map symbol.terminal w)),
       {
+        rw convert_lsTN_lsTN₂',
         
         sorry,
       },
@@ -227,7 +221,7 @@ begin
       exact deri_indu ini (list.map symbol.terminal w) deri_tail,-/
     },
     exfalso,
-sorry/-
+sorry, /-
     cases h' with u baz,
     cases baz with v conju,
     cases conju with bef aft,
@@ -264,7 +258,7 @@ sorry/-
     cases imposs;
     finish,-/
   },
-sorry/-  
+sorry, /-  
   -- prove `L₁ + L₂ ⊆ CF_language g`
   intros w h,
   rw language.mem_add at h,
