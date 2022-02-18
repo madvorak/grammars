@@ -51,7 +51,6 @@ begin
 
   have convert_sTN₁_sTN_nn : ∀ x, (convert_sTN₁_sTN x) ≠ (symbol.nonterminal none),
   {
-sorry,/-
     intro x,
     cases x,
     {
@@ -61,7 +60,7 @@ sorry,/-
     {
       change (symbol.nonterminal (some (sum.inl x))) ≠ symbol.nonterminal none,
       finish,
-    },-/
+    },
   },
   have convert_sTN₁_sTN_nns : ∀ xs, symbol.nonterminal none ∉ list.map convert_sTN₁_sTN xs,
   {
@@ -69,7 +68,6 @@ sorry,/-
   },
   have convert_sTN₂_sTN_nn : ∀ x, (convert_sTN₂_sTN x) ≠ (symbol.nonterminal none),
   {
-sorry,/-
     intro x,
     cases x,
     {
@@ -79,7 +77,7 @@ sorry,/-
     {
       change (symbol.nonterminal (some (sum.inr x))) ≠ symbol.nonterminal none,
       finish,
-    },-/
+    },
   },
   have convert_sTN₂_sTN_nns : ∀ xs, symbol.nonterminal none ∉ list.map convert_sTN₂_sTN xs,
   {
@@ -164,21 +162,19 @@ sorry,/-
       simp at len,
       have u_nil : u = [],
       {
-sorry,/-
         by_contradiction,
         rw ← list.length_eq_zero at h,
         have ul : u.length ≥ 1 :=
           nat.one_le_iff_ne_zero.mpr h,
-        linarith,-/
+        linarith,
       },
       have v_nil : v = [],
       {
-sorry,/-
         by_contradiction,
         rw ← list.length_eq_zero at h,
         have vl : v.length ≥ 1 :=
           nat.one_le_iff_ne_zero.mpr h,
-        linarith,-/
+        linarith,
       },
       rw u_nil at aft,
       rw v_nil at aft,
@@ -276,7 +272,7 @@ sorry,/-
           simp only [list.mem_append] at ass_in_orig,
           tauto,
         },
-sorry,/-
+
         fconstructor,
           exact convert_lsTN_lsTN₂ i_intermediate,
         {
@@ -367,9 +363,9 @@ sorry,/-
         },
         rw conversion_id_before at converted_before,
         rw conversion_id_after at converted_after,
-        tauto,-/
+        tauto,
       },
-sorry,/-
+
       have start_word : [symbol.nonterminal g₂.initial] = (convert_lsTN_lsTN₂ ini),
       {
         rw aft,
@@ -389,10 +385,10 @@ sorry,/-
       rw start_word,
       rw final_word,
       cases deri_indu ini (list.map symbol.terminal w) sorry deri_tail with irrelevant relevant,
-      exact relevant,-/
+      exact relevant,
     },
+
     exfalso,
-sorry,/-
     cases h' with u baz,
     cases baz with v conju,
     cases conju with bef aft,
@@ -427,9 +423,9 @@ sorry,/-
     change rule ∈ (rules₁ ++ rules₂) at imposs,
     rw list.mem_append at imposs,
     cases imposs;
-    finish,-/
+    finish,
   },
-sorry,/-
+
   -- prove `L₁ + L₂ ⊆ CF_language g`
   intros w h,
   rw language.mem_add at h,
@@ -625,7 +621,6 @@ sorry,/-
       finish, -- uses `deri_start` here
     exact deri_rest,
   },
--/
 end
 
 
