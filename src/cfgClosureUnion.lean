@@ -359,6 +359,7 @@ begin
 
   apply set.eq_of_subset_of_subset,
   {
+      -- prove `L₁ + L₂ ⊇ CF_language`
     intros w ass,
     simp,
     rw ← h₁,
@@ -366,25 +367,16 @@ begin
     exact in_language_of_in_union g₁ g₂ w ass,
   },
   
-  -- prove `L₁ + L₂ ⊆ CF_language g`
+  -- prove `L₁ + L₂ ⊆ CF_language`
   intros w h,
   rw language.mem_add at h,
-
   cases h with case₁ case₂,
   {
-    have cas₁ : w ∈ CF_language g₁,
-    {
-      rw ← h₁ at case₁,
-      exact case₁,
-    },
-    exact in_union_of_in_first g₁ g₂ w cas₁,
+    rw ← h₁ at case₁,
+    exact in_union_of_in_first g₁ g₂ w case₁,
   },
   {
-    have cas₂ : w ∈ CF_language g₂,
-    {
-      rw ← h₂ at case₂,
-      exact case₂,
-    },
-    exact in_union_of_in_second g₁ g₂ w cas₂,
+    rw ← h₂ at case₂,
+    exact in_union_of_in_second g₁ g₂ w case₂,
   },
 end
