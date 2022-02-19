@@ -90,6 +90,9 @@ CF_grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
   ((list.map convert_rule₁_rule g₁.rules) ++ (list.map convert_rule₂_rule g₂.rules))
 )
 
+
+section lemmata_subset
+
 private lemma deri_step (g₁ g₂ : CF_grammar T) : ∀ input output : list (symbol T g₁.nt),
   CF_transforms g₁ input output → 
     CF_transforms (union_grammar g₁ g₂) (convert_lsTN₁_lsTN input) (convert_lsTN₁_lsTN output) :=
@@ -212,80 +215,21 @@ begin
   sorry,
 end
 
-private lemma in_language_left_case_of_union (g₁ g₂ : CF_grammar T) (w : list T) 
-  (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂))
-    [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w)) :
-  w ∈ CF_language g₁ :=
+end lemmata_subset
+
+
+section lemmata_supset
+
+private lemma both_empty (g₁ g₂ : CF_grammar T)
+  (u v: list (symbol T (union_grammar g₁ g₂).nt))
+  (a : (symbol T (union_grammar g₁ g₂).nt))
+  (bef: [symbol.nonterminal (union_grammar g₁ g₂).initial] = u ++ [a] ++ v) :
+    u = []  ∧  v = [] :=
 begin
-
-  sorry,
-end
-
-private lemma in_language_right_case_of_union (g₁ g₂ : CF_grammar T) (w : list T) 
-  (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂))
-    [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w)) :
-  w ∈ CF_language g₂ :=
-begin
-  
-  sorry,
-end
-
-private lemma in_language_of_in_union (g₁ g₂ : CF_grammar T) (w : list T) :
-  w ∈ CF_language (union_grammar g₁ g₂) → (w ∈ CF_language g₁ ∨ w ∈ CF_language g₂) :=
-begin
-  intro ass,
-  cases unpack_transitive_closure ass begin
-    by_contradiction hyp,
-    have zeroth := congr_arg (λ p, list.nth p 0) hyp,
-    simp at zeroth,
-    cases (w.nth 0);
-    finish,
-  end with S₁ foo,
-  cases foo with deri_head deri_tail,
-
-  cases deri_head with rule hhead,
-  cases hhead with ruleok h',
-  cases ruleok with g₁S bar,
-  {
-    left,
-    rw g₁S at *,
-    simp at *,
-    cases h' with u h_,
-    cases h_ with v h__,
-    cases h__ with h_pre h_post,
-    rw h_post at deri_tail,
-    have u_nil : u = [], sorry,
-    have v_nil : v = [], sorry,
-    rw u_nil at deri_tail,
-    rw v_nil at deri_tail,
-    simp at deri_tail,
-    exact in_language_left_case_of_union g₁ g₂ w deri_tail,
-  },
-  cases bar with g₂S imposs,
-  {
-    right,
-    rw g₂S at *,
-    simp at *,
-    cases h' with u h_,
-    cases h_ with v h__,
-    cases h__ with h_pre h_post,
-    rw h_post at deri_tail,
-    have u_nil : u = [], sorry,
-    have v_nil : v = [], sorry,
-    rw u_nil at deri_tail,
-    rw v_nil at deri_tail,
-    simp at deri_tail,
-    exact in_language_right_case_of_union g₁ g₂ w deri_tail,
-  },
-  exfalso,
-
-  cases h' with u baz,
-  cases baz with v conju,
-  cases conju with bef aft,
   have len := congr_arg list.length bef,
   rw list.length_append at len,
   simp at len,
-  have u_nil : u = [],
+  split,
   {
     by_contradiction,
     rw ← list.length_eq_zero at h,
@@ -297,7 +241,6 @@ begin
     ... ≥ 1 + 1 + 0                 : le_self_add
     ... = 2                         : rfl),
   },
-  have v_nil : v = [],
   {
     by_contradiction,
     rw ← list.length_eq_zero at h,
@@ -309,8 +252,36 @@ begin
     ... = (0 + 1) + 1               : eq.symm (add_assoc 0 1 1)
     ... = 2                         : rfl),
   },
-  rw u_nil at bef,
-  rw v_nil at bef,
+end
+
+private lemma in_language_left_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
+  (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂))
+    [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w)) :
+  w ∈ CF_language g₁ :=
+begin
+
+  sorry,
+end
+
+private lemma in_language_right_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
+  (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂))
+    [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w)) :
+  w ∈ CF_language g₂ :=
+begin
+  
+  sorry,
+end
+
+private lemma in_language_impossible_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
+  (rule : (union_grammar g₁ g₂).nt × list (symbol T (union_grammar g₁ g₂).nt))
+  (u v: list (symbol T (union_grammar g₁ g₂).nt)) (hu : u = []) (hv : v = [])
+  (bef: [symbol.nonterminal (union_grammar g₁ g₂).initial] = u ++ [symbol.nonterminal rule.fst] ++ v)
+  (sbi : rule ∈ (list.map convert_rule₁_rule g₁.rules ++ list.map convert_rule₂_rule g₂.rules)) :
+    w ∈ CF_language g₁ ∨ w ∈ CF_language g₂ :=
+begin
+  exfalso,
+  rw hu at bef,
+  rw hv at bef,
   rw list.nil_append at bef,
   rw list.append_nil at bef,
   change [symbol.nonterminal none] = [symbol.nonterminal rule.fst] at bef,
@@ -318,17 +289,66 @@ begin
   {
     finish,
   },
-  change rule ∈ (list.map convert_rule₁_rule g₁.rules ++ list.map convert_rule₂_rule g₂.rules) at imposs,
-  rw list.mem_append at imposs,
-  cases imposs;
+  rw list.mem_append at sbi,
+  cases sbi;
   finish,
 end
+
+private lemma in_language_of_in_union (g₁ g₂ : CF_grammar T) (w : list T) :
+  w ∈ CF_language (union_grammar g₁ g₂) → (w ∈ CF_language g₁ ∨ w ∈ CF_language g₂) :=
+begin
+  intro ass,
+
+  cases unpack_transitive_closure ass begin
+    by_contradiction hyp,
+    have zeroth := congr_arg (λ p, list.nth p 0) hyp,
+    simp at zeroth,
+    cases (w.nth 0);
+    finish,
+  end with S₁ foo,
+  cases foo with deri_head deri_tail,
+
+  cases deri_head with rule hhead,
+  cases hhead with ruleok h',
+  cases h' with u bar,
+  cases bar with v baz,
+  cases baz with h_bef h_aft,
+
+  rw h_aft at deri_tail,
+  cases both_empty g₁ g₂ u v (symbol.nonterminal rule.fst) h_bef with u_nil v_nil,
+
+  cases ruleok with g₁S r_rest,
+  {
+    left,
+    rw g₁S at *,
+    simp at *,
+    rw u_nil at deri_tail,
+    rw v_nil at deri_tail,
+    simp at deri_tail,
+    exact in_language_left_case_of_union g₁ g₂ w deri_tail,
+  },
+  cases r_rest with g₂S r_imposs,
+  {
+    right,
+    rw g₂S at *,
+    simp at *,
+    rw u_nil at deri_tail,
+    rw v_nil at deri_tail,
+    simp at deri_tail,
+    exact in_language_right_case_of_union g₁ g₂ w deri_tail,
+  },
+  exact in_language_impossible_case_of_union g₁ g₂ w
+    rule u v u_nil v_nil h_bef r_imposs,
+end
+
+end lemmata_supset
+
 
 end specific_defs_and_lemmata
 
 
 theorem CF_under_union {T : Type} (L₁ : language T) (L₂ : language T) :
-  ((is_CF L₁) ∧ (is_CF L₂))  →  (is_CF (L₁ + L₂)) :=
+  is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂) :=
 begin
   intro input,
   cases input with cf₁ cf₂,
