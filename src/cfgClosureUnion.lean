@@ -153,8 +153,7 @@ begin
 end
 
 private lemma in_union_of_in_first (g₁ g₂ : CF_grammar T) (w : list T) :
---  (@CF_language T g₁) ⊆ (@CF_language T (union_grammar g₁ g₂)) :=
-  w ∈ CF_language g₁ → w ∈ CF_language (union_grammar g₁ g₂) :=
+  w ∈ CF_language g₁  →  w ∈ CF_language (union_grammar g₁ g₂)  :=
 begin
   intro assum,
 
@@ -210,7 +209,7 @@ begin
 end
 
 private lemma in_union_of_in_second (g₁ g₂ : CF_grammar T) (w : list T) :
-  w ∈ CF_language g₂ → w ∈ CF_language (union_grammar g₁ g₂) :=
+  w ∈ CF_language g₂  →  w ∈ CF_language (union_grammar g₁ g₂)  :=
 begin
   sorry,
 end
@@ -295,7 +294,7 @@ begin
 end
 
 private lemma in_language_of_in_union (g₁ g₂ : CF_grammar T) (w : list T) :
-  w ∈ CF_language (union_grammar g₁ g₂) → (w ∈ CF_language g₁ ∨ w ∈ CF_language g₂) :=
+  w ∈ CF_language (union_grammar g₁ g₂)   →   w ∈ CF_language g₁  ∨  w ∈ CF_language g₂   :=
 begin
   intro ass,
 
@@ -346,9 +345,9 @@ end lemmata_supset
 
 end specific_defs_and_lemmata
 
-
-theorem CF_under_union {T : Type} (L₁ : language T) (L₂ : language T) :
-  is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂) :=
+/-- The class of context-free languages is closed under union. -/
+theorem CF_of_CF_u_CF {T : Type} (L₁ : language T) (L₂ : language T) :
+  is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂)   :=
 begin
   intro input,
   cases input with cf₁ cf₂,
@@ -360,17 +359,17 @@ begin
   apply set.eq_of_subset_of_subset,
   {
       -- prove `L₁ + L₂ ⊇ CF_language`
-    intros w ass,
+    intros w hyp,
     simp,
     rw ← h₁,
     rw ← h₂,
-    exact in_language_of_in_union g₁ g₂ w ass,
+    exact in_language_of_in_union g₁ g₂ w hyp,
   },
   
   -- prove `L₁ + L₂ ⊆ CF_language`
-  intros w h,
-  rw language.mem_add at h,
-  cases h with case₁ case₂,
+  intros w hyp,
+  rw language.mem_add at hyp,
+  cases hyp with case₁ case₂,
   {
     rw ← h₁ at case₁,
     exact in_union_of_in_first g₁ g₂ w case₁,
