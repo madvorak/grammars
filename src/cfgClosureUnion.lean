@@ -4,13 +4,9 @@ import tactic
 
 section reusable_lemmata
 
-lemma CF_derives_reflexive {T : Type} {g : CF_grammar T} {w : list (symbol T g.nt)} :
-  CF_derives g w w :=
-relation.refl_trans_gen.refl
-
 lemma list_three_parts {T₁ T₂ : Type} {x y z : list T₁} {f : T₁ → T₂} :
   list.map f (x ++ y ++ z) = (list.map f x) ++ (list.map f y) ++ (list.map f z) :=
-by simp
+by simp only [list.map_append]
 
 lemma unpack_transitive_closure {α : Type} {r : α → α → Prop} {x z : α}
   (h : relation.refl_trans_gen r x z) (nontriv : x ≠ z) :
@@ -142,8 +138,10 @@ begin
   {
     apply CF_derives_reflexive,
   },
-  apply @trans _ (CF_derives (union_grammar g₁ g₂)) (is_trans.mk relation.transitive_refl_trans_gen),
+  apply CF_derives_transitive,
+  {
     finish,
+  },
   fconstructor,
     exact (convert_lsTN₁_lsTN u),
   {
@@ -203,8 +201,10 @@ begin
   change CF_generates_str (union_grammar g₁ g₂) (list.map symbol.terminal w),
   unfold CF_generates_str,
   unfold CF_derives,
-  apply @trans _ (CF_derives (union_grammar g₁ g₂)) (is_trans.mk relation.transitive_refl_trans_gen),
+  apply CF_derives_transitive,
+  {
     finish, -- uses `deri_start` here
+  },
   exact deri_rest,
 end
 
@@ -253,21 +253,40 @@ begin
   },
 end
 
-private lemma in_language_left_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
-  (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂))
-    [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w)) :
-  w ∈ CF_language g₁ :=
+private lemma deri_tran (g₁ g₂ : CF_grammar T) : ∀ input output : list (symbol T g₁.nt),
+  CF_transforms (union_grammar g₁ g₂) (convert_lsTN₁_lsTN input) (convert_lsTN₁_lsTN output) →
+    CF_transforms g₁ input output :=
 begin
-
   sorry,
 end
 
+private lemma deri_indu (g₁ g₂ : CF_grammar T) (input output : list (symbol T g₁.nt)) :
+  CF_derives (union_grammar g₁ g₂) (convert_lsTN₁_lsTN input) (convert_lsTN₁_lsTN output) →
+    CF_derives g₁ input output :=
+begin
+  sorry,
+end
+
+private lemma in_language_left_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
+  (hypo : CF_derives (union_grammar g₁ g₂)
+    [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w)) :
+  w ∈ CF_language g₁ :=
+begin
+  unfold CF_language,
+  change CF_generates_str g₁ (list.map symbol.terminal w),
+  unfold CF_generates_str,
+  apply deri_indu,
+  convert hypo,
+  unfold convert_lsTN₁_lsTN,
+  finish,
+end
+
 private lemma in_language_right_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
-  (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂))
+  (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂)) -- TODO change type of `hypo`
     [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w)) :
   w ∈ CF_language g₂ :=
 begin
-  
+
   sorry,
 end
 
@@ -345,6 +364,7 @@ end lemmata_supset
 
 end specific_defs_and_lemmata
 
+
 /-- The class of context-free languages is closed under union. -/
 theorem CF_of_CF_u_CF {T : Type} (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂)   :=
@@ -353,29 +373,30 @@ begin
   cases input with cf₁ cf₂,
   cases cf₁ with g₁ h₁,
   cases cf₂ with g₂ h₂,
-  
+
   use union_grammar g₁ g₂,
 
   apply set.eq_of_subset_of_subset,
   {
-      -- prove `L₁ + L₂ ⊇ CF_language`
+    -- prove `L₁ + L₂ ⊇ `
     intros w hyp,
     simp,
     rw ← h₁,
     rw ← h₂,
     exact in_language_of_in_union g₁ g₂ w hyp,
   },
-  
-  -- prove `L₁ + L₂ ⊆ CF_language`
-  intros w hyp,
-  rw language.mem_add at hyp,
-  cases hyp with case₁ case₂,
   {
-    rw ← h₁ at case₁,
-    exact in_union_of_in_first g₁ g₂ w case₁,
-  },
-  {
-    rw ← h₂ at case₂,
-    exact in_union_of_in_second g₁ g₂ w case₂,
-  },
+    -- prove `L₁ + L₂ ⊆ `
+    intros w hyp,
+    rw language.mem_add at hyp,
+    cases hyp with case₁ case₂,
+    {
+      rw ← h₁ at case₁,
+      exact in_union_of_in_first g₁ g₂ w case₁,
+    },
+    {
+      rw ← h₂ at case₂,
+      exact in_union_of_in_second g₁ g₂ w case₂,
+    },
+  }
 end
