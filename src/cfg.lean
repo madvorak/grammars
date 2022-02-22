@@ -241,7 +241,7 @@ end
 
 
 private def anbmcnm (n m : ℕ) : list (fin 3) :=
-(list.repeat a_ n) ++ (list.repeat b_ m) ++ (list.repeat c_ (n+m))
+list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ (n + m)
 
 private def language_abc : language (fin 3) :=
 λ x, ∃ n m : ℕ, x = anbmcnm n m
@@ -260,9 +260,266 @@ begin
   split,
   {
     -- prove `x ∈ CF_language gramatika → x ∈ language_abc` here
-    sorry,
+    intro ass,
+    change CF_generates_str gramatika (list.map symbol.terminal x) at ass,
+    unfold CF_generates_str at ass,
+    change CF_derives gramatika [S] (list.map symbol.terminal x) at ass,
+
+    have possib : ∀ w : list (symbol (fin 3) gramatika.nt),
+      CF_derives gramatika [S] w →
+        (∃ i : ℕ, w = list.repeat a i ++ [S] ++ list.repeat c i) ∨
+        (∃ i j : ℕ, w = list.repeat a i ++ list.repeat b j ++ [R] ++ list.repeat c (i + j)) ∨
+        (∃ i j : ℕ, w = list.repeat a i ++ list.repeat b j ++ list.repeat c (i + j)),
+    {
+      intros w h,
+      induction h with y z irr step ih,
+      {
+        left,
+        use 0,
+        refl,
+      },
+      cases step with rule foo,
+      cases foo with rule_in bar,
+      cases bar with v baz,
+      cases baz with w hyp,
+      cases hyp with hyp_bef hyp_aft,
+
+      cases ih with case₁ caseᵣ,
+      {
+        cases rule_in,
+        {
+          left,
+          cases case₁ with i the_case,
+          use i + 1,
+          have almost : z = list.repeat a i ++ [a, S, c] ++ list.repeat c i,
+          {
+            rw hyp_bef at the_case,
+            rw hyp_aft,
+            rw rule_in at *,
+            have v_must : v = list.repeat a i,
+            {
+              dsimp at the_case,
+              rw S at the_case,
+              
+              sorry,
+            },
+            have w_must : w = list.repeat c i,
+            {
+
+              sorry,
+            },
+            rw v_must,
+            rw w_must,
+          },
+          rw list.repeat_add,
+          change z = list.repeat a i ++ [a] ++ [S] ++ list.repeat c (i + 1),
+          rw add_comm,
+          rw list.repeat_add,
+          change z = list.repeat a i ++ [a] ++ [S] ++ ([c] ++ list.repeat c i),
+          rw ← list.append_assoc,
+          rw list.append_assoc (list.repeat a i) [a],
+          rw list.append_assoc (list.repeat a i) ([a] ++ [S]),
+          convert almost,
+        },
+        cases rule_in,
+        {
+          right,
+          left,
+          cases case₁ with i the_case,
+          use i,
+          use 0,
+          simp,
+          have v_must : v = list.repeat a i,
+          {
+            
+            sorry,
+          },
+          have w_must : w = list.repeat c i,
+          {
+
+            sorry,
+          },
+          rw hyp_aft,
+          rw v_must,
+          rw w_must,
+          rw rule_in,
+          simp,
+        },
+        cases rule_in,
+        any_goals { try { cases rule_in },
+          exfalso,
+          rw rule_in at hyp_bef,
+          simp at hyp_bef,
+          cases case₁ with i the_case,
+          rw the_case at hyp_bef,
+          have contra := congr_arg (λ lis, R ∈ lis) hyp_bef,
+          rw ← R at contra,
+          simp at contra,
+          cases contra,
+          {
+            rw list.mem_repeat at contra,
+            have triv : R ≠ a,
+            {
+              tauto,
+            },
+            exact triv contra.right,
+          },
+          cases contra,
+          {
+            injection contra with contr,
+            injection contr with cont,
+            simp at cont,
+            exact cont,
+          },
+          {
+            rw list.mem_repeat at contra,
+            have triv : R ≠ c,
+            {
+              tauto,
+            },
+            exact triv contra.right,
+          },
+        },
+        exfalso,
+        exact (list.mem_nil_iff rule).1 rule_in,
+      },
+      cases caseᵣ with case₂ case₃,
+      {
+        sorry,
+      },
+      {
+        exfalso,
+        rw hyp_bef at case₃,
+        cases case₃ with i foo,
+        cases foo with j the_case,
+        have contra := congr_arg (λ lis, symbol.nonterminal rule.fst ∈ lis) the_case,
+        simp at contra,
+        cases contra,
+        {
+          have neq : symbol.nonterminal rule.fst ≠ a,
+          {
+            tauto,
+          },
+          rw list.mem_repeat at contra,
+          apply neq,
+          exact contra.right,
+        },
+        cases contra,
+        {
+          have neq : symbol.nonterminal rule.fst ≠ b,
+          {
+            tauto,
+          },
+          rw list.mem_repeat at contra,
+          apply neq,
+          exact contra.right,
+        },
+        {
+          have neq : symbol.nonterminal rule.fst ≠ c,
+          {
+            tauto,
+          },
+          rw list.mem_repeat at contra,
+          apply neq,
+          exact contra.right,
+        },
+      },
+    },
+
+    specialize possib (list.map symbol.terminal x) ass,
+    cases possib with imposs rest,
+    {
+      exfalso,
+      cases imposs with i hyp,
+      have contra := congr_arg (λ xs, S ∈ xs) hyp,
+      simp at contra,
+      finish,
+    },
+    cases rest with imposs' necess,
+    {
+      exfalso,
+      cases imposs' with i rest,
+      cases rest with j hyp,
+      have contra := congr_arg (λ xs, R ∈ xs) hyp,
+      simp at contra,
+      finish,
+    },
+    cases necess with n foobar,
+    use n,
+    cases foobar with m keyprop,
+    use m,
+    unfold anbmcnm,
+    unfold a b c at keyprop,
+    rw ← list.map_repeat symbol.terminal a_ n at keyprop,
+    rw ← list.map_repeat symbol.terminal b_ m at keyprop,
+    rw ← list.map_repeat symbol.terminal c_ (n + m) at keyprop,
+    rw ← list.map_append at keyprop,
+    rw ← list.map_append at keyprop,
+
+    ext1 k,
+    /-
+    by_cases k < x.length,
+    {
+      have kpropp := congr_arg (λ li, list.nth_le li k sorry) keyprop,
+      simp at kpropp,
+      have desire : symbol.terminal (x.nth_le k sorry) = symbol.terminal ((list.repeat (a_) n ++ list.repeat (b_) m ++ list.repeat (c_) (n + m)).nth_le k sorry),
+      {
+        rw list.append_assoc,
+
+        sorry,
+      },
+      {
+        injection desire with res,
+        
+        sorry,
+      },
+      {
+
+        sorry,
+      },
+    },
+    {
+
+      sorry,
+    }
+    -/    
+    have kprop := congr_fun (congr_arg list.nth keyprop) k,
+    rw list.nth_map at kprop,
+    rw list.nth_map at kprop,
+    /-
+    cases x.nth k,
+    {
+      -- case `option.none`
+      sorry,
+    }, 
+    have sv : ((list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ (n + m)).nth k) = some val,
+    {
+      
+      sorry,
+    },
+    exact eq.symm sv,
+    -/
+
+    have klean : symbol.terminal (x.nth k) = symbol.terminal ((list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ (n + m)).nth k),
+    {
+      /-
+      have nnn : x.nth k ≠ none,
+      {
+        sorry,
+      },
+      have rrr : (list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ (n + m)).nth k ≠ none,
+      {
+        sorry,
+      },
+      -/
+      
+      sorry,
+    },
+    injection klean,
+    exact (fin 3),
   },
   {
+    -- prove `x ∈ CF_language gramatika ← x ∈ language_abc` here
     intro h,
     cases h with n hy,
     cases hy with m hyp,
