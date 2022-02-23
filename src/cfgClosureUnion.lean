@@ -257,14 +257,51 @@ private lemma deri_tran (g₁ g₂ : CF_grammar T) : ∀ input output : list (sy
   CF_transforms (union_grammar g₁ g₂) (convert_lsTN₁_lsTN input) (convert_lsTN₁_lsTN output) →
     CF_transforms g₁ input output :=
 begin
+
   sorry,
+end
+
+private def conv_fake {g₁ g₂ : CF_grammar T} (_ : list (symbol T (union_grammar g₁ g₂).nt)) : list (symbol T g₁.nt) :=
+[]
+
+private lemma back_fake {g₁ g₂ : CF_grammar T} (stri : list (symbol T g₁.nt)) :
+  @conv_fake T g₁ g₂ (convert_lsTN₁_lsTN stri) = stri :=
+sorry
+
+private lemma deri_fake (g₁ g₂ : CF_grammar T) (input output : list (symbol T (union_grammar g₁ g₂).nt)) :
+  CF_derives (union_grammar g₁ g₂) input output →
+    CF_derives g₁ (conv_fake input) (conv_fake output) :=
+begin
+  intro h,
+  induction h with b c irr orig ih,
+  {
+    apply CF_derives_reflexive,
+  },
+  apply CF_derives_transitive, -- this step will probably change to `CF_der_of_der_tra` when writing a real code
+  {
+    exact ih,
+  },
+  apply CF_derives_reflexive, -- this step is a fake placeholder for working with `orig`
 end
 
 private lemma deri_indu (g₁ g₂ : CF_grammar T) (input output : list (symbol T g₁.nt)) :
   CF_derives (union_grammar g₁ g₂) (convert_lsTN₁_lsTN input) (convert_lsTN₁_lsTN output) →
     CF_derives g₁ input output :=
 begin
+  intro h,
+  have fake := deri_fake g₁ g₂ (convert_lsTN₁_lsTN input) (convert_lsTN₁_lsTN output) h,
+  rw back_fake at fake,
+  rw back_fake at fake,
+  exact fake,
+  /-
+  induction h,
+  {
+
+    sorry,
+  },
+
   sorry,
+  -/
 end
 
 private lemma in_language_left_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
