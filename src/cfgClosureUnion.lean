@@ -17,66 +17,28 @@ end reusable_lemmata
 
 
 section specific_defs_and_lemmata
-variables {T N₁ N₂ : Type}
+variables {T : Type} {g₁ g₂ : CF_grammar T}
 
-private def sTN_of_sTN₁ : (symbol T N₁) → (symbol T (option (N₁ ⊕ N₂)))
+private def sTN_of_sTN₁ : (symbol T g₁.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt)))
 | (symbol.terminal st) := (symbol.terminal st)
 | (symbol.nonterminal snt) := (symbol.nonterminal (some (sum.inl snt)))
 
-private def sTN_of_sTN₂ : (symbol T N₂) → (symbol T (option (N₁ ⊕ N₂)))
+private def sTN_of_sTN₂ : (symbol T g₂.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt)))
 | (symbol.terminal st) := (symbol.terminal st)
 | (symbol.nonterminal snt) := (symbol.nonterminal (some (sum.inr snt)))
-/-
-private lemma convert_sTN₁_sTN_nn (x : (@symbol T N₁)) : (sTN_of_sTN₁ x) ≠ (@symbol.nonterminal T (option (N₁ ⊕ N₂)) none) :=
-begin
-  cases x,
-  {
-    change (symbol.terminal x) ≠ symbol.nonterminal none,
-    finish,
-  },
-  {
-    change (symbol.nonterminal (some (sum.inl x))) ≠ symbol.nonterminal none,
-    finish,
-  },
-end
 
-private lemma convert_sTN₂_sTN_nn (x : (@symbol T N₂)) : (sTN_of_sTN₂ x) ≠ (@symbol.nonterminal T (option (N₁ ⊕ N₂)) none) :=
-begin
-  cases x,
-  {
-    change (symbol.terminal x) ≠ symbol.nonterminal none,
-    finish,
-  },
-  {
-    change (symbol.nonterminal (some (sum.inr x))) ≠ symbol.nonterminal none,
-    finish,
-  },
-end
-
-private lemma convert_sTN₁_sTN_nns (xs : list (@symbol T N₁)) : (@symbol.nonterminal T (option (N₁ ⊕ N₂)) none) ∉ list.map (@sTN_of_sTN₁ T N₁ N₂) xs :=
-begin
-  norm_num,
-  intros x x_in,
-  apply convert_sTN₁_sTN_nn,
-end
-
-private lemma convert_sTN₂_sTN_nns (xs : list (@symbol T N₂)) : (@symbol.nonterminal T (option (N₁ ⊕ N₂)) none) ∉ list.map (@sTN_of_sTN₂ T N₁ N₂) xs :=
-begin
-  norm_num,
-  intros x x_in,
-  apply convert_sTN₂_sTN_nn,
-end
--/
-private def lsTN_of_lsTN₁ : list (symbol T N₁) → list (symbol T (option (N₁ ⊕ N₂))) :=
+private def lsTN_of_lsTN₁ : list (symbol T g₁.nt) → list (symbol T (option (g₁.nt ⊕ g₂.nt))) :=
 list.map sTN_of_sTN₁
 
-private def lsTN_of_lsTN₂ : list (symbol T N₂) → list (symbol T (option (N₁ ⊕ N₂))) :=
+private def lsTN_of_lsTN₂ : list (symbol T g₂.nt) → list (symbol T (option (g₁.nt ⊕ g₂.nt))) :=
 list.map sTN_of_sTN₂
 
-private def rule_of_rule₁ (r : N₁ × (list (symbol T N₁))) : ((option (N₁ ⊕ N₂)) × (list (symbol T (option (N₁ ⊕ N₂))))) :=
+private def rule_of_rule₁ (r : g₁.nt × (list (symbol T g₁.nt))) :
+  ((option (g₁.nt ⊕ g₂.nt)) × (list (symbol T (option (g₁.nt ⊕ g₂.nt))))) :=
 (some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))
 
-private def rule_of_rule₂ (r : N₂ × (list (symbol T N₂))) : ((option (N₁ ⊕ N₂)) × (list (symbol T (option (N₁ ⊕ N₂))))) :=
+private def rule_of_rule₂ (r : g₂.nt × (list (symbol T g₂.nt))) :
+  ((option (g₁.nt ⊕ g₂.nt)) × (list (symbol T (option (g₁.nt ⊕ g₂.nt))))) :=
 (some (sum.inr (prod.fst r)), lsTN_of_lsTN₂ (prod.snd r))
 
 private def union_grammar (g₁ g₂ : CF_grammar T) : CF_grammar T :=
@@ -89,7 +51,7 @@ CF_grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
 
 section lemmata_subset
 
-private lemma deri_step (g₁ g₂ : CF_grammar T) : ∀ input output : list (symbol T g₁.nt),
+private lemma deri_step : ∀ input output : list (symbol T g₁.nt),
   CF_transforms g₁ input output → 
     CF_transforms (union_grammar g₁ g₂) (lsTN_of_lsTN₁ input) (lsTN_of_lsTN₁ output) :=
 begin
@@ -113,8 +75,9 @@ begin
     {
       finish,
     },
-    exact g₂.nt,
+    exact g₂,
   },
+
   use lsTN_of_lsTN₁ v,
   use lsTN_of_lsTN₁ w,
   split,
@@ -129,16 +92,16 @@ begin
   },
 end
 
-private lemma deri_more (g₁ g₂ : CF_grammar T) : ∀ input output : list (symbol T g₁.nt),
+private lemma deri_more : ∀ input output : list (symbol T g₁.nt),
   CF_derives g₁ input output →
     CF_derives (union_grammar g₁ g₂) (lsTN_of_lsTN₁ input) (lsTN_of_lsTN₁ output) :=
 begin
   intros inp outp ass,
   induction ass with u v ih₁ orig ih,
   {
-    apply CF_derives_reflexive,
+    apply CF_deri_self,
   },
-  apply CF_derives_transitive,
+  apply CF_deri_of_deri_deri,
   {
     finish,
   },
@@ -147,10 +110,10 @@ begin
   {
     refl,
   },
-  exact deri_step g₁ g₂ u v orig,
+  exact deri_step u v orig,
 end
 
-private lemma in_union_of_in_first (g₁ g₂ : CF_grammar T) (w : list T) :
+private lemma in_union_of_in_first (w : list T) :
   w ∈ CF_language g₁  →  w ∈ CF_language (union_grammar g₁ g₂)  :=
 begin
   intro assum,
@@ -163,7 +126,7 @@ begin
     use (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]),
     split,
     {
-      change (@option.none (g₁.nt ⊕ g₂.nt), [symbol.nonterminal (some (sum.inl g₁.initial))]) ∈ (
+      change (none, [symbol.nonterminal (some (sum.inl g₁.initial))]) ∈ (
         (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]) ::
         (none, [symbol.nonterminal (some (sum.inr (g₂.initial)))]) ::
         ((list.map rule_of_rule₁ g₁.rules) ++ (list.map rule_of_rule₂ g₂.rules))
@@ -194,21 +157,21 @@ begin
     },
     rw beginning,
     rw ending,
-    exact deri_more g₁ g₂ [symbol.nonterminal g₁.initial] (list.map symbol.terminal w) assum,
+    exact deri_more [symbol.nonterminal g₁.initial] (list.map symbol.terminal w) assum,
   },
 
   unfold CF_language,
   change CF_generates_str (union_grammar g₁ g₂) (list.map symbol.terminal w),
   unfold CF_generates_str,
   unfold CF_derives,
-  apply CF_derives_transitive,
+  apply CF_deri_of_deri_deri,
   {
     finish, -- uses `deri_start` here
   },
   exact deri_rest,
 end
 
-private lemma in_union_of_in_second (g₁ g₂ : CF_grammar T) (w : list T) :
+private lemma in_union_of_in_second (w : list T) :
   w ∈ CF_language g₂  →  w ∈ CF_language (union_grammar g₁ g₂)  :=
 begin
   sorry,
@@ -219,8 +182,7 @@ end lemmata_subset
 
 section lemmata_supset
 
-private lemma both_empty (g₁ g₂ : CF_grammar T)
-  (u v: list (symbol T (union_grammar g₁ g₂).nt))
+private lemma both_empty (u v: list (symbol T (union_grammar g₁ g₂).nt))
   (a : (symbol T (union_grammar g₁ g₂).nt))
   (bef: [symbol.nonterminal (union_grammar g₁ g₂).initial] = u ++ [a] ++ v) :
     u = []  ∧  v = [] :=
@@ -253,24 +215,24 @@ begin
   },
 end
 
-private def sTN₁_of_sTN {g₁ g₂ : CF_grammar T} : symbol T (union_grammar g₁ g₂).nt → option (symbol T g₁.nt)
+private def sTN₁_of_sTN : symbol T (union_grammar g₁ g₂).nt → option (symbol T g₁.nt)
 | (symbol.terminal te) := some (symbol.terminal te)
 | (symbol.nonterminal none) := none
 | (symbol.nonterminal (some (sum.inl nonte))) := some (symbol.nonterminal nonte)
 | (symbol.nonterminal (some (sum.inr _))) := none
 
-private def lsTN₁_of_lsTN {g₁ g₂ : CF_grammar T} (lis : list (symbol T (union_grammar g₁ g₂).nt)) : list (symbol T g₁.nt) :=
+private def lsTN₁_of_lsTN (lis : list (symbol T (union_grammar g₁ g₂).nt)) : list (symbol T g₁.nt) :=
 list.filter_map sTN₁_of_sTN lis
 
-private lemma self_of_sTN₁ {g₁ g₂ : CF_grammar T} (symb : symbol T g₁.nt) :
-  @sTN₁_of_sTN T g₁ g₂ (sTN_of_sTN₁ symb) = symb :=
+private lemma self_of_sTN₁ (symb : symbol T g₁.nt) :
+  sTN₁_of_sTN (@sTN_of_sTN₁ _ _ g₂ symb) = symb :=
 begin
   cases symb;
   finish,
 end
 
-private lemma self_of_lsTN₁ {g₁ g₂ : CF_grammar T} (stri : list (symbol T g₁.nt)) :
-  @lsTN₁_of_lsTN T g₁ g₂ (lsTN_of_lsTN₁ stri) = stri :=
+private lemma self_of_lsTN₁ (stri : list (symbol T g₁.nt)) :
+  lsTN₁_of_lsTN (@lsTN_of_lsTN₁ _ _ g₂ stri) = stri :=
 begin
   unfold lsTN_of_lsTN₁,
   unfold lsTN₁_of_lsTN,
@@ -293,10 +255,10 @@ begin
   finish,
 end
 
-private def rule₁_of_rule {g₁ g₂ : CF_grammar T} (r : ((union_grammar g₁ g₂).nt × (list (symbol T (union_grammar g₁ g₂).nt)))) : g₁.nt × (list (symbol T g₁.nt)) :=
+private def rule₁_of_rule (r : ((union_grammar g₁ g₂).nt × (list (symbol T (union_grammar g₁ g₂).nt)))) : g₁.nt × (list (symbol T g₁.nt)) :=
 sorry
 
-private lemma tra₁_of_tra {g₁ g₂ : CF_grammar T} {input output : list (symbol T (union_grammar g₁ g₂).nt)} :
+private lemma tra₁_of_tra {input output : list (symbol T (union_grammar g₁ g₂).nt)} :
   CF_transforms (union_grammar g₁ g₂) input output →
     CF_transforms g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output) :=
 begin
@@ -310,34 +272,34 @@ begin
   sorry,
 end
 
-private lemma deri_indu (g₁ g₂ : CF_grammar T) (input output : list (symbol T (union_grammar g₁ g₂).nt)) :
+private lemma deri_indu (input output : list (symbol T (union_grammar g₁ g₂).nt)) :
   CF_derives (union_grammar g₁ g₂) input output →
     CF_derives g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output) :=
 begin
   intro h,
   induction h with b c irr orig ih,
   {
-    apply CF_derives_reflexive,
+    apply CF_deri_self,
   },
-  apply CF_der_of_der_tra,
+  apply CF_deri_of_deri_tran,
   {
     exact ih,
   },
   exact tra₁_of_tra orig,
 end
 
-private lemma deri_bridge (g₁ g₂ : CF_grammar T) (input output : list (symbol T g₁.nt)) :
+private lemma deri_bridge (input output : list (symbol T g₁.nt)) :
   CF_derives (union_grammar g₁ g₂) (lsTN_of_lsTN₁ input) (lsTN_of_lsTN₁ output) →
     CF_derives g₁ input output :=
 begin
   intro h,
-  have almost := deri_indu g₁ g₂ (lsTN_of_lsTN₁ input) (lsTN_of_lsTN₁ output) h,
+  have almost := deri_indu (lsTN_of_lsTN₁ input) (lsTN_of_lsTN₁ output) h,
   rw self_of_lsTN₁ at almost,
   rw self_of_lsTN₁ at almost,
   exact almost,
 end
 
-private lemma in_language_left_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
+private lemma in_language_left_case_of_union (w : list T)
   (hypo : CF_derives (union_grammar g₁ g₂)
     [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w)) :
   w ∈ CF_language g₁ :=
@@ -351,7 +313,7 @@ begin
   finish,
 end
 
-private lemma in_language_right_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
+private lemma in_language_right_case_of_union (w : list T)
   (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂)) -- TODO change type of `hypo`
     [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w)) :
   w ∈ CF_language g₂ :=
@@ -360,7 +322,7 @@ begin
   sorry,
 end
 
-private lemma in_language_impossible_case_of_union (g₁ g₂ : CF_grammar T) (w : list T)
+private lemma in_language_impossible_case_of_union (w : list T)
   (rule : (union_grammar g₁ g₂).nt × list (symbol T (union_grammar g₁ g₂).nt))
   (u v: list (symbol T (union_grammar g₁ g₂).nt)) (hu : u = []) (hv : v = [])
   (bef: [symbol.nonterminal (union_grammar g₁ g₂).initial] = u ++ [symbol.nonterminal rule.fst] ++ v)
@@ -382,7 +344,7 @@ begin
   finish,
 end
 
-private lemma in_language_of_in_union (g₁ g₂ : CF_grammar T) (w : list T) :
+private lemma in_language_of_in_union (w : list T) :
   w ∈ CF_language (union_grammar g₁ g₂)   →   w ∈ CF_language g₁  ∨  w ∈ CF_language g₂   :=
 begin
   intro ass,
@@ -403,7 +365,7 @@ begin
   cases baz with h_bef h_aft,
 
   rw h_aft at deri_tail,
-  cases both_empty g₁ g₂ u v (symbol.nonterminal rule.fst) h_bef with u_nil v_nil,
+  cases both_empty u v (symbol.nonterminal rule.fst) h_bef with u_nil v_nil,
 
   cases ruleok with g₁S r_rest,
   {
@@ -413,7 +375,7 @@ begin
     rw u_nil at deri_tail,
     rw v_nil at deri_tail,
     simp at deri_tail,
-    exact in_language_left_case_of_union g₁ g₂ w deri_tail,
+    exact in_language_left_case_of_union w deri_tail,
   },
   cases r_rest with g₂S r_imposs,
   {
@@ -423,9 +385,9 @@ begin
     rw u_nil at deri_tail,
     rw v_nil at deri_tail,
     simp at deri_tail,
-    exact in_language_right_case_of_union g₁ g₂ w deri_tail,
+    exact in_language_right_case_of_union w deri_tail,
   },
-  exact in_language_impossible_case_of_union g₁ g₂ w
+  exact in_language_impossible_case_of_union w
     rule u v u_nil v_nil h_bef r_imposs,
 end
 
@@ -453,7 +415,7 @@ begin
     simp,
     rw ← h₁,
     rw ← h₂,
-    exact in_language_of_in_union g₁ g₂ w hyp,
+    exact in_language_of_in_union w hyp,
   },
   {
     -- prove `L₁ + L₂ ⊆ `
@@ -462,11 +424,11 @@ begin
     cases hyp with case₁ case₂,
     {
       rw ← h₁ at case₁,
-      exact in_union_of_in_first g₁ g₂ w case₁,
+      exact in_union_of_in_first w case₁,
     },
     {
       rw ← h₂ at case₂,
-      exact in_union_of_in_second g₁ g₂ w case₂,
+      exact in_union_of_in_second w case₂,
     },
   }
 end

@@ -239,7 +239,7 @@ begin
       },
       cases caseᵣ with case₂ case₃,
       {
-
+        
         sorry,
       },
       {
@@ -316,13 +316,27 @@ begin
     rw list.nth_map at kprop,
     rw list.nth_map at kprop,
 
-    have klean : symbol.terminal (x.nth k) = symbol.terminal ((list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ (n + m)).nth k),
+    cases x.nth k,
     {
-      
-      sorry,
+      cases (list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ (n + m)).nth k,
+      {
+        refl,
+      },
+      {
+        exfalso,
+        injection kprop,
+      },
     },
-    injection klean,
-    exact (fin 3),
+    {
+      cases (list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ (n + m)).nth k,
+      {
+        injection kprop,
+      },
+      {
+        injection kprop,
+        finish,
+      },
+    },
   },
   {
     -- prove `x ∈ CF_language gramatika ← x ∈ language_abc` here
@@ -336,9 +350,9 @@ begin
       intro i,
       induction i with n' ih,
       {
-        apply CF_derives_reflexive,
+        apply CF_deri_self,
       },
-      apply CF_der_of_der_tra _ ih,
+      apply CF_deri_of_deri_tran ih,
 
       use (S_, [a, S, c]),
       split,
@@ -360,9 +374,9 @@ begin
       intro j,
       induction j with m' jh,
       {
-        apply CF_derives_reflexive,
+        apply CF_deri_self,
       },
-      apply CF_der_of_der_tra _ jh,
+      apply CF_deri_of_deri_tran jh,
 
       use (R_, [b, R, c]),
       split,
@@ -405,12 +419,12 @@ begin
         split;
         refl,
       },
-      apply CF_derives_transitive,
+      apply CF_deri_of_deri_deri,
       {
         specialize epoch_a n,
         finish,
       },
-      apply CF_derives_transitive,
+      apply CF_deri_of_deri_deri,
       {
         finish,
       },
