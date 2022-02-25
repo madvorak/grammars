@@ -140,6 +140,7 @@ begin
 
       cases ih with case₁ caseᵣ,
       {
+sorry, /-
         cases rule_in,
         {
           left,
@@ -383,13 +384,213 @@ begin
         },
         exfalso,
         exact (list.mem_nil_iff rule).1 rule_in,
+-/
       },
       cases caseᵣ with case₂ case₃,
       {
-        
-        sorry,
+        cases rule_in,
+        any_goals { try { cases rule_in },
+          exfalso,
+          rw rule_in at hyp_bef,
+          simp at hyp_bef,
+          cases case₂ with i foo,
+          cases foo with j y_eq,
+          rw y_eq at hyp_bef,
+          have contra := congr_arg (λ lis, S ∈ lis) hyp_bef,
+          rw ← S at contra,
+          simp at contra,
+          cases contra,
+          {
+            rw list.mem_repeat at contra,
+            have triv : S ≠ a,
+            {
+              tauto,
+            },
+            exact triv contra.right,
+          },
+          cases contra,
+          {
+            rw list.mem_repeat at contra,
+            have triv : S ≠ b,
+            {
+              tauto,
+            },
+            exact triv contra.right,
+          },
+          cases contra,
+          {
+            injection contra with contr,
+            injection contr with cont,
+            simp at cont,
+            exact cont,
+          },
+          {
+            rw list.mem_repeat at contra,
+            have triv : S ≠ c,
+            {
+              tauto,
+            },
+            exact triv contra.right,
+          },
+        },
+
+        cases rule_in,
+--        any_goals { try { cases rule_in },
+          rw rule_in at *,
+          simp at *,
+          cases case₂ with i foo,
+          cases foo with j y_form,
+          rw y_form at hyp_bef,
+
+          have u_eq : u = list.repeat a i ++ list.repeat b j,
+          {
+            have indexR: (u ++ [R] ++ v).nth u.length = some R,
+            {
+              rw list.append_assoc,
+              rw list.nth_append_right (le_of_eq rfl),
+              rw tsub_self,
+              refl,
+            },
+            cases @trichotomous ℕ (<) _ (list.length u) (i + j) with hlt rest,
+            {
+              exfalso,
+              rw ← (list.nth_take hlt) at indexR,
+
+              have h_len : u.length < (list.repeat a i ++ list.repeat b j).length,
+              {
+                rw list.length_append,
+                rw list.length_repeat,
+                rw list.length_repeat,
+                exact hlt,
+              },
+              have propos : (list.repeat a i ++ list.repeat b j).nth_le u.length h_len = R,
+              {
+                change list.repeat a i ++ (list.repeat b j ++ R :: list.repeat c (i + j)) = u ++ ([R] ++ v) at hyp_bef,
+                rw ← list.append_assoc u [R] v at hyp_bef,
+                rw ← hyp_bef at indexR,
+                rw ← list.append_assoc at indexR,
+                have take_beg : list.take (i + j) (list.repeat a i ++ list.repeat b j ++ R :: list.repeat c (i + j)) = (list.repeat a i ++ list.repeat b j),
+                {
+                  have len_ij : (list.repeat a i ++ list.repeat b j).length = i + j,
+                  {
+                    rw list.length_append,
+                    rw list.length_repeat,
+                    rw list.length_repeat,
+                  },
+                  rw list.take_append_of_le_length (le_of_eq len_ij.symm),
+                  rw list.take_all_of_le,
+                  exact le_of_eq len_ij,
+                },
+                rw take_beg at indexR,
+                rw list.nth_le_nth h_len at indexR,
+                injection indexR,
+              },
+              have yes_R : R ∈ (list.repeat a i ++ list.repeat b j),
+              {
+                let positive := list.nth_le_mem (list.repeat a i ++ list.repeat b j) u.length h_len,
+                rw propos at positive,
+                exact positive,
+              },
+              have not_R : R ∉ (list.repeat a i ++ list.repeat b j),
+              {
+                rw list.mem_append,
+                push_neg,
+                split,
+                {
+                  have nidRa : R ≠ a,
+                  {
+                    tauto,
+                  },
+                  by_contradiction,
+                  rw list.mem_repeat at h,
+                  exact nidRa h.right,
+                },
+                {
+                  have nidRb : R ≠ b,
+                  {
+                    tauto,
+                  },
+                  by_contradiction,
+                  rw list.mem_repeat at h,
+                  exact nidRb h.right,
+                },
+              },
+              exact not_R yes_R,
+            },
+            cases rest.symm with hgt heq,
+            {
+              exfalso,
+
+              sorry,
+            },
+            rw ← list.append_assoc at hyp_bef,
+            have lenlen : (list.repeat a i ++ list.repeat b j).length = u.length,
+            {
+              rw list.length_append,
+              rw list.length_repeat,
+              rw list.length_repeat,
+              exact heq.symm,
+            },
+            symmetry,
+            exact list.append_inj_left hyp_bef lenlen,
+          },
+          have v_eq : v = list.repeat c (i + j),
+          {
+            rw u_eq at hyp_bef,
+            rw ← list.append_assoc at hyp_bef,
+            rw list.append_right_inj (list.repeat a i ++ list.repeat b j) at hyp_bef,
+            symmetry,
+            exact list.tail_eq_of_cons_eq hyp_bef,
+          },
+          rw u_eq at hyp_aft,
+          rw v_eq at hyp_aft,
+          rw hyp_aft,
+sorry, /-
+        },
+-/
+sorry, /-
+        {
+          right,
+          left,
+          use i,
+          use j + 1,
+          have bpp : list.repeat b (j + 1) = list.repeat b j ++ [b],
+          {
+            rw list.repeat_add b j 1,
+            refl,
+          },
+          have cpp : list.repeat c (i + (j + 1)) = [c] ++ list.repeat c (i + j),
+          {
+            rw ← add_assoc,
+            rw add_comm,
+            rw list.repeat_add c 1 (i + j),
+            refl,
+          },
+          rw bpp,
+          rw cpp,
+          rw list.append_assoc,
+          apply congr_arg (λ lis, list.repeat a i ++ lis),
+          rw list.append_assoc,
+          apply congr_arg (λ lis, list.repeat b j ++ lis),
+          rw list.singleton_append,
+          rw list.singleton_append,
+        },
+
+        cases rule_in,
+        {
+          right,
+          right,
+          use i,
+          use j,
+          rw list.append_assoc,
+        },
+
+        exfalso,
+        exact (list.mem_nil_iff rule).1 rule_in,
+-/
       },
       {
+sorry, /-
         exfalso,
         rw hyp_bef at case₃,
         cases case₃ with i foo,
@@ -425,9 +626,10 @@ begin
           apply neq,
           exact contra.right,
         },
+-/
       },
     },
-
+sorry, /-
     specialize possib (list.map symbol.terminal x) ass,
     cases possib with imposs rest,
     {
@@ -485,10 +687,11 @@ begin
         injection h_1,
         rw h_2,
       },
-    },
+    },-/
   },
   {
     -- prove `x ∈ CF_language gramatika ← x ∈ language_abc` here
+sorry, /-
     intro h,
     cases h with n hy,
     cases hy with m hyp,
@@ -611,5 +814,6 @@ begin
     unfold anbmcnm,
     simp,
     refl,
+-/
   },
 end
