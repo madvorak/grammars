@@ -50,6 +50,10 @@ end cfg_languages
 section cfg_utilities
 variables {T : Type} {g : CF_grammar T}
 
+lemma CF_deri_of_tran {v w : list (symbol T g.nt)} :
+  CF_transforms g v w → CF_derives g v w :=
+relation.refl_trans_gen.single
+
 /-- The relation `CF_derives` is reflexive. -/
 lemma CF_deri_self {w : list (symbol T g.nt)} :
   CF_derives g w w :=
@@ -64,12 +68,13 @@ relation.refl_trans_gen.trans huv hvw
 lemma CF_deri_of_deri_tran {u v w : list (symbol T g.nt)}
   (huv : CF_derives g u v) (hvw : CF_transforms g v w) :
     CF_derives g u w :=
-CF_deri_of_deri_deri huv (relation.refl_trans_gen.single hvw)
+CF_deri_of_deri_deri huv (CF_deri_of_tran hvw)
 
 lemma CF_deri_of_tran_deri {u v w : list (symbol T g.nt)}
   (huv : CF_transforms g u v) (hvw : CF_derives g v w) :
     CF_derives g u w :=
-CF_deri_of_deri_deri (relation.refl_trans_gen.single huv) hvw
+CF_deri_of_deri_deri (CF_deri_of_tran huv) hvw
+
 
 lemma CF_derives_with_prefix {oldWord newWord : list (symbol T g.nt)}
   (prefi : list (symbol T g.nt)) (h : CF_derives g oldWord newWord) :

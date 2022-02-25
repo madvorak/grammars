@@ -29,18 +29,7 @@ example : CF_generates gramatika [a_, a_, b_, c_, c_, c_] :=
 begin
   unfold gramatika,
 
-  fconstructor,
-    exact [a, a, b, R, c, c, c],
-  fconstructor,
-    exact [a, a, R, c, c],
-  fconstructor,
-    exact [a, a, S, c, c],
-  fconstructor,
-    exact [a, S, c],
-  fconstructor,
-    exact [S],
-  refl,
-
+  apply CF_deri_of_tran_deri,
   {
     use (S_, [a, S, c]),
     split,
@@ -49,8 +38,9 @@ begin
     },
     use [[], []],
     simp,
-    refl,
   },
+
+  apply CF_deri_of_tran_deri,
   {
     use (S_, [a, S, c]),
     split,
@@ -58,9 +48,11 @@ begin
       finish,
     },
     use [[a], [c]],
+    rw S,
     simp,
-    refl,
   },
+
+  apply CF_deri_of_tran_deri,
   {
     use (S_, [R]),
     split,
@@ -69,8 +61,9 @@ begin
     },
     use [[a, a], [c, c]],
     simp,
-    refl,
   },
+
+  apply CF_deri_of_tran_deri,
   {
     use (R_, [b, R, c]),
     split,
@@ -78,9 +71,11 @@ begin
       finish,
     },
     use [[a, a], [c, c]],
+    rw R,
     simp,
-    refl,
   },
+
+  apply CF_deri_of_tran,
   {
     simp,
     use (R_, []),
@@ -89,7 +84,6 @@ begin
       finish,
     },
     use [[a, a, b], [c, c, c]],
-    simp,
     repeat { try {split}, try {refl} },
   },
 end
@@ -141,6 +135,7 @@ begin
 
       cases ih with case₁ caseᵣ,
       {
+        -- the case `list.repeat a i ++ [S] ++ list.repeat c i` matches 1st and 2nd rule
         cases rule_in,
         {
           left,
@@ -387,6 +382,7 @@ begin
       },
       cases caseᵣ with case₂ case₃,
       {
+        -- the case `list.repeat a i ++ list.repeat b j ++ [R] ++ list.repeat c (i + j)` matches 3rd and 4th rule
         cases rule_in,
         any_goals { try { cases rule_in },
           exfalso,
@@ -630,6 +626,7 @@ begin
         exact (list.mem_nil_iff rule).1 rule_in,
       },
       {
+        -- the remaining case `list.repeat a i ++ list.repeat b j ++ list.repeat c (i + j)` does not match any rule
         exfalso,
         rw hyp_bef at case₃,
         cases case₃ with i foo,
@@ -792,19 +789,15 @@ begin
         ((list.repeat a n) ++ [S] ++ (list.repeat c n))
         ((list.repeat a n) ++ [R] ++ (list.repeat c n)),
       {
-        fconstructor,
-          exact ((list.repeat a n) ++ [S] ++ (list.repeat c n)),
-        {
-          refl,
-        },
+        apply CF_derives_with_prefix_and_postfix,
+        apply CF_deri_of_tran,
         use (S_, [R]),
         split,
         {
           apply list.mem_cons_of_mem,
           apply list.mem_cons_self,
         },
-        use (list.repeat a n),
-        use (list.repeat c n),
+        use [[], []],
         split;
         refl,
       },

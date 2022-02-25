@@ -105,11 +105,7 @@ begin
   {
     finish,
   },
-  fconstructor,
-    exact (lsTN_of_lsTN₁ u),
-  {
-    refl,
-  },
+  apply CF_deri_of_tran,
   exact deri_step u v orig,
 end
 
@@ -120,9 +116,7 @@ begin
 
   have deri_start : CF_derives (union_grammar g₁ g₂) [symbol.nonterminal none] [symbol.nonterminal (some (sum.inl g₁.initial))],
   {
-    fconstructor,
-      exact [symbol.nonterminal none],
-    refl,
+    apply CF_deri_of_tran,
     use (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]),
     split,
     {
@@ -314,7 +308,7 @@ begin
 end
 
 private lemma in_language_right_case_of_union (w : list T)
-  (hypo : relation.refl_trans_gen (CF_transforms (union_grammar g₁ g₂)) -- TODO change type of `hypo`
+  (hypo : CF_derives (union_grammar g₁ g₂)
     [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w)) :
   w ∈ CF_language g₂ :=
 begin
