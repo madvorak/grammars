@@ -4,7 +4,7 @@ import tactic
 
 section reusable_lemmata
 
-lemma list_three_parts {T₁ T₂ : Type} {x y z : list T₁} {f : T₁ → T₂} :
+lemma list_three_parts {α β : Type} {x y z : list α} {f : α → β} :
   list.map f (x ++ y ++ z) = (list.map f x) ++ (list.map f y) ++ (list.map f z) :=
 by simp only [list.map_append]
 

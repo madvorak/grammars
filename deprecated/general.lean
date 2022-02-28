@@ -101,10 +101,10 @@ variables {T N : Type} [fintype T] [fintype N] (g : grammar T N)
 def letter := symbo T N
 
 def grammar_transforms (oldWord newWord : list letter) : Prop :=
-∃ r ∈ g.rules, ∃ v w : list (symbo T N), 
+∃ r ∈ g.rules, ∃ v w : list (symbo T N),
   oldWord = (v ++ subtype.val (prod.fst r) ++ w) ∧ (newWord = v ++ (prod.snd r) ++ w)
 
-def grammar_derives : list letter → list letter → Prop := 
+def grammar_derives : list letter → list letter → Prop :=
 relation.refl_trans_gen (grammar_transforms g)
 
 def grammar_generates_str (str : list letter) : Prop :=

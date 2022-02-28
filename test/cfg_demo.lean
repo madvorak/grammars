@@ -818,7 +818,8 @@ begin
         apply list.repeat_add,
       },
       rw cnm,
-      have rebra : (list.repeat a n ++ list.repeat b m ++ [R] ++ (list.repeat c m ++ list.repeat c n)) = (list.repeat a n ++ (list.repeat b m ++ [R] ++ list.repeat c m) ++ list.repeat c n),
+      have rebra : (list.repeat a n ++ list.repeat b m ++ [R] ++ (list.repeat c m ++ list.repeat c n)) =
+                   (list.repeat a n ++ (list.repeat b m ++ [R] ++ list.repeat c m) ++ list.repeat c n),
       {
         simp only [list.append_assoc],
       },
