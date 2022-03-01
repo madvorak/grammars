@@ -209,14 +209,25 @@ begin
   },
 end
 
+private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)
+| none := none
+| (some (sum.inl nonte)) := some nonte
+| (some (sum.inr _)) := none
+
 private def sTN₁_of_sTN : symbol T (union_grammar g₁ g₂).nt → option (symbol T g₁.nt)
 | (symbol.terminal te) := some (symbol.terminal te)
-| (symbol.nonterminal none) := none
-| (symbol.nonterminal (some (sum.inl nonte))) := some (symbol.nonterminal nonte)
-| (symbol.nonterminal (some (sum.inr _))) := none
+| (symbol.nonterminal nont) := option.map symbol.nonterminal (oN₁_of_N nont)
 
-private def lsTN₁_of_lsTN (lis : list (symbol T (union_grammar g₁ g₂).nt)) : list (symbol T g₁.nt) :=
+private def lsTN₁_of_lsTN (lis : list (symbol T (union_grammar g₁ g₂).nt)) :
+  list (symbol T g₁.nt) :=
 list.filter_map sTN₁_of_sTN lis
+
+private def rule₁_of_rule (r : (union_grammar g₁ g₂).nt × (list (symbol T (union_grammar g₁ g₂).nt))) :
+  option (g₁.nt × list (symbol T g₁.nt)) :=
+match oN₁_of_N r.fst with
+  | none := none
+  | some x := some (x, lsTN₁_of_lsTN r.snd)
+end
 
 private lemma self_of_sTN₁ (symb : symbol T g₁.nt) :
   sTN₁_of_sTN (@sTN_of_sTN₁ _ _ g₂ symb) = symb :=
@@ -244,15 +255,28 @@ begin
     apply congr_arg,
     ext1,
     apply congr_fun,
-    finish,
+    refl,
   },
   finish,
 end
 
-private def rule₁_of_rule (r : ((union_grammar g₁ g₂).nt × (list (symbol T (union_grammar g₁ g₂).nt)))) : g₁.nt × (list (symbol T g₁.nt)) :=
-sorry
+private lemma self_of_rule₁ (r : g₁.nt × list (symbol T g₁.nt)) :
+  rule₁_of_rule (@rule_of_rule₁ _ _ g₂ r) = r :=
+begin
+  unfold rule_of_rule₁,
+  unfold rule₁_of_rule,
+  simp,
+  unfold oN₁_of_N,
+  cases r,
+  simp,
+  unfold rule₁_of_rule,
+  simp,
+  rw self_of_lsTN₁,
+  refl,
+end
 
-private lemma tra₁_of_tra {input output : list (symbol T (union_grammar g₁ g₂).nt)} :
+private lemma tran₁_of_tran {input output : list (symbol T (union_grammar g₁ g₂).nt)} :
+-- here we need an additional assumption
   CF_transforms (union_grammar g₁ g₂) input output →
     CF_transforms g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output) :=
 begin
@@ -261,14 +285,51 @@ begin
   cases rest with rule_in foo,
   cases foo with v bar,
   cases bar with w hyp,
-  use rule₁_of_rule rule,
-  
+  let converted_rule := rule₁_of_rule rule,
+  have rule_back : ∃ r : (g₁.nt × list (symbol T g₁.nt)), converted_rule = some r,
+  {
+    
+    sorry,
+  },
+  cases rule_back with actual_rule rule_corresponds,
+  use actual_rule,
+  change rule ∈ (
+    (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]) ::
+    (none, [symbol.nonterminal (some (sum.inr (g₂.initial)))]) ::
+    ((list.map rule_of_rule₁ g₁.rules) ++ (list.map rule_of_rule₂ g₂.rules))
+  ) at rule_in,
+  cases rule_in,
+  {
+    exfalso,
+
+    sorry,
+  },
+  cases rule_in,
+  {
+    exfalso,
+
+    sorry,
+  },
+  have rule_there : list.mem rule (list.map rule_of_rule₁ g₁.rules),
+  {
+    
+    sorry,
+  },
+  /-
+  have wrapped_rule : list.mem (some rule) (list.map rule₁_of_rule (list.map rule_of_rule₁ g₁.rules)),
+  {
+
+    sorry,
+  },
+  -/
+
   sorry,
 end
 
 private lemma deri_indu (input output : list (symbol T (union_grammar g₁ g₂).nt)) :
   CF_derives (union_grammar g₁ g₂) input output →
     CF_derives g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output) :=
+-- here we need a stronger right side
 begin
   intro h,
   induction h with b c irr orig ih,
@@ -279,7 +340,8 @@ begin
   {
     exact ih,
   },
-  exact tra₁_of_tra orig,
+  -- here we need to pass additional info about `(lsTN₁_of_lsTN b)`
+  exact tran₁_of_tran orig,
 end
 
 private lemma deri_bridge (input output : list (symbol T g₁.nt)) :
@@ -363,6 +425,8 @@ begin
 
   cases ruleok with g₁S r_rest,
   {
+    -- will need to somehow propagate information that only symbols from `T` and `N₁` are used inside
+    -- probably as a part of induction hypothesis, base step satisfied by `some (sum.inl g₁.initial)`
     left,
     rw g₁S at *,
     simp at *,
@@ -373,6 +437,8 @@ begin
   },
   cases r_rest with g₂S r_imposs,
   {
+    -- will need to somehow propagate information that only symbols from `T` and `N₂` are used inside
+    -- probably as a part of induction hypothesis, base step satisfied by `some (sum.inr g₂.initial)`
     right,
     rw g₂S at *,
     simp at *,
@@ -386,7 +452,6 @@ begin
 end
 
 end lemmata_supset
-
 
 end specific_defs_and_lemmata
 
