@@ -8,11 +8,6 @@ lemma list_three_parts {α β : Type} {x y z : list α} {f : α → β} :
   list.map f (x ++ y ++ z) = (list.map f x) ++ (list.map f y) ++ (list.map f z) :=
 by simp only [list.map_append]
 
-lemma unpack_transitive_closure {α : Type} {r : α → α → Prop} {x z : α}
-  (h : relation.refl_trans_gen r x z) (nontriv : x ≠ z) :
-    ∃ y : α, (r x y) ∧ (relation.refl_trans_gen r y z) :=
-(relation.refl_trans_gen.cases_head h).resolve_left nontriv
-
 end reusable_lemmata
 
 
@@ -92,11 +87,11 @@ begin
   },
 end
 
-private lemma deri_more : ∀ input output : list (symbol T g₁.nt),
-  CF_derives g₁ input output →
-    CF_derives (union_grammar g₁ g₂) (lsTN_of_lsTN₁ input) (lsTN_of_lsTN₁ output) :=
+private lemma deri_more : ∀ output : list (symbol T g₁.nt),
+  CF_derives g₁ [symbol.nonterminal g₁.initial] output →
+    CF_derives (union_grammar g₁ g₂) (lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial]) (lsTN_of_lsTN₁ output) :=
 begin
-  intros inp outp ass,
+  intros outp ass,
   induction ass with u v ih₁ orig ih,
   {
     apply CF_deri_self,
@@ -151,7 +146,7 @@ begin
     },
     rw beginning,
     rw ending,
-    exact deri_more [symbol.nonterminal g₁.initial] (list.map symbol.terminal w) assum,
+    exact deri_more (list.map symbol.terminal w) assum,
   },
 
   unfold CF_language,
@@ -285,8 +280,7 @@ begin
   cases rest with rule_in foo,
   cases foo with v bar,
   cases bar with w hyp,
-  let converted_rule := rule₁_of_rule rule,
-  have rule_back : ∃ r : (g₁.nt × list (symbol T g₁.nt)), converted_rule = some r,
+  have rule_back : ∃ r : (g₁.nt × list (symbol T g₁.nt)), rule₁_of_rule rule = some r,
   {
     
     sorry,
@@ -322,14 +316,35 @@ begin
     sorry,
   },
   -/
+  split,
+  {
 
-  sorry,
+    sorry,
+  },
+  use lsTN₁_of_lsTN v,
+  use lsTN₁_of_lsTN w,
+  cases hyp with hyp_bef hyp_aft,
+  split,
+  {
+    have converted_bef := congr_arg lsTN₁_of_lsTN hyp_bef,
+    change list.filter_map sTN₁_of_sTN input = list.filter_map sTN₁_of_sTN (v ++ [symbol.nonterminal rule.fst] ++ w) at converted_bef,
+    rw list.filter_map_append at converted_bef,
+    rw list.filter_map_append at converted_bef,
+    unfold lsTN₁_of_lsTN,
+    --have some_bef := congr_arg option.some converted_bef,
+    convert converted_bef,
+    sorry,
+  },
+  {
+    have converted_aft := congr_arg lsTN₁_of_lsTN hyp_aft,
+
+    sorry,
+  },
 end
 
-private lemma deri_indu (input output : list (symbol T (union_grammar g₁ g₂).nt)) :
-  CF_derives (union_grammar g₁ g₂) input output →
-    CF_derives g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output) :=
--- here we need a stronger right side
+private lemma deri_indu (output : list (symbol T (union_grammar g₁ g₂).nt)) :
+  CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] output →
+    CF_derives g₁ [symbol.nonterminal g₁.initial] (lsTN₁_of_lsTN output) :=
 begin
   intro h,
   induction h with b c irr orig ih,
@@ -340,17 +355,15 @@ begin
   {
     exact ih,
   },
-  -- here we need to pass additional info about `(lsTN₁_of_lsTN b)`
   exact tran₁_of_tran orig,
 end
 
-private lemma deri_bridge (input output : list (symbol T g₁.nt)) :
-  CF_derives (union_grammar g₁ g₂) (lsTN_of_lsTN₁ input) (lsTN_of_lsTN₁ output) →
-    CF_derives g₁ input output :=
+private lemma deri_bridge (output : list (symbol T g₁.nt)) :
+  CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] (lsTN_of_lsTN₁ output) →
+    CF_derives g₁ [symbol.nonterminal g₁.initial] output :=
 begin
   intro h,
-  have almost := deri_indu (lsTN_of_lsTN₁ input) (lsTN_of_lsTN₁ output) h,
-  rw self_of_lsTN₁ at almost,
+  have almost := deri_indu (lsTN_of_lsTN₁ output) h,
   rw self_of_lsTN₁ at almost,
   exact almost,
 end
@@ -405,14 +418,16 @@ private lemma in_language_of_in_union (w : list T) :
 begin
   intro ass,
 
-  cases unpack_transitive_closure ass begin
-    by_contradiction hyp,
-    have zeroth := congr_arg (λ p, list.nth p 0) hyp,
+  cases CF_tran_or_id_of_deri ass with impossible foo,
+  {
+    exfalso,
+    have zeroth := congr_arg (λ p, list.nth p 0) impossible,
     simp at zeroth,
     cases (w.nth 0);
     finish,
-  end with S₁ foo,
-  cases foo with deri_head deri_tail,
+  },
+  cases foo with S₁ bar,
+  cases bar with deri_head deri_tail,
 
   cases deri_head with rule hhead,
   cases hhead with ruleok h',

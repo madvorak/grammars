@@ -44,6 +44,8 @@ CF_generates g
 def is_CF (L : language T) :=
 ∃ g : CF_grammar T, CF_language g = L
 
+def cfg_empty := @CF_grammar.mk T (fin 1) 0 []
+
 end cfg_languages
 
 
@@ -74,6 +76,11 @@ lemma CF_deri_of_tran_deri {u v w : list (symbol T g.nt)}
   (huv : CF_transforms g u v) (hvw : CF_derives g v w) :
     CF_derives g u w :=
 CF_deri_of_deri_deri (CF_deri_of_tran huv) hvw
+
+lemma CF_tran_or_id_of_deri {u w : list (symbol T g.nt)}
+  (h : CF_derives g u w) :  or  (u = w)
+    (∃ v : list (symbol T g.nt), (CF_transforms g u v) ∧ (CF_derives g v w)) :=
+relation.refl_trans_gen.cases_head h
 
 
 lemma CF_derives_with_prefix {oldWord newWord : list (symbol T g.nt)}
