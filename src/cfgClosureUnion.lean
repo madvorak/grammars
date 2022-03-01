@@ -270,6 +270,134 @@ begin
   refl,
 end
 
+private lemma tran₁_of_tran {input output : list (symbol T (union_grammar g₁ g₂).nt)}
+  (h : ∀ letter ∈ input, or
+    (∃ t : T, letter = symbol.terminal t)
+    (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
+  ):
+  CF_transforms (union_grammar g₁ g₂) input output →
+    CF_transforms g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output)
+    ∧ (∀ letter ∈ output, or
+      (∃ t : T, letter = symbol.terminal t)
+      (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
+    ) :=
+begin
+  intro orig_tran,
+  cases orig_tran with orig_rule foo,
+  cases foo with orig_in bar,
+  cases bar with v baz,
+  cases baz with w qux,
+  cases qux with hyp_bef hyp_aft,
+
+  have rule_from_g₁ : list.mem orig_rule (list.map rule_of_rule₁ g₁.rules),
+  {
+    cases orig_in,
+    {
+      exfalso,
+      rw orig_in at hyp_bef,
+      dsimp at hyp_bef,
+      rw hyp_bef at h,
+      specialize h (symbol.nonterminal none),
+      finish,
+    },
+    cases orig_in,
+    {
+      exfalso,
+      rw orig_in at hyp_bef,
+      dsimp at hyp_bef,
+      rw hyp_bef at h,
+      specialize h (symbol.nonterminal none),
+      finish,
+    },
+    change orig_rule ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at orig_in,
+    rw list.mem_append at orig_in,
+    cases orig_in.symm with orig_in₂ orig_in₁,
+    {
+      exfalso,
+      rw hyp_bef at h,
+      specialize h (symbol.nonterminal orig_rule.fst),
+      simp at h,
+      change orig_rule ∈ list.map (λ r, (some (sum.inr (prod.fst r)), lsTN_of_lsTN₂ (prod.snd r))) g₂.rules at orig_in₂,
+      finish,
+    },
+    exact orig_in₁,
+  },
+
+  split,
+  {
+    have back_rule := rule₁_of_rule orig_rule,
+    cases back_rule,
+    {
+      exfalso,
+
+      sorry,
+    },
+    -- Why is the relationship between `orig_rule` and `back_rule` lost?
+    use back_rule,
+
+    sorry,
+  },
+  {
+    change list.mem orig_rule (list.map (λ r, (some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))) g₁.rules) at rule_from_g₁,
+    rw hyp_aft,
+    rw hyp_bef at h,
+    intros lette lette_in,
+    specialize h lette,
+    rw list.append_assoc at lette_in,
+    rw list.mem_append at lette_in,
+    rw list.mem_append at lette_in,
+    rw list.append_assoc at h,
+    rw list.mem_append at h,
+    rw list.mem_append at h,
+    cases lette_in,
+    {
+      exact h (by {
+        left,
+        exact lette_in,
+      }),
+    },
+    cases lette_in,
+    {
+      --change orig_rule ∈ (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)), (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)) g₁.rules) at rule_from_g₁,
+      --rw list.mem_iff_nth_le at rule_from_g₁,
+      have rule_from_1 : orig_rule ∈ (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)), (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)) g₁.rules),
+      {
+        --exact rule_from_g₁,
+        sorry,
+        -- Why isn't it the same ???
+      },
+      rw list.mem_iff_nth_le at rule_from_1,
+      cases rule_from_1 with index rest,
+      cases rest with index_small eq_orig_rule,
+      rw ← eq_orig_rule at lette_in,
+      simp at lette_in,
+      unfold lsTN_of_lsTN₁ at lette_in,
+      simp at lette_in,
+      cases lette_in with a conju,
+      cases conju with trash treasure,
+      rw ← treasure,
+      cases a,
+      {
+        left,
+        use a,
+        refl,
+      },
+      {
+        right,
+        use a,
+        refl,
+      },
+    },
+    {
+      exact h (by {
+        right,
+        right,
+        exact lette_in,
+      }),
+    },
+  },
+end
+/-
 private lemma tran₁_of_tran {input output : list (symbol T (union_grammar g₁ g₂).nt)} :
 -- here we need an additional assumption
   CF_transforms (union_grammar g₁ g₂) input output →
@@ -331,31 +459,79 @@ begin
     rw list.filter_map_append at converted_bef,
     rw list.filter_map_append at converted_bef,
     unfold lsTN₁_of_lsTN,
-    --have some_bef := congr_arg option.some converted_bef,
     convert converted_bef,
+    rw list.filter_map,
+    rw sTN₁_of_sTN,
+    have asdf : ∃ nonter, rule.fst = some (sum.inl nonter),
+    {
+
+      sorry,
+    },
+    cases asdf with nonter hello,
+    rw hello,
+    rw oN₁_of_N,
+    simp,
+    rw list.filter_map._match_1,
+    simp,
+    apply sum.inl.inj,
+    apply option.some.inj,
+    rw ← hello,
+    rw rule₁_of_rule at rule_corresponds,
+    
     sorry,
   },
   {
     have converted_aft := congr_arg lsTN₁_of_lsTN hyp_aft,
-
-    sorry,
+    rw converted_aft,
+    rw lsTN₁_of_lsTN,
+    rw list.filter_map_append,
+    rw list.filter_map_append,
+    rw lsTN₁_of_lsTN,
+    rw lsTN₁_of_lsTN,
+    rw list.append_assoc,
+    rw list.append_assoc,
+    apply congr_arg,
+    apply congr_arg2,
+    {
+      rw rule₁_of_rule at rule_corresponds,
+      have rule2nd := congr_arg (option.map prod.snd) rule_corresponds,
+      
+      sorry,
+    },
+    refl,
   },
 end
-
+-/
 private lemma deri_indu (output : list (symbol T (union_grammar g₁ g₂).nt)) :
   CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] output →
-    CF_derives g₁ [symbol.nonterminal g₁.initial] (lsTN₁_of_lsTN output) :=
+    CF_derives g₁ [symbol.nonterminal g₁.initial] (lsTN₁_of_lsTN output)
+    ∧ (∀ letter ∈ output, or
+      (∃ t : T, letter = symbol.terminal t)
+      (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
+    ) :=
 begin
   intro h,
   induction h with b c irr orig ih,
   {
-    apply CF_deri_self,
+    split,
+    {
+      apply CF_deri_self,
+    },
+    {
+      intros lette lette_in,
+      right,
+      use g₁.initial,
+      rw list.mem_singleton.mp lette_in,
+    },
   },
-  apply CF_deri_of_deri_tran,
+  have transla := tran₁_of_tran ih.right orig,
+  split,
   {
-    exact ih,
+    exact CF_deri_of_deri_tran ih.left transla.left,
   },
-  exact tran₁_of_tran orig,
+  {
+    exact transla.right,
+  },
 end
 
 private lemma deri_bridge (output : list (symbol T g₁.nt)) :
@@ -365,7 +541,7 @@ begin
   intro h,
   have almost := deri_indu (lsTN_of_lsTN₁ output) h,
   rw self_of_lsTN₁ at almost,
-  exact almost,
+  exact almost.left,
 end
 
 private lemma in_language_left_case_of_union (w : list T)
@@ -440,8 +616,6 @@ begin
 
   cases ruleok with g₁S r_rest,
   {
-    -- will need to somehow propagate information that only symbols from `T` and `N₁` are used inside
-    -- probably as a part of induction hypothesis, base step satisfied by `some (sum.inl g₁.initial)`
     left,
     rw g₁S at *,
     simp at *,
@@ -452,8 +626,6 @@ begin
   },
   cases r_rest with g₂S r_imposs,
   {
-    -- will need to somehow propagate information that only symbols from `T` and `N₂` are used inside
-    -- probably as a part of induction hypothesis, base step satisfied by `some (sum.inr g₂.initial)`
     right,
     rw g₂S at *,
     simp at *,
