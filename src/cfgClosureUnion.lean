@@ -276,8 +276,8 @@ private lemma tran₁_of_tran {input output : list (symbol T (union_grammar g₁
     (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
   ):
   CF_transforms (union_grammar g₁ g₂) input output →
-    CF_transforms g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output)
-    ∧ (∀ letter ∈ output, or
+    CF_transforms g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output) ∧
+    (∀ letter ∈ output, or
       (∃ t : T, letter = symbol.terminal t)
       (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
     ) :=
@@ -325,17 +325,70 @@ begin
 
   split,
   {
-    have back_rule := rule₁_of_rule orig_rule,
-    cases back_rule,
+    have back_rule : ∃ r, rule₁_of_rule orig_rule = some r,
     {
-      exfalso,
+      --rw list.mem_iff_nth_le at rule_from_g₁,
+      sorry,
+    },
+    cases back_rule with some_rule back_orig,
+    have deletethis : orig_rule = rule_of_rule₁ some_rule,
+    {
+      /-
+      have dereback : rule₁_of_rule (@rule_of_rule₁ T g₁ g₂ some_rule) = some some_rule, 
+        apply self_of_rule₁,
+      rw ← dereback at back_orig,
+      -/
+      sorry,
+    },
+    use some_rule,
+    split,
+    {
+      rw deletethis at rule_from_g₁,
+      
+      sorry,
+    },
+    use lsTN₁_of_lsTN v,
+    use lsTN₁_of_lsTN w,
+    split,
+    {
+      have hyp_bef₁ := congr_arg lsTN₁_of_lsTN hyp_bef,
+      rw lsTN₁_of_lsTN at hyp_bef₁,
+      rw lsTN₁_of_lsTN at hyp_bef₁,
+      rw list.filter_map_append at hyp_bef₁,
+      rw list.filter_map_append at hyp_bef₁,
+      convert hyp_bef₁,
+      /-
+      ext1,
+      cases n,
+      {
+
+        sorry,
+      },
+      have len1 : (list.filter_map sTN₁_of_sTN [symbol.nonterminal orig_rule.fst]).length ≤ 1, sorry,
+      have nsu1 : n.succ ≥ 1, sorry,
+      -/
+      rw list.filter_map,
+      rw sTN₁_of_sTN,
+      rw list.filter_map,
 
       sorry,
     },
-    -- Why is the relationship between `orig_rule` and `back_rule` lost?
-    use back_rule,
+    {
+      have hyp_aft₁ := congr_arg lsTN₁_of_lsTN hyp_aft,
+      rw lsTN₁_of_lsTN at hyp_aft₁,
+      rw lsTN₁_of_lsTN at hyp_aft₁,
+      rw list.filter_map_append at hyp_aft₁,
+      rw list.filter_map_append at hyp_aft₁,
+      convert hyp_aft₁,
+      -- TODO first solve is here
 
-    sorry,
+      rw deletethis,
+      rw rule_of_rule₁,
+      simp,
+      change some_rule.snd = lsTN₁_of_lsTN (lsTN_of_lsTN₁ some_rule.snd),
+      rw self_of_lsTN₁,
+      --sorry,
+    },
   },
   {
     change list.mem orig_rule (list.map (λ r, (some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))) g₁.rules) at rule_from_g₁,
@@ -397,115 +450,11 @@ begin
     },
   },
 end
-/-
-private lemma tran₁_of_tran {input output : list (symbol T (union_grammar g₁ g₂).nt)} :
--- here we need an additional assumption
-  CF_transforms (union_grammar g₁ g₂) input output →
-    CF_transforms g₁ (lsTN₁_of_lsTN input) (lsTN₁_of_lsTN output) :=
-begin
-  intro h,
-  cases h with rule rest,
-  cases rest with rule_in foo,
-  cases foo with v bar,
-  cases bar with w hyp,
-  have rule_back : ∃ r : (g₁.nt × list (symbol T g₁.nt)), rule₁_of_rule rule = some r,
-  {
-    
-    sorry,
-  },
-  cases rule_back with actual_rule rule_corresponds,
-  use actual_rule,
-  change rule ∈ (
-    (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]) ::
-    (none, [symbol.nonterminal (some (sum.inr (g₂.initial)))]) ::
-    ((list.map rule_of_rule₁ g₁.rules) ++ (list.map rule_of_rule₂ g₂.rules))
-  ) at rule_in,
-  cases rule_in,
-  {
-    exfalso,
 
-    sorry,
-  },
-  cases rule_in,
-  {
-    exfalso,
-
-    sorry,
-  },
-  have rule_there : list.mem rule (list.map rule_of_rule₁ g₁.rules),
-  {
-    
-    sorry,
-  },
-  /-
-  have wrapped_rule : list.mem (some rule) (list.map rule₁_of_rule (list.map rule_of_rule₁ g₁.rules)),
-  {
-
-    sorry,
-  },
-  -/
-  split,
-  {
-
-    sorry,
-  },
-  use lsTN₁_of_lsTN v,
-  use lsTN₁_of_lsTN w,
-  cases hyp with hyp_bef hyp_aft,
-  split,
-  {
-    have converted_bef := congr_arg lsTN₁_of_lsTN hyp_bef,
-    change list.filter_map sTN₁_of_sTN input = list.filter_map sTN₁_of_sTN (v ++ [symbol.nonterminal rule.fst] ++ w) at converted_bef,
-    rw list.filter_map_append at converted_bef,
-    rw list.filter_map_append at converted_bef,
-    unfold lsTN₁_of_lsTN,
-    convert converted_bef,
-    rw list.filter_map,
-    rw sTN₁_of_sTN,
-    have asdf : ∃ nonter, rule.fst = some (sum.inl nonter),
-    {
-
-      sorry,
-    },
-    cases asdf with nonter hello,
-    rw hello,
-    rw oN₁_of_N,
-    simp,
-    rw list.filter_map._match_1,
-    simp,
-    apply sum.inl.inj,
-    apply option.some.inj,
-    rw ← hello,
-    rw rule₁_of_rule at rule_corresponds,
-    
-    sorry,
-  },
-  {
-    have converted_aft := congr_arg lsTN₁_of_lsTN hyp_aft,
-    rw converted_aft,
-    rw lsTN₁_of_lsTN,
-    rw list.filter_map_append,
-    rw list.filter_map_append,
-    rw lsTN₁_of_lsTN,
-    rw lsTN₁_of_lsTN,
-    rw list.append_assoc,
-    rw list.append_assoc,
-    apply congr_arg,
-    apply congr_arg2,
-    {
-      rw rule₁_of_rule at rule_corresponds,
-      have rule2nd := congr_arg (option.map prod.snd) rule_corresponds,
-      
-      sorry,
-    },
-    refl,
-  },
-end
--/
 private lemma deri_indu (output : list (symbol T (union_grammar g₁ g₂).nt)) :
   CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] output →
-    CF_derives g₁ [symbol.nonterminal g₁.initial] (lsTN₁_of_lsTN output)
-    ∧ (∀ letter ∈ output, or
+    CF_derives g₁ [symbol.nonterminal g₁.initial] (lsTN₁_of_lsTN output) ∧
+    (∀ letter ∈ output, or
       (∃ t : T, letter = symbol.terminal t)
       (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
     ) :=
