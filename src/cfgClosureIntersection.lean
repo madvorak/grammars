@@ -95,6 +95,154 @@ sorry
 private lemma CF_lang_any_eq : is_CF lang_any_eq :=
 sorry
 
+private lemma generic {_a _b _c : fin 3} {n : ℕ} {u v x y z: list (fin 3)}
+  (neq_ab : _a ≠ _b) (neq_ac : _a ≠ _c) (neq_bc : _b ≠ _c)
+  (neq_ba : _b ≠ _a) (neq_ca : _c ≠ _a) (neq_cb : _c ≠ _b)
+  (no_a: _a ∉ v ++ y) (nonempty: (v ++ y).length > 0)
+  (counts_ab: ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _b)
+  (counts_ac: ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _c)
+  (pumping: u ++ v ^ 2 ++ x ++ y ^ 2 ++ z ∈ lang_eq_eq)
+  (concatenating: list.repeat _a (n + 1) ++ list.repeat _b (n + 1) ++ list.repeat _c (n + 1) =
+      u ++ v ++ x ++ y ++ z) :
+  false :=
+begin
+  have extra_not_a : _b ∈ (v ++ y) ∨ _c ∈ (v ++ y),
+  {
+    let first_letter := (v ++ y).nth_le 0 nonempty,
+
+    have first_letter_b_or_c : first_letter = _b ∨ first_letter = _c,
+    {
+      have first_letter_not_a : first_letter ≠ _a,
+      {
+        by_contradiction contra,
+        have yes_a : _a ∈ v ++ y,
+        {
+          rw ← contra,
+          apply list.nth_le_mem,
+        },
+        exact no_a yes_a,
+      },
+      by_contradiction contr,
+      push_neg at contr,
+      cases contr with first_letter_not_b first_letter_not_c,
+      fin_cases first_letter;
+      --tauto,
+      sorry,
+    },
+    cases first_letter_b_or_c with first_letter_b first_letter_c,
+    {
+      left,
+      rw ← first_letter_b,
+      apply list.nth_le_mem,
+    },
+    {
+      right,
+      rw ← first_letter_c,
+      apply list.nth_le_mem,
+    },
+  },
+  have hab := counts_ab (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
+  have hac := counts_ac (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
+
+  cases pumping with n' pump',
+  have count_a : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _a = n + 1,
+  {
+    unfold list_n_times,
+    simp [- list.append_assoc],
+    repeat { rw count_in_append },
+    have rearrange :
+      count_in u _a + (count_in v _a + count_in v _a) + count_in x _a + (count_in y _a + count_in y _a) + count_in z _a =
+      (count_in u _a + count_in v _a + count_in x _a + count_in y _a + count_in z _a) + (count_in v _a + count_in y _a),
+    {
+      ring,
+    },
+    have zero_in_v : count_in v _a = 0,
+    {
+      rw list.mem_append at no_a,
+      push_neg at no_a,
+      exact count_in_zero_of_notin no_a.left,
+    },
+    have zero_in_y : count_in y _a = 0,
+    {
+      rw list.mem_append at no_a,
+      push_neg at no_a,
+      exact count_in_zero_of_notin no_a.right,
+    },
+    rw rearrange,
+    repeat { rw ← count_in_append },
+    rw ← concatenating,
+    repeat { rw count_in_append },
+    rw zero_in_v,
+    rw zero_in_y,
+    rw count_in_repeat_eq _a,
+    rw count_in_repeat_neq neq_ba,
+    rw count_in_repeat_neq neq_ca,
+    repeat { rw add_zero },
+  },
+  
+  cases extra_not_a with extra_b extra_c,
+  {
+    have count_b : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _b > n + 1,
+    {
+      unfold list_n_times,
+      simp [- list.append_assoc],
+      repeat { rw count_in_append },
+      have big_equality :
+        count_in u _b + (count_in v _b + count_in v _b) + count_in x _b + (count_in y _b + count_in y _b) + count_in z _b =
+        (count_in u _b + count_in v _b + count_in x _b + count_in y _b + count_in z _b) + (count_in v _b + count_in y _b),
+      {
+        ring,
+      },
+      rw big_equality,
+      repeat { rw ← count_in_append },
+      rw ← concatenating,
+      repeat { rw count_in_append },
+      rw count_in_repeat_eq _b,
+      rw count_in_repeat_neq neq_ab,
+      rw count_in_repeat_neq neq_cb,
+      rw ← count_in_append,
+      have at_least_one_b : count_in (v ++ y) _b > 0,
+      {
+        exact count_in_pos_of_in extra_b,
+      },
+      linarith,
+    },
+    rw count_a at hab,
+    rw hab at count_b,
+    exact has_lt.lt.false count_b,
+  },
+  {
+    have count_c : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _c > n + 1,
+    {
+      unfold list_n_times,
+      simp [- list.append_assoc],
+      repeat { rw count_in_append },
+      have big_equality :
+        count_in u _c + (count_in v _c + count_in v _c) + count_in x _c + (count_in y _c + count_in y _c) + count_in z _c =
+        (count_in u _c + count_in v _c + count_in x _c + count_in y _c + count_in z _c) + (count_in v _c + count_in y _c),
+      {
+        ring,
+      },
+      rw big_equality,
+      repeat { rw ← count_in_append },
+      rw ← concatenating,
+      repeat { rw count_in_append },
+      rw count_in_repeat_eq _c,
+      rw count_in_repeat_neq neq_ac,
+      rw count_in_repeat_neq neq_bc,
+      rw ← count_in_append,
+      have at_least_one_c : count_in (v ++ y) _c > 0,
+      {
+        exact count_in_pos_of_in extra_c,
+      },
+      linarith,
+    },
+    rw count_a at hac,
+    rw hac at count_c,
+    exact has_lt.lt.false count_c,
+  },
+end
+
 private lemma notCF_lang_eq_eq : ¬ is_CF lang_eq_eq :=
 begin
   intro h,
@@ -108,7 +256,7 @@ begin
         ≥ n + 1 : le_add_self
     ... ≥ n     : nat.le_succ n,
   }),
-  rcases pump with ⟨ u, ⟨ v, ⟨ x, ⟨ y, ⟨ z, ⟨ concatenating, ⟨ nonempty, ⟨ short, pumping ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩,
+  rcases pump with ⟨ u, v, x, y, z, concatenating, nonempty, short, pumping ⟩,
   specialize pumping 2,
 
   have neq_ab : a_ ≠ b_,
@@ -181,148 +329,41 @@ begin
     repeat { rw add_zero },
     rw zero_add,
   },
+  have counts_bc : ∀ w ∈ lang_eq_eq, count_in w b_ = count_in w c_,
+  {
+    intros w w_in,
+    rw ← counts_ab w w_in,
+    exact counts_ac w w_in,
+  },
+  have counts_ba : ∀ w ∈ lang_eq_eq, count_in w b_ = count_in w a_,
+  {
+    intros w w_in,
+    symmetry,
+    exact counts_ab w w_in,
+  },
+  have counts_ca : ∀ w ∈ lang_eq_eq, count_in w c_ = count_in w a_,
+  {
+    intros w w_in,
+    symmetry,
+    exact counts_ac w w_in,
+  },
+  have counts_cb : ∀ w ∈ lang_eq_eq, count_in w c_ = count_in w b_,
+  {
+    intros w w_in,
+    symmetry,
+    exact counts_bc w w_in,
+  },
 
   cases not_all_letters with no_a rest,
   {
-    have extra_not_a : b_ ∈ (v ++ y) ∨ c_ ∈ (v ++ y),
-    {
-      let first_letter := (v ++ y).nth_le 0 nonempty,
-
-      have first_letter_b_or_c : first_letter = b_ ∨ first_letter = c_,
-      {
-        have first_letter_not_a : first_letter ≠ a_,
-        {
-          by_contradiction contra,
-          have yes_a : a_ ∈ v ++ y,
-          {
-            rw ← contra,
-            apply list.nth_le_mem,
-          },
-          exact no_a yes_a,
-        },
-        by_contradiction contr,
-        push_neg at contr,
-        cases contr with first_letter_not_b first_letter_not_c,
-        fin_cases first_letter;
-        tauto,
-      },
-      cases first_letter_b_or_c with first_letter_b first_letter_c,
-      {
-        left,
-        rw ← first_letter_b,
-        apply list.nth_le_mem,
-      },
-      {
-        right,
-        rw ← first_letter_c,
-        apply list.nth_le_mem,
-      },
-    },
-    have hab := counts_ab (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
-    have hac := counts_ac (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
-
-    cases pumping with n' pump',
-    have count_a : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) a_ = n + 1,
-    {
-      unfold list_n_times,
-      simp [- list.append_assoc],
-      repeat { rw count_in_append },
-      have rearrange :
-        count_in u a_ + (count_in v a_ + count_in v a_) + count_in x a_ + (count_in y a_ + count_in y a_) + count_in z a_ =
-        (count_in u a_ + count_in v a_ + count_in x a_ + count_in y a_ + count_in z a_) + (count_in v a_ + count_in y a_),
-      {
-        ring,
-      },
-      have zero_in_v : count_in v a_ = 0,
-      {
-        rw list.mem_append at no_a,
-        push_neg at no_a,
-        exact count_in_zero_of_notin no_a.left,
-      },
-      have zero_in_y : count_in y a_ = 0,
-      {
-        rw list.mem_append at no_a,
-        push_neg at no_a,
-        exact count_in_zero_of_notin no_a.right,
-      },
-      rw rearrange,
-      repeat { rw ← count_in_append },
-      rw ← concatenating,
-      repeat { rw count_in_append },
-      rw zero_in_v,
-      rw zero_in_y,
-      rw count_in_repeat_eq a_,
-      rw count_in_repeat_neq neq_ba,
-      rw count_in_repeat_neq neq_ca,
-      repeat { rw add_zero },
-    },
-    
-    cases extra_not_a with extra_b extra_c,
-    {
-      have count_b : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) b_ > n + 1,
-      {
-        unfold list_n_times,
-        simp [- list.append_assoc],
-        repeat { rw count_in_append },
-        have big_equality :
-          count_in u b_ + (count_in v b_ + count_in v b_) + count_in x b_ + (count_in y b_ + count_in y b_) + count_in z b_ =
-          (count_in u b_ + count_in v b_ + count_in x b_ + count_in y b_ + count_in z b_) + (count_in v b_ + count_in y b_),
-        {
-          ring,
-        },
-        rw big_equality,
-        repeat { rw ← count_in_append },
-        rw ← concatenating,
-        repeat { rw count_in_append },
-        rw count_in_repeat_eq b_,
-        rw count_in_repeat_neq neq_ab,
-        rw count_in_repeat_neq neq_cb,
-        rw ← count_in_append,
-        have at_least_one_b : count_in (v ++ y) b_ > 0,
-        {
-          exact count_in_pos_of_in extra_b,
-        },
-        linarith,
-      },
-      rw count_a at hab,
-      rw hab at count_b,
-      exact has_lt.lt.false count_b,
-    },
-    {
-      have count_c : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) c_ > n + 1,
-      {
-        unfold list_n_times,
-        simp [- list.append_assoc],
-        repeat { rw count_in_append },
-        have big_equality :
-          count_in u c_ + (count_in v c_ + count_in v c_) + count_in x c_ + (count_in y c_ + count_in y c_) + count_in z c_ =
-          (count_in u c_ + count_in v c_ + count_in x c_ + count_in y c_ + count_in z c_) + (count_in v c_ + count_in y c_),
-        {
-          ring,
-        },
-        rw big_equality,
-        repeat { rw ← count_in_append },
-        rw ← concatenating,
-        repeat { rw count_in_append },
-        rw count_in_repeat_eq c_,
-        rw count_in_repeat_neq neq_ac,
-        rw count_in_repeat_neq neq_bc,
-        rw ← count_in_append,
-        have at_least_one_c : count_in (v ++ y) c_ > 0,
-        {
-          exact count_in_pos_of_in extra_c,
-        },
-        linarith,
-      },
-      rw count_a at hac,
-      rw hac at count_c,
-      exact has_lt.lt.false count_c,
-    },
+    exact generic neq_ab neq_ac neq_bc neq_ba neq_ca neq_cb
+                  no_a nonempty counts_ab counts_ac pumping concatenating,
   },
   cases rest with no_b no_c,
   {
-    -- prove the case `no_b` in the same way as the case `no_a` above
-    sorry,
+    sorry, /-
+    exact generic neq_bc neq_ba neq_ca neq_cb neq_ab neq_ac
+                  no_b nonempty counts_bc counts_ba pumping concatenating,-/
   },
   {
     -- prove the case `no_c` in the same way as the case `no_a` above
