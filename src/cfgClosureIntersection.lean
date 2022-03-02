@@ -1,11 +1,14 @@
 import cfg
 import cfgPumping
+import data.fin.basic
 import tactic
 
 
+section reusable_defs_and_lemmata
+
 --def count_in {α : Type} [h : decidable (λ x y : α, x = y)] (lis : list α) (a : α) : ℕ :=
-def count_in (lis : list (fin 3)) (a : (fin 3)) : ℕ :=
-list.sum (list.map (λ x, ite (x = a) 1 0) lis)
+def count_in (w : list (fin 3)) (a : (fin 3)) : ℕ :=
+list.sum (list.map (λ x, ite (x = a) 1 0) w)
 
 lemma count_in_repeat_eq (a : (fin 3)) (n : ℕ) :
   count_in (list.repeat a n) a  =  n  :=
@@ -19,12 +22,59 @@ begin
   sorry,
 end
 
-lemma count_in_append (l₁ l₂ : list (fin 3)) (a : (fin 3)) :
-  count_in (l₁ ++ l₂) a  =  count_in l₁ a  +  count_in l₂ a  :=
+lemma count_in_append (w₁ w₂ : list (fin 3)) (a : (fin 3)) :
+  count_in (w₁ ++ w₂) a  =  count_in w₁ a  +  count_in w₂ a  :=
+begin
+  rw count_in,
+  rw list.map_append,
+  rw list.sum_append,
+  refl,
+end
+
+lemma count_in_le_length {w : list (fin 3)} {a : (fin 3)} :
+  count_in w a ≤ w.length :=
+begin
+  rw count_in,
+  have upper_bound : ∀ y : (fin 3), (λ (x : fin 3), ite (x = a) 1 0) y ≤ 1,
+  {
+    intro z,
+    simp,
+    by_cases (z = a),
+    {
+      rw h,
+      simp,
+    },
+    {
+      convert_to ite false 1 0 ≤ 1;
+      simp,
+      exact h,
+    },
+  },
+  calc (list.map (λ (x : fin 3), ite (x = a) 1 0) w).sum
+      ≤ (list.map (λ (x : fin 3), 1) w).sum : sorry
+  ... ≤ 1 * w.length                        : sorry
+  ... = w.length                            : by rw one_mul,
+end
+
+lemma count_in_pos_of_in {w : list (fin 3)} {a : (fin 3)} (h : a ∈ w) :
+  count_in w a > 0 :=
+begin
+  by_contradiction contr,
+  rw not_lt at contr,
+  rw nat.le_zero_iff at contr,
+  sorry,
+end
+
+lemma count_in_zero_of_notin {w : list (fin 3)} {a : (fin 3)} (h : a ∉ w) :
+  count_in w a = 0 :=
 begin
   sorry,
 end
 
+end reusable_defs_and_lemmata
+
+
+section specific_defs_and_lemmata
 
 private def a_ : fin 3 := 0
 private def b_ : fin 3 := 1
@@ -49,36 +99,29 @@ private lemma notCF_lang_eq_eq : ¬ is_CF lang_eq_eq :=
 begin
   intro h,
   have pum := CF_pumping h,
-  cases pum with n pumm,
-  specialize pumm (list.repeat a_ n ++ list.repeat b_ n ++ list.repeat c_ n),
-  specialize pumm (by { use n, }) (by {
+  cases pum with n pump,
+  specialize pump (list.repeat a_ (n+1) ++ list.repeat b_ (n+1) ++ list.repeat c_ (n+1)),
+  specialize pump (by { use n + 1, }) (by {
     rw list.length_append,
     rw list.length_repeat,
-    apply le_add_self,
+    calc (list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)).length + (n + 1)
+        ≥ n + 1 : le_add_self
+    ... ≥ n     : nat.le_succ n,
   }),
-  cases pumm with u foo,
-  cases foo with v bar,
-  cases bar with x baz,
-  cases baz with y qux,
-  cases qux with z quux,
-  cases quux with concatenating quuux,
-  cases quuux with nonempty quuuux,
-  cases quuuux with short pumping,
+  rcases pump with ⟨ u, ⟨ v, ⟨ x, ⟨ y, ⟨ z, ⟨ concatenating, ⟨ nonempty, ⟨ short, pumping ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩,
   specialize pumping 2,
 
   have neq_ab : a_ ≠ b_,
   {
-    rw a_,
-    rw b_,
-    finish,
+    dec_trivial,
   },
   have neq_ac : a_ ≠ c_,
   {
-    sorry,
+    dec_trivial,
   },
   have neq_bc : b_ ≠ c_,
   {
-    sorry,
+    dec_trivial,
   },
   have neq_ba := neq_ab.symm,
   have neq_ca := neq_ac.symm,
@@ -86,9 +129,28 @@ begin
 
   have not_all_letters : a_ ∉ (v ++ y) ∨ b_ ∉ (v ++ y) ∨ c_ ∉ (v ++ y),
   {
-    
-    sorry,
+    by_contradiction contr,
+    push_neg at contr,
+    rcases contr with ⟨ hva, -, hvc ⟩,
+    have long : (v ++ x ++ y).length > n,
+    {
+      by_contradiction contr,
+      push_neg at contr,
+      have bees : count_in (v ++ x ++ y) b_ ≤ n,
+      {
+        calc count_in (v ++ x ++ y) b_
+            ≤ (v ++ x ++ y).length : count_in_le_length
+        ... ≤ n                    : contr,
+      },
+      -- we have `concatenating: list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1) = u ++ v ++ x ++ y ++ z`
+      -- for the middle part `v ++ x ++ y` to contain both `a_` and `c_`
+      -- it would have to contain the whole segment `list.repeat b_ (n + 1)` also
+      -- which is in contradiction with `(v ++ x ++ y).length ≤ n` qed
+      sorry,
+    },
+    exact not_le_of_gt long short,
   },
+
   have counts_ab : ∀ w ∈ lang_eq_eq, count_in w a_ = count_in w b_,
   {
     intros w w_in,
@@ -119,18 +181,48 @@ begin
     repeat { rw add_zero },
     rw zero_add,
   },
+
   cases not_all_letters with no_a rest,
   {
     have extra_not_a : b_ ∈ (v ++ y) ∨ c_ ∈ (v ++ y),
     {
+      let first_letter := (v ++ y).nth_le 0 nonempty,
 
-      sorry,
+      have first_letter_b_or_c : first_letter = b_ ∨ first_letter = c_,
+      {
+        have first_letter_not_a : first_letter ≠ a_,
+        {
+          by_contradiction contra,
+          have yes_a : a_ ∈ v ++ y,
+          {
+            rw ← contra,
+            apply list.nth_le_mem,
+          },
+          exact no_a yes_a,
+        },
+        by_contradiction contr,
+        push_neg at contr,
+        cases contr with first_letter_not_b first_letter_not_c,
+        fin_cases first_letter;
+        tauto,
+      },
+      cases first_letter_b_or_c with first_letter_b first_letter_c,
+      {
+        left,
+        rw ← first_letter_b,
+        apply list.nth_le_mem,
+      },
+      {
+        right,
+        rw ← first_letter_c,
+        apply list.nth_le_mem,
+      },
     },
     have hab := counts_ab (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
     have hac := counts_ac (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
 
     cases pumping with n' pump',
-    have count_a : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) a_ = n,
+    have count_a : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) a_ = n + 1,
     {
       unfold list_n_times,
       simp [- list.append_assoc],
@@ -143,15 +235,15 @@ begin
       },
       have zero_in_v : count_in v a_ = 0,
       {
-        --follows from `no_a`
         rw list.mem_append at no_a,
-        sorry,
+        push_neg at no_a,
+        exact count_in_zero_of_notin no_a.left,
       },
       have zero_in_y : count_in y a_ = 0,
       {
-        --follows from `no_a`
         rw list.mem_append at no_a,
-        sorry,
+        push_neg at no_a,
+        exact count_in_zero_of_notin no_a.right,
       },
       rw rearrange,
       repeat { rw ← count_in_append },
@@ -165,9 +257,9 @@ begin
       repeat { rw add_zero },
     },
     
-    cases extra_not_a with extra_b extrac,
+    cases extra_not_a with extra_b extra_c,
     {
-      have count_b : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) b_ > n,
+      have count_b : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) b_ > n + 1,
       {
         unfold list_n_times,
         simp [- list.append_assoc],
@@ -188,8 +280,7 @@ begin
         rw ← count_in_append,
         have at_least_one_b : count_in (v ++ y) b_ > 0,
         {
-          --follows from `extra_b`
-          sorry,
+          exact count_in_pos_of_in extra_b,
         },
         linarith,
       },
@@ -198,7 +289,7 @@ begin
       exact has_lt.lt.false count_b,
     },
     {
-      have count_c : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) c_ > n,
+      have count_c : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) c_ > n + 1,
       {
         unfold list_n_times,
         simp [- list.append_assoc],
@@ -219,8 +310,7 @@ begin
         rw ← count_in_append,
         have at_least_one_c : count_in (v ++ y) c_ > 0,
         {
-          --follows from `extra_c`
-          sorry,
+          exact count_in_pos_of_in extra_c,
         },
         linarith,
       },
@@ -257,12 +347,7 @@ end
 private lemma lang_eq_eq_of_intersection {w : list (fin 3)} :
   w ∈ lang_eq_any ⊓ lang_any_eq  →  w ∈ lang_eq_eq :=
 begin
-  intro ass,
-  cases ass with hlea hlae,
-  cases hlea with n₁ hlea_,
-  cases hlea_ with m₁ h₁,
-  cases hlae with n₂ hlae_,
-  cases hlae_ with m₂ h₂,
+  rintro ⟨ ⟨ n₁, m₁, h₁ ⟩, ⟨ n₂, m₂, h₂ ⟩ ⟩,
   have equ := eq.trans h₁.symm h₂,
 
   have n_ge : n₁ ≥ n₂,
@@ -335,6 +420,10 @@ begin
   exact h₂,    
 end
 
+end specific_defs_and_lemmata
+
+
+/-- The class of context-free languages isn't closed under intersection. -/
 theorem nnyCF_of_CF_i_CF : ¬ (∀ T : Type, ∀ L₁ : language T, ∀ L₂ : language T,
     is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ ⊓ L₂)
 ) :=

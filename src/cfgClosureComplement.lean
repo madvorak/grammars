@@ -2,6 +2,7 @@ import cfgClosureUnion
 import cfgClosureIntersection
 
 
+/-- The class of context-free languages isn't closed under complement. -/
 theorem nnyCF_of_complement_CF : ¬ (∀ T : Type, ∀ L : language T,
     is_CF L  →  is_CF (Lᶜ)
 ) :=

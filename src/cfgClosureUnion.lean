@@ -282,12 +282,7 @@ private lemma tran₁_of_tran {input output : list (symbol T (union_grammar g₁
       (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
     ) :=
 begin
-  intro orig_tran,
-  cases orig_tran with orig_rule foo,
-  cases foo with orig_in bar,
-  cases bar with v baz,
-  cases baz with w qux,
-  cases qux with hyp_bef hyp_aft,
+  rintro ⟨ orig_rule, orig_in, v, w, hyp_bef, hyp_aft ⟩,
 
   have rule_from_g₁ : list.mem orig_rule (list.map rule_of_rule₁ g₁.rules),
   {
@@ -327,23 +322,13 @@ begin
   {
     have back_rule : ∃ r, rule₁_of_rule orig_rule = some r,
     {
-      --rw list.mem_iff_nth_le at rule_from_g₁,
+      
       sorry,
     },
     cases back_rule with some_rule back_orig,
-    have deletethis : orig_rule = rule_of_rule₁ some_rule,
-    {
-      /-
-      have dereback : rule₁_of_rule (@rule_of_rule₁ T g₁ g₂ some_rule) = some some_rule, 
-        apply self_of_rule₁,
-      rw ← dereback at back_orig,
-      -/
-      sorry,
-    },
     use some_rule,
     split,
     {
-      rw deletethis at rule_from_g₁,
       
       sorry,
     },
@@ -357,16 +342,6 @@ begin
       rw list.filter_map_append at hyp_bef₁,
       rw list.filter_map_append at hyp_bef₁,
       convert hyp_bef₁,
-      /-
-      ext1,
-      cases n,
-      {
-
-        sorry,
-      },
-      have len1 : (list.filter_map sTN₁_of_sTN [symbol.nonterminal orig_rule.fst]).length ≤ 1, sorry,
-      have nsu1 : n.succ ≥ 1, sorry,
-      -/
       rw list.filter_map,
       rw sTN₁_of_sTN,
       rw list.filter_map,
@@ -382,12 +357,7 @@ begin
       convert hyp_aft₁,
       -- TODO first solve is here
 
-      rw deletethis,
-      rw rule_of_rule₁,
-      simp,
-      change some_rule.snd = lsTN₁_of_lsTN (lsTN_of_lsTN₁ some_rule.snd),
-      rw self_of_lsTN₁,
-      --sorry,
+      sorry,
     },
   },
   {
@@ -543,7 +513,7 @@ private lemma in_language_of_in_union (w : list T) :
 begin
   intro ass,
 
-  cases CF_tran_or_id_of_deri ass with impossible foo,
+  cases CF_tran_or_id_of_deri ass with impossible h,
   {
     exfalso,
     have zeroth := congr_arg (λ p, list.nth p 0) impossible,
@@ -551,14 +521,8 @@ begin
     cases (w.nth 0);
     finish,
   },
-  cases foo with S₁ bar,
-  cases bar with deri_head deri_tail,
-
-  cases deri_head with rule hhead,
-  cases hhead with ruleok h',
-  cases h' with u bar,
-  cases bar with v baz,
-  cases baz with h_bef h_aft,
+  rcases h with ⟨ S₁, deri_head, deri_tail ⟩,
+  rcases deri_head with ⟨ rule, ruleok, u, v, h_bef, h_aft ⟩,
 
   rw h_aft at deri_tail,
   cases both_empty u v (symbol.nonterminal rule.fst) h_bef with u_nil v_nil,
