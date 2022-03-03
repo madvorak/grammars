@@ -1,6 +1,5 @@
 import cfg
 import cfgPumping
-import data.fin.basic
 import tactic
 
 
@@ -95,16 +94,16 @@ sorry
 private lemma CF_lang_any_eq : is_CF lang_any_eq :=
 sorry
 
-private lemma generic {_a _b _c : fin 3} {n : ℕ} {u v x y z: list (fin 3)}
-  (neq_ab : _a ≠ _b) (neq_ac : _a ≠ _c) (neq_bc : _b ≠ _c)
-  (neq_ba : _b ≠ _a) (neq_ca : _c ≠ _a) (neq_cb : _c ≠ _b)
+private lemma false_of_uvvxyyz {_a _b _c : fin 3} {n : ℕ} {u v x y z: list (fin 3)}
+  (elimin : ∀ s : fin 3,  s ≠ _a  →  s ≠ _b  →  s ≠ _c  → false)
   (no_a: _a ∉ v ++ y) (nonempty: (v ++ y).length > 0)
   (counts_ab: ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _b)
   (counts_ac: ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _c)
-  (pumping: u ++ v ^ 2 ++ x ++ y ^ 2 ++ z ∈ lang_eq_eq)
-  (concatenating: list.repeat _a (n + 1) ++ list.repeat _b (n + 1) ++ list.repeat _c (n + 1) =
-      u ++ v ++ x ++ y ++ z) :
-  false :=
+  (counted_a : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _a = n + 1 + count_in (v ++ y) _a)
+  (counted_b : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _b = n + 1 + count_in (v ++ y) _b)
+  (counted_c : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _c = n + 1 + count_in (v ++ y) _c)
+  (pumping: u ++ v ^ 2 ++ x ++ y ^ 2 ++ z ∈ lang_eq_eq) :
+    false :=
 begin
   have extra_not_a : _b ∈ (v ++ y) ∨ _c ∈ (v ++ y),
   {
@@ -125,9 +124,8 @@ begin
       by_contradiction contr,
       push_neg at contr,
       cases contr with first_letter_not_b first_letter_not_c,
-      fin_cases first_letter;
-      --tauto,
-      sorry,
+      exact elimin ((v ++ y).nth_le 0 nonempty)
+                   first_letter_not_a first_letter_not_b first_letter_not_c,
     },
     cases first_letter_b_or_c with first_letter_b first_letter_c,
     {
@@ -170,14 +168,10 @@ begin
     },
     rw rearrange,
     repeat { rw ← count_in_append },
-    rw ← concatenating,
-    repeat { rw count_in_append },
+    rw counted_a,
+    rw count_in_append,
     rw zero_in_v,
     rw zero_in_y,
-    rw count_in_repeat_eq _a,
-    rw count_in_repeat_neq neq_ba,
-    rw count_in_repeat_neq neq_ca,
-    repeat { rw add_zero },
   },
   
   cases extra_not_a with extra_b extra_c,
@@ -195,12 +189,7 @@ begin
       },
       rw big_equality,
       repeat { rw ← count_in_append },
-      rw ← concatenating,
-      repeat { rw count_in_append },
-      rw count_in_repeat_eq _b,
-      rw count_in_repeat_neq neq_ab,
-      rw count_in_repeat_neq neq_cb,
-      rw ← count_in_append,
+      rw counted_b,
       have at_least_one_b : count_in (v ++ y) _b > 0,
       {
         exact count_in_pos_of_in extra_b,
@@ -225,12 +214,7 @@ begin
       },
       rw big_equality,
       repeat { rw ← count_in_append },
-      rw ← concatenating,
-      repeat { rw count_in_append },
-      rw count_in_repeat_eq _c,
-      rw count_in_repeat_neq neq_ac,
-      rw count_in_repeat_neq neq_bc,
-      rw ← count_in_append,
+      rw counted_c,
       have at_least_one_c : count_in (v ++ y) _c > 0,
       {
         exact count_in_pos_of_in extra_c,
@@ -246,6 +230,7 @@ end
 private lemma notCF_lang_eq_eq : ¬ is_CF lang_eq_eq :=
 begin
   intro h,
+
   have pum := CF_pumping h,
   cases pum with n pump,
   specialize pump (list.repeat a_ (n+1) ++ list.repeat b_ (n+1) ++ list.repeat c_ (n+1)),
@@ -354,23 +339,80 @@ begin
     exact counts_bc w w_in,
   },
 
-  cases not_all_letters with no_a rest,
+  have counted_letter : ∀ s, count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) s =
+      count_in (list.repeat a_ (n+1)) s + count_in (list.repeat b_ (n+1)) s + count_in (list.repeat c_ (n+1)) s + count_in (v ++ y) s,
   {
-    exact generic neq_ab neq_ac neq_bc neq_ba neq_ca neq_cb
-                  no_a nonempty counts_ab counts_ac pumping concatenating,
+    intro s,
+    rw ← concatenating,
+    repeat { rw count_in_append },
   },
-  cases rest with no_b no_c,
+  have counted_a : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) a_ = n + 1 + count_in (v ++ y) a_,
   {
-    sorry, /-
-    exact generic neq_bc neq_ba neq_ca neq_cb neq_ab neq_ac
-                  no_b nonempty counts_bc counts_ba pumping concatenating,-/
+    rw counted_letter,
+    rw count_in_repeat_eq a_,
+    rw count_in_repeat_neq neq_ba,
+    rw count_in_repeat_neq neq_ca,
+  },
+  have counted_b : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) b_ = n + 1 + count_in (v ++ y) b_,
+  {
+    rw counted_letter,
+    rw count_in_repeat_eq b_,
+    rw count_in_repeat_neq neq_cb,
+    rw count_in_repeat_neq neq_ab,
+    rw zero_add,
+  },
+  have counted_c : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) c_ = n + 1 + count_in (v ++ y) c_,
+  {
+    rw counted_letter,
+    rw count_in_repeat_eq c_,
+    rw count_in_repeat_neq neq_ac,
+    rw count_in_repeat_neq neq_bc,
+    rw zero_add,
+  },
+
+  have elimin_abc : ∀ s : fin 3,  s ≠ a_  →  s ≠ b_  →  s ≠ c_  → false,
+  {
+    intros s hsa hsb hsc,
+    fin_cases s,
+    {
+      rw a_ at hsa,
+      exact hsa rfl,
+    },
+    {
+      rw b_ at hsb,
+      exact hsb rfl,
+    },
+    {
+      rw c_ at hsc,
+      exact hsc rfl,
+    },
+  },
+  
+  cases not_all_letters with no_a foo,
+  {
+    exact false_of_uvvxyyz elimin_abc no_a nonempty counts_ab counts_ac
+                           counted_a counted_b counted_c pumping,
+  },
+  cases foo with no_b no_c,
+  {
+    have elimin_bca : ∀ s : fin 3,  s ≠ b_  →  s ≠ c_  →  s ≠ a_  → false,
+    {
+      intros s hsb hsc hsa,
+      exact elimin_abc s hsa hsb hsc,
+    },
+    exact false_of_uvvxyyz elimin_bca no_b nonempty counts_bc counts_ba
+                           counted_b counted_c counted_a pumping,
   },
   {
-    -- prove the case `no_c` in the same way as the case `no_a` above
-    sorry,
+    have elimin_cab : ∀ s : fin 3,  s ≠ c_  →  s ≠ a_  →  s ≠ b_  → false,
+    {
+      intros s hsc hsa hsb,
+      exact elimin_abc s hsa hsb hsc,
+    },
+    exact false_of_uvvxyyz elimin_cab no_c nonempty counts_ca counts_cb
+                           counted_c counted_a counted_b pumping,
   },
 end
-
 
 private lemma intersection_of_lang_eq_eq {w : list (fin 3)} :
   w ∈ lang_eq_eq  →  w ∈ lang_eq_any ⊓ lang_any_eq :=
