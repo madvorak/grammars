@@ -241,7 +241,7 @@ begin
         ≥ n + 1 : le_add_self
     ... ≥ n     : nat.le_succ n,
   }),
-  rcases pump with ⟨ u, v, x, y, z, concatenating, nonempty, short, pumping ⟩,
+  rcases pump with ⟨ u, v, x, y, z, concatenating, nonempty, vxy_short, pumping ⟩,
   specialize pumping 2,
 
   have neq_ab : a_ ≠ b_,
@@ -265,23 +265,135 @@ begin
     by_contradiction contr,
     push_neg at contr,
     rcases contr with ⟨ hva, -, hvc ⟩,
-    have long : (v ++ x ++ y).length > n,
+
+    have vxy_long : (v ++ x ++ y).length > n,
     {
       by_contradiction contr,
       push_neg at contr,
+      /-
       have bees : count_in (v ++ x ++ y) b_ ≤ n,
       {
         calc count_in (v ++ x ++ y) b_
             ≤ (v ++ x ++ y).length : count_in_le_length
         ... ≤ n                    : contr,
       },
+      -/
       -- we have `concatenating: list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1) = u ++ v ++ x ++ y ++ z`
       -- for the middle part `v ++ x ++ y` to contain both `a_` and `c_`
       -- it would have to contain the whole segment `list.repeat b_ (n + 1)` also
       -- which is in contradiction with `(v ++ x ++ y).length ≤ n` qed
-      sorry,
+      
+      have total_length_exactly : u.length + (v ++ x ++ y).length + z.length = 3 * n + 3,
+      {
+        have total_length := congr_arg list.length concatenating,
+        repeat { rw list.length_append at total_length },
+        repeat { rw list.length_repeat at total_length },
+        ring_nf at total_length,
+        rw ← add_assoc x.length at total_length,
+        rw ← add_assoc v.length at total_length,
+        rw ← add_assoc v.length at total_length,
+        rw ← add_assoc u.length at total_length,
+        rw ← list.length_append at total_length,
+        rw ← list.length_append at total_length,
+        exact total_length.symm,
+      },
+
+      have u_short : u.length ≤ n,
+      {
+        -- in contradiction with `hva: a_ ∈ v ++ y`
+
+        have relaxed_a : a_ ∈ v ++ x ++ y ++ z,
+        {
+          cases (list.mem_append.1 hva) with a_in_v a_in_y,
+          {
+            rw list.append_assoc,
+            rw list.append_assoc,
+            rw list.mem_append,
+            left,
+            exact a_in_v,
+          },
+          {
+            have a_in_yz : a_ ∈ y ++ z,
+            {
+              rw list.mem_append,
+              left,
+              exact a_in_y,
+            },
+            rw list.append_assoc,
+            rw list.mem_append,
+            right,
+            exact a_in_yz,
+          },
+        },
+        repeat { rw list.append_assoc at concatenating },
+        by_contradiction u_too_much,
+        push_neg at u_too_much,
+        rw ← nat.succ_le_iff at u_too_much,
+        rcases list.nth_le_of_mem relaxed_a with ⟨ nₐ, hnₐ, h_nthₐ ⟩,
+        have h_borrow : ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
+        {
+          rw nat.add_sub_cancel nₐ u.length,
+          use hnₐ,
+          exact h_nthₐ,
+        },
+        cases h_borrow with h_nth_a_pr h_nth_a,
+        have lt_len : (nₐ + u.length) < (u ++ (v ++ x ++ y ++ z)).length,
+        {
+          rw list.length_append,
+          linarith,
+        },
+        rw ← list.nth_le_append_right le_add_self lt_len at h_nth_a,
+
+        have orig_nth_le_eq_a : ∃ proofoo, (list.repeat a_ (n + 1) ++ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1))).nth_le (nₐ + u.length) proofoo = a_,
+        {
+          have rebracket : u ++ (v ++ (x ++ (y ++ z))) = u ++ (v ++ x ++ y ++ z),
+          {
+            simp only [ list.append_assoc ],
+          },
+          rw concatenating,
+          rw rebracket,
+          use lt_len,
+          exact h_nth_a,
+        },
+        cases orig_nth_le_eq_a with rrr_nth_le_eq_a_pr rrr_nth_le_eq_a,
+        rw @list.nth_le_append_right (fin 3) (list.repeat a_ (n + 1)) (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1)) (nₐ + u.length) (by {
+          rw list.length_repeat,
+          calc n + 1 ≤ u.length      : u_too_much
+               ...   ≤ nₐ + u.length : le_add_self,
+        }) (by {
+          rw concatenating,
+          rw ← list.append_assoc x,
+          rw ← list.append_assoc v,
+          rw ← list.append_assoc v,
+          exact lt_len,
+        }) at rrr_nth_le_eq_a,
+        have a_in_rb_rc : a_ ∈ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1)),
+        {
+          rw ← rrr_nth_le_eq_a,
+          apply list.nth_le_mem,
+        },
+        rw list.mem_append at a_in_rb_rc,
+        cases a_in_rb_rc,
+        {
+          rw list.mem_repeat at a_in_rb_rc,
+          exact neq_ab a_in_rb_rc.right,
+        },
+        {
+          rw list.mem_repeat at a_in_rb_rc,
+          exact neq_ac a_in_rb_rc.right,
+        },
+      },
+
+      have z_short : z.length ≤ n,
+      {
+        -- in contradiction with `hvc: c_ ∈ v ++ y`
+        sorry,
+      },
+
+      linarith,
     },
-    exact not_le_of_gt long short,
+
+    exact not_le_of_gt vxy_long vxy_short,
   },
 
   have counts_ab : ∀ w ∈ lang_eq_eq, count_in w a_ = count_in w b_,
