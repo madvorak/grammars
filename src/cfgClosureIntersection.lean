@@ -32,6 +32,7 @@ end
 
 lemma count_in_le_length {w : list (fin 3)} {a : (fin 3)} :
   count_in w a ≤ w.length :=
+-- maybe not needed in the end
 begin
   rw count_in,
   have upper_bound : ∀ y : (fin 3), (λ (x : fin 3), ite (x = a) 1 0) y ≤ 1,
@@ -270,19 +271,7 @@ begin
     {
       by_contradiction contr,
       push_neg at contr,
-      /-
-      have bees : count_in (v ++ x ++ y) b_ ≤ n,
-      {
-        calc count_in (v ++ x ++ y) b_
-            ≤ (v ++ x ++ y).length : count_in_le_length
-        ... ≤ n                    : contr,
-      },
-      -/
-      -- we have `concatenating: list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1) = u ++ v ++ x ++ y ++ z`
-      -- for the middle part `v ++ x ++ y` to contain both `a_` and `c_`
-      -- it would have to contain the whole segment `list.repeat b_ (n + 1)` also
-      -- which is in contradiction with `(v ++ x ++ y).length ≤ n` qed
-      
+
       have total_length_exactly : u.length + (v ++ x ++ y).length + z.length = 3 * n + 3,
       {
         have total_length := congr_arg list.length concatenating,
@@ -301,6 +290,8 @@ begin
       have u_short : u.length ≤ n,
       {
         -- in contradiction with `hva: a_ ∈ v ++ y`
+        by_contradiction u_too_much,
+        push_neg at u_too_much,
 
         have relaxed_a : a_ ∈ v ++ x ++ y ++ z,
         {
@@ -326,9 +317,6 @@ begin
           },
         },
         repeat { rw list.append_assoc at concatenating },
-        by_contradiction u_too_much,
-        push_neg at u_too_much,
-        rw ← nat.succ_le_iff at u_too_much,
         rcases list.nth_le_of_mem relaxed_a with ⟨ nₐ, hnₐ, h_nthₐ ⟩,
         have h_borrow : ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
         {
@@ -356,6 +344,7 @@ begin
           exact h_nth_a,
         },
         cases orig_nth_le_eq_a with rrr_nth_le_eq_a_pr rrr_nth_le_eq_a,
+
         rw @list.nth_le_append_right (fin 3) (list.repeat a_ (n + 1)) (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1)) (nₐ + u.length) (by {
           rw list.length_repeat,
           calc n + 1 ≤ u.length      : u_too_much
@@ -367,6 +356,7 @@ begin
           rw ← list.append_assoc v,
           exact lt_len,
         }) at rrr_nth_le_eq_a,
+        
         have a_in_rb_rc : a_ ∈ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1)),
         {
           rw ← rrr_nth_le_eq_a,
@@ -386,8 +376,88 @@ begin
 
       have z_short : z.length ≤ n,
       {
-        -- in contradiction with `hvc: c_ ∈ v ++ y`
-        sorry,
+        have our_bound : 2 * n + 2 < (u ++ v ++ x ++ y).length,
+        {
+          have relaxed_c : c_ ∈ u ++ v ++ x ++ y,
+          {
+            cases (list.mem_append.1 hvc) with c_in_v c_in_y,
+            {
+              have c_in_uv : c_ ∈ u ++ v,
+              {
+                rw list.mem_append,
+                right,
+                exact c_in_v,
+              },
+              rw list.append_assoc,
+              rw list.mem_append,
+              left,
+              exact c_in_uv,
+            },
+            {
+              rw list.mem_append,
+              right,
+              exact c_in_y,
+            },
+          },
+
+          repeat { rw list.append_assoc at concatenating },
+          rcases list.nth_le_of_mem relaxed_c with ⟨ m, hm, mth_is_c ⟩,
+
+          have m_big : m ≥ 2 * n + 2,
+          {
+            have orig_mth_is_c : ∃ proofoo, ((list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)) ++ list.repeat c_ (n + 1)).nth_le m proofoo = c_,
+            {
+              repeat { rw ← list.append_assoc at concatenating },
+              rw concatenating,
+              have m_small : m < (u ++ v ++ x ++ y ++ z).length,
+              {
+                rw list.length_append,
+                linarith,
+              },
+              rw ← @list.nth_le_append _ _ z m m_small at mth_is_c,
+              use m_small,
+              exact mth_is_c,
+            },
+            cases orig_mth_is_c with trash mth_is_c,
+
+            by_contradiction mle,
+            push_neg at mle,
+            have m_lt_len : m < (list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)).length,
+            {
+              rw list.length_append,
+              rw list.length_repeat,
+              rw list.length_repeat,
+              ring_nf,
+              exact mle,
+            },
+
+            rw list.nth_le_append _ m_lt_len at mth_is_c,
+            {
+              have c_in_ra_rb : c_ ∈ (list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)),
+              {
+                rw ← mth_is_c,
+                apply list.nth_le_mem,
+              },
+              rw list.mem_append at c_in_ra_rb,
+              cases c_in_ra_rb with c_in_ra c_in_rb,
+              {
+                rw list.mem_repeat at c_in_ra,
+                exact neq_ca c_in_ra.right,
+              },
+              {
+                rw list.mem_repeat at c_in_rb,
+                exact neq_cb c_in_rb.right,
+              },
+            },
+          },
+
+          linarith,
+        },
+
+        rw ← list.length_append at total_length_exactly,
+        rw ← list.append_assoc at total_length_exactly,
+        rw ← list.append_assoc at total_length_exactly,
+        linarith,
       },
 
       linarith,

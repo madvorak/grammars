@@ -341,7 +341,7 @@ begin
       rw lsTN₁_of_lsTN at hyp_bef₁,
       rw list.filter_map_append at hyp_bef₁,
       rw list.filter_map_append at hyp_bef₁,
-      convert hyp_bef₁,
+      convert hyp_bef₁,   -- maybe `list.nth_le_singleton` useful
       rw list.filter_map,
       rw sTN₁_of_sTN,
       rw list.filter_map,
