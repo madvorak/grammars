@@ -43,6 +43,26 @@ CF_grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
   ((list.map rule_of_rule₁ g₁.rules) ++ (list.map rule_of_rule₂ g₂.rules))
 )
 
+private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)
+| none := none
+| (some (sum.inl nonte)) := some nonte
+| (some (sum.inr _)) := none
+
+private def sTN₁_of_sTN : symbol T (union_grammar g₁ g₂).nt → option (symbol T g₁.nt)
+| (symbol.terminal te) := some (symbol.terminal te)
+| (symbol.nonterminal nont) := option.map symbol.nonterminal (oN₁_of_N nont)
+
+private def lsTN₁_of_lsTN (lis : list (symbol T (union_grammar g₁ g₂).nt)) :
+  list (symbol T g₁.nt) :=
+list.filter_map sTN₁_of_sTN lis
+
+private def rule₁_of_rule (r : (union_grammar g₁ g₂).nt × (list (symbol T (union_grammar g₁ g₂).nt))) :
+  option (g₁.nt × list (symbol T g₁.nt)) :=
+match oN₁_of_N r.fst with
+  | none := none
+  | some x := some (x, lsTN₁_of_lsTN r.snd)
+end
+
 
 section lemmata_subset
 
@@ -109,7 +129,8 @@ private lemma in_union_of_in_first (w : list T) :
 begin
   intro assum,
 
-  have deri_start : CF_derives (union_grammar g₁ g₂) [symbol.nonterminal none] [symbol.nonterminal (some (sum.inl g₁.initial))],
+  have deri_start : CF_derives (union_grammar g₁ g₂)
+      [symbol.nonterminal none] [symbol.nonterminal (some (sum.inl g₁.initial))],
   {
     apply CF_deri_of_tran,
     use (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]),
@@ -126,7 +147,8 @@ begin
     simp,
   },
 
-  have deri_rest : CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w),
+  have deri_rest : CF_derives (union_grammar g₁ g₂)
+      [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w),
   {
     have beginning : [symbol.nonterminal (some (sum.inl g₁.initial))]
                       = lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial],
@@ -202,26 +224,6 @@ begin
     ... = (0 + 1) + 1               : eq.symm (add_assoc 0 1 1)
     ... = 2                         : rfl),
   },
-end
-
-private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)
-| none := none
-| (some (sum.inl nonte)) := some nonte
-| (some (sum.inr _)) := none
-
-private def sTN₁_of_sTN : symbol T (union_grammar g₁ g₂).nt → option (symbol T g₁.nt)
-| (symbol.terminal te) := some (symbol.terminal te)
-| (symbol.nonterminal nont) := option.map symbol.nonterminal (oN₁_of_N nont)
-
-private def lsTN₁_of_lsTN (lis : list (symbol T (union_grammar g₁ g₂).nt)) :
-  list (symbol T g₁.nt) :=
-list.filter_map sTN₁_of_sTN lis
-
-private def rule₁_of_rule (r : (union_grammar g₁ g₂).nt × (list (symbol T (union_grammar g₁ g₂).nt))) :
-  option (g₁.nt × list (symbol T g₁.nt)) :=
-match oN₁_of_N r.fst with
-  | none := none
-  | some x := some (x, lsTN₁_of_lsTN r.snd)
 end
 
 private lemma self_of_sTN₁ (symb : symbol T g₁.nt) :
@@ -312,7 +314,8 @@ begin
       rw hyp_bef at h,
       specialize h (symbol.nonterminal orig_rule.fst),
       simp at h,
-      change orig_rule ∈ list.map (λ r, (some (sum.inr (prod.fst r)), lsTN_of_lsTN₂ (prod.snd r))) g₂.rules at orig_in₂,
+      change orig_rule ∈ list.map (λ r,
+          (some (sum.inr (prod.fst r)), lsTN_of_lsTN₂ (prod.snd r))) g₂.rules at orig_in₂,
       finish,
     },
     exact orig_in₁,
@@ -320,16 +323,16 @@ begin
 
   split,
   {
-    have back_rule : ∃ r, rule₁_of_rule orig_rule = some r ∧ r ∈ g₁.rules,
+    have back_rule : ∃ r ∈ g₁.rules, rule₁_of_rule orig_rule = some r,
     {
       rw list.mem_map at rule_from_g₁,
       rcases rule_from_g₁ with ⟨ rul, rul_in, rul_eq ⟩,
       have rul₁_eq := congr_arg rule₁_of_rule rul_eq,
       rw self_of_rule₁ at rul₁_eq,
       use rul,
-      exact ⟨ rul₁_eq.symm, rul_in ⟩,
+      exact ⟨ rul_in, rul₁_eq.symm ⟩,
     },
-    rcases back_rule with ⟨ some_rule, back_orig, some_in_g₁ ⟩,
+    rcases back_rule with ⟨ some_rule, some_in_g₁, back_orig ⟩,
     use some_rule,
     split,
     {
@@ -337,6 +340,12 @@ begin
     },
     use lsTN₁_of_lsTN v,
     use lsTN₁_of_lsTN w,
+    
+    rw list.mem_map at rule_from_g₁,
+    rcases rule_from_g₁ with ⟨ r₁, -, r₁_eq ⟩,
+    have r₁_conversion := congr_arg rule₁_of_rule r₁_eq,
+    rw self_of_rule₁ at r₁_conversion,
+    rw back_orig at r₁_conversion,
     split,
     {
       have hyp_bef₁ := congr_arg lsTN₁_of_lsTN hyp_bef,
@@ -344,12 +353,13 @@ begin
       rw lsTN₁_of_lsTN at hyp_bef₁,
       rw list.filter_map_append at hyp_bef₁,
       rw list.filter_map_append at hyp_bef₁,
-      convert hyp_bef₁,   -- maybe `list.nth_le_singleton` useful
-      rw list.filter_map,
-      rw sTN₁_of_sTN,
-      rw list.filter_map,
-
-      sorry,
+      repeat { rw ← lsTN₁_of_lsTN at hyp_bef₁ },
+      convert hyp_bef₁,
+      rw ← r₁_eq,
+      rw rule_of_rule₁,
+      dsimp,
+      rw (option.some.inj r₁_conversion),
+      refl,
     },
     {
       have hyp_aft₁ := congr_arg lsTN₁_of_lsTN hyp_aft,
@@ -357,21 +367,18 @@ begin
       rw lsTN₁_of_lsTN at hyp_aft₁,
       rw list.filter_map_append at hyp_aft₁,
       rw list.filter_map_append at hyp_aft₁,
-      -- TODO first solve it here (below is probably trash)
       repeat { rw ← lsTN₁_of_lsTN at hyp_aft₁ },
       convert hyp_aft₁,
-      rw list.mem_map at rule_from_g₁,
-      rcases rule_from_g₁ with ⟨ should_be_rule, should_be_in, should_be_eq ⟩,
-      rw ← should_be_eq,
+      rw ← r₁_eq,
       rw rule_of_rule₁,
-      dsimp,
       rw self_of_lsTN₁,
-
-      sorry,
+      symmetry,
+      rw (option.some.inj r₁_conversion),
     },
   },
   {
-    change orig_rule ∈ (list.map (λ r, (some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))) g₁.rules) at rule_from_g₁,
+    change orig_rule ∈ (list.map (λ r,
+        (some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))) g₁.rules) at rule_from_g₁,
     rw hyp_aft,
     rw hyp_bef at h,
     intros lette lette_in,
@@ -391,7 +398,8 @@ begin
     },
     cases lette_in,
     {
-      change orig_rule ∈ (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)), (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)) g₁.rules) at rule_from_g₁,
+      change orig_rule ∈ (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)),
+          (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)) g₁.rules) at rule_from_g₁,
       rw list.mem_iff_nth_le at rule_from_g₁,
       cases rule_from_g₁ with index rest,
       cases rest with index_small eq_orig_rule,
