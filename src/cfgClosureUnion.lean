@@ -284,7 +284,7 @@ private lemma tran₁_of_tran {input output : list (symbol T (union_grammar g₁
 begin
   rintro ⟨ orig_rule, orig_in, v, w, hyp_bef, hyp_aft ⟩,
 
-  have rule_from_g₁ : list.mem orig_rule (list.map rule_of_rule₁ g₁.rules),
+  have rule_from_g₁ : orig_rule ∈ (list.map (@rule_of_rule₁ _ _ g₂) g₁.rules),
   {
     cases orig_in,
     {
@@ -320,17 +320,20 @@ begin
 
   split,
   {
-    have back_rule : ∃ r, rule₁_of_rule orig_rule = some r,
+    have back_rule : ∃ r, rule₁_of_rule orig_rule = some r ∧ r ∈ g₁.rules,
     {
-      
-      sorry,
+      rw list.mem_map at rule_from_g₁,
+      rcases rule_from_g₁ with ⟨ rul, rul_in, rul_eq ⟩,
+      have rul₁_eq := congr_arg rule₁_of_rule rul_eq,
+      rw self_of_rule₁ at rul₁_eq,
+      use rul,
+      exact ⟨ rul₁_eq.symm, rul_in ⟩,
     },
-    cases back_rule with some_rule back_orig,
+    rcases back_rule with ⟨ some_rule, back_orig, some_in_g₁ ⟩,
     use some_rule,
     split,
     {
-      
-      sorry,
+      exact some_in_g₁
     },
     use lsTN₁_of_lsTN v,
     use lsTN₁_of_lsTN w,
@@ -354,14 +357,21 @@ begin
       rw lsTN₁_of_lsTN at hyp_aft₁,
       rw list.filter_map_append at hyp_aft₁,
       rw list.filter_map_append at hyp_aft₁,
+      -- TODO first solve it here (below is probably trash)
+      repeat { rw ← lsTN₁_of_lsTN at hyp_aft₁ },
       convert hyp_aft₁,
-      -- TODO first solve is here
+      rw list.mem_map at rule_from_g₁,
+      rcases rule_from_g₁ with ⟨ should_be_rule, should_be_in, should_be_eq ⟩,
+      rw ← should_be_eq,
+      rw rule_of_rule₁,
+      dsimp,
+      rw self_of_lsTN₁,
 
       sorry,
     },
   },
   {
-    change list.mem orig_rule (list.map (λ r, (some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))) g₁.rules) at rule_from_g₁,
+    change orig_rule ∈ (list.map (λ r, (some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))) g₁.rules) at rule_from_g₁,
     rw hyp_aft,
     rw hyp_bef at h,
     intros lette lette_in,
@@ -381,16 +391,9 @@ begin
     },
     cases lette_in,
     {
-      --change orig_rule ∈ (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)), (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)) g₁.rules) at rule_from_g₁,
-      --rw list.mem_iff_nth_le at rule_from_g₁,
-      have rule_from_1 : orig_rule ∈ (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)), (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)) g₁.rules),
-      {
-        --exact rule_from_g₁,
-        sorry,
-        -- Why isn't it the same ???
-      },
-      rw list.mem_iff_nth_le at rule_from_1,
-      cases rule_from_1 with index rest,
+      change orig_rule ∈ (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)), (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)) g₁.rules) at rule_from_g₁,
+      rw list.mem_iff_nth_le at rule_from_g₁,
+      cases rule_from_g₁ with index rest,
       cases rest with index_small eq_orig_rule,
       rw ← eq_orig_rule at lette_in,
       simp at lette_in,
