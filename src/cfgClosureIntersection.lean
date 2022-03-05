@@ -4,24 +4,24 @@ import tactic
 
 
 section reusable_defs_and_lemmata
+variables {α : Type} [decidable_eq α]
 
---def count_in {α : Type} [h : decidable (λ x y : α, x = y)] (lis : list α) (a : α) : ℕ :=
-def count_in (w : list (fin 3)) (a : (fin 3)) : ℕ :=
+def count_in (w : list α) (a : α) : ℕ :=
 list.sum (list.map (λ x, ite (x = a) 1 0) w)
 
-lemma count_in_repeat_eq (a : (fin 3)) (n : ℕ) :
+lemma count_in_repeat_eq (a : α) (n : ℕ) :
   count_in (list.repeat a n) a  =  n  :=
 begin
   sorry,
 end
 
-lemma count_in_repeat_neq {a : (fin 3)} {b : (fin 3)} (h : a ≠ b) (n : ℕ) :
+lemma count_in_repeat_neq {a : α} {b : α} (h : a ≠ b) (n : ℕ) :
   count_in (list.repeat a n) b  =  0  :=
 begin
   sorry,
 end
 
-lemma count_in_append (w₁ w₂ : list (fin 3)) (a : (fin 3)) :
+lemma count_in_append (w₁ w₂ : list α) (a : α) :
   count_in (w₁ ++ w₂) a  =  count_in w₁ a  +  count_in w₂ a  :=
 begin
   rw count_in,
@@ -30,12 +30,12 @@ begin
   refl,
 end
 
-lemma count_in_le_length {w : list (fin 3)} {a : (fin 3)} :
+lemma count_in_le_length {w : list α} {a : α} :
   count_in w a ≤ w.length :=
 -- maybe not needed in the end
 begin
   rw count_in,
-  have upper_bound : ∀ y : (fin 3), (λ (x : fin 3), ite (x = a) 1 0) y ≤ 1,
+  have upper_bound : ∀ y : (α), (λ (x : α), ite (x = a) 1 0) y ≤ 1,
   {
     intro z,
     simp,
@@ -50,13 +50,13 @@ begin
       exact h,
     },
   },
-  calc (list.map (λ (x : fin 3), ite (x = a) 1 0) w).sum
-      ≤ (list.map (λ (x : fin 3), 1) w).sum : sorry
-  ... ≤ 1 * w.length                        : sorry
-  ... = w.length                            : by rw one_mul,
+  calc (list.map (λ (x : α), ite (x = a) 1 0) w).sum
+      ≤ (list.map (λ (x : α), 1) w).sum : sorry
+  ... ≤ 1 * w.length                    : sorry
+  ... = w.length                        : by rw one_mul,
 end
 
-lemma count_in_pos_of_in {w : list (fin 3)} {a : (fin 3)} (h : a ∈ w) :
+lemma count_in_pos_of_in {w : list α} {a : α} (h : a ∈ w) :
   count_in w a > 0 :=
 begin
   by_contradiction contr,
@@ -65,7 +65,7 @@ begin
   sorry,
 end
 
-lemma count_in_zero_of_notin {w : list (fin 3)} {a : (fin 3)} (h : a ∉ w) :
+lemma count_in_zero_of_notin {w : list α} {a : α} (h : a ∉ w) :
   count_in w a = 0 :=
 begin
   sorry,
