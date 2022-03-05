@@ -18,23 +18,35 @@ private def sTN_of_sTN₁ : (symbol T g₁.nt) → (symbol T (option (g₁.nt �
 | (symbol.terminal st) := (symbol.terminal st)
 | (symbol.nonterminal snt) := (symbol.nonterminal (some (sum.inl snt)))
 
-private def sTN_of_sTN₂ : (symbol T g₂.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt)))
-| (symbol.terminal st) := (symbol.terminal st)
-| (symbol.nonterminal snt) := (symbol.nonterminal (some (sum.inr snt)))
+private def sTN_of_sTN₀ (g₀ : CF_grammar T) (gnt_of_g₀nt : g₀.nt → (option (g₁.nt ⊕ g₂.nt))):
+    (symbol T g₀.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt)))
+| (symbol.terminal st) := symbol.terminal st
+| (symbol.nonterminal snt) := symbol.nonterminal (gnt_of_g₀nt snt)
+
+private def sTN_of_sTN₂ : (symbol T g₂.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt))) :=
+sTN_of_sTN₀ g₂ (λ x, some (sum.inr x))
 
 private def lsTN_of_lsTN₁ : list (symbol T g₁.nt) → list (symbol T (option (g₁.nt ⊕ g₂.nt))) :=
 list.map sTN_of_sTN₁
 
+private def lsTN_of_lsTN₀ (g₀ : CF_grammar T) (gnt_of_g₀nt : g₀.nt → (option (g₁.nt ⊕ g₂.nt))) :
+    list (symbol T g₀.nt) → list (symbol T (option (g₁.nt ⊕ g₂.nt))) :=
+list.map (sTN_of_sTN₀ g₀ gnt_of_g₀nt)
+
 private def lsTN_of_lsTN₂ : list (symbol T g₂.nt) → list (symbol T (option (g₁.nt ⊕ g₂.nt))) :=
-list.map sTN_of_sTN₂
+lsTN_of_lsTN₀ g₂ (λ x, some (sum.inr x))
 
 private def rule_of_rule₁ (r : g₁.nt × (list (symbol T g₁.nt))) :
   ((option (g₁.nt ⊕ g₂.nt)) × (list (symbol T (option (g₁.nt ⊕ g₂.nt))))) :=
 (some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))
 
+private def rule_of_rule₀ (g₀ : CF_grammar T) (gnt_of_g₀nt : g₀.nt → (option (g₁.nt ⊕ g₂.nt))) (r : g₀.nt × (list (symbol T g₀.nt))) :
+  ((option (g₁.nt ⊕ g₂.nt)) × (list (symbol T (option (g₁.nt ⊕ g₂.nt))))) :=
+(gnt_of_g₀nt (prod.fst r), lsTN_of_lsTN₀ g₀ gnt_of_g₀nt (prod.snd r))
+
 private def rule_of_rule₂ (r : g₂.nt × (list (symbol T g₂.nt))) :
   ((option (g₁.nt ⊕ g₂.nt)) × (list (symbol T (option (g₁.nt ⊕ g₂.nt))))) :=
-(some (sum.inr (prod.fst r)), lsTN_of_lsTN₂ (prod.snd r))
+rule_of_rule₀ g₂ (λ x, some (sum.inr x)) r
 
 private def union_grammar (g₁ g₂ : CF_grammar T) : CF_grammar T :=
 CF_grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
@@ -43,24 +55,152 @@ CF_grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
   ((list.map rule_of_rule₁ g₁.rules) ++ (list.map rule_of_rule₂ g₂.rules))
 )
 
+
 private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)
 | none := none
 | (some (sum.inl nonte)) := some nonte
 | (some (sum.inr _)) := none
 
+private def oN₀_of_N (g₀ : CF_grammar T) (gnt_of_g₀nt : g₀.nt → (union_grammar g₁ g₂).nt) :
+    (union_grammar g₁ g₂).nt → (option g₀.nt)
+| (gnt_of_g₀nt nonte) := some nonte
+| _ := none
+
+private def oN₂_of_N : (union_grammar g₁ g₂).nt → (option g₂.nt)
+| none := none
+| (some (sum.inl _)) := none
+| (some (sum.inr nonte)) := some nonte
+
 private def sTN₁_of_sTN : symbol T (union_grammar g₁ g₂).nt → option (symbol T g₁.nt)
 | (symbol.terminal te) := some (symbol.terminal te)
 | (symbol.nonterminal nont) := option.map symbol.nonterminal (oN₁_of_N nont)
 
+private def sTN₀_of_sTN (g₀ : CF_grammar T) (gnt_of_g₀nt : g₀.nt → (union_grammar g₁ g₂).nt) :
+    symbol T (union_grammar g₁ g₂).nt → option (symbol T g₀.nt)
+| (symbol.terminal te) := some (symbol.terminal te)
+| (symbol.nonterminal nont) := option.map symbol.nonterminal (oN₀_of_N g₀ gnt_of_g₀nt nont)
+
+private def sTN₂_of_sTN : symbol T (union_grammar g₁ g₂).nt → option (symbol T g₂.nt)
+| (symbol.terminal te) := some (symbol.terminal te)
+| (symbol.nonterminal nont) := option.map symbol.nonterminal (oN₂_of_N nont)
+
+private lemma self_of_sTN₁ (symb : symbol T g₁.nt) :
+  sTN₁_of_sTN (@sTN_of_sTN₁ _ _ g₂ symb) = symb :=
+begin
+  cases symb;
+  finish,
+end
+
+private lemma self_of_sTN₂ (symb : symbol T g₂.nt) :
+  sTN₂_of_sTN (@sTN_of_sTN₂ _ g₁ _ symb) = symb :=
+begin
+  cases symb;
+  finish,
+end
+
 private def lsTN₁_of_lsTN (lis : list (symbol T (union_grammar g₁ g₂).nt)) :
   list (symbol T g₁.nt) :=
 list.filter_map sTN₁_of_sTN lis
+
+private def lsTN₀_of_lsTN (g₀ : CF_grammar T) (gnt_of_g₀nt : g₀.nt → (option (g₁.nt ⊕ g₂.nt)))
+    (lis : list (symbol T (union_grammar g₁ g₂).nt)) :
+  list (symbol T g₀.nt) :=
+list.filter_map sTN₀_of_sTN lis
+
+private def lsTN₂_of_lsTN (lis : list (symbol T (union_grammar g₁ g₂).nt)) :
+  list (symbol T g₂.nt) :=
+list.filter_map sTN₂_of_sTN lis
+
+private lemma self_of_lsTN₁ (stri : list (symbol T g₁.nt)) :
+  lsTN₁_of_lsTN (@lsTN_of_lsTN₁ _ _ g₂ stri) = stri :=
+begin
+  unfold lsTN_of_lsTN₁,
+  unfold lsTN₁_of_lsTN,
+  rw list.filter_map_map,
+  change list.filter_map (λ x, sTN₁_of_sTN (sTN_of_sTN₁ x)) stri = stri,
+  convert_to list.filter_map (λ x, some x) stri = stri,
+  {
+    have equal_functions : (λ (x : symbol T g₁.nt), sTN₁_of_sTN (sTN_of_sTN₁ x)) = (λ x, some x),
+    {
+      ext1,
+      apply self_of_sTN₁,
+    },
+    rw ← equal_functions,
+    apply congr_fun,
+    apply congr_arg,
+    ext1,
+    apply congr_fun,
+    refl,
+  },
+  finish,
+end
+
+private lemma self_of_lsTN₂ (stri : list (symbol T g₂.nt)) :
+  lsTN₂_of_lsTN (@lsTN_of_lsTN₂ _ g₁ _ stri) = stri :=
+begin
+  unfold lsTN_of_lsTN₂,
+  unfold lsTN₂_of_lsTN,
+  rw list.filter_map_map,
+  change list.filter_map (λ x, sTN₂_of_sTN (sTN_of_sTN₂ x)) stri = stri,
+  convert_to list.filter_map (λ x, some x) stri = stri,
+  {
+    have equal_functions : (λ (x : symbol T g₂.nt), sTN₂_of_sTN (sTN_of_sTN₂ x)) = (λ x, some x),
+    {
+      ext1,
+      apply self_of_sTN₂,
+    },
+    rw ← equal_functions,
+    apply congr_fun,
+    apply congr_arg,
+    ext1,
+    apply congr_fun,
+    refl,
+  },
+  finish,
+end
 
 private def rule₁_of_rule (r : (union_grammar g₁ g₂).nt × (list (symbol T (union_grammar g₁ g₂).nt))) :
   option (g₁.nt × list (symbol T g₁.nt)) :=
 match oN₁_of_N r.fst with
   | none := none
   | some x := some (x, lsTN₁_of_lsTN r.snd)
+end
+
+private def rule₂_of_rule (r : (union_grammar g₁ g₂).nt × (list (symbol T (union_grammar g₁ g₂).nt))) :
+  option (g₂.nt × list (symbol T g₂.nt)) :=
+match oN₂_of_N r.fst with
+  | none := none
+  | some x := some (x, lsTN₂_of_lsTN r.snd)
+end
+
+private lemma self_of_rule₁ (r : g₁.nt × list (symbol T g₁.nt)) :
+  rule₁_of_rule (@rule_of_rule₁ _ _ g₂ r) = r :=
+begin
+  unfold rule_of_rule₁,
+  unfold rule₁_of_rule,
+  simp,
+  unfold oN₁_of_N,
+  cases r,
+  simp,
+  unfold rule₁_of_rule,
+  simp,
+  rw self_of_lsTN₁,
+  refl,
+end
+
+private lemma self_of_rule₂ (r : g₂.nt × list (symbol T g₂.nt)) :
+  rule₂_of_rule (@rule_of_rule₂ _ g₁ _ r) = r :=
+begin
+  unfold rule_of_rule₂,
+  unfold rule₂_of_rule,
+  simp,
+  unfold oN₂_of_N,
+  cases r,
+  simp,
+  unfold rule₂_of_rule,
+  simp,
+  rw self_of_lsTN₂,
+  refl,
 end
 
 
@@ -226,50 +366,178 @@ begin
   },
 end
 
-private lemma self_of_sTN₁ (symb : symbol T g₁.nt) :
-  sTN₁_of_sTN (@sTN_of_sTN₁ _ _ g₂ symb) = symb :=
+private lemma tran₀_of_tran (g₀ : CF_grammar T) (input output : list (symbol T (union_grammar g₁ g₂).nt))
+  (gnt_of_g₀nt : g₀.nt → (union_grammar g₁ g₂).nt)
+  (lsTN_of_lsTN₀ : list (symbol T g₀.nt) → list (symbol T (option (g₁.nt ⊕ g₂.nt))))
+  (lsTN₀_of_lsTN : list (symbol T (union_grammar g₁ g₂).nt) → list (symbol T g₀.nt))
+  (rule_of_rule₀ : g₀.nt × (list (symbol T g₀.nt)) → 
+      ((union_grammar g₁ g₂).nt) × (list (symbol T (union_grammar g₁ g₂).nt)))
+  (rule₀_of_rule : ((union_grammar g₁ g₂).nt) × (list (symbol T (union_grammar g₁ g₂).nt)) →
+      option (g₀.nt × (list (symbol T g₀.nt))))
+  (self_of_rule₀ : ∀ r, rule₀_of_rule (rule_of_rule₀ r) = r)
+  (h : ∀ letter ∈ input, or
+    (∃ t : T, letter = symbol.terminal t)
+    (∃ n₁ : g₀.nt, letter = symbol.nonterminal (gnt_of_g₀nt n₁))
+  ):
+  CF_transforms (union_grammar g₁ g₂) input output →
+    CF_transforms g₀ (lsTN₀_of_lsTN input) (lsTN₀_of_lsTN output) ∧
+    (∀ letter ∈ output, or
+      (∃ t : T, letter = symbol.terminal t)
+      (∃ n₀ : g₀.nt, letter = symbol.nonterminal (gnt_of_g₀nt n₀))
+    ) :=
 begin
-  cases symb;
-  finish,
-end
+  rintro ⟨ orig_rule, orig_in, v, w, hyp_bef, hyp_aft ⟩,
 
-private lemma self_of_lsTN₁ (stri : list (symbol T g₁.nt)) :
-  lsTN₁_of_lsTN (@lsTN_of_lsTN₁ _ _ g₂ stri) = stri :=
-begin
-  unfold lsTN_of_lsTN₁,
-  unfold lsTN₁_of_lsTN,
-  rw list.filter_map_map,
-  change list.filter_map (λ x, sTN₁_of_sTN (sTN_of_sTN₁ x)) stri = stri,
-  convert_to list.filter_map (λ x, some x) stri = stri,
+  have rule_from_g₀ : orig_rule ∈ (list.map rule_of_rule₀ g₀.rules),
   {
-    have equal_functions : (λ (x : symbol T g₁.nt), sTN₁_of_sTN (sTN_of_sTN₁ x)) = (λ x, some x),
+    cases orig_in,
     {
-      ext1,
-      apply self_of_sTN₁,
+      /-exfalso,
+      rw orig_in at hyp_bef,
+      dsimp at hyp_bef,
+      rw hyp_bef at h,
+      specialize h (symbol.nonterminal none),
+      finish,-/
+      sorry,
     },
-    rw ← equal_functions,
-    apply congr_fun,
-    apply congr_arg,
-    ext1,
-    apply congr_fun,
-    refl,
+    cases orig_in,
+    {
+      /-exfalso,
+      rw orig_in at hyp_bef,
+      dsimp at hyp_bef,
+      rw hyp_bef at h,
+      specialize h (symbol.nonterminal none),
+      finish,-/
+      sorry,
+    },
+    /-
+    change orig_rule ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at orig_in,
+    rw list.mem_append at orig_in,
+    cases orig_in.symm with orig_in₂ orig_in₁,
+    {
+      exfalso,
+      rw hyp_bef at h,
+      specialize h (symbol.nonterminal orig_rule.fst),
+      simp at h,
+      change orig_rule ∈ list.map (λ r,
+          (some (sum.inr (prod.fst r)), lsTN_of_lsTN₂ (prod.snd r))) g₂.rules at orig_in₂,
+      finish,
+    },
+    exact orig_in₁,-/ sorry,
   },
-  finish,
-end
 
-private lemma self_of_rule₁ (r : g₁.nt × list (symbol T g₁.nt)) :
-  rule₁_of_rule (@rule_of_rule₁ _ _ g₂ r) = r :=
-begin
-  unfold rule_of_rule₁,
-  unfold rule₁_of_rule,
-  simp,
-  unfold oN₁_of_N,
-  cases r,
-  simp,
-  unfold rule₁_of_rule,
-  simp,
-  rw self_of_lsTN₁,
-  refl,
+  split,
+  {
+    have back_rule : ∃ r ∈ g₀.rules, rule₀_of_rule orig_rule = some r,
+    {
+      rw list.mem_map at rule_from_g₀,
+      rcases rule_from_g₀ with ⟨ rul, rul_in, rul_eq ⟩,
+      have rul₀_eq := congr_arg rule₀_of_rule rul_eq,
+      rw self_of_rule₀ at rul₀_eq,
+      use rul,
+      exact ⟨ rul_in, rul₀_eq.symm ⟩,
+    },
+    rcases back_rule with ⟨ some_rule, some_in_g₀, back_orig ⟩,
+    use some_rule,
+    split,
+    {
+      exact some_in_g₀
+    },
+    use lsTN₀_of_lsTN v,
+    use lsTN₀_of_lsTN w,
+    
+    rw list.mem_map at rule_from_g₀,
+    rcases rule_from_g₀ with ⟨ r₀, -, r₀_eq ⟩,
+    have r₀_conversion := congr_arg rule₀_of_rule r₀_eq,
+    rw self_of_rule₀ at r₀_conversion,
+    rw back_orig at r₀_conversion,
+    split,
+    {
+      have hyp_bef₀ := congr_arg lsTN₀_of_lsTN hyp_bef,
+      /-
+      rw lsTN₀_of_lsTN at hyp_bef₀,
+      rw lsTN₀_of_lsTN at hyp_bef₀,
+      rw list.filter_map_append at hyp_bef₀,
+      rw list.filter_map_append at hyp_bef₀,
+      repeat { rw ← lsTN₀_of_lsTN at hyp_bef₀ },
+      convert hyp_bef₀,
+      rw ← r₀_eq,
+      rw rule_of_rule₀,
+      dsimp,
+      rw (option.some.inj r₀_conversion),
+      refl,-/ sorry
+    },
+    {
+      have hyp_aft₀ := congr_arg lsTN₀_of_lsTN hyp_aft,
+      /-
+      rw lsTN₁_of_lsTN at hyp_aft₁,
+      rw lsTN₁_of_lsTN at hyp_aft₁,
+      rw list.filter_map_append at hyp_aft₁,
+      rw list.filter_map_append at hyp_aft₁,
+      repeat { rw ← lsTN₁_of_lsTN at hyp_aft₁ },
+      convert hyp_aft₁,
+      rw ← r₁_eq,
+      rw rule_of_rule₁,
+      rw self_of_lsTN₁,
+      symmetry,
+      rw (option.some.inj r₁_conversion),-/ sorry
+    },
+  },
+  {
+    --change orig_rule ∈ (list.map (λ r,
+    --    (gnt_of_g₀nt (prod.fst r), lsTN_of_lsTN₀ (prod.snd r))) g₀.rules) at rule_from_g₀,
+    rw hyp_aft,
+    rw hyp_bef at h,
+    intros lette lette_in,
+    specialize h lette,
+    rw list.append_assoc at lette_in,
+    rw list.mem_append at lette_in,
+    rw list.mem_append at lette_in,
+    rw list.append_assoc at h,
+    rw list.mem_append at h,
+    rw list.mem_append at h,
+    cases lette_in,
+    {
+      exact h (by {
+        left,
+        exact lette_in,
+      }),
+    },
+    cases lette_in,
+    {
+      --change orig_rule ∈ (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)),
+      --    (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)) g₁.rules) at rule_from_g₁,
+      rw list.mem_iff_nth_le at rule_from_g₀,
+      cases rule_from_g₀ with index rest,
+      cases rest with index_small eq_orig_rule,
+      rw ← eq_orig_rule at lette_in,
+      simp at lette_in,
+      /-
+      unfold lsTN_of_lsTN₀ at lette_in,
+      simp at lette_in,
+      cases lette_in with a conju,
+      cases conju with trash treasure,
+      rw ← treasure,
+      cases a,
+      {
+        left,
+        use a,
+        refl,
+      },
+      {
+        right,
+        use a,
+        refl,
+      },-/ sorry
+    },
+    {
+      exact h (by {
+        right,
+        right,
+        exact lette_in,
+      }),
+    },
+  },
 end
 
 private lemma tran₁_of_tran {input output : list (symbol T (union_grammar g₁ g₂).nt)}

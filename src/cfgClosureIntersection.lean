@@ -644,7 +644,7 @@ begin
     },
     have n₂th₂ : (list.take n₂ (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂))).nth (n₂ - 1) ≠ some a_,
     {
-
+      
       sorry,
     },
     
