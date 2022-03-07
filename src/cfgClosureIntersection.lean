@@ -35,7 +35,7 @@ lemma count_in_le_length {w : list α} {a : α} :
 -- maybe not needed in the end
 begin
   rw count_in,
-  have upper_bound : ∀ y : (α), (λ (x : α), ite (x = a) 1 0) y ≤ 1,
+  have upper_bound : ∀ y : α, (λ (x : α), ite (x = a) 1 0) y ≤ 1,
   {
     intro z,
     simp,
