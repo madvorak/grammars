@@ -644,31 +644,70 @@ begin
   have n_le : n₁ ≤ n₂,
   {
     by_contradiction contr,
-    -- probably messed up
-    have n₂th := congr_arg (λ li, list.nth li (n₂ - 1)) equ,
-    simp at n₂th,
-    have n₂th₁ : (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth (n₂ - 1) = some a_,
+    have n₁_le_len₁ : (n₁ - 1) < (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).length,
     {
-      have foo : n₂ - 1 < (list.repeat a_ n₂).length,
+      rw ← list.append_assoc,
+      rw list.length_append,
+      rw list.length_append,
+      rw list.length_repeat,
+      rw add_assoc,
+      apply nat.lt_add_right,
+      exact nat.sub_lt n₁pos (nat.succ_pos 0),
+    },
+    have n₁_le_len₂ : (n₁ - 1) < (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).length,
+    {
+      rw ← list.append_assoc,
+      have equ_len := congr_arg list.length equ,
+      rw ← equ_len,
+      rw list.append_assoc,
+      exact n₁_le_len₁,
+    },
+    have n₁th : (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth_le (n₁ - 1) n₁_le_len₁ =
+                (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth_le (n₁ - 1) n₁_le_len₂,
+    {
+      finish,
+    },
+    have n₁th₁ : (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth_le (n₁ - 1) n₁_le_len₁ = a_,
+    {
+      have foo : (n₁ - 1) < (list.repeat a_ n₁).length,
       {
-        apply nat.lt_of_succ_le,
-        apply le_of_eq,
         rw list.length_repeat,
-        exact nat.succ_pred_eq_of_pos n₂pos,
+        exact nat.sub_lt n₁pos (nat.succ_pos 0),
       },
-      rw list.nth_append foo at n₂th,
-      convert n₂th,
-      rw list.nth_le_nth foo,
-      rw list.nth_le_repeat,
+      rw list.nth_le_append n₁_le_len₁ foo,
+      exact list.nth_le_repeat a_ foo,
     },
-    have n₂th₂ : (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth (n₂ - 1) ≠ some a_,
+    have n₁th₂ : (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth_le (n₁ - 1) n₁_le_len₂ ≠ a_,
     {
-
-      sorry,
+      have foo : (list.repeat a_ n₂).length ≤ (n₁ - 1),
+      {
+        rw list.length_repeat,
+        push_neg at contr,
+        exact nat.le_pred_of_lt contr,
+      },
+      rw list.nth_le_append_right foo n₁_le_len₂,
+      by_contradiction,
+      have a_in_bc : a_ ∈ (list.repeat b_ m₂ ++ list.repeat c_ m₂),
+      {
+        rw ← h,
+        apply list.nth_le_mem,
+      },
+      rw list.mem_append at a_in_bc,
+      cases a_in_bc,
+      {
+        rw list.mem_repeat at a_in_bc,
+        have a_neq_b : a_ ≠ b_, dec_trivial,
+        exact a_neq_b a_in_bc.right,
+      },
+      {
+        rw list.mem_repeat at a_in_bc,
+        have a_neq_c : a_ ≠ c_, dec_trivial,
+        exact a_neq_c a_in_bc.right,
+      }
     },
-    rw n₂th₁ at n₂th,
-    rw ← n₂th at n₂th₂,
-    exact false_of_ne n₂th₂,
+    rw n₁th₁ at n₁th,
+    rw ← n₁th at n₁th₂,
+    exact false_of_ne n₁th₂,
   },
   have m_ge : m₁ ≥ m₂,
   {
