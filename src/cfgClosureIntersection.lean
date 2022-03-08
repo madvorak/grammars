@@ -32,7 +32,7 @@ end
 
 lemma count_in_le_length {w : list α} {a : α} :
   count_in w a ≤ w.length :=
--- maybe not needed in the end
+-- maybe not be needed in the end
 begin
   rw count_in,
   have upper_bound : ∀ y : α, (λ (x : α), ite (x = a) 1 0) y ≤ 1,
@@ -615,6 +615,27 @@ begin
   rintro ⟨ ⟨ n₁, m₁, h₁ ⟩, ⟨ n₂, m₂, h₂ ⟩ ⟩,
   have equ := eq.trans h₁.symm h₂,
 
+  by_cases hn₁ : n₁ = 0,
+  {
+    have hn₂ : n₂ = 0,
+      sorry, -- follows from `hn₁` using `equ`
+    have hm₂ : m₂ = 0,
+      sorry, -- follows from `hn₁` using `equ`
+    use 0,
+    rw hn₂ at h₂,
+    rw hm₂ at h₂,
+    exact h₂,
+  },
+
+  have n₁pos : n₁ > 0 :=
+    pos_iff_ne_zero.mpr hn₁,
+  have n₂pos : n₂ > 0,
+    sorry, -- follows from `n₁pos` using `equ`
+  have m₂pos : m₂ > 0,
+    sorry, -- follows from `n₁pos` using `equ`
+  have m₁pos : m₁ > 0,
+    sorry, -- follows from `m₂pos` using `equ`
+
   have n_ge : n₁ ≥ n₂,
   {
     
@@ -628,8 +649,6 @@ begin
     simp at n₂th,
     have n₂th₁ : (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth (n₂ - 1) = some a_,
     {
-      have n₂pos : n₂ > 0,
-        sorry, -- TODO at the beginning of the proof !!!
       have foo : n₂ - 1 < (list.repeat a_ n₂).length,
       {
         apply nat.lt_of_succ_le,
@@ -642,13 +661,14 @@ begin
       rw list.nth_le_nth foo,
       rw list.nth_le_repeat,
     },
-    have n₂th₂ : (list.take n₂ (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂))).nth (n₂ - 1) ≠ some a_,
+    have n₂th₂ : (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth (n₂ - 1) ≠ some a_,
     {
 
       sorry,
     },
-    
-    sorry,
+    rw n₂th₁ at n₂th,
+    rw ← n₂th at n₂th₂,
+    exact false_of_ne n₂th₂,
   },
   have m_ge : m₁ ≥ m₂,
   {
