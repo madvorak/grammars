@@ -609,7 +609,7 @@ begin
   },
 end
 
-private lemma qwerty (n₁ m₁ n₂ m₂ : ℕ) (n₁pos : n₁ > 0) 
+private lemma qwerty (n₁ m₁ n₂ m₂ : ℕ) (n₁pos : n₁ > 0)
                      (a_ b_ c_ : fin 3) (a_neq_b : a_ ≠ b_) (a_neq_c : a_ ≠ c_)
                      (equ: list.repeat a_ n₁ ++ list.repeat b_ n₁ ++ list.repeat c_ m₁ =
                            list.repeat a_ n₂ ++ list.repeat b_ m₂ ++ list.repeat c_ m₂) :
@@ -689,9 +689,47 @@ begin
   by_cases hn₁ : n₁ = 0,
   {
     have hn₂ : n₂ = 0,
-      sorry, -- follows from `hn₁` using `equ`
+    {
+      by_contradiction,
+      have pos := nat.pos_of_ne_zero h,
+      clear h,
+      have a_in_equ := congr_arg (λ lis, a_ ∈ lis) equ,
+      clear equ,
+      rw hn₁ at a_in_equ,
+      have a_yes : a_ ∈ list.repeat a_ n₂,
+      {
+        rw list.mem_repeat,
+        exact and.intro (ne_of_lt pos).symm rfl,
+      },
+      simp [a_yes] at a_in_equ,
+      rw list.mem_repeat at a_in_equ,
+      have a_neq_c : a_ ≠ c_,
+      {
+        dec_trivial,
+      },
+      exact a_neq_c a_in_equ.right,
+    },
     have hm₂ : m₂ = 0,
-      sorry, -- follows from `hn₁` using `equ`
+    {
+      by_contradiction,
+      have pos := nat.pos_of_ne_zero h,
+      clear h,
+      have b_in_equ := congr_arg (λ lis, b_ ∈ lis) equ,
+      clear equ,
+      rw hn₁ at b_in_equ,
+      have b_yes : b_ ∈ list.repeat b_ m₂,
+      {
+        rw list.mem_repeat,
+        exact and.intro (ne_of_lt pos).symm rfl,
+      },
+      simp [b_yes] at b_in_equ,
+      rw list.mem_repeat at b_in_equ,
+      have b_neq_c : b_ ≠ c_,
+      {
+        dec_trivial,
+      },
+      exact b_neq_c b_in_equ.right,
+    },
     use 0,
     rw hn₂ at h₂,
     rw hm₂ at h₂,
@@ -700,16 +738,48 @@ begin
 
   have n₁pos : n₁ > 0 :=
     pos_iff_ne_zero.mpr hn₁,
+  clear hn₁,
+
   have n₂pos : n₂ > 0,
     sorry, -- follows from `n₁pos` using `equ`
   have m₂pos : m₂ > 0,
-    sorry, -- follows from `n₁pos` using `equ`
+  {
+    by_contradiction,
+    have m₂zero : m₂ = 0,
+    {
+      push_neg at h,
+      rw nat.le_zero_iff at h,
+      exact h,
+    },
+    clear h,
+    rw m₂zero at equ,
+    simp at equ,
+    have b_in_equ := congr_arg (λ lis, b_ ∈ lis) equ,
+    clear equ,
+    simp at b_in_equ,
+    have b_yes : b_ ∈ list.repeat b_ n₁,
+    {
+      rw list.mem_repeat,
+      exact and.intro (ne_of_lt n₁pos).symm rfl,
+    },
+    have b_no : b_ ∉ list.repeat a_ n₂,
+    {
+      rw list.mem_repeat,
+      by_contradiction,
+      have b_ne_q : b_ ≠ a_,
+      {
+        dec_trivial,
+      },
+      exact b_ne_q h.right,
+    },
+    tauto,
+  },
   have m₁pos : m₁ > 0,
     sorry, -- follows from `m₂pos` using `equ`
-  clear hn₁,
 
   have n_ge : n₁ ≥ n₂,
   {
+
     sorry,
   },
   have n_le : n₁ ≤ n₂,
@@ -734,7 +804,6 @@ begin
     repeat { rw list.reverse_repeat at rev },
     rw ← list.append_assoc at rev,
     rw ← list.append_assoc at rev,
-    apply qwerty m₁ n₁ m₂ n₂ m₁pos c_ b_ a_ (by dec_trivial) (by dec_trivial),
 
     sorry,
   },
