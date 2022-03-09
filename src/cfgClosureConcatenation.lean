@@ -132,3 +132,9 @@ begin
   --exact lift_tran (lift_grammar g₁ (λ n₁, option.some (sum.inl n₁)) sorry) input output sorry,
   sorry,
 end
+
+
+/-- The class of context-free languages is closed under concatenation. -/
+theorem CF_of_CF_c_CF {T : Type} (L₁ : language T) (L₂ : language T) :
+  is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ * L₂)   :=
+sorry
