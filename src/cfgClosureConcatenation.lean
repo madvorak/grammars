@@ -135,6 +135,6 @@ end
 
 
 /-- The class of context-free languages is closed under concatenation. -/
-theorem CF_of_CF_c_CF {T : Type} (L₁ : language T) (L₂ : language T) :
+theorem CF_of_CF_c_CF (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ * L₂)   :=
 sorry

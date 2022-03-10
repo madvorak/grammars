@@ -1,4 +1,5 @@
-import cfg
+import cfgClosureConcatenation
+import cfgClosurePermutation
 import cfgPumping
 import tactic
 
@@ -89,11 +90,10 @@ private def lang_any_eq : language (fin 3) :=
 private def lang_eq_eq : language (fin 3) :=
 λ w, ∃ n : ℕ, w = list.repeat a_ n ++ list.repeat b_ n ++ list.repeat c_ n
 
-private lemma CF_lang_eq_any : is_CF lang_eq_any :=
-sorry
 
-private lemma CF_lang_any_eq : is_CF lang_any_eq :=
-sorry
+section what_is_CF
+
+section not_CF
 
 private lemma false_of_uvvxyyz {_a _b _c : fin 3} {n : ℕ} {u v x y z: list (fin 3)}
   (elimin : ∀ s : fin 3,  s ≠ _a  →  s ≠ _b  →  s ≠ _c  → false)
@@ -596,6 +596,155 @@ begin
   },
 end
 
+end not_CF
+
+
+section yes_CF
+
+private def lang_aux_ab : language (fin 3) :=
+λ w, ∃ n : ℕ, w = list.repeat a_ n ++ list.repeat b_ n
+
+private lemma CF_lang_aux_ab : is_CF lang_aux_ab :=
+sorry
+
+private def lang_aux_c : language (fin 3) :=
+λ w, ∃ n : ℕ, w = list.repeat c_ n
+
+private lemma CF_lang_aux_c : is_CF lang_aux_c :=
+sorry
+
+private lemma CF_lang_eq_any : is_CF lang_eq_any :=
+begin
+  have concatenated : lang_eq_any = lang_aux_ab * lang_aux_c,
+  {
+    ext1 w,
+    split,
+    {
+      rintro ⟨ n, m, hnm ⟩,
+      fconstructor,
+        use list.repeat a_ n ++ list.repeat b_ n,
+        use list.repeat c_ m,
+      split,
+        use n,
+      split,
+        use m,
+      exact hnm.symm,
+    },
+    {
+      rintro ⟨ u, v, ⟨n, hu⟩, ⟨m, hv⟩, h ⟩,
+      use n,
+      use m,
+      rw ← h,
+      rw ← hu,
+      rw ← hv,
+    },
+  },
+  rw concatenated,
+  apply CF_of_CF_c_CF,
+  exact and.intro CF_lang_aux_ab CF_lang_aux_c,
+end
+
+
+private def lang_aux_a : language (fin 3) :=
+λ w, ∃ n : ℕ, w = list.repeat a_ n
+
+private lemma CF_lang_aux_a : is_CF lang_aux_a :=
+sorry
+
+private def lang_aux_bc : language (fin 3) :=
+λ w, ∃ n : ℕ, w = list.repeat b_ n ++ list.repeat c_ n
+
+private def permut : equiv.perm (fin 3) := equiv.mk
+  (λ x, ite (x = 2) 0 (x + 1))
+  (λ x, ite (x = 0) 2 (x - 1))
+  (by {
+    intro x,
+    fin_cases x;
+    refl,
+  })
+  (by {
+    intro x,
+    fin_cases x;
+    refl,
+  })
+
+private lemma CF_lang_aux_bc : is_CF lang_aux_bc :=
+begin
+  have permuted : lang_aux_bc = permute_lang permut lang_aux_ab,
+  {
+    have compos : permut.to_fun ∘ permut.inv_fun = id,
+    {
+      simp,
+    },
+    ext1 w,
+    split;
+    {
+      intro h,
+      cases h with n hn,
+      use n,
+      try
+      {
+         rw hn
+      },
+      try
+      {
+        have other_case := congr_arg (list.map permut.to_fun) hn,
+        rw list.map_map at other_case,
+        rw compos at other_case,
+        rw list.map_id at other_case,
+        rw other_case,
+      },
+      rw list.map_append,
+      rw list.map_repeat,
+      rw list.map_repeat,
+      apply congr_arg2;
+      refl,
+    },
+  },
+  rw permuted,
+  exact CF_of_permute_CF permut lang_aux_ab CF_lang_aux_ab,
+end
+
+private lemma CF_lang_any_eq : is_CF lang_any_eq :=
+begin
+  have concatenated : lang_any_eq = lang_aux_a * lang_aux_bc,
+  {
+    ext1 w,
+    split,
+    {
+      rintro ⟨ n, m, hnm ⟩,
+      fconstructor,
+        use list.repeat a_ n,
+        use list.repeat b_ m ++ list.repeat c_ m,
+      split,
+        use n,
+      split,
+        use m,
+      rw ← list.append_assoc,
+      exact hnm.symm,
+    },
+    {
+      rintro ⟨ u, v, ⟨n, hu⟩, ⟨m, hv⟩, h ⟩,
+      use n,
+      use m,
+      rw ← h,
+      rw list.append_assoc,
+      rw ← hu,
+      rw ← hv,
+    },
+  },
+  rw concatenated,
+  apply CF_of_CF_c_CF,
+  exact and.intro CF_lang_aux_a CF_lang_aux_bc,
+end
+
+end yes_CF
+
+end what_is_CF
+
+
+section intersection_inclusions
+
 private lemma intersection_of_lang_eq_eq {w : list (fin 3)} :
   w ∈ lang_eq_eq  →  w ∈ lang_eq_any ⊓ lang_any_eq :=
 begin
@@ -609,7 +758,7 @@ begin
   },
 end
 
-private lemma qwerty (n₁ m₁ n₂ m₂ : ℕ) (n₁pos : n₁ > 0)
+private lemma helper (n₁ m₁ n₂ m₂ : ℕ) (n₁pos : n₁ > 0)
                      (a_ b_ c_ : fin 3) (a_neq_b : a_ ≠ b_) (a_neq_c : a_ ≠ c_)
                      (equ: list.repeat a_ n₁ ++ list.repeat b_ n₁ ++ list.repeat c_ m₁ =
                            list.repeat a_ n₂ ++ list.repeat b_ m₂ ++ list.repeat c_ m₂) :
@@ -784,7 +933,7 @@ begin
   },
   have n_le : n₁ ≤ n₂,
   {
-    exact qwerty n₁ m₁ n₂ m₂ n₁pos a_ b_ c_ (by dec_trivial) (by dec_trivial) equ,
+    exact helper n₁ m₁ n₂ m₂ n₁pos a_ b_ c_ (by dec_trivial) (by dec_trivial) equ,
   },
   have m_ge : m₁ ≥ m₂,
   {
@@ -794,7 +943,7 @@ begin
     repeat { rw list.reverse_repeat at rev },
     rw ← list.append_assoc at rev,
     rw ← list.append_assoc at rev,
-    apply qwerty m₂ n₂ m₁ n₁ m₂pos c_ b_ a_ (by dec_trivial) (by dec_trivial) rev.symm,
+    exact helper m₂ n₂ m₁ n₁ m₂pos c_ b_ a_ (by dec_trivial) (by dec_trivial) rev.symm,
   },
   have m_le : m₁ ≤ m₂,
   {
@@ -831,6 +980,8 @@ begin
   use m₂,
   exact h₂,    
 end
+
+end intersection_inclusions
 
 end specific_defs_and_lemmata
 
