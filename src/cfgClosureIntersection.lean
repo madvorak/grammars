@@ -81,6 +81,10 @@ private def a_ : fin 3 := 0
 private def b_ : fin 3 := 1
 private def c_ : fin 3 := 2
 
+private def a : symbol (fin 3) (fin 1) := symbol.terminal a_
+private def b : symbol (fin 3) (fin 1) := symbol.terminal b_
+private def c : symbol (fin 3) (fin 1) := symbol.terminal c_
+
 private def lang_eq_any : language (fin 3) :=
 λ w, ∃ n m : ℕ, w = list.repeat a_ n ++ list.repeat b_ n ++ list.repeat c_ m
 
@@ -611,7 +615,45 @@ private def lang_aux_c : language (fin 3) :=
 λ w, ∃ n : ℕ, w = list.repeat c_ n
 
 private lemma CF_lang_aux_c : is_CF lang_aux_c :=
-sorry
+begin
+  use cfg_symbol_star c_,
+  apply set.eq_of_subset_of_subset,
+  {
+
+    sorry,
+  },
+  {
+    intros w hw,
+    cases hw with n hwn,
+    rw hwn,
+    change CF_generates_str (cfg_symbol_star c_) (list.map symbol.terminal (list.repeat c_ n)),
+    convert_to CF_generates_str (cfg_symbol_star c_) (list.repeat c n),
+    {
+      rw list.map_repeat,
+      rw c,
+    },
+    unfold CF_generates_str,
+    clear hwn w,
+    have comes_to : CF_derives (cfg_symbol_star c_)
+                               [symbol.nonterminal (cfg_symbol_star c_).initial]
+                               (list.repeat c n ++ [symbol.nonterminal (0 : fin 1)]),
+    {
+      induction n with n ih,
+      {
+        sorry,
+      },
+      
+      sorry,
+    },
+    apply CF_deri_of_deri_tran comes_to,
+    use ((0 : fin 1), []),
+    split,
+      sorry,
+    use [list.repeat c n, []],
+    split;
+    simp,
+  }
+end
 
 private lemma CF_lang_eq_any : is_CF lang_eq_any :=
 begin

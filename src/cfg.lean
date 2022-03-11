@@ -44,7 +44,11 @@ CF_generates g
 def is_CF (L : language T) :=
 ∃ g : CF_grammar T, CF_language g = L
 
-def cfg_empty := @CF_grammar.mk T (fin 1) 0 []
+def cfg_empty : CF_grammar T :=
+CF_grammar.mk (fin 1) 0 []
+
+def cfg_symbol_star (a : T) : CF_grammar T :=
+CF_grammar.mk (fin 1) 0 [(0, [symbol.terminal a, symbol.nonterminal 0]), (0, [])]
 
 end cfg_languages
 
