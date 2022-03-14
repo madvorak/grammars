@@ -989,14 +989,4 @@ begin
   }
 end
 
-theorem CF_of_infiniteUnion_CF {T : Type} (family : ℕ → language T) :
-  (∀ i : ℕ, is_CF (family i))  →  is_CF (⨆ (i : ℕ), family i)  :=
-begin
-  intro ass,
-  change is_CF (λ w, w ∈ set.Union family),
-  simp [set.mem_Union],
-  
-  sorry,
-end
-
 end union_results
