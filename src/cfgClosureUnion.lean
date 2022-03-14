@@ -951,6 +951,8 @@ end lemmata_supset
 end specific_defs_and_lemmata
 
 
+section union_results
+
 /-- The class of context-free languages is closed under union. -/
 theorem CF_of_CF_u_CF {T : Type} (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂)   :=
@@ -986,3 +988,15 @@ begin
     },
   }
 end
+
+theorem CF_of_infiniteUnion_CF {T : Type} (family : ℕ → language T) :
+  (∀ i : ℕ, is_CF (family i))  →  is_CF (⨆ (i : ℕ), family i)  :=
+begin
+  intro ass,
+  change is_CF (λ w, w ∈ set.Union family),
+  simp [set.mem_Union],
+  
+  sorry,
+end
+
+end union_results
