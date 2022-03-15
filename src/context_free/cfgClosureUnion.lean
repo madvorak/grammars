@@ -1,10 +1,10 @@
-import cfg
+import context_free.cfg
 import tactic
 
 
 section reusable_defs_and_lemmata
 
-lemma list_three_parts {α β : Type} {x y z : list α} {f : α → β} :
+lemma list_map_append_append {α β : Type} {x y z : list α} {f : α → β} :
   list.map f (x ++ y ++ z) = (list.map f x) ++ (list.map f y) ++ (list.map f z) :=
 by simp only [list.map_append]
 
@@ -78,12 +78,12 @@ begin
   split,
   {
     rw congr_arg lsTN_of_lsTN₁ befo,
-    apply list_three_parts,
+    apply list_map_append_append,
   },
   {
     change lsTN_of_lsTN₁ outpu = lsTN_of_lsTN₁ v ++ lsTN_of_lsTN₁ rul.snd ++ lsTN_of_lsTN₁ w,
     rw congr_arg lsTN_of_lsTN₁ afte,
-    apply list_three_parts,
+    apply list_map_append_append,
   },
 end
 
@@ -119,12 +119,12 @@ begin
   split,
   {
     rw congr_arg lsTN_of_lsTN₂ befo,
-    apply list_three_parts,
+    apply list_map_append_append,
   },
   {
     change lsTN_of_lsTN₂ outpu = lsTN_of_lsTN₂ v ++ lsTN_of_lsTN₂ rul.snd ++ lsTN_of_lsTN₂ w,
     rw congr_arg lsTN_of_lsTN₂ afte,
-    apply list_three_parts,
+    apply list_map_append_append,
   },
 end
 

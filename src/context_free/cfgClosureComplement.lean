@@ -1,5 +1,5 @@
-import cfgClosureUnion
-import cfgClosureIntersection
+import context_free.cfgClosureUnion
+import context_free.cfgClosureIntersection
 
 
 /-- The class of context-free languages isn't closed under complement. -/

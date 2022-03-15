@@ -1,6 +1,6 @@
-import cfgClosureConcatenation
-import cfgClosurePermutation
-import cfgPumping
+import context_free.cfgClosureConcatenation
+import context_free.cfgClosurePermutation
+import context_free.cfgPumping
 import tactic
 
 

@@ -1,5 +1,5 @@
-import cfgClosureConcatenation
-import cfgClosureUnion
+import context_free.cfgClosureConcatenation
+import context_free.cfgClosureUnion
 
 
 variable {T : Type}

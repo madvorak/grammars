@@ -1,4 +1,4 @@
-import cfg
+import context_free.cfg
 
 
 def list_n_times {α : Type} (l : list α) (n : ℕ) : list α :=

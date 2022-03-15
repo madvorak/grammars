@@ -1,4 +1,4 @@
-import cfg
+import context_free.cfg
 
 
 variables {T₁ T₂ : Type}

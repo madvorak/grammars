@@ -1,4 +1,4 @@
-import cfg
+import context_free.cfg
 import computability.DFA
 import tactic
 
