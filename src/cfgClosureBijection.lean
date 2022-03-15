@@ -6,6 +6,7 @@ variables {T₁ T₂ : Type}
 def bijemap_lang (π : equiv T₁ T₂) (L : language T₁) : language T₂ :=
 λ w : list T₂, list.map π.inv_fun w ∈ L
 
+
 private def sT₂_of_sT₁ {N : Type} (π : equiv T₁ T₂) : (symbol T₁ N) → (symbol T₂ N)
 | (symbol.terminal st) := symbol.terminal (π.to_fun st)
 | (symbol.nonterminal sn) := symbol.nonterminal sn

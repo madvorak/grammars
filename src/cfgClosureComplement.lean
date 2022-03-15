@@ -19,6 +19,8 @@ begin
   have h₁ := h L₁ hL₁,
   have h₂ := h L₂ hL₂,
   have hu := CF_of_CF_u_CF (L₁ᶜ) (L₂ᶜ) (and.intro h₁ h₂),
+  
+  -- the rest of the proof is just De Morgan with extra steps
   have hnu := h ((L₁ᶜ) + (L₂ᶜ)),
   have contra := hnu hu,
   apply hyp_neg,

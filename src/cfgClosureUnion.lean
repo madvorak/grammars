@@ -989,4 +989,62 @@ begin
   }
 end
 
+theorem CF_of_bigUnion_CF {T : Type} (Ls : list (language T)) :
+  (∀ L ∈ Ls, is_CF L)  →
+    is_CF (set.Union (λ i : fin Ls.length, Ls.nth_le i (fin.is_lt i))) :=
+begin
+  intro ass,
+  induction Ls with head tail ih,
+  {
+    use cfg_empty_lang,
+    
+    sorry,
+  },
+  have reindexing : (⋃ (i : fin (head :: tail).length), (head :: tail).nth_le i (fin.is_lt i)) =
+                    head ∪ (⋃ (i : fin (tail).length), (tail).nth_le i (fin.is_lt i)),
+  {
+    ext1,
+    norm_num,
+    split,
+    {
+      intro h,
+      cases h with i hxi,
+
+      sorry,
+    },
+    {
+      intro h,
+      cases h,
+      {
+        use 0,
+        rw list.length,
+        apply nat.succ_pos',
+        exact h,
+      },
+      cases h with i hxi,
+      use i + 1,
+      {
+        rw list.length,
+        exact nat.succ_lt_succ (fin.is_lt i),
+      },
+      simp only [list.nth_le, fin.coe_mk],
+      exact hxi,
+    },
+  },
+  rw reindexing,
+  apply CF_of_CF_u_CF,
+  split,
+  {
+    apply ass head,
+    apply list.mem_cons_self,
+  },
+  have ass_weaker : ∀ (L : language T), L ∈ tail → is_CF L,
+  {
+    intros L h,
+    apply ass,
+    exact list.mem_cons_of_mem _ h,
+  },
+  exact ih ass_weaker,
+end
+
 end union_results
