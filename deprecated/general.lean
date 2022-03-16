@@ -1,15 +1,16 @@
 import data.fintype.basic
 import logic.relation
 import computability.language
+import context_free.cfg
 
 
-inductive symbo (τ : Type) (ν : Type) [fintype τ] [fintype ν]
+inductive symbo (τ : Type) (ν : Type)
 | terminal    : τ → symbo
 | nonterminal : ν → symbo
 
 
 section def_grammars
-variables (T : Type) (N : Type) [fintype T] [fintype N]
+variables (T : Type) (N : Type)
 
 structure grammar :=
 (initial : N)
@@ -96,7 +97,7 @@ end def_grammars
 
 
 section def_derivations
-variables {T N : Type} [fintype T] [fintype N] (g : grammar T N)
+variables {T N : Type} (g : grammar T N)
 
 def letter := symbo T N
 
@@ -234,3 +235,39 @@ begin
 end
 
 end demo
+
+
+example {T : Type} (L : language T) :
+  is_CF L →
+    ∃ N : Type, ∃ g : context_free T N,
+      grammar_generates (g.to_grammar) = L :=
+begin
+  rintro ⟨ g₀, ass ⟩,
+  use g₀.nt,
+  let g' : grammar T g₀.nt := grammar.mk g₀.initial (list.map (
+    λ r : g₀.nt × (list (symbol T g₀.nt)),
+      (⟨[symbo.nonterminal r.fst], (by { use r.fst, apply list.mem_cons_self, })⟩, list.map (
+        λ s : symbol T g₀.nt, match s with
+          | (symbol.terminal ter) := symbo.terminal ter
+          | (symbol.nonterminal nonter) := symbo.nonterminal nonter
+        end
+      ) r.snd))
+    g₀.rules),
+  use context_free.mk g' (by {
+    intros r h,
+    simp at h,
+    rcases h with ⟨ a, b, in_g₀, eq_r ⟩,
+    rw ← eq_r,
+    simp,
+  }),
+  rw ← ass,
+
+  unfold CF_language,
+  simp,
+  ext1,
+  unfold grammar_generates,
+  unfold CF_generates,
+  unfold grammar_generates_str,
+  unfold CF_generates_str,
+  sorry,
+end
