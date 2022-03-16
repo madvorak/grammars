@@ -1,5 +1,5 @@
-import context_free.cfg
 import computability.DFA
+import context_free.cfg
 import tactic
 
 

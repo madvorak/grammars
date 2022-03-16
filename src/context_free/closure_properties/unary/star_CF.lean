@@ -1,5 +1,4 @@
-import context_free.cfgClosureConcatenation
-import context_free.cfgClosureUnion
+import context_free.closure_properties.binary.CF_union_CF
 
 
 variable {T : Type}

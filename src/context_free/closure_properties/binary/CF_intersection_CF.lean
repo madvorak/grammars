@@ -1,6 +1,6 @@
-import context_free.cfgClosureConcatenation
-import context_free.cfgClosurePermutation
 import context_free.cfgPumping
+import context_free.closure_properties.binary.CF_concatenation_CF
+import context_free.closure_properties.unary.permutation_CF
 import tactic
 
 

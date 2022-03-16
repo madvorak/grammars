@@ -1,4 +1,4 @@
-import context_free.cfgClosureBijection
+import context_free.closure_properties.unary.bijection_CF
 
 
 variable {T : Type}

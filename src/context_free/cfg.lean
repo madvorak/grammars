@@ -31,7 +31,7 @@ def CF_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
 def CF_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (CF_transforms g)
 
-/-- Accepts a list of symbols iff it can be derived from the initial nonterminal. -/
+/-- Accepts a string (a list of symbols) iff it can be derived from the initial nonterminal. -/
 def CF_generates_str (str : list (symbol T g.nt)) : Prop :=
 CF_derives g [symbol.nonterminal g.initial] str
 
