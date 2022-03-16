@@ -12,7 +12,7 @@ def lift_symbol {N₁ N : Type} (lift_N : N₁ → N) : symbol T N₁ → symbol
 def lift_grammar (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
                  (lift_N_inj : function.injective lift_N) : CF_grammar T :=
 CF_grammar.mk N (lift_N g₁.initial) (list.map (λ r : g₁.nt × (list (symbol T g₁.nt)), 
-    (lift_N r.fst, list.map (lift_symbol lift_N) r.snd)) g₁.rules)
+  (lift_N r.fst, list.map (lift_symbol lift_N) r.snd)) g₁.rules)
 
 lemma lift_tran (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
                 (lift_N_inj : function.injective lift_N)
@@ -26,14 +26,22 @@ begin
   use (lift_N rule.fst, list.map (lift_symbol lift_N) rule.snd),
   split,
   {
-
-    sorry,
+    delta lift_grammar,
+    simp only [list.mem_map, prod.mk.inj_iff],
+    use rule,
+    split,
+    {
+      exact rule_in,
+    },
+    split;
+    refl,
   },
   simp,
-  /-have achjo : (lift_grammar g₁ lift_N lift_N_inj).nt = N, refl,
-  rw achjo,
-  use map (lift_symbol lift_N) v,-/
-  sorry,
+  use list.map (lift_symbol lift_N) v,
+  use list.map (lift_symbol lift_N) w,
+  cases ass with bef aft,
+  split;
+  finish,
 end
 
 lemma lift_deri (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
