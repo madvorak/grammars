@@ -1,12 +1,4 @@
-import data.fintype.basic
-import logic.relation
-import computability.language
 import context_free.cfg
-
-
-inductive symbo (τ : Type) (ν : Type)
-| terminal    : τ → symbo
-| nonterminal : ν → symbo
 
 
 section def_grammars
@@ -15,15 +7,15 @@ variables (T : Type) (N : Type)
 structure grammar :=
 (initial : N)
 (rules : list (prod
-  {str : list (symbo T N) // ∃ n : N, (symbo.nonterminal n) ∈ str}
-  (list (symbo T N))
+  {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
+  (list (symbol T N))
 ))
 
 structure noncontracting extends grammar T N :=
 (len_non_decr : 
   ∀ r : (prod
-    {str : list (symbo T N) // ∃ n : N, (symbo.nonterminal n) ∈ str}
-    (list (symbo T N))
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
+    (list (symbol T N))
   ), r ∈ rules → 
     (r.fst.val.length ≤ r.snd.length)
 )
@@ -31,65 +23,65 @@ structure noncontracting extends grammar T N :=
 structure noncontracting_with_empty_word extends grammar T N :=
 (len_non_decr_or_snd_empty : 
   ∀ r : (prod
-    {str : list (symbo T N) // ∃ n : N, (symbo.nonterminal n) ∈ str}
-    (list (symbo T N))
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
+    (list (symbol T N))
   ), r ∈ rules → or
-    ((r.fst.val.length ≤ r.snd.length) ∧ (symbo.nonterminal initial ∉ r.snd))
-    ((r.fst.val = [symbo.nonterminal initial]) ∧ (r.snd = []))
+    ((r.fst.val.length ≤ r.snd.length) ∧ (symbol.nonterminal initial ∉ r.snd))
+    ((r.fst.val = [symbol.nonterminal initial]) ∧ (r.snd = []))
 )
 
 structure kuroda_normal_form extends noncontracting_with_empty_word T N :=
 (kuroda_condition :
   ∀ r : (prod
-    {str : list (symbo T N) // ∃ n : N, (symbo.nonterminal n) ∈ str}
-    (list (symbo T N))
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
+    (list (symbol T N))
   ), r ∈ rules → (
     ∃ A B C D : N, and
-      (r.fst.val = [symbo.nonterminal A, symbo.nonterminal B])
-      (r.snd     = [symbo.nonterminal C, symbo.nonterminal D])
+      (r.fst.val = [symbol.nonterminal A, symbol.nonterminal B])
+      (r.snd     = [symbol.nonterminal C, symbol.nonterminal D])
   ) ∨ (
     ∃ X Y Z : N, and
-      (r.fst.val = [symbo.nonterminal X])
-      (r.snd     = [symbo.nonterminal Y, symbo.nonterminal Z])
+      (r.fst.val = [symbol.nonterminal X])
+      (r.snd     = [symbol.nonterminal Y, symbol.nonterminal Z])
   ) ∨ (
     ∃ R : N, ∃ a : T, and
-      (r.fst.val = [symbo.nonterminal R])
-      (r.snd     = [symbo.terminal a])  
+      (r.fst.val = [symbol.nonterminal R])
+      (r.snd     = [symbol.terminal a])
   ) ∨ (  
-      (r.fst.val = [symbo.nonterminal initial]) ∧ (r.snd = [])
+      (r.fst.val = [symbol.nonterminal initial]) ∧ (r.snd = [])
   )
 )
 
 structure context_free extends grammar T N :=
 (fst_singleton_nonterminal :
   ∀ r : (prod
-    {str : list (symbo T N) // ∃ n : N, (symbo.nonterminal n) ∈ str}
-    (list (symbo T N))
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
+    (list (symbol T N))
   ), r ∈ rules → 
-    (∃ n : N, r.fst.val = [symbo.nonterminal n])
+    (∃ n : N, r.fst.val = [symbol.nonterminal n])
 )
 
 structure left_linear extends context_free T N :=
 (snd_max_one_nonterminal :
   ∀ r : (prod
-    {str : list (symbo T N) // ∃ n : N, (symbo.nonterminal n) ∈ str}
-    (list (symbo T N))
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
+    (list (symbol T N))
   ), r ∈ rules → 
     (∃ n : N, ∃ ts : list T, or
-      (r.snd = list.map symbo.terminal ts)
-      (r.snd = symbo.nonterminal n :: (list.map symbo.terminal ts))
+      (r.snd = list.map symbol.terminal ts)
+      (r.snd = symbol.nonterminal n :: (list.map symbol.terminal ts))
     )
 )
 
 structure right_linear extends context_free T N :=
 (snd_max_one_nonterminal :
   ∀ r : (prod
-    {str : list (symbo T N) // ∃ n : N, (symbo.nonterminal n) ∈ str}
-    (list (symbo T N))
+    {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
+    (list (symbol T N))
   ), r ∈ rules → 
     (∃ ts : list T, ∃ n : N, or
-      (r.snd = list.map symbo.terminal ts)
-      (r.snd = (list.map symbo.terminal ts) ++ [symbo.nonterminal n])
+      (r.snd = list.map symbol.terminal ts)
+      (r.snd = (list.map symbol.terminal ts) ++ [symbol.nonterminal n])
     )
 )
 
@@ -99,20 +91,20 @@ end def_grammars
 section def_derivations
 variables {T N : Type} (g : grammar T N)
 
-def letter := symbo T N
+def letter := symbol T N
 
 def grammar_transforms (oldWord newWord : list letter) : Prop :=
-∃ r ∈ g.rules, ∃ v w : list (symbo T N),
+∃ r ∈ g.rules, ∃ v w : list (symbol T N),
   oldWord = (v ++ subtype.val (prod.fst r) ++ w) ∧ (newWord = v ++ (prod.snd r) ++ w)
 
 def grammar_derives : list letter → list letter → Prop :=
 relation.refl_trans_gen (grammar_transforms g)
 
 def grammar_generates_str (str : list letter) : Prop :=
-grammar_derives g [symbo.nonterminal g.initial] str
+grammar_derives g [symbol.nonterminal g.initial] str
 
 def grammar_generates (word : list T) : Prop :=
-grammar_generates_str g (list.map symbo.terminal word)
+grammar_generates_str g (list.map symbol.terminal word)
 
 def grammar_language : language T :=
 grammar_generates g
@@ -124,19 +116,19 @@ end def_derivations
 section demo
 
 def a_ : fin 3 := 0
-def a : symbo (fin 3) (fin 2) := symbo.terminal a_
+def a : symbol (fin 3) (fin 2) := symbol.terminal a_
 
 def b_ : fin 3 := 1
-def b : symbo (fin 3) (fin 2) := symbo.terminal b_
+def b : symbol (fin 3) (fin 2) := symbol.terminal b_
 
 def c_ : fin 3 := 2
-def c : symbo (fin 3) (fin 2) := symbo.terminal c_
+def c : symbol (fin 3) (fin 2) := symbol.terminal c_
 
 def S_ : fin 2 := 0
-def S : symbo (fin 3) (fin 2) := symbo.nonterminal S_
+def S : symbol (fin 3) (fin 2) := symbol.nonterminal S_
 
 def R_ : fin 2 := 1
-def R : symbo (fin 3) (fin 2) := symbo.nonterminal R_
+def R : symbol (fin 3) (fin 2) := symbol.nonterminal R_
 
 def gramatika : grammar (fin 3) (fin 2) := grammar.mk S_ [
   ((subtype.mk [S] (by { use S_, finish })), [a, S, c]),
@@ -237,7 +229,9 @@ end
 end demo
 
 
-example {T : Type} (L : language T) :
+section CF_equivalences
+
+lemma equivalence_of_CF_formalisms {T : Type} (L : language T) :
   is_CF L →
     ∃ N : Type, ∃ g : context_free T N,
       grammar_generates (g.to_grammar) = L :=
@@ -246,12 +240,7 @@ begin
   use g₀.nt,
   let g' : grammar T g₀.nt := grammar.mk g₀.initial (list.map (
     λ r : g₀.nt × (list (symbol T g₀.nt)),
-      (⟨[symbo.nonterminal r.fst], (by { use r.fst, apply list.mem_cons_self, })⟩, list.map (
-        λ s : symbol T g₀.nt, match s with
-          | (symbol.terminal ter) := symbo.terminal ter
-          | (symbol.nonterminal nonter) := symbo.nonterminal nonter
-        end
-      ) r.snd))
+      (⟨[symbol.nonterminal r.fst], (by { use r.fst, apply list.mem_cons_self, })⟩, r.snd))
     g₀.rules),
   use context_free.mk g' (by {
     intros r h,
@@ -269,5 +258,80 @@ begin
   unfold CF_generates,
   unfold grammar_generates_str,
   unfold CF_generates_str,
-  sorry,
+  ext1,
+  split,
+  {
+    have deri_of_deri : ∀ w : list letter,
+        grammar_derives g' [symbol.nonterminal g'.initial] w →
+          CF_derives g₀ [symbol.nonterminal g₀.initial] w,
+    {
+      intros w h,
+      induction h with y z trash orig ih,
+      {
+        exact CF_deri_self,
+      },
+      apply CF_deri_of_deri_tran,
+      {
+        exact ih,
+      },
+      rcases orig with ⟨ rule, rule_in, u, v, befo, afte ⟩,
+      rw list.mem_map at rule_in,
+      rcases rule_in with ⟨ the_rule, the_in, eq_the ⟩,
+      use the_rule,
+      split,
+      {
+        exact the_in,
+      },
+      use u,
+      use v,
+      split,
+      {
+        rw ← eq_the at befo,
+        dsimp at befo,
+        exact befo,
+      },
+      {
+        rw ← eq_the at afte,
+        dsimp at afte,
+        exact afte,
+      },
+    },
+    exact deri_of_deri (list.map symbol.terminal x),
+  },
+  {
+    have deri_of_deri : ∀ w : list letter,
+        CF_derives g₀ [symbol.nonterminal g₀.initial] w →
+          grammar_derives g' [symbol.nonterminal g'.initial] w,
+    {
+      intros w h,
+      induction h with y z trash orig ih,
+      {
+        exact relation.refl_trans_gen.refl,
+      },
+      fconstructor,
+      use y,
+      {
+        exact ih,
+      },
+      rcases orig with ⟨ rule, rule_in, u, v, befo, afte ⟩,
+      unfold grammar_transforms,
+      use (⟨[symbol.nonterminal rule.fst], (by { use rule.fst, apply list.mem_cons_self, })⟩, rule.snd),
+      split,
+      {
+        finish,
+      },
+      use u,
+      use v,
+      split,
+      {
+        rw befo,
+      },
+      {
+        rw afte,
+      },
+    },
+    exact deri_of_deri (list.map symbol.terminal x),
+  },
 end
+
+end CF_equivalences
