@@ -81,6 +81,7 @@ lemma sink_tran (g₁ : CF_grammar T) {N : Type}
   CF_transforms g₁ (list.map (lift_symbol sink_N) input) (list.map (lift_symbol sink_N) output) :=
 begin
   let sinked_grammar := lift_grammar (lift_grammar g₁ lift_N lift_N_inj) sink_N sorry,
+  rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
 
   sorry,
 end

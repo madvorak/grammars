@@ -1,14 +1,7 @@
-import logic.relation
-import computability.language
+import unrestricted.grammar
 
 
-section cfg_main
-
-/-- Fundamental datatype; basically `τ ⊕ ν` (something like "Either tau nyy")
-    where `τ` is the type of terminals and `ν` is the type of nonterminals. -/
-inductive symbol (τ : Type) (ν : Type)
-| terminal    : τ → symbol
-| nonterminal : ν → symbol
+section cfg_definitions
 
 /-- Context-free grammar that generates words over the alphabet `termi` (a type of terminals). -/
 structure CF_grammar (termi : Type) :=
@@ -16,10 +9,7 @@ structure CF_grammar (termi : Type) :=
 (initial : nt)                                   -- initial symbol
 (rules : list (nt × (list (symbol termi nt))))   -- rewriting rules
 
-end cfg_main
 
-
-section cfg_derivations
 variables {T : Type} (g : CF_grammar T)
 
 /-- One step of context-free transformation. -/
@@ -39,7 +29,7 @@ CF_derives g [symbol.nonterminal g.initial] str
 def CF_generates (word : list T) : Prop :=
 CF_generates_str g (list.map symbol.terminal word)
 
-end cfg_derivations
+end cfg_definitions
 
 
 section cfg_languages
@@ -177,3 +167,12 @@ begin
 end
 
 end cfg_utilities
+
+
+section cfg_to_grammar
+
+def grammar_of_cfg {T : Type} (g : CF_grammar T) : grammar T :=
+grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
+  grule.mk ([], r.fst, []) r.snd) g.rules)
+
+end cfg_to_grammar

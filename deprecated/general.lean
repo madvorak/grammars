@@ -4,14 +4,14 @@ import context_free.cfg
 section def_grammars
 variables (T : Type) (N : Type)
 
-structure grammar :=
+structure general_grammar :=
 (initial : N)
 (rules : list (prod
   {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
   (list (symbol T N))
 ))
 
-structure noncontracting extends grammar T N :=
+structure noncontracting extends general_grammar T N :=
 (len_non_decr : 
   ∀ r : (prod
     {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
@@ -20,7 +20,7 @@ structure noncontracting extends grammar T N :=
     (r.fst.val.length ≤ r.snd.length)
 )
 
-structure noncontracting_with_empty_word extends grammar T N :=
+structure noncontracting_with_empty_word extends general_grammar T N :=
 (len_non_decr_or_snd_empty : 
   ∀ r : (prod
     {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
@@ -52,7 +52,7 @@ structure kuroda_normal_form extends noncontracting_with_empty_word T N :=
   )
 )
 
-structure context_free extends grammar T N :=
+structure context_free extends general_grammar T N :=
 (fst_singleton_nonterminal :
   ∀ r : (prod
     {str : list (symbol T N) // ∃ n : N, (symbol.nonterminal n) ∈ str}
@@ -89,25 +89,25 @@ end def_grammars
 
 
 section def_derivations
-variables {T N : Type} (g : grammar T N)
+variables {T N : Type} (g : general_grammar T N)
 
 def letter := symbol T N
 
-def grammar_transforms (oldWord newWord : list letter) : Prop :=
+def general_grammar_transforms (oldWord newWord : list letter) : Prop :=
 ∃ r ∈ g.rules, ∃ v w : list (symbol T N),
   oldWord = (v ++ subtype.val (prod.fst r) ++ w) ∧ (newWord = v ++ (prod.snd r) ++ w)
 
-def grammar_derives : list letter → list letter → Prop :=
-relation.refl_trans_gen (grammar_transforms g)
+def general_grammar_derives : list letter → list letter → Prop :=
+relation.refl_trans_gen (general_grammar_transforms g)
 
-def grammar_generates_str (str : list letter) : Prop :=
-grammar_derives g [symbol.nonterminal g.initial] str
+def general_grammar_generates_str (str : list letter) : Prop :=
+general_grammar_derives g [symbol.nonterminal g.initial] str
 
-def grammar_generates (word : list T) : Prop :=
-grammar_generates_str g (list.map symbol.terminal word)
+def general_grammar_generates (word : list T) : Prop :=
+general_grammar_generates_str g (list.map symbol.terminal word)
 
-def grammar_language : language T :=
-grammar_generates g
+def general_grammar_language : language T :=
+general_grammar_generates g
 
 end def_derivations
 
@@ -130,7 +130,7 @@ def S : symbol (fin 3) (fin 2) := symbol.nonterminal S_
 def R_ : fin 2 := 1
 def R : symbol (fin 3) (fin 2) := symbol.nonterminal R_
 
-def gramatika : grammar (fin 3) (fin 2) := grammar.mk S_ [
+def gramatika : general_grammar (fin 3) (fin 2) := general_grammar.mk S_ [
   ((subtype.mk [S] (by { use S_, finish })), [a, S, c]),
   ((subtype.mk [S] (by { use S_, finish })), [R]),
   ((subtype.mk [R] (by { use R_, finish })), [b, R, c]),
@@ -161,7 +161,7 @@ begin
 end
 
 
-example : grammar_generates bezkontextova.to_grammar [a_, a_, b_, c_, c_, c_] :=
+example : general_grammar_generates bezkontextova.to_general_grammar [a_, a_, b_, c_, c_, c_] :=
 begin
   unfold bezkontextova,
   simp,
@@ -234,11 +234,11 @@ section CF_equivalences
 lemma equivalence_of_CF_formalisms {T : Type} (L : language T) :
   is_CF L →
     ∃ N : Type, ∃ g : context_free T N,
-      grammar_generates (g.to_grammar) = L :=
+      general_grammar_generates (g.to_general_grammar) = L :=
 begin
   rintro ⟨ g₀, ass ⟩,
   use g₀.nt,
-  let g' : grammar T g₀.nt := grammar.mk g₀.initial (list.map (
+  let g' : general_grammar T g₀.nt := general_grammar.mk g₀.initial (list.map (
     λ r : g₀.nt × (list (symbol T g₀.nt)),
       (⟨[symbol.nonterminal r.fst], (by { use r.fst, apply list.mem_cons_self, })⟩, r.snd))
     g₀.rules),
@@ -254,15 +254,15 @@ begin
   unfold CF_language,
   simp,
   ext1,
-  unfold grammar_generates,
+  unfold general_grammar_generates,
   unfold CF_generates,
-  unfold grammar_generates_str,
+  unfold general_grammar_generates_str,
   unfold CF_generates_str,
   ext1,
   split,
   {
     have deri_of_deri : ∀ w : list letter,
-        grammar_derives g' [symbol.nonterminal g'.initial] w →
+        general_grammar_derives g' [symbol.nonterminal g'.initial] w →
           CF_derives g₀ [symbol.nonterminal g₀.initial] w,
     {
       intros w h,
@@ -301,7 +301,7 @@ begin
   {
     have deri_of_deri : ∀ w : list letter,
         CF_derives g₀ [symbol.nonterminal g₀.initial] w →
-          grammar_derives g' [symbol.nonterminal g'.initial] w,
+          general_grammar_derives g' [symbol.nonterminal g'.initial] w,
     {
       intros w h,
       induction h with y z trash orig ih,
@@ -314,7 +314,7 @@ begin
         exact ih,
       },
       rcases orig with ⟨ rule, rule_in, u, v, befo, afte ⟩,
-      unfold grammar_transforms,
+      unfold general_grammar_transforms,
       use (⟨[symbol.nonterminal rule.fst], (by { use rule.fst, apply list.mem_cons_self, })⟩, rule.snd),
       split,
       {
