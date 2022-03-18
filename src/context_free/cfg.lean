@@ -1,4 +1,4 @@
-import unrestricted.grammar
+import context_sensitive.csg
 
 
 section cfg_definitions
@@ -169,10 +169,43 @@ end
 end cfg_utilities
 
 
-section cfg_to_grammar
+section cfg_conversion
 
 def grammar_of_cfg {T : Type} (g : CF_grammar T) : grammar T :=
 grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
   grule.mk ([], r.fst, []) r.snd) g.rules)
 
-end cfg_to_grammar
+def csg_of_cfg {T : Type} (g : CF_grammar T) : CS_grammar T :=
+CS_grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
+  csrule.mk [] r.fst [] r.snd) g.rules)
+
+lemma grammar_of_cfg_well_defined {T : Type} (g : CF_grammar T) :
+  grammar_of_csg (csg_of_cfg g) = grammar_of_cfg g :=
+begin
+  unfold grammar_of_cfg,
+  delta csg_of_cfg,
+  delta grammar_of_csg,
+  simp,
+  ext1,
+  simp,
+  apply congr_fun,
+  dsimp,
+  ext1,
+  cases x,
+  {
+    refl,
+  },
+  -- option.some
+  apply congr_arg option.some,
+  dsimp,
+  rw list.append_nil,
+end
+
+lemma grammar_of_csg_of_cfg {T : Type} :
+  grammar_of_csg ∘ csg_of_cfg = @grammar_of_cfg T :=
+begin
+  ext,
+  apply grammar_of_cfg_well_defined,
+end
+
+end cfg_conversion

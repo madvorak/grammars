@@ -8,11 +8,12 @@ inductive symbol (τ : Type) (ν : Type)
 | terminal    : τ → symbol
 | nonterminal : ν → symbol
 
+/-- Transformation rule for a grammar without any restrictions. -/
 structure grule (τ : Type) (ν : Type) :=
-(left_side : list (symbol τ ν) × ν × list (symbol τ ν))
-(right_side : list (symbol τ ν))
+(input_string : list (symbol τ ν) × ν × list (symbol τ ν))
+(output_string : list (symbol τ ν))
 
-/-- A grammar (general) that generates words over the alphabet `termi` (a type of terminals). -/
+/-- Grammar (general) that generates words over the alphabet `termi` (a type of terminals). -/
 structure grammar (termi : Type) :=
 (nt : Type)                     -- type of nonterminals
 (initial : nt)                  -- initial symbol
