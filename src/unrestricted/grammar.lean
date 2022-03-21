@@ -8,6 +8,9 @@ inductive symbol (τ : Type) (ν : Type)
 | terminal    : τ → symbol
 | nonterminal : ν → symbol
 
+
+section grammar_definitions
+
 /-- Transformation rule for a grammar without any restrictions. -/
 structure grule (τ : Type) (ν : Type) :=
 (input_string : list (symbol τ ν) × ν × list (symbol τ ν))
@@ -32,13 +35,8 @@ def grammar_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
 def grammar_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (grammar_transforms g)
 
-/-- Accepts a string (a list of symbols) iff it can be derived from the initial nonterminal. -/
-def grammar_generates_str (str : list (symbol T g.nt)) : Prop :=
-grammar_derives g [symbol.nonterminal g.initial] str
-
-/-- Accepts a word (a list of terminals) iff it can be derived from the initial nonterminal. -/
-def grammar_generates (word : list T) : Prop :=
-grammar_generates_str g (list.map symbol.terminal word)
-
+/-- Returns the set of words (lists of terminals) that can be derived from the initial nonterminal. -/
 def grammar_language : language T :=
-grammar_generates g
+λ w : list T, grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
+
+end grammar_definitions

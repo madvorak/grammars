@@ -214,6 +214,10 @@ sorry
 
 lemma CF_language_eq_grammar_language {T : Type} (g : CF_grammar T) :
   CF_language g = grammar_language (grammar_of_cfg g) :=
-sorry
+begin
+  rw ← grammar_of_cfg_well_defined,
+  rw CF_language_eq_CS_language,
+  rw CS_language_eq_grammar_language,
+end
 
 end cfg_conversion

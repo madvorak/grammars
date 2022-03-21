@@ -29,18 +29,9 @@ def CS_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
 def CS_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (CS_transforms g)
 
-/-- Accepts a string (a list of symbols) iff it can be derived from the initial nonterminal. -/
-def CS_generates_str (str : list (symbol T g.nt)) : Prop :=
-CS_derives g [symbol.nonterminal g.initial] str
-
-/-- Accepts a word (a list of terminals) iff it can be derived from the initial nonterminal. -/
-def CS_generates (word : list T) : Prop :=
-CS_generates_str g (list.map symbol.terminal word)
-
-/-- Context-sensitive language; just a wrapper around `CS_generates`. -/
+/-- Returns the set of words (lists of terminals) that can be derived from the initial nonterminal. -/
 def CS_language : language T :=
-CS_generates g
---λ w, CS_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
+λ w : list T, CS_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
 
 end csg_definitions
 
