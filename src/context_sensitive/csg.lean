@@ -37,8 +37,10 @@ CS_derives g [symbol.nonterminal g.initial] str
 def CS_generates (word : list T) : Prop :=
 CS_generates_str g (list.map symbol.terminal word)
 
+/-- Context-sensitive language; just a wrapper around `CS_generates`. -/
 def CS_language : language T :=
 CS_generates g
+--λ w, CS_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
 
 end csg_definitions
 
@@ -51,5 +53,9 @@ grammar.mk g.nt g.initial (list.map
     (r.context_left, r.input_nonterminal, r.context_right)
     (r.context_left ++ r.output_string ++ r.context_right)
   ) g.rules)
+
+lemma CS_language_eq_grammar_language {T : Type} (g : CS_grammar T) :
+  CS_language g = grammar_language (grammar_of_csg g) :=
+sorry
 
 end csg_to_grammar

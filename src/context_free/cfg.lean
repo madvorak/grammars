@@ -35,7 +35,7 @@ end cfg_definitions
 section cfg_languages
 variable {T : Type}
 
-/-- Context free language; just a wrapper around `CF_generates`.  -/
+/-- Context-free language; just a wrapper around `CF_generates`. -/
 def CF_language (g : CF_grammar T) : language T :=
 CF_generates g
 
@@ -171,13 +171,13 @@ end cfg_utilities
 
 section cfg_conversion
 
-def grammar_of_cfg {T : Type} (g : CF_grammar T) : grammar T :=
-grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
-  grule.mk ([], r.fst, []) r.snd) g.rules)
-
 def csg_of_cfg {T : Type} (g : CF_grammar T) : CS_grammar T :=
 CS_grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
   csrule.mk [] r.fst [] r.snd) g.rules)
+
+def grammar_of_cfg {T : Type} (g : CF_grammar T) : grammar T :=
+grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
+  grule.mk ([], r.fst, []) r.snd) g.rules)
 
 lemma grammar_of_cfg_well_defined {T : Type} (g : CF_grammar T) :
   grammar_of_csg (csg_of_cfg g) = grammar_of_cfg g :=
@@ -207,5 +207,13 @@ begin
   ext,
   apply grammar_of_cfg_well_defined,
 end
+
+lemma CF_language_eq_CS_language {T : Type} (g : CF_grammar T) :
+  CF_language g = CS_language (csg_of_cfg g) :=
+sorry
+
+lemma CF_language_eq_grammar_language {T : Type} (g : CF_grammar T) :
+  CF_language g = grammar_language (grammar_of_cfg g) :=
+sorry
 
 end cfg_conversion

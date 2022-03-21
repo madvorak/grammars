@@ -15,5 +15,3 @@ I formalize formal grammars in Lean. I started with context-free grammars. Hopef
 [Unfinished proof](https://github.com/madvorak/grammars/blob/main/src/context_free/closure_properties/binary/CF_intersection_CF.lean) that the class of context-free languages is not closed under intersection.
 
 [Easy corollary](https://github.com/madvorak/grammars/blob/main/src/context_free/closure_properties/unary/complement_CF.lean) that the class of context-free languages is not closed under complement.
-
-[Deprecated definition](https://github.com/madvorak/grammars/blob/70a1949204f153b1b6a094c0a37f81d9bd5f0a91/deprecated/general.lean#L14) of a general grammar.
