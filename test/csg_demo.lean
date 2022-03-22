@@ -55,6 +55,7 @@ private def r₆ : csrule Te Nt := csrule.mk [c] Nt.C_ [] [c]
 private def gramatika : CS_grammar Te :=
 CS_grammar.mk Nt Nt.S_ [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]
 
+
 /-- generate `abc` by the grammar above -/
 example : [Te.a_, Te.b_, Te.c_] ∈ CS_language gramatika :=
 begin
@@ -109,8 +110,9 @@ begin
   },
 end
 
+
 private meta def CS_step : tactic unit :=
- `[ 
+ `[
     apply CS_deri_of_tran_deri, use p.1, split,
     simp only [ list.mem_cons_iff, eq_self_iff_true, true_or, or_true ],
     use p.2.1, use p.2.2, split; refl
@@ -122,12 +124,15 @@ private def empt : list (symbol Te Nt) := []
 example : [Te.a_, Te.a_, Te.b_, Te.b_, Te.c_, Te.c_] ∈ CS_language gramatika :=
 begin
   unfold gramatika,
+  -- S
 
   let p := (r₁, empt, empt),
   CS_step,
+  -- aSBC
 
   let p := (r₂, [a], [B, C]),
   CS_step,
+  -- aaRCBC
 
   let p := (r₃  , [a, a, R], [C]),
   CS_step,
@@ -135,6 +140,7 @@ begin
   CS_step,
   let p := (r₃'', [a, a, R], [C]),
   CS_step,
+  -- aaRBCC
 
   let p := (r₄  , [a, a], [C, C]),
   CS_step,
@@ -142,6 +148,7 @@ begin
   CS_step,
   let p := (r₄'', [a, a], [C, C]),
   CS_step,
+  -- aabRCC
 
   let p := (r₅  , [a, a, b], [C]),
   CS_step,
@@ -149,19 +156,90 @@ begin
   CS_step,
   let p := (r₅'', [a, a, b], [C]),
   CS_step,
+  -- aabbcC
 
   let p := (r₆, [a, a, b, b], empt),
   CS_step,
+  -- aabbcc
 
   apply CS_deri_self,
 end
 
+
+private meta def combined_steps_r₃ : tactic unit :=
+ `[
+    let p := (r₃  , q.1, q.2),
+    CS_step,
+    let p := (r₃' , q.1, q.2),
+    CS_step,
+    let p := (r₃'', q.1, q.2),
+    CS_step
+  ]
+
+private meta def combined_steps_r₄ : tactic unit :=
+ `[
+    let p := (r₄  , q.1, q.2),
+    CS_step,
+    let p := (r₄' , q.1, q.2),
+    CS_step,
+    let p := (r₄'', q.1, q.2),
+    CS_step
+  ]
+
 /-- generate `aaabbbccc` by the grammar above -/
 example : [Te.a_, Te.a_, Te.a_, Te.b_, Te.b_, Te.b_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=
 begin
-  unfold CS_language,
-  change CS_derives gramatika [symbol.nonterminal Nt.S_] [a, a, a, b, b, b, c, c, c],
-  
+  change CS_derives {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
+                    [symbol.nonterminal Nt.S_] [a, a, a, b, b, b, c, c, c],
+  -- S
 
-  sorry,
+  let p := (r₁, empt, empt),
+  CS_step,
+  -- aSBC
+
+  let p := (r₁, [a], [B, C]),
+  CS_step,
+  -- aaSBCBC
+
+  let p := (r₂, [a, a], [B, C, B, C]),
+  CS_step,
+  -- aaaRCBCBC
+
+  let q := ([a, a, a, R], [C, B, C]),
+  combined_steps_r₃,
+  -- aaaRBCCBC
+
+  let q := ([a, a, a, R, B, C], [C]),
+  combined_steps_r₃,
+  -- aaaRBCBCC
+
+  let q := ([a, a, a, R, B], [C, C]),
+  combined_steps_r₃,
+  -- aaaRBBCCC
+
+  let q := ([a, a, a], [B, C, C, C]),
+  combined_steps_r₄,
+  -- aaabRBCCC
+
+  let q := ([a, a, a, b], [C, C, C]),
+  combined_steps_r₄,
+  -- aaabbRCCC
+
+  let p := (r₅  , [a, a, a, b, b], [C, C]),
+  CS_step,
+  let p := (r₅' , [a, a, a, b, b], [C, C]),
+  CS_step,
+  let p := (r₅'', [a, a, a, b, b], [C, C]),
+  CS_step,
+  -- aaabbbcCC
+
+  let p := (r₆  , [a, a, a, b, b, b], [C]),
+  CS_step,
+  -- aaabbbccC
+
+  let p := (r₆  , [a, a, a, b, b, b, c], empt),
+  CS_step,
+  -- aaabbbccc
+
+  apply CS_deri_self,
 end
