@@ -243,3 +243,107 @@ begin
 
   apply CS_deri_self,
 end
+
+
+/-- generate `a^4 . b^4 . c^4` by the grammar above -/
+example : [Te.a_, Te.a_, Te.a_, Te.a_,
+           Te.b_, Te.b_, Te.b_, Te.b_,
+           Te.c_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=
+begin
+  change CS_derives {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
+                    [symbol.nonterminal Nt.S_] [a, a, a, a, b, b, b, b, c, c, c, c],
+  -- S
+
+  let p := (r₁, empt, empt),
+  -- .S.
+  CS_step,
+  -- .aSBC.
+
+  let p := (r₁, [a], [B, C]),
+  -- a.S.BC
+  CS_step,
+  -- a.aSBC.BC
+
+  let p := (r₁, [a, a], [B, C, B, C]),
+  -- aa.S.BCBC
+  CS_step,
+  -- aa.aSBC.BCBC
+
+  let p := (r₂, [a, a, a], [B, C, B, C, B, C]),
+  -- aaa.S.BCBCBC
+  CS_step,
+  -- aaa.aRC.BCBCBC
+
+  let q := ([a, a, a, a, R], [C, B, C, B, C]),
+  -- aaaaR.CB.CBCBC
+  combined_steps_r₃,
+  -- aaaaR.BC.CBCBC
+
+  let q := ([a, a, a, a, R, B, C], [C, B, C]),
+  -- aaaaRBC.CB.CBC
+  combined_steps_r₃,
+  -- aaaaRBC.BC.CBC
+
+  let q := ([a, a, a, a, R, B], [C, C, B, C]),
+  -- aaaaRB.CB.CCBC
+  combined_steps_r₃,
+  -- aaaaRB.BC.CCBC
+
+  let q := ([a, a, a, a, R, B, B, C, C], [C]),
+  -- aaaaRBBCC.CB.C
+  combined_steps_r₃,
+  -- aaaaRBBCC.BC.C
+
+  let q := ([a, a, a, a, R, B, B, C], [C, C]),
+  -- aaaaRBBC.CB.CC
+  combined_steps_r₃,
+  -- aaaaRBBC.BC.CC
+
+  let q := ([a, a, a, a, R, B, B], [C, C, C]),
+  -- aaaaRBB.CB.CCC
+  combined_steps_r₃,
+  -- aaaaRBB.BC.CCC
+
+  let q := ([a, a, a, a], [B, B, C, C, C, C]),
+  -- aaaa.RB.BBCCCC
+  combined_steps_r₄,
+  -- aaaa.bR.BBCCCC
+
+  let q := ([a, a, a, a, b], [B, C, C, C, C]),
+  -- aaaab.RB.BCCCC
+  combined_steps_r₄,
+  -- aaaab.bR.BCCCC
+
+  let q := ([a, a, a, a, b, b], [C, C, C, C]),
+  -- aaaabb.RB.CCCC
+  combined_steps_r₄,
+  -- aaaabb.bR.CCCC
+
+  let p := (r₅,   [a, a, a, a, b, b, b], [C, C, C]),
+  -- aaaabbb.RC.CCC
+  CS_step,
+  let p := (r₅',  [a, a, a, a, b, b, b], [C, C, C]),
+  -- aaaabbb.ZC.CCC
+  CS_step,
+  let p := (r₅'', [a, a, a, a, b, b, b], [C, C, C]),
+  -- aaaabbb.Zc.CCC
+  CS_step,
+  -- aaaabbb.bc.CCC
+
+  let p := (r₆, [a, a, a, a, b, b, b, b], [C, C]),
+  -- aaaabbbb.cC.CC
+  CS_step,
+  -- aaaabbbb.cc.CC
+
+  let p := (r₆, [a, a, a, a, b, b, b, b, c], [C]),
+  -- aaaabbbbc.cC.C
+  CS_step,
+  -- aaaabbbbc.cc.C
+
+  let p := (r₆, [a, a, a, a, b, b, b, b, c, c], empt),
+  -- aaaabbbbcc.cC.
+  CS_step,
+  -- aaaabbbbcc.cc.
+
+  apply CS_deri_self,
+end
