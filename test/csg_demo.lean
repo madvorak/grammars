@@ -109,152 +109,59 @@ begin
   },
 end
 
+private meta def CS_step : tactic unit :=
+ `[ 
+    apply CS_deri_of_tran_deri, use p.1, split,
+    simp only [ list.mem_cons_iff, eq_self_iff_true, true_or, or_true ],
+    use p.2.1, use p.2.2, split; refl
+  ]
+
+private def empt : list (symbol Te Nt) := []
+
 /-- generate `aabbcc` by the grammar above -/
 example : [Te.a_, Te.a_, Te.b_, Te.b_, Te.c_, Te.c_] ∈ CS_language gramatika :=
 begin
   unfold gramatika,
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₁,
-    split,
-    {
-      finish,
-    },
-    use [[], []],
-    split;
-    refl,
-  },
+  let p := (r₁, empt, empt),
+  CS_step,
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₂,
-    split,
-    {
-      finish,
-    },
-    use [[a], [B, C]],
-    split;
-    refl,
-  },
+  let p := (r₂, [a], [B, C]),
+  CS_step,
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₃,
-    split,
-    {
-      finish,
-    },
-    use [[a, a, R], [C]],
-    split;
-    refl,
-  },
+  let p := (r₃  , [a, a, R], [C]),
+  CS_step,
+  let p := (r₃' , [a, a, R], [C]),
+  CS_step,
+  let p := (r₃'', [a, a, R], [C]),
+  CS_step,
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₃',
-    split,
-    {
-      finish,
-    },
-    use [[a, a, R], [C]],
-    split;
-    refl,
-  },
+  let p := (r₄  , [a, a], [C, C]),
+  CS_step,
+  let p := (r₄' , [a, a], [C, C]),
+  CS_step,
+  let p := (r₄'', [a, a], [C, C]),
+  CS_step,
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₃'',
-    split,
-    {
-      finish,
-    },
-    use [[a, a, R], [C]],
-    split;
-    refl,
-  },
+  let p := (r₅  , [a, a, b], [C]),
+  CS_step,
+  let p := (r₅' , [a, a, b], [C]),
+  CS_step,
+  let p := (r₅'', [a, a, b], [C]),
+  CS_step,
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₄,
-    split,
-    {
-      finish,
-    },
-    use [[a, a], [C, C]],
-    split;
-    refl,
-  },
+  let p := (r₆, [a, a, b, b], empt),
+  CS_step,
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₄',
-    split,
-    {
-      finish,
-    },
-    use [[a, a], [C, C]],
-    split;
-    refl,
-  },
+  apply CS_deri_self,
+end
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₄'',
-    split,
-    {
-      finish,
-    },
-    use [[a, a], [C, C]],
-    split;
-    refl,
-  },
+/-- generate `aaabbbccc` by the grammar above -/
+example : [Te.a_, Te.a_, Te.a_, Te.b_, Te.b_, Te.b_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=
+begin
+  unfold CS_language,
+  change CS_derives gramatika [symbol.nonterminal Nt.S_] [a, a, a, b, b, b, c, c, c],
+  
 
-  apply CS_deri_of_tran_deri,
-  {
-    use r₅,
-    split,
-    {
-      finish,
-    },
-    use [[a, a, b], [C]],
-    split;
-    refl,
-  },
-
-  apply CS_deri_of_tran_deri,
-  {
-    use r₅',
-    split,
-    {
-      finish,
-    },
-    use [[a, a, b], [C]],
-    split;
-    refl,
-  },
-
-  apply CS_deri_of_tran_deri,
-  {
-    use r₅'',
-    split,
-    {
-      finish,
-    },
-    use [[a, a, b], [C]],
-    split;
-    refl,
-  },
-
-  apply CS_deri_of_tran,
-  {
-    use r₆,
-    split,
-    {
-      finish,
-    },
-    use [[a, a, b, b], []],
-    split;
-    refl,
-  },
+  sorry,
 end

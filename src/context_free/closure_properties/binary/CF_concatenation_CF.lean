@@ -52,6 +52,16 @@ lemma lift_deri (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
              (list.map (lift_symbol lift_N) input)
              (list.map (lift_symbol lift_N) output) :=
 begin
+  induction hyp with u v trash orig ih,
+  {
+    apply CF_deri_self,
+  },
+  apply CF_deri_of_deri_tran,
+  {
+    exact ih,
+  },
+  rcases orig with ⟨ rul, rin, w₁, w₂, bef, aft ⟩,
+  --use lift_grammar rul lift_N lift_N_inj,
 
   sorry,
 end
