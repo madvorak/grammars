@@ -1,10 +1,17 @@
 import context_free.cfg
-import context_free.closure_properties.binary.CF_union_CF
 import tactic
 
+-- This file is now extremely messy. Read at your own risk.
 
-variables {T : Type}
 
+section reusable_defs_and_lemmata
+
+lemma list_map_append_append {α β : Type} {x y z : list α} {f : α → β} :
+  list.map f (x ++ y ++ z) = (list.map f x) ++ (list.map f y) ++ (list.map f z) :=
+by simp only [list.map_append]
+
+
+variable {T : Type}
 
 def lift_symbol {N₁ N : Type} (lift_N : N₁ → N) : symbol T N₁ → symbol T N
 | (symbol.terminal ter) := symbol.terminal ter
@@ -18,6 +25,8 @@ def lift_rule {N₁ N : Type} (lift_N : N₁ → N) :
   N₁ × (list (symbol T N₁)) → N × (list (symbol T N)) :=
 λ r, (lift_N r.fst, lift_string lift_N r.snd)
 
+-- we should somehow allow to have only a subset of rules here
+-- but how to define it ??
 def lift_grammar (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
                  (lift_N_inj : function.injective lift_N) :
   CF_grammar T :=
@@ -73,29 +82,7 @@ begin
   {
     exact ih,
   },
-  rcases orig with ⟨ rul, rin, w₁, w₂, bef, aft ⟩,
-  use lift_rule lift_N rul,
-  split,
-  {
-    change lift_rule lift_N rul ∈ list.map (lift_rule lift_N) g₁.rules,
-    exact list.mem_map_of_mem (lift_rule lift_N) rin,
-  },
-  use lift_string lift_N w₁,
-  use lift_string lift_N w₂,
-  split,
-  {
-    rw bef,
-    unfold lift_string,
-    rw list_map_append_append,
-    rw list.map_singleton,
-    refl,
-  },
-  {
-    rw aft,
-    unfold lift_string,
-    rw list_map_append_append,
-    refl,
-  },
+  exact lift_tran g₁ lift_N lift_N_inj u v orig,
 end
 
 lemma lift_generates (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
@@ -114,21 +101,6 @@ begin
   exact h₁,
 end
 
-
-lemma lift_sink_eq_id {N N₁ : Type} {lift_N : N₁ → N} {sink_N : N → N₁}
-                      (lift_N_sink : ∀ n₁ : N₁, sink_N (lift_N n₁) = n₁)
-                      (T : Type) :
-  @lift_symbol T N N₁ sink_N ∘ @lift_symbol T N₁ N lift_N = id :=
-begin
-  ext1,
-  cases x,
-  {
-    refl,
-  },
-  delta lift_symbol,
-  dsimp,
-  rw lift_N_sink,
-end
 
 lemma sink_tran (g₁ : CF_grammar T) {N : Type} 
                 (lift_N : g₁.nt → N) (sink_N : N → g₁.nt)
@@ -161,7 +133,18 @@ begin
       unfold lift_string,
       dsimp,
       rw list.map_map,
-      rw lift_sink_eq_id lift_N_sink T,
+      have lift_sink_eq_id : lift_symbol sink_N ∘ lift_symbol lift_N = id,
+      {
+        ext1,
+        cases x,
+        {
+          refl,
+        },
+        delta lift_symbol,
+        dsimp,
+        rw lift_N_sink,
+      },
+      rw lift_sink_eq_id,
       exact the_rule.snd.map_id,
     },
   },
@@ -199,46 +182,7 @@ begin
   {
     exact ih,
   },
-  rcases orig with ⟨ rul, rin, w₁, w₂, bef, aft ⟩,
-  use lift_rule sink_N rul,
-  split,
-  {
-    change rul ∈ list.map (lift_rule lift_N) g₁.rules at rin,
-    have trick := list.mem_map_of_mem (lift_rule sink_N) rin,
-    convert trick,
-    ext1,
-    rw list.nth_map,
-    rw list.nth_map,
-    cases g₁.rules.nth n,
-    {
-      refl,
-    },
-    rw option.map_map,
-    unfold lift_rule,
-    dsimp,
-    rw lift_N_sink,
-    unfold lift_string,
-    rw list.map_map,
-    cases val,
-    rw lift_sink_eq_id lift_N_sink T,
-    rw list.map_id,
-  },
-  use lift_string sink_N w₁,
-  use lift_string sink_N w₂,
-  split,
-  {
-    rw bef,
-    unfold lift_string,
-    rw list_map_append_append,
-    rw list.map_singleton,
-    refl,
-  },
-  {
-    rw aft,
-    unfold lift_string,
-    rw list_map_append_append,
-    refl,
-  },
+  exact sink_tran g₁ lift_N sink_N lift_N_inj lift_N_sink u v orig,
 end
 
 lemma sink_generates (g₁ : CF_grammar T) {N : Type}
@@ -264,9 +208,10 @@ begin
   rw lift_N_sink,
 end
 
-#check @lift_generates T
-#check @sink_generates T
+end reusable_defs_and_lemmata
 
+
+variable {T : Type}
 
 private def sTN_of_sTN₁ {g₁ g₂ : CF_grammar T} : (symbol T g₁.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt)))
 | (symbol.terminal st) := (symbol.terminal st)

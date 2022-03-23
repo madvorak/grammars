@@ -1,14 +1,6 @@
 import context_free.cfg
+import context_free.closure_properties.binary.CF_concatenation_CF
 import tactic
-
-
-section reusable_defs_and_lemmata
-
-lemma list_map_append_append {α β : Type} {x y z : list α} {f : α → β} :
-  list.map f (x ++ y ++ z) = (list.map f x) ++ (list.map f y) ++ (list.map f z) :=
-by simp only [list.map_append]
-
-end reusable_defs_and_lemmata
 
 
 section specific_defs_and_lemmata
@@ -143,6 +135,40 @@ begin
   },
   apply CF_deri_of_tran,
   exact deri₁_step u v orig,
+end
+
+private lemma deri₁_more_new : ∀ output : list (symbol T g₁.nt),
+  CF_derives g₁ [symbol.nonterminal g₁.initial] output →
+    CF_derives (union_grammar g₁ g₂) (lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial]) (lsTN_of_lsTN₁ output) :=
+begin
+  intros output ass,
+  let lifti := λ n₁ : g₁.nt, (some (sum.inl n₁) : (union_grammar g₁ g₂).nt),
+  have lifti_inj : function.injective lifti,
+  {
+    intros x y equa,
+    change some (sum.inl x) = some (sum.inl y) at equa,
+    injection equa with h,
+    injection h,
+  },
+  have tralala := lift_deri g₁ lifti lifti_inj
+                            [symbol.nonterminal g₁.initial]
+                            output ass,
+  convert tralala,
+  {
+    unfold lift_grammar,
+    unfold union_grammar,
+
+    sorry,
+  },
+  unfold lsTN_of_lsTN₁,
+  unfold lift_string,
+  change list.map sTN_of_sTN₁ output =
+      list.map (lift_symbol (λ n₁ : g₁.nt, (some (sum.inl n₁)))) output,
+  apply congr_fun,
+  apply congr_arg,
+  ext1,
+  cases x;
+  refl,
 end
 
 private lemma deri₂_more : ∀ output : list (symbol T g₂.nt),
