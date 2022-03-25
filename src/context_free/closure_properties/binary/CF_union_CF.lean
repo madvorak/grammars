@@ -1,6 +1,4 @@
-import context_free.cfg
 import context_free.closure_properties.binary.CF_concatenation_CF
-import tactic
 
 
 section specific_defs_and_lemmata
@@ -135,40 +133,6 @@ begin
   },
   apply CF_deri_of_tran,
   exact deri₁_step u v orig,
-end
-
-private lemma deri₁_more_new : ∀ output : list (symbol T g₁.nt),
-  CF_derives g₁ [symbol.nonterminal g₁.initial] output →
-    CF_derives (union_grammar g₁ g₂) (lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial]) (lsTN_of_lsTN₁ output) :=
-begin
-  intros output ass,
-  let lifti := λ n₁ : g₁.nt, (some (sum.inl n₁) : (union_grammar g₁ g₂).nt),
-  have lifti_inj : function.injective lifti,
-  {
-    intros x y equa,
-    change some (sum.inl x) = some (sum.inl y) at equa,
-    injection equa with h,
-    injection h,
-  },
-  have tralala := lift_deri g₁ lifti lifti_inj
-                            [symbol.nonterminal g₁.initial]
-                            output ass,
-  convert tralala,
-  {
-    unfold lift_grammar,
-    unfold union_grammar,
-
-    sorry,
-  },
-  unfold lsTN_of_lsTN₁,
-  unfold lift_string,
-  change list.map sTN_of_sTN₁ output =
-      list.map (lift_symbol (λ n₁ : g₁.nt, (some (sum.inl n₁)))) output,
-  apply congr_fun,
-  apply congr_arg,
-  ext1,
-  cases x;
-  refl,
 end
 
 private lemma deri₂_more : ∀ output : list (symbol T g₂.nt),
@@ -1023,8 +987,20 @@ begin
   induction Ls with head tail ih,
   {
     use cfg_empty_lang,
-    
-    sorry,
+    ext,
+    dsimp,
+    have left_no : x ∈ CF_language cfg_empty_lang = false,
+    {
+
+      sorry,
+    },
+    have right_no : x ∈ (⋃ (i : fin 0), absurd _ _) = false,
+    {
+
+      sorry,
+    },
+    rw left_no,
+    rw right_no,
   },
   have reindexing : (⋃ (i : fin (head :: tail).length), (head :: tail).nth_le i (fin.is_lt i)) =
                     head ∪ (⋃ (i : fin (tail).length), (tail).nth_le i (fin.is_lt i)),
@@ -1035,8 +1011,22 @@ begin
     {
       intro h,
       cases h with i hxi,
-
-      sorry,
+      by_cases i.val = 0,
+      {
+        left,
+        finish,
+      },
+      right,
+      unfold_coes,
+      unfold_coes at hxi,
+      --have i_pos := pos_iff_ne_zero.mpr h,
+      --have trivka := list.tail_cons head tail,
+      have bar : i.val < (head :: tail).length, sorry,
+      have baz : i.val.pred < tail.length, sorry,
+      use ⟨ i.val.pred, baz ⟩,
+      have foo : tail.nth_le i.val.pred baz = (head :: tail).nth_le i.val bar, sorry,
+      rw foo,
+      exact hxi,
     },
     {
       intro h,
