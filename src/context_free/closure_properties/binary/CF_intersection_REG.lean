@@ -5,6 +5,7 @@ import tactic
 
 variable {T : Type}
 
+-- TODO move out and probably redefine to (left or right) linear grammars
 def is_Reg (L : language T) :=
 ∃ σ : Type, ∃ a : DFA T σ, a.accepts = L
 
