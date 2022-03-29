@@ -111,13 +111,16 @@ begin
 end
 
 
-private meta def CS_step : tactic unit := `[
-  apply CS_deri_of_tran_deri, use p.1, split,
+private meta def CS_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
+  apply CS_deri_of_tran_deri,
+  tactic.use [ rule ],
   simp only [ list.mem_cons_iff, eq_self_iff_true, true_or, or_true ],
-  use p.2.1, use p.2.2, split; refl
+  split,
+  exact trivial,
+  tactic.use [ pref, post ],
+  split;
+  refl
 ]
-
-private def empt : list (symbol Te Nt) := []
 
 /-- generate `aabbcc` by the grammar above -/
 example : [Te.a_, Te.a_, Te.b_, Te.b_, Te.c_, Te.c_] ∈ CS_language gramatika :=
@@ -125,62 +128,44 @@ begin
   unfold gramatika,
   -- S
 
-  let p := (r₁, empt, empt),
-  CS_step,
+  CS_step ``(r₁) ``([]) ``([]),
   -- aSBC
 
-  let p := (r₂, [a], [B, C]),
-  CS_step,
-  -- aaRCBC
+  CS_step ``(r₂) ``([a]) ``([B, C]),
+  -- aaRCBClet
 
-  let p := (r₃  , [a, a, R], [C]),
-  CS_step,
-  let p := (r₃' , [a, a, R], [C]),
-  CS_step,
-  let p := (r₃'', [a, a, R], [C]),
-  CS_step,
+  CS_step ``(r₃)   ``([a, a, R]) ``([C]),
+  CS_step ``(r₃')  ``([a, a, R]) ``([C]),
+  CS_step ``(r₃'') ``([a, a, R]) ``([C]),
   -- aaRBCC
 
-  let p := (r₄  , [a, a], [C, C]),
-  CS_step,
-  let p := (r₄' , [a, a], [C, C]),
-  CS_step,
-  let p := (r₄'', [a, a], [C, C]),
-  CS_step,
+  CS_step ``(r₄)   ``([a, a]) ``([C, C]),
+  CS_step ``(r₄')  ``([a, a]) ``([C, C]),
+  CS_step ``(r₄'') ``([a, a]) ``([C, C]),
   -- aabRCC
 
-  let p := (r₅  , [a, a, b], [C]),
-  CS_step,
-  let p := (r₅' , [a, a, b], [C]),
-  CS_step,
-  let p := (r₅'', [a, a, b], [C]),
-  CS_step,
+  CS_step ``(r₅)   ``([a, a, b]) ``([C]),
+  CS_step ``(r₅')  ``([a, a, b]) ``([C]),
+  CS_step ``(r₅'') ``([a, a, b]) ``([C]),
   -- aabbcC
 
-  let p := (r₆, [a, a, b, b], empt),
-  CS_step,
+  CS_step ``(r₆) ``([a, a, b, b]) ``([]),
   -- aabbcc
 
   apply CS_deri_self,
 end
 
 
-private meta def combined_steps_r₃ : tactic unit := `[
-  let p := (r₃  , q.1, q.2),
-  CS_step,
-  let p := (r₃' , q.1, q.2),
-  CS_step,
-  let p := (r₃'', q.1, q.2),
-  CS_step
+private meta def combined_steps_r₃ (pre pos : pexpr) : tactic unit := `[
+  CS_step ``(r₃)   pre pos,
+  CS_step ``(r₃')  pre pos,
+  CS_step ``(r₃'') pre pos
 ]
 
-private meta def combined_steps_r₄ : tactic unit := `[
-  let p := (r₄  , q.1, q.2),
-  CS_step,
-  let p := (r₄' , q.1, q.2),
-  CS_step,
-  let p := (r₄'', q.1, q.2),
-  CS_step
+private meta def combined_steps_r₄ (pre pos : pexpr) : tactic unit := `[
+  CS_step ``(r₄)   pre pos,
+  CS_step ``(r₄')  pre pos,
+  CS_step ``(r₄'') pre pos
 ]
 
 /-- generate `aaabbbccc` by the grammar above -/
@@ -190,52 +175,39 @@ begin
                     [symbol.nonterminal Nt.S_] [a, a, a, b, b, b, c, c, c],
   -- S
 
-  let p := (r₁, empt, empt),
-  CS_step,
+  CS_step ``(r₁) ``([]) ``([]),
   -- aSBC
 
-  let p := (r₁, [a], [B, C]),
-  CS_step,
+  CS_step ``(r₁) ``([a]) ``([B, C]),
   -- aaSBCBC
 
-  let p := (r₂, [a, a], [B, C, B, C]),
-  CS_step,
+  CS_step ``(r₂) ``([a, a]) ``([B, C, B, C]),
   -- aaaRCBCBC
 
-  let q := ([a, a, a, R], [C, B, C]),
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, R]) ``([C, B, C]),
   -- aaaRBCCBC
 
-  let q := ([a, a, a, R, B, C], [C]),
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, R, B, C]) ``([C]),
   -- aaaRBCBCC
 
-  let q := ([a, a, a, R, B], [C, C]),
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, R, B]) ``([C, C]),
   -- aaaRBBCCC
 
-  let q := ([a, a, a], [B, C, C, C]),
-  combined_steps_r₄,
+  combined_steps_r₄ ``([a, a, a]) ``([B, C, C, C]),
   -- aaabRBCCC
 
-  let q := ([a, a, a, b], [C, C, C]),
-  combined_steps_r₄,
+  combined_steps_r₄ ``([a, a, a, b]) ``([C, C, C]),
   -- aaabbRCCC
 
-  let p := (r₅  , [a, a, a, b, b], [C, C]),
-  CS_step,
-  let p := (r₅' , [a, a, a, b, b], [C, C]),
-  CS_step,
-  let p := (r₅'', [a, a, a, b, b], [C, C]),
-  CS_step,
+  CS_step ``(r₅)   ``([a, a, a, b, b]) ``([C, C]),
+  CS_step ``(r₅')  ``([a, a, a, b, b]) ``([C, C]),
+  CS_step ``(r₅'') ``([a, a, a, b, b]) ``([C, C]),
   -- aaabbbcCC
 
-  let p := (r₆  , [a, a, a, b, b, b], [C]),
-  CS_step,
+  CS_step ``(r₆) ``([a, a, a, b, b, b]) ``([C]),
   -- aaabbbccC
 
-  let p := (r₆  , [a, a, a, b, b, b, c], empt),
-  CS_step,
+  CS_step ``(r₆) ``([a, a, a, b, b, b, c]) ``([]),
   -- aaabbbccc
 
   apply CS_deri_self,
@@ -251,95 +223,76 @@ begin
                     [symbol.nonterminal Nt.S_] [a, a, a, a, b, b, b, b, c, c, c, c],
   -- S
 
-  let p := (r₁, empt, empt),
   -- .S.
-  CS_step,
+  CS_step ``(r₁) ``([]) ``([]),
   -- .aSBC.
 
-  let p := (r₁, [a], [B, C]),
   -- a.S.BC
-  CS_step,
+  CS_step ``(r₁) ``([a]) ``([B, C]),
   -- a.aSBC.BC
 
-  let p := (r₁, [a, a], [B, C, B, C]),
   -- aa.S.BCBC
-  CS_step,
+  CS_step ``(r₁) ``([a, a]) ``([B, C, B, C]),
   -- aa.aSBC.BCBC
 
-  let p := (r₂, [a, a, a], [B, C, B, C, B, C]),
   -- aaa.S.BCBCBC
-  CS_step,
+  CS_step ``(r₂) ``([a, a, a]) ``([B, C, B, C, B, C]),
   -- aaa.aRC.BCBCBC
 
-  let q := ([a, a, a, a, R], [C, B, C, B, C]),
   -- aaaaR.CB.CBCBC
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, a, R]) ``([C, B, C, B, C]),
   -- aaaaR.BC.CBCBC
 
-  let q := ([a, a, a, a, R, B, C], [C, B, C]),
   -- aaaaRBC.CB.CBC
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, a, R, B, C]) ``([C, B, C]),
   -- aaaaRBC.BC.CBC
 
-  let q := ([a, a, a, a, R, B], [C, C, B, C]),
   -- aaaaRB.CB.CCBC
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, a, R, B]) ``([C, C, B, C]),
   -- aaaaRB.BC.CCBC
 
-  let q := ([a, a, a, a, R, B, B, C, C], [C]),
   -- aaaaRBBCC.CB.C
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, a, R, B, B, C, C]) ``([C]),
   -- aaaaRBBCC.BC.C
 
-  let q := ([a, a, a, a, R, B, B, C], [C, C]),
   -- aaaaRBBC.CB.CC
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, a, R, B, B, C]) ``([C, C]),
   -- aaaaRBBC.BC.CC
 
-  let q := ([a, a, a, a, R, B, B], [C, C, C]),
   -- aaaaRBB.CB.CCC
-  combined_steps_r₃,
+  combined_steps_r₃ ``([a, a, a, a, R, B, B]) ``([C, C, C]),
   -- aaaaRBB.BC.CCC
 
-  let q := ([a, a, a, a], [B, B, C, C, C, C]),
   -- aaaa.RB.BBCCCC
-  combined_steps_r₄,
+  combined_steps_r₄ ``([a, a, a, a]) ``([B, B, C, C, C, C]),
   -- aaaa.bR.BBCCCC
 
-  let q := ([a, a, a, a, b], [B, C, C, C, C]),
   -- aaaab.RB.BCCCC
-  combined_steps_r₄,
+  combined_steps_r₄ ``([a, a, a, a, b]) ``([B, C, C, C, C]),
   -- aaaab.bR.BCCCC
 
-  let q := ([a, a, a, a, b, b], [C, C, C, C]),
   -- aaaabb.RB.CCCC
-  combined_steps_r₄,
+  combined_steps_r₄ ``([a, a, a, a, b, b]) ``([C, C, C, C]),
   -- aaaabb.bR.CCCC
 
-  let p := (r₅,   [a, a, a, a, b, b, b], [C, C, C]),
   -- aaaabbb.RC.CCC
-  CS_step,
-  let p := (r₅',  [a, a, a, a, b, b, b], [C, C, C]),
+  CS_step ``(r₅)   ``([a, a, a, a, b, b, b]) ``([C, C, C]),
   -- aaaabbb.ZC.CCC
-  CS_step,
-  let p := (r₅'', [a, a, a, a, b, b, b], [C, C, C]),
+  CS_step ``(r₅')  ``([a, a, a, a, b, b, b]) ``([C, C, C]),
   -- aaaabbb.Zc.CCC
-  CS_step,
+  CS_step ``(r₅'') ``([a, a, a, a, b, b, b]) ``([C, C, C]),
   -- aaaabbb.bc.CCC
 
-  let p := (r₆, [a, a, a, a, b, b, b, b], [C, C]),
   -- aaaabbbb.cC.CC
-  CS_step,
+  CS_step ``(r₆) ``([a, a, a, a, b, b, b, b]) ``([C, C]),
   -- aaaabbbb.cc.CC
 
-  let p := (r₆, [a, a, a, a, b, b, b, b, c], [C]),
   -- aaaabbbbc.cC.C
-  CS_step,
+  CS_step ``(r₆) ``([a, a, a, a, b, b, b, b, c]) ``([C]),
   -- aaaabbbbc.cc.C
 
-  let p := (r₆, [a, a, a, a, b, b, b, b, c, c], empt),
   -- aaaabbbbcc.cC.
-  CS_step,
+  CS_step ``(r₆) ``([a, a, a, a, b, b, b, b, c, c]) ``([]),
   -- aaaabbbbcc.cc.
 
   apply CS_deri_self,
