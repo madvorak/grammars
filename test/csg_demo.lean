@@ -111,12 +111,11 @@ begin
 end
 
 
-private meta def CS_step : tactic unit :=
- `[
-    apply CS_deri_of_tran_deri, use p.1, split,
-    simp only [ list.mem_cons_iff, eq_self_iff_true, true_or, or_true ],
-    use p.2.1, use p.2.2, split; refl
-  ]
+private meta def CS_step : tactic unit := `[
+  apply CS_deri_of_tran_deri, use p.1, split,
+  simp only [ list.mem_cons_iff, eq_self_iff_true, true_or, or_true ],
+  use p.2.1, use p.2.2, split; refl
+]
 
 private def empt : list (symbol Te Nt) := []
 
@@ -166,25 +165,23 @@ begin
 end
 
 
-private meta def combined_steps_r₃ : tactic unit :=
- `[
-    let p := (r₃  , q.1, q.2),
-    CS_step,
-    let p := (r₃' , q.1, q.2),
-    CS_step,
-    let p := (r₃'', q.1, q.2),
-    CS_step
-  ]
+private meta def combined_steps_r₃ : tactic unit := `[
+  let p := (r₃  , q.1, q.2),
+  CS_step,
+  let p := (r₃' , q.1, q.2),
+  CS_step,
+  let p := (r₃'', q.1, q.2),
+  CS_step
+]
 
-private meta def combined_steps_r₄ : tactic unit :=
- `[
-    let p := (r₄  , q.1, q.2),
-    CS_step,
-    let p := (r₄' , q.1, q.2),
-    CS_step,
-    let p := (r₄'', q.1, q.2),
-    CS_step
-  ]
+private meta def combined_steps_r₄ : tactic unit := `[
+  let p := (r₄  , q.1, q.2),
+  CS_step,
+  let p := (r₄' , q.1, q.2),
+  CS_step,
+  let p := (r₄'', q.1, q.2),
+  CS_step
+]
 
 /-- generate `aaabbbccc` by the grammar above -/
 example : [Te.a_, Te.a_, Te.a_, Te.b_, Te.b_, Te.b_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=

@@ -1,6 +1,5 @@
 *.olean
 /_target
 /leanpkg.path
-/src/all.lean
 /test/cfg_demo2.lean
 /test/mwe.lean
