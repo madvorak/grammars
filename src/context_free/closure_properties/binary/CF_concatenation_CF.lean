@@ -25,12 +25,27 @@ def lift_rule {N₁ N : Type} (lift_N : N₁ → N) :
   N₁ × (list (symbol T N₁)) → N × (list (symbol T N)) :=
 λ r, (lift_N r.fst, lift_string lift_N r.snd)
 
--- we should somehow allow to have only a subset of rules here
--- but how to define it ??
+-- probably remove the definition `lift_grammar` and everything that depends on it
 def lift_grammar (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
                  (lift_N_inj : function.injective lift_N) :
   CF_grammar T :=
 CF_grammar.mk N (lift_N g₁.initial) (list.map (lift_rule lift_N) g₁.rules)
+
+
+structure lifted_grammar :=
+(g₁ g₂ : CF_grammar T)
+(lift_nt : g₁.nt → g₂.nt)
+(lift_inj : function.injective lift_nt)
+(corresponding_rules : ∀ r : g₁.nt × list (symbol T g₁.nt),
+  r ∈ g₁.rules →
+    lift_rule lift_nt r ∈ g₂.rules
+)
+(preimage_of_rules : ∀ r₂ : g₂.nt × list (symbol T g₂.nt),
+  (∃ n₁ : g₁.nt, lift_nt n₁ = r₂.fst) →
+    (∃ r₁ ∈ g₁.rules, lift_rule lift_nt r₁ = r₂)
+)
+(sink_nt : g₂.nt → option g₁.nt)
+(lift_nt_sink : ∀ n₁ : g₁.nt, sink_nt (lift_nt n₁) = some n₁)
 
 
 lemma lift_tran (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
@@ -83,22 +98,6 @@ begin
     exact ih,
   },
   exact lift_tran g₁ lift_N lift_N_inj u v orig,
-end
-
-lemma lift_generates (g₁ : CF_grammar T) {N : Type} (lift_N : g₁.nt → N)
-                     (lift_N_inj : function.injective lift_N)
-                     (w : list T) (hyp : CF_generates g₁ w) :
-  CF_generates (lift_grammar g₁ lift_N lift_N_inj) w :=
-begin
-  change CF_derives g₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal w) at hyp,
-  let g := (lift_grammar g₁ lift_N lift_N_inj),
-  change CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w),
-  have h₁ := lift_deri g₁ lift_N lift_N_inj [symbol.nonterminal g₁.initial] (list.map symbol.terminal w) hyp,
-  unfold lift_string at h₁,
-  rw list.map_singleton at h₁,
-  rw lift_symbol at h₁,
-  simp at h₁,
-  exact h₁,
 end
 
 
@@ -183,29 +182,6 @@ begin
     exact ih,
   },
   exact sink_tran g₁ lift_N sink_N lift_N_inj lift_N_sink u v orig,
-end
-
-lemma sink_generates (g₁ : CF_grammar T) {N : Type}
-                     (lift_N : g₁.nt → N) (sink_N : N → g₁.nt)
-                     (lift_N_inj : function.injective lift_N)
-                     (lift_N_sink : ∀ n₁ : g₁.nt, sink_N (lift_N n₁) = n₁)
-                     (w : list T)
-                     (hyp : CF_generates (lift_grammar g₁ lift_N lift_N_inj) w) :
-  CF_generates g₁ w :=
-begin
-  let g := (lift_grammar g₁ lift_N lift_N_inj),
-  change CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w) at hyp,
-  change CF_derives g₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal w),
-  have h₁ := sink_deri g₁ lift_N sink_N lift_N_inj lift_N_sink
-                       [symbol.nonterminal g.initial]
-                       (list.map symbol.terminal w)
-                       hyp,
-  rw list.map_singleton at h₁,
-  rw lift_symbol at h₁,
-  simp at h₁,
-  convert h₁,
-  change g₁.initial = sink_N (lift_N g₁.initial),
-  rw lift_N_sink,
 end
 
 end reusable_defs_and_lemmata

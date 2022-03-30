@@ -221,7 +221,6 @@ example : [Te.a_, Te.a_, Te.a_, Te.a_,
 begin
   change CS_derives {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
                     [symbol.nonterminal Nt.S_] [a, a, a, a, b, b, b, b, c, c, c, c],
-  -- S
 
   -- .S.
   CS_step ``(r₁) ``([]) ``([]),
