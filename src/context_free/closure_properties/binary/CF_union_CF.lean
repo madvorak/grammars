@@ -4,6 +4,11 @@ import context_free.closure_properties.binary.CF_concatenation_CF
 section specific_defs_and_lemmata
 variables {T : Type} {g₁ g₂ : CF_grammar T}
 
+/- TODO refactor as many of the following functions as possible using
+analoguous functions like `lift_symbol` or `sink_symbol` or `lift_string` or `lift_rule` but
+first finish the lemma `sink_deri` including all its pre-requisites; otherwise,
+all the changes here might end up being pointless. -/
+
 private def sTN_of_sTN₁ : (symbol T g₁.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt)))
 | (symbol.terminal st) := (symbol.terminal st)
 | (symbol.nonterminal snt) := (symbol.nonterminal (some (sum.inl snt)))

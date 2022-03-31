@@ -91,22 +91,57 @@ begin
   exact lift_tran lg u v orig,
 end
 
--- probably needs to be changed to
--- outputing `CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output)` that
--- consists of zero or one step of `CF_transforms lg.g₀` depending on matched nonterminal in `hyp`
+
 lemma sink_tran (lg : lifted_grammar)
                 (input output : list (symbol T lg.g.nt))
                 (hyp : CF_transforms lg.g input output) :
-  CF_transforms lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
+  CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
 begin
+  -- this probably still cannot work
+  -- we need to have a prop that all nonterminals in `input` are "good ones"
+  -- this probably also means that the mathematical induction in `sink_deri` needs to be changed
+  -- and a wrapper that hides the additional assumption from the user will be useful
   rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
-  let pre_rule := lg.preimage_of_rules rule (and.intro rule_in (by {
-    -- should somehow follow from `bef` but how
+  /-let pre_rule := lg.preimage_of_rules rule (and.intro rule_in (by {
+    -- should somehow follow from `bef` but how ???
     sorry,
-  })),
-  
-  sorry,
+  })),-/
+  by_cases lg.sink_nt rule.fst = none,
+  {
+    -- no step in `lg.g₀` corresponds to `hyp`
+    have nothing_changed : (sink_string lg.sink_nt input) = (sink_string lg.sink_nt output),
+    {
+
+      sorry,
+    },
+    rw nothing_changed,
+    apply CF_deri_self,
+  },
+  {
+    -- one step in `lg.g₀` corresponds to `hyp`
+    cases lg.sink_nt rule.fst,
+    {
+      exfalso,
+      exact h rfl,
+    },
+
+    sorry,
+  }
 end
+/- see (a deleted code from `CF_union_CF`):
+
+private lemma deri₁_of_deri (output : list (symbol T (union_grammar g₁ g₂).nt)) :
+  CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] output →
+    CF_derives g₁ [symbol.nonterminal g₁.initial] (lsTN₁_of_lsTN output) ∧
+    (∀ letter ∈ output, or
+      (∃ t : T, letter = symbol.terminal t)
+      (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
+    ) :=
+
+private lemma deri_bridge₁ (output : list (symbol T g₁.nt)) :
+  CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] (lsTN_of_lsTN₁ output) →
+    CF_derives g₁ [symbol.nonterminal g₁.initial] output :=
+-/
 
 lemma sink_deri (lg : lifted_grammar)
                 (input output : list (symbol T lg.g.nt))
@@ -117,7 +152,7 @@ begin
   {
     apply CF_deri_self,
   },
-  apply CF_deri_of_deri_tran,
+  apply CF_deri_of_deri_deri,
   {
     exact ih,
   },
