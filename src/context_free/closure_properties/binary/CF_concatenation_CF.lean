@@ -141,6 +141,15 @@ private def oN₁_of_N {g₁ g₂ : CF_grammar T} : (combined_grammar g₁ g₂)
 
 
 
+
+meta def five_steps : tactic unit := `[
+  apply congr_fun,
+  apply congr_arg,
+  ext1,
+  cases x;
+  refl
+]
+
 private def g₁g (g₁ g₂ : CF_grammar T) : @lifted_grammar T :=
 lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
   -- prove `function.injective (some ∘ sum.inl)` here
@@ -164,11 +173,7 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
   norm_num,
   unfold lift_string,
   unfold lsTN_of_lsTN₁,
-  apply congr_fun,
-  apply congr_arg,
-  ext1,
-  cases x;
-  refl,
+  five_steps,
 }) (by {
   intro r,
   rintro ⟨ r_in, r_ntype ⟩,
@@ -193,11 +198,7 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
     rw ← r₁_convert_r,
     simp only [ lift_rule, rule_of_rule₁, lift_string, lsTN_of_lsTN₁,
                 prod.mk.inj_iff, eq_self_iff_true, true_and ],
-    apply congr_fun,
-    apply congr_arg,
-    ext1,
-    cases x;
-    refl,
+    five_steps,
   },
   {
     exfalso,
