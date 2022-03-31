@@ -11,55 +11,55 @@ by simp only [list.map_append]
 
 variable {T : Type}
 
-def lift_symbol {N₁ N : Type} (lift_N : N₁ → N) : symbol T N₁ → symbol T N
+def lift_symbol {N₀ N : Type} (lift_N : N₀ → N) : symbol T N₀ → symbol T N
 | (symbol.terminal ter) := symbol.terminal ter
 | (symbol.nonterminal nonter) := symbol.nonterminal (lift_N nonter)
 
-def sink_symbol {N N₁ : Type} (sink_N : N → option N₁) : symbol T N → option (symbol T N₁)
+def sink_symbol {N₀ N : Type} (sink_N : N → option N₀) : symbol T N → option (symbol T N₀)
 | (symbol.terminal ter) := some (symbol.terminal ter)
 | (symbol.nonterminal nonter) := option.map symbol.nonterminal (sink_N nonter)
 
-def lift_string {N₁ N : Type} (lift_N : N₁ → N) :
-  list (symbol T N₁) → list (symbol T N) :=
+def lift_string {N₀ N : Type} (lift_N : N₀ → N) :
+  list (symbol T N₀) → list (symbol T N) :=
 list.map (lift_symbol lift_N)
 
-def sink_string {N N₁ : Type} (sink_N : N → option N₁) :
-  list (symbol T N) → list (symbol T N₁) :=
+def sink_string {N₀ N : Type} (sink_N : N → option N₀) :
+  list (symbol T N) → list (symbol T N₀) :=
 list.filter_map (sink_symbol sink_N)
 
-def lift_rule {N₁ N : Type} (lift_N : N₁ → N) :
-  N₁ × (list (symbol T N₁)) → N × (list (symbol T N)) :=
+def lift_rule {N₀ N : Type} (lift_N : N₀ → N) :
+  N₀ × (list (symbol T N₀)) → N × (list (symbol T N)) :=
 λ r, (lift_N r.fst, lift_string lift_N r.snd)
 
 structure lifted_grammar :=
-(g₁ g₂ : CF_grammar T)
-(lift_nt : g₁.nt → g₂.nt)
+(g₀ g : CF_grammar T)
+(lift_nt : g₀.nt → g.nt)
 (lift_inj : function.injective lift_nt)
-(corresponding_rules : ∀ r : g₁.nt × list (symbol T g₁.nt),
-  r ∈ g₁.rules →
-    lift_rule lift_nt r ∈ g₂.rules
+(corresponding_rules : ∀ r : g₀.nt × list (symbol T g₀.nt),
+  r ∈ g₀.rules →
+    lift_rule lift_nt r ∈ g.rules
 )
-(preimage_of_rules : ∀ r₂ : g₂.nt × list (symbol T g₂.nt),
-  (∃ n₁ : g₁.nt, lift_nt n₁ = r₂.fst) →
-    (∃ r₁ ∈ g₁.rules, lift_rule lift_nt r₁ = r₂)
+(preimage_of_rules : ∀ r : g.nt × list (symbol T g.nt),
+  (r ∈ g.rules ∧ ∃ n₀ : g₀.nt, lift_nt n₀ = r.fst) →
+    (∃ r₀ ∈ g₀.rules, lift_rule lift_nt r₀ = r)
 )
-(sink_nt : g₂.nt → option g₁.nt)
-(lift_nt_sink : ∀ n₁ : g₁.nt, sink_nt (lift_nt n₁) = some n₁)
+(sink_nt : g.nt → option g₀.nt)
+(lift_nt_sink : ∀ n₀ : g₀.nt, sink_nt (lift_nt n₀) = some n₀)
 
 
 lemma lift_tran (lg : lifted_grammar)
-                (input output : list (symbol T lg.g₁.nt))
-                (hyp : CF_transforms lg.g₁ input output) :
-  CF_transforms lg.g₂ (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
+                (input output : list (symbol T lg.g₀.nt))
+                (hyp : CF_transforms lg.g₀ input output) :
+  CF_transforms lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
 begin
   rcases hyp with ⟨ rule, rule_in, v, w, ass ⟩,
   sorry,
 end
 
 lemma lift_deri (lg : lifted_grammar)
-                (input output : list (symbol T lg.g₁.nt))
-                (hyp : CF_derives lg.g₁ input output) :
-  CF_derives lg.g₂ (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
+                (input output : list (symbol T lg.g₀.nt))
+                (hyp : CF_derives lg.g₀ input output) :
+  CF_derives lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
 begin
   induction hyp with u v trash orig ih,
   {
@@ -74,18 +74,18 @@ end
 
 
 lemma sink_tran (lg : lifted_grammar)
-                (input output : list (symbol T lg.g₂.nt))
-                (hyp : CF_transforms lg.g₂ input output) :
-  CF_transforms lg.g₁ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
+                (input output : list (symbol T lg.g.nt))
+                (hyp : CF_transforms lg.g input output) :
+  CF_transforms lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
 begin
   rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
   sorry,
 end
 
 lemma sink_deri (lg : lifted_grammar)
-                (input output : list (symbol T lg.g₂.nt))
-                (hyp : CF_derives lg.g₂ input output) :
-  CF_derives lg.g₁ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
+                (input output : list (symbol T lg.g.nt))
+                (hyp : CF_derives lg.g input output) :
+  CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
 begin
   induction hyp with u v trash orig ih,
   {
@@ -134,27 +134,88 @@ CF_grammar.mk (option (gₗ.nt ⊕ gᵣ.nt)) none
   ((none, [symbol.nonterminal (some (sum.inl (gₗ.initial))), symbol.nonterminal (some (sum.inr (gᵣ.initial)))]) ::
     ((list.map rule_of_rule₁ gₗ.rules) ++ (list.map rule_of_rule₂ gᵣ.rules)))
 
-
-
-lemma in_language_asdf {g₁ g₂ : CF_grammar T} (w : list T)
-                       (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
-  w ∈ CF_language g₁ * CF_language g₂ :=
-begin
-  -- we need to do sinking here
-  rw language.mem_mul,
-  sorry,
-end
-
 private def oN₁_of_N {g₁ g₂ : CF_grammar T} : (combined_grammar g₁ g₂).nt → (option g₁.nt)
 | none := none
 | (some (sum.inl nonte)) := some nonte
 | (some (sum.inr _)) := none
 
-lemma in_language_qwert {g₁ g₂ : CF_grammar T} (w : list T)
-                        (hyp : w ∈ CF_language g₁ * CF_language g₂) :
+
+
+private def g₁g (g₁ g₂ : CF_grammar T) : @lifted_grammar T :=
+lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
+  -- prove `function.injective (some ∘ sum.inl)` here
+  intros x y h,
+  apply sum.inl_injective,
+  apply option.some_injective,
+  exact h,
+}) (by {
+  -- prove `∀ r ∈ g₁.rules` we have `lift_rule (some ∘ sum.inl) r ∈ list.map rule_of_rule₁ g₁.rules` here
+  intros r h,
+  apply list.mem_cons_of_mem,
+  apply list.mem_append_left,
+  rw list.mem_map,
+  use r,
+  split,
+  {
+    exact h,
+  },
+  unfold rule_of_rule₁,
+  unfold lift_rule,
+  norm_num,
+  unfold lift_string,
+  unfold lsTN_of_lsTN₁,
+  apply congr_fun,
+  apply congr_arg,
+  ext1,
+  cases x;
+  refl,
+}) (by {
+  intro r,
+  rintro ⟨ r_in, r_ntype ⟩,
+  cases r_in,
+  {
+    exfalso,
+    rw r_in at r_ntype,
+    dsimp at r_ntype,
+    tauto,
+  },
+  change r ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at r_in,
+  rw list.mem_append at r_in,
+  cases r_in,
+  {
+    rw list.mem_map at r_in,
+    rcases r_in with ⟨ r₁, r₁_in, r₁_convert_r ⟩,
+    use r₁,
+    split,
+    {
+      exact r₁_in,
+    },
+    rw ← r₁_convert_r,
+    simp only [ lift_rule, rule_of_rule₁, lift_string, lsTN_of_lsTN₁,
+                prod.mk.inj_iff, eq_self_iff_true, true_and ],
+    apply congr_fun,
+    apply congr_arg,
+    ext1,
+    cases x;
+    refl,
+  },
+  {
+    exfalso,
+    rw list.mem_map at r_in,
+    rcases r_in with ⟨ r₂, r₂_in, r₂_convert_r ⟩,
+    rw ← r₂_convert_r at r_ntype,
+    unfold rule_of_rule₂ at r_ntype,
+    dsimp at r_ntype,
+    cases r_ntype with n₁ contr,
+    rw option.some_inj at contr,
+    tauto,
+  },
+}) oN₁_of_N (by { intro, refl })
+
+private lemma in_language_qwert {g₁ g₂ : CF_grammar T} (w : list T)
+                                (hyp : w ∈ CF_language g₁ * CF_language g₂) :
   w ∈ CF_language (combined_grammar g₁ g₂) :=
 begin
-  -- we need to do lifting here
   rw language.mem_mul at hyp,
   rcases hyp with ⟨ u, v, hu, hv, hw ⟩,
   unfold CF_language at *,
@@ -162,40 +223,16 @@ begin
                     [symbol.nonterminal (combined_grammar g₁ g₂).initial]
                     (list.map symbol.terminal w),
 
-  -- TODO this lifted_grammar `gg` works only for the left part
-  let gg := lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
-    -- prove `function.injective (some ∘ sum.inl)` here
-    intros x y h,
-    apply sum.inl_injective,
-    apply option.some_injective,
-    exact h,
-  }) (by {
-    -- prove `∀ r ∈ g₁.rules` we have `lift_rule (some ∘ sum.inl) r ∈ list.map rule_of_rule₁ g₁.rules` here
-    intros r h,
-    apply list.mem_cons_of_mem,
-    apply list.mem_append_left,
-    rw list.mem_map,
-    use r,
-    split,
-    {
-      exact h,
-    },
-    unfold rule_of_rule₁,
-    unfold lift_rule,
-    norm_num,
-    unfold lift_string,
-    unfold lsTN_of_lsTN₁,
-    apply congr_fun,
-    apply congr_arg,
-    ext1,
-    cases x;
-    refl,
-  }) (by /- preimage_of_rules -/ sorry) oN₁_of_N (by { intro, refl }),
-
   apply @CF_deri_of_tran_deri T (combined_grammar g₁ g₂) _ [symbol.nonterminal (some (sum.inl (g₁.initial))), symbol.nonterminal (some (sum.inr (g₂.initial)))] _,
   {
-
-    sorry,
+    use (none, [symbol.nonterminal (some (sum.inl (g₁.initial))), symbol.nonterminal (some (sum.inr (g₂.initial)))]),
+    split,
+    {
+      apply list.mem_cons_self,
+    },
+    use [[], []],
+    split;
+    refl,
   },
   rw ← hw,
   rw list.map_append,
@@ -205,15 +242,16 @@ begin
     apply CF_derives_with_postfix,
 
     change CF_derives g₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal u) at hu,
-    change CF_derives gg.g₂ [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal u),
+    let gg₁ := g₁g g₁ g₂,
+    change CF_derives gg₁.g [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal u),
     
-    have bar : [symbol.nonterminal (some (sum.inl g₁.initial))] = list.map (lift_symbol gg.lift_nt) [symbol.nonterminal g₁.initial],
+    have bar : [symbol.nonterminal (some (sum.inl g₁.initial))] = list.map (lift_symbol gg₁.lift_nt) [symbol.nonterminal g₁.initial],
     {
       apply list.singleton_eq,
     },
     rw bar,
 
-    have baz : list.map symbol.terminal u = list.map (lift_symbol gg.lift_nt) (list.map symbol.terminal u),
+    have baz : list.map symbol.terminal u = list.map (lift_symbol gg₁.lift_nt) (list.map symbol.terminal u),
     {
       rw list.map_map,
       apply congr_fun,
@@ -222,7 +260,7 @@ begin
     },
     rw baz,
     
-    exact lift_deri gg [symbol.nonterminal g₁.initial] (list.map symbol.terminal u) hu,
+    exact lift_deri gg₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal u) hu,
   },
   {
     apply CF_derives_with_prefix,
@@ -231,6 +269,16 @@ begin
 
     sorry,
   },
+end
+
+private lemma in_language_asdf {g₁ g₂ : CF_grammar T} (w : list T)
+                               (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
+  w ∈ CF_language g₁ * CF_language g₂ :=
+begin
+  -- we need to do sinking here
+  rw language.mem_mul,
+  -- this proof would be much easier if we could assume leftmost derivation
+  sorry,
 end
 
 /-- The class of context-free languages is closed under concatenation. -/
