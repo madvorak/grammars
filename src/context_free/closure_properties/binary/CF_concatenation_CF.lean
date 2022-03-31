@@ -52,8 +52,27 @@ lemma lift_tran (lg : lifted_grammar)
                 (hyp : CF_transforms lg.g₀ input output) :
   CF_transforms lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
 begin
-  rcases hyp with ⟨ rule, rule_in, v, w, ass ⟩,
-  sorry,
+  rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
+  use lift_rule lg.lift_nt rule,
+  split,
+  {
+    exact lg.corresponding_rules rule rule_in,
+  },
+  use lift_string lg.lift_nt v,
+  use lift_string lg.lift_nt w,
+  split,
+  {
+    have lift_bef := congr_arg (lift_string lg.lift_nt) bef,
+    unfold lift_string at *,
+    rw list_map_append_append at lift_bef,
+    convert lift_bef,
+  },
+  {
+    have lift_aft := congr_arg (lift_string lg.lift_nt) aft,
+    unfold lift_string at *,
+    rw list_map_append_append at lift_aft,
+    exact lift_aft,
+  },
 end
 
 lemma lift_deri (lg : lifted_grammar)
@@ -72,13 +91,20 @@ begin
   exact lift_tran lg u v orig,
 end
 
-
+-- probably needs to be changed to
+-- outputing `CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output)` that
+-- consists of zero or one step of `CF_transforms lg.g₀` depending on matched nonterminal in `hyp`
 lemma sink_tran (lg : lifted_grammar)
                 (input output : list (symbol T lg.g.nt))
                 (hyp : CF_transforms lg.g input output) :
   CF_transforms lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
 begin
   rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
+  let pre_rule := lg.preimage_of_rules rule (and.intro rule_in (by {
+    -- should somehow follow from `bef` but how
+    sorry,
+  })),
+  
   sorry,
 end
 
