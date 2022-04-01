@@ -92,26 +92,41 @@ begin
 end
 
 
+def good_letter {lg : @lifted_grammar T} : symbol T lg.g.nt → Prop
+| (symbol.terminal t)     := true
+| (symbol.nonterminal nt) := ∃ n₀ : lg.g₀.nt, lg.sink_nt nt = n₀
+
+def good_string {lg : @lifted_grammar T} (str : list (symbol T lg.g.nt)) :=
+∀ letter ∈ str, good_letter letter
+
 lemma sink_tran (lg : lifted_grammar)
                 (input output : list (symbol T lg.g.nt))
-                (hyp : CF_transforms lg.g input output) :
+                (hyp : CF_transforms lg.g input output)
+                (ok_input : good_string input) :
   CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
 begin
-  -- this probably still cannot work
-  -- we need to have a prop that all nonterminals in `input` are "good ones"
-  -- this probably also means that the mathematical induction in `sink_deri` needs to be changed
-  -- and a wrapper that hides the additional assumption from the user will be useful
   rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
-  /-let pre_rule := lg.preimage_of_rules rule (and.intro rule_in (by {
-    -- should somehow follow from `bef` but how ???
-    sorry,
-  })),-/
+
   by_cases lg.sink_nt rule.fst = none,
   {
     -- no step in `lg.g₀` corresponds to `hyp`
     have nothing_changed : (sink_string lg.sink_nt input) = (sink_string lg.sink_nt output),
     {
+      rw bef,
+      rw aft,
+      unfold sink_string,
+      repeat { rw list.filter_map_append },
+      apply congr_arg2,
+      swap, refl,
+      apply congr_arg,
 
+      unfold list.filter_map,
+      unfold sink_symbol,
+      rw h,
+      dsimp,
+      convert_to [] = list.filter_map (sink_symbol lg.sink_nt) rule.snd,
+
+      -- it seems to me that this does not hold
       sorry,
     },
     rw nothing_changed,
@@ -145,18 +160,58 @@ private lemma deri_bridge₁ (output : list (symbol T g₁.nt)) :
 
 lemma sink_deri (lg : lifted_grammar)
                 (input output : list (symbol T lg.g.nt))
-                (hyp : CF_derives lg.g input output) :
-  CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
+                (hyp : CF_derives lg.g input output)
+                (ok_input : good_string input) :
+  CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) ∧
+  good_string output :=
 begin
   induction hyp with u v trash orig ih,
   {
-    apply CF_deri_self,
+    split,
+    {
+      apply CF_deri_self,
+    },
+    {
+      exact ok_input,
+    },
   },
-  apply CF_deri_of_deri_deri,
+  split,
   {
-    exact ih,
+    apply CF_deri_of_deri_deri,
+    {
+      exact ih.left,
+    },
+    exact sink_tran lg u v orig ih.right,
   },
-  exact sink_tran lg u v orig,
+  {
+    intros letter in_v,
+    have ihr := ih.right,
+    specialize ihr letter,
+    rcases orig with ⟨ rule, in_rules, w₁, w₂, bef, aft ⟩,
+    rw bef at ihr,
+    rw list.mem_append at ihr,
+    rw aft at in_v,
+    rw list.mem_append at in_v,
+    cases in_v,
+    rw list.mem_append at in_v,
+    cases in_v,
+    {
+      apply ihr,
+      rw list.mem_append,
+      left,
+      left,
+      exact in_v,
+    },
+    {
+
+      sorry,
+    },
+    {
+      apply ihr,
+      right,
+      exact in_v,
+    },
+  },
 end
 
 

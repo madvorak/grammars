@@ -348,6 +348,14 @@ end lemmata_subset
 
 section lemmata_supset
 
+meta def good_singleton : tactic unit := `[
+  unfold good_string,
+  intros letter in_singleton,
+  rw list.mem_singleton at in_singleton,
+  rw in_singleton,
+  unfold good_letter
+]
+
 private lemma in_language_left_case_of_union (w : list T)
   (hypo : CF_derives (union_grammar g₁ g₂)
     [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w)) :
@@ -385,7 +393,11 @@ begin
   },
   rw baz,
 
-  exact sink_deri gg₁ [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w) hypo,
+  exact (sink_deri gg₁ [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w) hypo (by {
+    good_singleton,
+    use g₁.initial,
+    refl,
+  })).left,
 end
 
 private lemma in_language_right_case_of_union (w : list T)
@@ -425,7 +437,11 @@ begin
   },
   rw baz,
 
-  exact sink_deri gg₂ [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w) hypo,
+  exact (sink_deri gg₂ [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w) hypo (by {
+    good_singleton,
+    use g₂.initial,
+    refl,
+  })).left,
 end
 
 private lemma both_empty (u v: list (symbol T (union_grammar g₁ g₂).nt))
