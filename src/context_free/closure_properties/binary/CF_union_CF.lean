@@ -1,35 +1,7 @@
-import context_free.closure_properties.binary.CF_concatenation_CF
+import context_free.closure_properties.CF_helper
 
 
-section specific_defs_and_lemmata
 variables {T : Type} {g₁ g₂ : CF_grammar T}
-
-/- TODO refactor as many of the following functions as possible using
-analoguous functions like `lift_symbol` or `sink_symbol` or `lift_string` or `lift_rule` but
-first finish the lemma `sink_deri` including all its pre-requisites; otherwise,
-all the changes here might end up being pointless. -/
-
-private def sTN_of_sTN₁ : (symbol T g₁.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt)))
-| (symbol.terminal st) := (symbol.terminal st)
-| (symbol.nonterminal snt) := (symbol.nonterminal (some (sum.inl snt)))
-
-private def sTN_of_sTN₂ : (symbol T g₂.nt) → (symbol T (option (g₁.nt ⊕ g₂.nt)))
-| (symbol.terminal st) := (symbol.terminal st)
-| (symbol.nonterminal snt) := (symbol.nonterminal (some (sum.inr snt)))
-
-private def lsTN_of_lsTN₁ : list (symbol T g₁.nt) → list (symbol T (option (g₁.nt ⊕ g₂.nt))) :=
-list.map sTN_of_sTN₁
-
-private def lsTN_of_lsTN₂ : list (symbol T g₂.nt) → list (symbol T (option (g₁.nt ⊕ g₂.nt))) :=
-list.map sTN_of_sTN₂
-
-private def rule_of_rule₁ (r : g₁.nt × (list (symbol T g₁.nt))) :
-  ((option (g₁.nt ⊕ g₂.nt)) × (list (symbol T (option (g₁.nt ⊕ g₂.nt))))) :=
-(some (sum.inl (prod.fst r)), lsTN_of_lsTN₁ (prod.snd r))
-
-private def rule_of_rule₂ (r : g₂.nt × (list (symbol T g₂.nt))) :
-  ((option (g₁.nt ⊕ g₂.nt)) × (list (symbol T (option (g₁.nt ⊕ g₂.nt))))) :=
-(some (sum.inr (prod.fst r)), lsTN_of_lsTN₂ (prod.snd r))
 
 private def union_grammar (gₗ gᵣ : CF_grammar T) : CF_grammar T :=
 CF_grammar.mk (option (gₗ.nt ⊕ gᵣ.nt)) none (
@@ -38,11 +10,16 @@ CF_grammar.mk (option (gₗ.nt ⊕ gᵣ.nt)) none (
   ((list.map rule_of_rule₁ gₗ.rules) ++ (list.map rule_of_rule₂ gᵣ.rules))
 )
 
+
+section lifted_grammars
+
+/-- similar to `sink_symbol` -/
 private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)
 | none := none
 | (some (sum.inl nonte)) := some nonte
 | (some (sum.inr _)) := none
 
+/-- similar to `sink_symbol` -/
 private def oN₂_of_N : (union_grammar g₁ g₂).nt → (option g₂.nt)
 | none := none
 | (some (sum.inl _)) := none
@@ -237,6 +214,8 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
   exact h,
 }) (by { intro, refl })
 
+end lifted_grammars
+
 
 section lemmata_subset
 
@@ -417,7 +396,8 @@ begin
 
   let gg₁ := @g₁g T g₁ g₂,
 
-  have bar : [symbol.nonterminal g₁.initial] = (sink_string gg₁.sink_nt [symbol.nonterminal (some (sum.inl g₁.initial))]),
+  have bar : [symbol.nonterminal g₁.initial] =
+             (sink_string gg₁.sink_nt [symbol.nonterminal (some (sum.inl g₁.initial))]),
   {
     unfold sink_string,
     refl,
@@ -437,7 +417,8 @@ begin
       refl,
     },
     rw list.map,
-    convert_to symbol.terminal w_hd :: list.map symbol.terminal w_tl = symbol.terminal w_hd :: list.filter_map (some ∘ symbol.terminal) w_tl,
+    convert_to symbol.terminal w_hd :: list.map symbol.terminal w_tl =
+               symbol.terminal w_hd :: list.filter_map (some ∘ symbol.terminal) w_tl,
     norm_num,
     exact w_ih,
   },
@@ -461,7 +442,8 @@ begin
 
   let gg₂ := @g₂g T g₁ g₂,
 
-  have bar : [symbol.nonterminal g₂.initial] = (sink_string gg₂.sink_nt [symbol.nonterminal (some (sum.inr g₂.initial))]),
+  have bar : [symbol.nonterminal g₂.initial] =
+             (sink_string gg₂.sink_nt [symbol.nonterminal (some (sum.inr g₂.initial))]),
   {
     unfold sink_string,
     refl,
@@ -481,7 +463,8 @@ begin
       refl,
     },
     rw list.map,
-    convert_to symbol.terminal w_hd :: list.map symbol.terminal w_tl = symbol.terminal w_hd :: list.filter_map (some ∘ symbol.terminal) w_tl,
+    convert_to symbol.terminal w_hd :: list.map symbol.terminal w_tl =
+               symbol.terminal w_hd :: list.filter_map (some ∘ symbol.terminal) w_tl,
     norm_num,
     exact w_ih,
   },
@@ -594,10 +577,6 @@ end
 
 end lemmata_supset
 
-end specific_defs_and_lemmata
-
-
-section union_results
 
 /-- The class of context-free languages is closed under union. -/
 theorem CF_of_CF_u_CF {T : Type} (L₁ : language T) (L₂ : language T) :
@@ -635,4 +614,4 @@ begin
   }
 end
 
-end union_results
+#print axioms CF_of_CF_u_CF

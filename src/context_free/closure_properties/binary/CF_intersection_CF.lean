@@ -1051,3 +1051,5 @@ begin
   rw intersection at h,
   exact notCF_lang_eq_eq h,
 end
+
+#print axioms nnyCF_of_CF_i_CF

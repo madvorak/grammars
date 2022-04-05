@@ -59,3 +59,5 @@ begin
     },
   },
 end
+
+#print axioms nnyCF_of_complement_CF
