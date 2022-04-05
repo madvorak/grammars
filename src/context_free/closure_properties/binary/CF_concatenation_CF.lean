@@ -47,7 +47,10 @@ structure lifted_grammar :=
   (r ∈ g.rules ∧ ∃ n₀ : g₀.nt, lift_nt n₀ = r.fst) →
     (∃ r₀ ∈ g₀.rules, lift_rule lift_nt r₀ = r)
 )
-(sink_nt : g.nt → option g₀.nt) -- TODO need "partially injective"
+(sink_nt : g.nt → option g₀.nt)
+(sink_inj : ∀ x y, sink_nt x = sink_nt y →
+  x = y  ∨  sink_nt x = none
+)
 (lift_nt_sink : ∀ n₀ : g₀.nt, sink_nt (lift_nt n₀) = some n₀)
 
 lemma lifted_grammar_inverse (lg : @lifted_grammar T) :
@@ -61,13 +64,15 @@ begin
   rw option.map_some',
   apply congr_arg,
   symmetry,
-  have aaa := congr_arg (option.map lg.lift_nt) ass,
-  have bbb := congr_arg (option.map lg.sink_nt) aaa,
-  rw option.map_map at bbb,
-  rw option.map_map at bbb,
-  rw option.map_some' at bbb,
-  -- I am afraid the lemma does not hold.
-  sorry,
+  by_contradiction,
+  have inje := lg.sink_inj x (lg.lift_nt valu),
+  rw lg.lift_nt_sink at inje,
+  cases inje ass with case_valu case_none,
+  {
+    exact h case_valu,
+  },
+  rw ass at case_none,
+  tauto,
 end
 
 
@@ -248,9 +253,52 @@ begin
       exact in_v,
     },
     {
-      -- TODO this part is critical
-
-      sorry,
+      have exn₀ : ∃ (n₀ : lg.g₀.nt), lg.lift_nt n₀ = rule.fst,
+      {
+        by_cases lg.sink_nt rule.fst = none,
+        {
+          exfalso,
+          have ruu : symbol.nonterminal rule.fst ∈ u,
+          {
+            rw bef,
+            rw list.mem_append,
+            left,
+            rw list.mem_append,
+            right,
+            apply list.mem_cons_self,
+          },
+          have glruf : good_letter (symbol.nonterminal rule.fst),
+          {
+            exact ih.right (symbol.nonterminal rule.fst) ruu,
+          },
+          unfold good_letter at glruf,
+          rw h at glruf,
+          tauto,
+        },
+        cases (option.ne_none_iff_exists'.mp h) with x ex,
+        use x,
+        have gix := lifted_grammar_inverse lg rule.fst ⟨ x, ex ⟩,
+        rw ex at gix,
+        rw option.map_some' at gix,
+        apply option.some_injective,
+        exact gix,
+      },
+      rcases lg.preimage_of_rules rule ⟨ in_rules, exn₀ ⟩ with ⟨ rul, in0, lif ⟩,
+      rw ← lif at in_v,
+      unfold lift_rule at in_v,
+      dsimp at in_v,
+      unfold lift_string at in_v,
+      rw list.mem_map at in_v,
+      rcases in_v with ⟨ s, s_in_rulsnd, symbol_letter ⟩,
+      rw ← symbol_letter,
+      cases s,
+      {
+        tauto,
+      },
+      unfold lift_symbol,
+      unfold good_letter,
+      use s,
+      exact lg.lift_nt_sink s,
     },
     {
       apply ihr,
@@ -373,7 +421,32 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
     rw option.some_inj at contr,
     tauto,
   },
-}) oN₁_of_N (by { intro, refl })
+}) oN₁_of_N (by {
+  intros x y h,
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases x, swap,
+  {
+    right,
+    refl,
+  },
+  cases y,
+  {
+    tauto,
+  },
+  cases y, swap,
+  {
+    tauto,
+  },
+  left,
+  simp only [oN₁_of_N] at h,
+  apply congr_arg,
+  apply congr_arg,
+  exact h,
+}) (by { intro, refl })
 
 private lemma in_language_qwert {g₁ g₂ : CF_grammar T} (w : list T)
                                 (hyp : w ∈ CF_language g₁ * CF_language g₂) :
