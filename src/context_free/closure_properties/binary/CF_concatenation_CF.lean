@@ -8,6 +8,10 @@ lemma list_map_append_append {α β : Type} {x y z : list α} {f : α → β} :
   list.map f (x ++ y ++ z) = (list.map f x) ++ (list.map f y) ++ (list.map f z) :=
 by simp only [list.map_append]
 
+lemma list_filter_map_append_append {α β : Type} {x y z : list α} {f : α → option β} :
+  list.filter_map f (x ++ y ++ z) = (list.filter_map f x) ++ (list.filter_map f y) ++ (list.filter_map f z) :=
+by simp only [list.filter_map_append]
+
 
 variable {T : Type}
 
@@ -43,8 +47,28 @@ structure lifted_grammar :=
   (r ∈ g.rules ∧ ∃ n₀ : g₀.nt, lift_nt n₀ = r.fst) →
     (∃ r₀ ∈ g₀.rules, lift_rule lift_nt r₀ = r)
 )
-(sink_nt : g.nt → option g₀.nt)
+(sink_nt : g.nt → option g₀.nt) -- TODO need "partially injective"
 (lift_nt_sink : ∀ n₀ : g₀.nt, sink_nt (lift_nt n₀) = some n₀)
+
+lemma lifted_grammar_inverse (lg : @lifted_grammar T) :
+  ∀ x : lg.g.nt,
+    (∃ val, lg.sink_nt x = some val) →
+      option.map lg.lift_nt (lg.sink_nt x) = x :=
+begin
+  intros x h,
+  cases h with valu ass,
+  rw ass,
+  rw option.map_some',
+  apply congr_arg,
+  symmetry,
+  have aaa := congr_arg (option.map lg.lift_nt) ass,
+  have bbb := congr_arg (option.map lg.sink_nt) aaa,
+  rw option.map_map at bbb,
+  rw option.map_map at bbb,
+  rw option.map_some' at bbb,
+  -- I am afraid the lemma does not hold.
+  sorry,
+end
 
 
 lemma lift_tran (lg : lifted_grammar)
@@ -103,60 +127,81 @@ lemma sink_tran (lg : lifted_grammar)
                 (input output : list (symbol T lg.g.nt))
                 (hyp : CF_transforms lg.g input output)
                 (ok_input : good_string input) :
-  CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
+  CF_transforms lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
 begin
   rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
 
-  by_cases lg.sink_nt rule.fst = none,
-  {
-    -- no step in `lg.g₀` corresponds to `hyp`
-    have nothing_changed : (sink_string lg.sink_nt input) = (sink_string lg.sink_nt output),
+  rcases lg.preimage_of_rules rule (by {
+    split,
     {
-      rw bef,
-      rw aft,
-      unfold sink_string,
-      repeat { rw list.filter_map_append },
-      apply congr_arg2,
-      swap, refl,
-      apply congr_arg,
-
-      unfold list.filter_map,
-      unfold sink_symbol,
-      rw h,
-      dsimp,
-      convert_to [] = list.filter_map (sink_symbol lg.sink_nt) rule.snd,
-
-      -- it seems to me that this does not hold
-      sorry,
+      exact rule_in,
     },
-    rw nothing_changed,
-    apply CF_deri_self,
+    rw bef at ok_input,
+    have good_matched_nonterminal : good_letter (symbol.nonterminal rule.fst),
+    {
+      specialize ok_input (symbol.nonterminal rule.fst),
+      finish,
+    },
+    change ∃ n₀ : lg.g₀.nt, lg.sink_nt rule.fst = some n₀ at good_matched_nonterminal,
+    cases good_matched_nonterminal with n₀ hn₀,
+    use n₀,
+    have almost := congr_arg (option.map lg.lift_nt) hn₀,
+    rw lifted_grammar_inverse lg rule.fst ⟨ n₀, hn₀ ⟩ at almost,
+    simp at almost,
+    apply option.some_injective,
+    exact almost.symm,
+  }) with ⟨ pre_rule, pre_in, preimage ⟩,
+
+  use pre_rule,
+  split,
+  {
+    exact pre_in,
+  },
+  use sink_string lg.sink_nt v,
+  use sink_string lg.sink_nt w,
+  have correct_inverse : sink_symbol lg.sink_nt ∘ lift_symbol lg.lift_nt = option.some,
+  {
+    ext1,
+    cases x,
+    {
+      refl,
+    },
+    dsimp,
+    unfold lift_symbol,
+    unfold sink_symbol,
+    rw lg.lift_nt_sink,
+    apply option.map_some',
+  },
+  split,
+  {
+    have sink_bef := congr_arg (sink_string lg.sink_nt) bef,
+    unfold sink_string at *,
+    rw list_filter_map_append_append at sink_bef,
+    convert sink_bef,
+    rw ← preimage,
+    unfold lift_rule,
+    dsimp,
+    change [symbol.nonterminal pre_rule.fst] =
+           list.filter_map (sink_symbol lg.sink_nt)
+              (list.map (lift_symbol lg.lift_nt) [symbol.nonterminal pre_rule.fst]),
+    rw list.filter_map_map,
+    rw correct_inverse,
+    rw list.filter_map_some,
   },
   {
-    -- one step in `lg.g₀` corresponds to `hyp`
-    cases lg.sink_nt rule.fst,
-    {
-      exfalso,
-      exact h rfl,
-    },
-
-    sorry,
-  }
+    have sink_aft := congr_arg (sink_string lg.sink_nt) aft,
+    unfold sink_string at *,
+    rw list_filter_map_append_append at sink_aft,
+    convert sink_aft,
+    rw ← preimage,
+    unfold lift_rule,
+    dsimp,
+    unfold lift_string,
+    rw list.filter_map_map,
+    rw correct_inverse,
+    rw list.filter_map_some,
+  },
 end
-/- see (a deleted code from `CF_union_CF`):
-
-private lemma deri₁_of_deri (output : list (symbol T (union_grammar g₁ g₂).nt)) :
-  CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] output →
-    CF_derives g₁ [symbol.nonterminal g₁.initial] (lsTN₁_of_lsTN output) ∧
-    (∀ letter ∈ output, or
-      (∃ t : T, letter = symbol.terminal t)
-      (∃ n₁ : g₁.nt, letter = symbol.nonterminal (some (sum.inl n₁)))
-    ) :=
-
-private lemma deri_bridge₁ (output : list (symbol T g₁.nt)) :
-  CF_derives (union_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl g₁.initial))] (lsTN_of_lsTN₁ output) →
-    CF_derives g₁ [symbol.nonterminal g₁.initial] output :=
--/
 
 lemma sink_deri (lg : lifted_grammar)
                 (input output : list (symbol T lg.g.nt))
@@ -177,7 +222,7 @@ begin
   },
   split,
   {
-    apply CF_deri_of_deri_deri,
+    apply CF_deri_of_deri_tran,
     {
       exact ih.left,
     },
@@ -203,6 +248,7 @@ begin
       exact in_v,
     },
     {
+      -- TODO this part is critical
 
       sorry,
     },
