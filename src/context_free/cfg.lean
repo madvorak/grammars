@@ -14,7 +14,7 @@ variables {T : Type} (g : CF_grammar T)
 
 /-- One step of context-free transformation. -/
 def CF_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
-∃ r ∈ g.rules, ∃ v w : list (symbol T g.nt), 
+∃ r ∈ g.rules, ∃ v w : list (symbol T g.nt),
   oldWord = v ++ [symbol.nonterminal (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
 
 /-- Any number of steps of context-free transformation; reflexive+transitive closure of `CF_transforms`. -/

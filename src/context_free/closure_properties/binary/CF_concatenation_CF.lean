@@ -171,13 +171,74 @@ begin
   },
 end
 
+
+def CF_transforms_leftmost (g : CF_grammar T) (oldWord newWord : list (symbol T g.nt)) : Prop :=
+∃ r ∈ g.rules, ∃ v w : list (symbol T g.nt),
+  (oldWord = v ++ [symbol.nonterminal (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w)
+  ∧ (∀ s ∈ v, ∃ t : T, s = symbol.terminal t)
+
+def CF_derives_leftmost (g : CF_grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
+relation.refl_trans_gen (CF_transforms_leftmost g)
+
+def CF_generates_str_leftmost (g : CF_grammar T) (str : list (symbol T g.nt)) : Prop :=
+CF_derives_leftmost g [symbol.nonterminal g.initial] str
+
+def CF_generates_leftmost (g : CF_grammar T) (word : list T) : Prop :=
+CF_generates_str_leftmost g (list.map symbol.terminal word)
+
+lemma CF_generates_iff_generates_leftmost (g : CF_grammar T) (word : list T) :
+  CF_generates g word ↔ CF_generates_leftmost g word :=
+begin
+  unfold CF_generates_leftmost,
+  unfold CF_generates,
+  unfold CF_generates_str_leftmost,
+  unfold CF_generates_str,
+  split,
+  {
+    intro ass,
+    -- TODO induction starting with the last step
+    sorry,
+  },
+  {
+    intro ass,
+    have straight_indu : ∀ w,
+      CF_derives_leftmost g [symbol.nonterminal g.initial] w →
+        CF_derives g [symbol.nonterminal g.initial] w,
+    {
+      intros w hw,
+      induction hw with x y trash orig ih,
+      {
+        exact CF_deri_self,
+      },
+      apply CF_deri_of_deri_tran,
+      {
+        exact ih,
+      },
+      rcases orig with ⟨ r, r_in, u, v, transf_correct, unnecessary ⟩,
+      use r,
+      use r_in,
+      use u,
+      use v,
+      exact transf_correct,
+    },
+    exact straight_indu (list.map symbol.terminal word) ass,
+  }
+end
+
 private lemma in_language_comb {g₁ g₂ : CF_grammar T} (w : list T)
                                (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
   w ∈ CF_language g₁ * CF_language g₂ :=
 begin
-  -- we need to do sinking here
   rw language.mem_mul,
-  -- this proof would be much easier if we could assume leftmost derivation
+  change CF_generates (combined_grammar g₁ g₂) w at hyp,
+  rw CF_generates_iff_generates_leftmost at hyp,
+  -- 1. unfold the first `CF_transforms_leftmost` step from `hyp`
+  -- 2. we will have something like `CF_derives_leftmost (combined_grammar g₁ g₂) [g₁.initial, g₂.initial] (list.map symbol.terminal w)`
+  -- 3. use `a` := everything derived from `g₁.initial`
+  -- 4. use `b` := everything derived from `g₂.initial`
+  -- 5. prove `a ∈ CF_language g₁` by some kind of induction
+  -- 6. prove `b ∈ CF_language g₂` by some kind of induction
+  -- 7. the remaining goal `a ++ b = w` is trivial
   sorry,
 end
 
