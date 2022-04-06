@@ -613,5 +613,3 @@ begin
     },
   }
 end
-
-#print axioms CF_of_CF_u_CF

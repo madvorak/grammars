@@ -194,5 +194,3 @@ begin
     rw equiv.right_inv,
   },
 end
-
-#print axioms CF_of_bijemap_CF

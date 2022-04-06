@@ -267,5 +267,3 @@ begin
     exact in_language_conca w hyp,
   },
 end
-
-#print axioms CF_of_CF_c_CF
