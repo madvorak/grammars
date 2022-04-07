@@ -418,7 +418,39 @@ begin
               ∧ (lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v = x),
   {
     intros x ass,
-    sorry,
+    induction ass with a b trash orig ih,
+    {
+      use [[symbol.nonterminal g₁.initial], [symbol.nonterminal g₂.initial]],
+      split,
+      {
+        split;
+        apply CF_deri_self,
+      },
+      {
+        refl,
+      },
+    },
+    rcases orig with ⟨ orig_rule, orig_in, c, d, bef, aft ⟩,
+    cases orig_in,
+    {
+      exfalso,
+      rw orig_in at *,
+      -- TODO show that `orig_rule` cannot match
+      sorry,
+    },
+    change orig_rule ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at orig_in,
+    rw list.mem_append at orig_in,
+    rcases ih with ⟨ u, v, ⟨ ih₁, ih₂ ⟩, ih_concat ⟩,
+    cases orig_in,
+    {
+      -- nonterminal was rewritten in the left half of `a` ... upgrade `u`
+      sorry,
+    },
+    {
+      -- nonterminal was rewritten in the right half of `a` ... upgrade `v`
+      use u,
+      sorry,
+    },
   },
   rcases complicated_induction (list.map symbol.terminal w) derivation with ⟨ u, v, ⟨ hu, hv ⟩, hw ⟩,
   use liT_of_lsTN₃ u,
