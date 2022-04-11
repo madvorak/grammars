@@ -29,34 +29,15 @@ CF_derives g [symbol.nonterminal g.initial] str
 def CF_generates (word : list T) : Prop :=
 CF_generates_str g (list.map symbol.terminal word)
 
-end cfg_definitions
-
-
-section cfg_languages
-variable {T : Type}
-
 /-- Context-free language; just a wrapper around `CF_generates`. -/
-def CF_language (g : CF_grammar T) : language T :=
+def CF_language : language T :=
 CF_generates g
 
+end cfg_definitions
+
 /-- Predicate "is context-free"; defined by an existence of a context-free grammar for given language. -/
-def is_CF (L : language T) :=
+def is_CF {T : Type} (L : language T) :=
 ∃ g : CF_grammar T, CF_language g = L
-
-
-/-- Context-free grammar for the empty language (i.e., `∈` always gives `false`). -/
-def cfg_empty_lang : CF_grammar T :=
-CF_grammar.mk (fin 1) 0 []
-
-/-- Context-free grammar for the singleton language that contains `[]` as its only word. -/
-def cfg_empty_word : CF_grammar T :=
-CF_grammar.mk (fin 1) 0 [(0, [])]
-
-/-- Context-free grammar for a language `{a}.star` where `a` is a given terminal symbol. -/
-def cfg_symbol_star (a : T) : CF_grammar T :=
-CF_grammar.mk (fin 1) 0 [(0, [symbol.terminal a, symbol.nonterminal 0]), (0, [])]
-
-end cfg_languages
 
 
 section cfg_utilities
