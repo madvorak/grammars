@@ -70,8 +70,7 @@ begin
     intros w hw,
     cases hw with n hwn,
     rw hwn,
-    change CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal (list.repeat a n)),
-    convert_to CF_generates_str (cfg_symbol_star a) _,
+    convert_to CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal (list.repeat a n)),
     unfold CF_generates_str,
     clear hwn w,
     have comes_to : CF_derives (cfg_symbol_star a)
@@ -80,15 +79,52 @@ begin
     {
       induction n with n ih,
       {
-        sorry,
+        apply CF_deri_self,
       },
-      
-      sorry,
+      apply CF_deri_of_deri_tran ih,
+      use ((0 : fin 1), [symbol.terminal a, symbol.nonterminal (0 : fin 1)]),
+      split,
+      {
+        apply list.mem_cons_self,
+      },
+      use [list.repeat (symbol.terminal a) n, []],
+      split,
+      {
+        rw list.append_nil,
+      },
+      rw list.append_nil,
+      change symbol.terminal a :: (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]) =
+             list.repeat (symbol.terminal a) n ++ ([symbol.terminal a] ++ [symbol.nonterminal 0]),
+      rw ← list.append_assoc,
+      rw ← list.cons_append,
+      apply congr_arg2, swap,
+      {
+        refl,
+      },
+      have count_succ_left : @symbol.terminal T (fin 1) a :: list.repeat (symbol.terminal a) n =
+                             list.repeat (symbol.terminal a) (n + 1),
+      {
+        symmetry,
+        apply list.repeat_succ,
+      },
+      have count_succ_right : list.repeat (symbol.terminal a) n ++ [symbol.terminal a] =
+                              list.repeat (symbol.terminal a) (n + 1),
+      {
+        change list.repeat (symbol.terminal a) n ++ list.repeat (symbol.terminal a) 1 =
+               list.repeat (symbol.terminal a) (n + 1),
+        symmetry,
+        apply list.repeat_add,
+      },
+      rw count_succ_left,
+      rw count_succ_right,
     },
     apply CF_deri_of_deri_tran comes_to,
     use ((0 : fin 1), []),
     split,
-      sorry,
+    {
+      apply list.mem_cons_of_mem,
+      apply list.mem_cons_self,
+    },
     use [list.repeat (symbol.terminal a) n, []],
     split;
     simp,
