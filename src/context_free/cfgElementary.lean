@@ -63,8 +63,105 @@ lemma language_of_cfg_symbol_star (a : T) :
 begin
   apply set.eq_of_subset_of_subset,
   {
+    intro w,
+    /-
+    We prove this inclusion as follows:
+    (1) `w ∈ CF_language (cfg_symbol_star a)` →
+    (2) `w` contains only `a`s →
+    (3) `∃ (n : ℕ), w = list.repeat a n)` □
+    -/
 
-    sorry,
+    have implication2 : (∀ t : T, t ≠ a → t ∉ w) → (∃ (n : ℕ), w = list.repeat a n),
+    {
+      contrapose,
+      intros contr ass,
+      push_neg at contr,
+      specialize contr w.length,
+
+      have different : ∃ n : ℕ, ∃ hl : n < w.length, ∃ hr : n < (list.repeat a w.length).length,
+        w.nth_le n hl ≠ (list.repeat a w.length).nth_le n hr,
+      {
+        by_contradiction isnt,
+        have same_len : w.length = (list.repeat a w.length).length,
+        {
+          rw list.length_repeat,
+        },
+        apply contr ∘ list.ext_le same_len,
+        push_neg at isnt,
+        intros n n_small_left n_small_right,
+        specialize isnt n n_small_left,
+        push_neg at isnt,
+        specialize isnt n_small_right,
+        push_neg at isnt,
+        exact isnt,
+      },
+      rcases different with ⟨ n, hl, hr, nq ⟩,
+
+      rw list.nth_le_repeat a hr at nq,
+      specialize ass (w.nth_le n hl) nq,
+      exact ass (list.nth_le_mem w n hl),
+    },
+
+    have implication1 : w ∈ CF_language (cfg_symbol_star a) → (∀ t : T, t ≠ a → t ∉ w),
+    {
+      clear implication2,
+      intros ass t nq,
+      change CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal w) at ass,
+      unfold CF_generates_str at ass,
+
+      have indu : ∀ v : list (symbol T (cfg_symbol_star a).nt),
+              CF_derives (cfg_symbol_star a) [symbol.nonterminal (cfg_symbol_star a).initial] v →
+                symbol.terminal t ∉ v,
+      {
+        intros v hyp,
+        induction hyp with x y trash orig ih,
+        {
+          finish,
+        },
+        rcases orig with ⟨ rul, rin, p, q, bef, aft ⟩,
+        rw aft,
+        rw bef at ih,
+        repeat { rw list.mem_append at * },
+        push_neg,
+        push_neg at ih,
+        split, swap,
+        {
+          exact ih.right,
+        },
+        split,
+        {
+          exact ih.left.left,
+        },
+        cases rin,
+        {
+          rw rin,
+          dsimp,
+          intro imposs,
+          cases imposs,
+          {
+            apply nq,
+            exact symbol.terminal.inj imposs,
+          },
+          cases imposs,
+          {
+            norm_cast at imposs,
+          },
+          exact list.not_mem_nil (@symbol.terminal T (cfg_symbol_star a).nt t) imposs,
+        },
+        {
+          change rul ∈ [((0 : fin 1), ([] : list (symbol T (cfg_symbol_star a).nt)))] at rin,
+          rw list.mem_singleton at rin,
+          rw rin,
+          exact list.not_mem_nil (symbol.terminal t),
+        }
+      },
+      specialize indu (list.map symbol.terminal w) ass,
+
+      by_contradiction contra,
+      exact indu (list.mem_map_of_mem symbol.terminal contra),
+    },
+
+    exact implication2 ∘ implication1,
   },
   {
     intros w hw,
