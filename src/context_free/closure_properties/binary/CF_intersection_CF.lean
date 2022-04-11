@@ -1,7 +1,6 @@
 import context_free.cfgPumping
 import context_free.closure_properties.binary.CF_concatenation_CF
 import context_free.closure_properties.unary.permutation_CF
-import tactic
 
 
 section reusable_defs_and_lemmata
@@ -13,13 +12,35 @@ list.sum (list.map (λ x, ite (x = a) 1 0) w)
 lemma count_in_repeat_eq (a : α) (n : ℕ) :
   count_in (list.repeat a n) a  =  n  :=
 begin
-  sorry,
+  induction n with n ih,
+  {
+    refl,
+  },
+  change count_in (a :: list.repeat a n) a = n.succ,
+  unfold count_in,
+  unfold list.map,
+  simp,
+  exact nat.one_add n,
 end
 
-lemma count_in_repeat_neq {a : α} {b : α} (h : a ≠ b) (n : ℕ) :
+lemma count_in_repeat_neq {a : α} {b : α} (hyp : a ≠ b) (n : ℕ) :
   count_in (list.repeat a n) b  =  0  :=
 begin
-  sorry,
+  induction n with n ih,
+  {
+    refl,
+  },
+  change count_in (a :: list.repeat a n) b = 0,
+  unfold count_in,
+  unfold list.map,
+  simp,
+  split,
+  {
+    exact hyp,
+  },
+  intro h,
+  exfalso,
+  exact hyp h,
 end
 
 lemma count_in_append (w₁ w₂ : list α) (a : α) :
@@ -33,7 +54,6 @@ end
 
 lemma count_in_le_length {w : list α} {a : α} :
   count_in w a ≤ w.length :=
--- maybe not be needed in the end
 begin
   rw count_in,
   have upper_bound : ∀ y : α, (λ (x : α), ite (x = a) 1 0) y ≤ 1,
@@ -51,25 +71,65 @@ begin
       exact h,
     },
   },
-  calc (list.map (λ (x : α), ite (x = a) 1 0) w).sum
-      ≤ (list.map (λ (x : α), 1) w).sum : sorry
-  ... ≤ 1 * w.length                    : sorry
-  ... = w.length                        : by rw one_mul,
+  induction w with head tail ih,
+  {
+    refl,
+  },
+  rw list.map_cons,
+  simp,
+  calc ite (head = a) 1 0 + (list.map (λ (x : α), ite (x = a) 1 0) tail).sum
+      ≤ 1 + (list.map (λ (x : α), ite (x = a) 1 0) tail).sum : add_le_add_right (upper_bound head) _
+  ... ≤ 1 + tail.length                                      : add_le_add_left ih 1
+  ... = tail.length + 1                                      : add_comm 1 _,
 end
 
-lemma count_in_pos_of_in {w : list α} {a : α} (h : a ∈ w) :
+lemma count_in_pos_of_in {w : list α} {a : α} (hyp : a ∈ w) :
   count_in w a > 0 :=
 begin
+  induction w with head tail ih,
+  {
+    exfalso,
+    rw list.mem_nil_iff at hyp,
+    exact hyp,
+  },
   by_contradiction contr,
   rw not_lt at contr,
   rw nat.le_zero_iff at contr,
-  sorry,
+  rw list.mem_cons_eq at hyp,
+  unfold count_in at contr,
+  unfold list.map at contr,
+  simp at contr,
+  cases hyp,
+  {
+    exact contr.left hyp.symm,
+  },
+  specialize ih hyp,
+  have zero_in_tail : count_in tail a = 0,
+  {
+    unfold count_in,
+    exact contr.right,
+  },
+  rw zero_in_tail at ih,
+  exact nat.lt_asymm ih ih,
 end
 
-lemma count_in_zero_of_notin {w : list α} {a : α} (h : a ∉ w) :
+lemma count_in_zero_of_notin {w : list α} {a : α} (hyp : a ∉ w) :
   count_in w a = 0 :=
 begin
-  sorry,
+  induction w with head tail ih,
+  {
+    refl,
+  },
+  unfold count_in,
+  rw list.map_cons,
+  simp,
+  rw list.mem_cons_eq at hyp,
+  push_neg at hyp,
+  split,
+  {
+    exact hyp.left.symm,
+  },
+  exact ih hyp.right,
 end
 
 end reusable_defs_and_lemmata
