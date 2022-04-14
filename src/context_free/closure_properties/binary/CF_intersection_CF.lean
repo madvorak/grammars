@@ -688,7 +688,7 @@ private lemma CF_lang_aux_ab : is_CF lang_aux_ab :=
 begin
   let S_ : fin 1 := 0,
   let S : symbol (fin 3) (fin 1) := symbol.nonterminal S_,
-  let g := @CF_grammar.mk (fin 3)
+  let g := CF_grammar.mk
     (fin 1)
     S_
     [
@@ -698,7 +698,37 @@ begin
   use g,
   apply set.eq_of_subset_of_subset,
   {
-    sorry,
+    intros w ass,
+    change CF_derives g [S] (list.map symbol.terminal w) at ass,
+    have indu :
+      ∀ v : list (symbol (fin 3) (fin 1)),
+        CF_derives g [S] v →
+          lang_aux_ab (
+            list.filter_map
+              (λ x : symbol (fin 3) (fin 1), 
+                match x with
+                | symbol.terminal t := some t
+                | symbol.nonterminal _ := none
+                end
+              )
+              v
+          ),
+    {
+      intros v hyp,
+      induction hyp with u u' trash orig hyp_ih,
+      {
+        use 0,
+        refl,
+      },
+      cases hyp_ih with n ih,
+      rcases orig with ⟨ rul, rin, w₁, w₂, bef, aft ⟩,
+      rw aft,
+      sorry,
+    },
+    have instantiated := indu (list.map symbol.terminal w) ass,
+    convert instantiated,
+    rw list.filter_map_map,
+    finish,
   },
   {
     intros w ass,
