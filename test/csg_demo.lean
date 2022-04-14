@@ -171,8 +171,11 @@ private meta def combined_steps_r₄ (pre pos : pexpr) : tactic unit := `[
 /-- generate `aaabbbccc` by the grammar above -/
 example : [Te.a_, Te.a_, Te.a_, Te.b_, Te.b_, Te.b_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=
 begin
-  change CS_derives {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
-                    [symbol.nonterminal Nt.S_] [a, a, a, b, b, b, c, c, c],
+  change
+    CS_derives
+      {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
+      [symbol.nonterminal Nt.S_]
+      [a, a, a, b, b, b, c, c, c],
   -- S
 
   CS_step ``(r₁) ``([]) ``([]),
@@ -219,8 +222,11 @@ example : [Te.a_, Te.a_, Te.a_, Te.a_,
            Te.b_, Te.b_, Te.b_, Te.b_,
            Te.c_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=
 begin
-  change CS_derives {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
-                    [symbol.nonterminal Nt.S_] [a, a, a, a, b, b, b, b, c, c, c, c],
+  change
+    CS_derives
+      {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
+      [symbol.nonterminal Nt.S_]
+      [a, a, a, a, b, b, b, b, c, c, c, c],
 
   -- .S.
   CS_step ``(r₁) ``([]) ``([]),

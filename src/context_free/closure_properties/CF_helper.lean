@@ -74,9 +74,10 @@ begin
 end
 
 
-private lemma lift_tran (lg : lifted_grammar)
-                        (input output : list (symbol T lg.g₀.nt))
-                        (hyp : CF_transforms lg.g₀ input output) :
+private lemma lift_tran
+    (lg : lifted_grammar)
+    (input output : list (symbol T lg.g₀.nt))
+    (hyp : CF_transforms lg.g₀ input output) :
   CF_transforms lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
 begin
   rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
@@ -102,9 +103,10 @@ begin
   },
 end
 
-lemma lift_deri (lg : lifted_grammar)
-                (input output : list (symbol T lg.g₀.nt))
-                (hyp : CF_derives lg.g₀ input output) :
+lemma lift_deri
+    (lg : lifted_grammar)
+    (input output : list (symbol T lg.g₀.nt))
+    (hyp : CF_derives lg.g₀ input output) :
   CF_derives lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
 begin
   induction hyp with u v trash orig ih,
@@ -126,10 +128,11 @@ def good_letter {lg : @lifted_grammar T} : symbol T lg.g.nt → Prop
 def good_string {lg : @lifted_grammar T} (str : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ str, good_letter letter
 
-private lemma sink_tran (lg : lifted_grammar)
-                        (input output : list (symbol T lg.g.nt))
-                        (hyp : CF_transforms lg.g input output)
-                        (ok_input : good_string input) :
+private lemma sink_tran
+    (lg : lifted_grammar)
+    (input output : list (symbol T lg.g.nt))
+    (hyp : CF_transforms lg.g input output)
+    (ok_input : good_string input) :
   CF_transforms lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
 begin
   rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
@@ -184,9 +187,10 @@ begin
     rw ← preimage,
     unfold lift_rule,
     dsimp,
-    change [symbol.nonterminal pre_rule.fst] =
-           list.filter_map (sink_symbol lg.sink_nt)
-              (list.map (lift_symbol lg.lift_nt) [symbol.nonterminal pre_rule.fst]),
+    change
+      [symbol.nonterminal pre_rule.fst] =
+      list.filter_map (sink_symbol lg.sink_nt)
+        (list.map (lift_symbol lg.lift_nt) [symbol.nonterminal pre_rule.fst]),
     rw list.filter_map_map,
     rw correct_inverse,
     rw list.filter_map_some,
@@ -206,12 +210,13 @@ begin
   },
 end
 
-lemma sink_deri (lg : lifted_grammar)
-                (input output : list (symbol T lg.g.nt))
-                (hyp : CF_derives lg.g input output)
-                (ok_input : good_string input) :
-  CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) ∧
-  good_string output :=
+lemma sink_deri
+    (lg : lifted_grammar)
+    (input output : list (symbol T lg.g.nt))
+    (hyp : CF_derives lg.g input output)
+    (ok_input : good_string input) :
+  CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output)
+  ∧ good_string output :=
 begin
   induction hyp with u v trash orig ih,
   {

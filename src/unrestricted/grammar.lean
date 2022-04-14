@@ -27,9 +27,11 @@ variables {T : Type} (g : grammar T)
 
 /-- One step of grammatical transformation. -/
 def grammar_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
-∃ r : grule T g.nt, r ∈ g.rules  ∧  ∃ v w : list (symbol T g.nt),
-  oldWord = v ++ r.input_string.fst ++ [symbol.nonterminal r.input_string.snd.fst] ++ r.input_string.snd.snd ++ w
-  ∧  newWord = v ++ r.output_string ++ w
+∃ r : grule T g.nt,
+  r ∈ g.rules ∧
+  ∃ v w : list (symbol T g.nt), and
+    (oldWord = v ++ r.input_string.fst ++ [symbol.nonterminal r.input_string.snd.fst] ++ r.input_string.snd.snd ++ w)
+    (newWord = v ++ r.output_string ++ w)
 
 /-- Any number of steps of grammatical transformation; reflexive+transitive closure of `grammar_transforms`. -/
 def grammar_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
@@ -42,7 +44,7 @@ def grammar_language : language T :=
 end grammar_definitions
 
 /-- Predicate "is enumerable"; defined by an existence of a grammar for given language. -/
-def is_Enumerable {T : Type} (L : language T) :=
+def is_Enumerable {T : Type} (L : language T) : Prop :=
 ∃ g : grammar T, grammar_language g = L
 
 

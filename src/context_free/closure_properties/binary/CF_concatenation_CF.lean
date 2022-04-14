@@ -286,9 +286,11 @@ private lemma in_language_comb' {g₁ g₂ : CF_grammar T} (w : list T)
   w ∈ CF_language g₁ * CF_language g₂ :=
 begin
   rw language.mem_mul,
-  change CF_derives (combined_grammar g₁ g₂)
-                    [symbol.nonterminal (combined_grammar g₁ g₂).initial]
-                    (list.map symbol.terminal w) at hyp,
+  change
+    CF_derives
+      (combined_grammar g₁ g₂)
+      [symbol.nonterminal (combined_grammar g₁ g₂).initial]
+      (list.map symbol.terminal w) at hyp,
 
   cases CF_tran_or_id_of_deri hyp,
   {
@@ -326,7 +328,11 @@ begin
   },
   rcases h with ⟨ y, first_step, derivation ⟩,
 
-  have only_option : y = [symbol.nonterminal (some (sum.inl (g₁.initial))), symbol.nonterminal (some (sum.inr (g₂.initial)))],
+  have only_option :
+    y = [
+      symbol.nonterminal (some (sum.inl (g₁.initial))),
+      symbol.nonterminal (some (sum.inr (g₂.initial)))
+    ],
   {
     rcases first_step with ⟨ first_rule, first_rule_in, p, q, bef, aft ⟩,
     have len_bef := congr_arg list.length bef,
@@ -358,7 +364,11 @@ begin
       rw list.nil_append at bef,
       exact list.head_eq_of_cons_eq (eq.symm bef),
     },
-    have only_rule : first_rule = (none, [symbol.nonterminal (some (sum.inl (g₁.initial))), symbol.nonterminal (some (sum.inr (g₂.initial)))]),
+    have only_rule :
+      first_rule = (none, [
+        symbol.nonterminal (some (sum.inl (g₁.initial))),
+        symbol.nonterminal (some (sum.inr (g₂.initial)))
+      ]),
     {
       change first_rule ∈ (
         (none, [
@@ -378,10 +388,12 @@ begin
       cases first_rule_in,
       {
         delta rule_of_rule₁ at first_rule_in,
-        have rfst : first_rule.fst ∈ list.map prod.fst
-                      (list.map (λ (r : g₁.nt × list (symbol T g₁.nt)),
-                        (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd))
-                      g₁.rules),
+        have rfst :
+          first_rule.fst ∈ list.map prod.fst
+            (list.map (
+                λ (r : g₁.nt × list (symbol T g₁.nt)),
+                (some (sum.inl r.fst), lsTN_of_lsTN₁ r.snd)
+              ) g₁.rules),
         {
           exact list.mem_map_of_mem prod.fst first_rule_in,
         },
@@ -391,10 +403,12 @@ begin
       },
       {
         delta rule_of_rule₂ at first_rule_in,
-        have rfst : first_rule.fst ∈ list.map prod.fst
-                      (list.map (λ (r : g₂.nt × list (symbol T g₂.nt)),
-                        (some (sum.inr r.fst), lsTN_of_lsTN₂ r.snd))
-                      g₂.rules),
+        have rfst :
+          first_rule.fst ∈ list.map prod.fst
+            (list.map (
+                λ (r : g₂.nt × list (symbol T g₂.nt)),
+                (some (sum.inr r.fst), lsTN_of_lsTN₂ r.snd)
+              ) g₂.rules),
         {
           exact list.mem_map_of_mem prod.fst first_rule_in,
         },
@@ -410,12 +424,19 @@ begin
   },
   rw only_option at derivation,
 
-  have complicated_induction : ∀ x : list (symbol T (combined_grammar g₁ g₂).nt),
-          CF_derives (combined_grammar g₁ g₂) [symbol.nonterminal (some (sum.inl (g₁.initial))), symbol.nonterminal (some (sum.inr (g₂.initial)))] x →
-            ∃ u : list (symbol T g₁.nt), ∃ v : list (symbol T g₂.nt), and
-              (CF_derives g₁ [symbol.nonterminal g₁.initial] u)
-              (CF_derives g₂ [symbol.nonterminal g₂.initial] v)
-              ∧ (lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v = x),
+  have complicated_induction :
+    ∀ x : list (symbol T (combined_grammar g₁ g₂).nt),
+      CF_derives
+        (combined_grammar g₁ g₂)
+        [
+          symbol.nonterminal (some (sum.inl (g₁.initial))),
+          symbol.nonterminal (some (sum.inr (g₂.initial)))
+        ]
+        x →
+        ∃ u : list (symbol T g₁.nt), ∃ v : list (symbol T g₂.nt), and
+          (CF_derives g₁ [symbol.nonterminal g₁.initial] u)
+          (CF_derives g₂ [symbol.nonterminal g₂.initial] v)
+          ∧ (lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v = x),
   {
     intros x ass,
     induction ass with a b trash orig ih,
@@ -455,7 +476,11 @@ begin
   rcases complicated_induction (list.map symbol.terminal w) derivation with ⟨ u, v, ⟨ hu, hv ⟩, hw ⟩,
   use liT_of_lsTN₃ u,
   use liT_of_lsTN₃ v,
-  have huvw : @liT_of_lsTN₃ T (combined_grammar g₁ g₂) (lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v) = liT_of_lsTN₃ (list.map symbol.terminal w),
+  have huvw :
+    @liT_of_lsTN₃ T
+      (combined_grammar g₁ g₂)
+      (lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v)
+    = liT_of_lsTN₃ (list.map symbol.terminal w),
   {
     exact congr_arg liT_of_lsTN₃ hw,
   },
@@ -513,13 +538,23 @@ begin
   rw language.mem_mul at hyp,
   rcases hyp with ⟨ u, v, hu, hv, hw ⟩,
   unfold CF_language at *,
-  change CF_derives (combined_grammar g₁ g₂)
-                    [symbol.nonterminal (combined_grammar g₁ g₂).initial]
-                    (list.map symbol.terminal w),
+  change
+    CF_derives
+      (combined_grammar g₁ g₂)
+      [symbol.nonterminal (combined_grammar g₁ g₂).initial]
+      (list.map symbol.terminal w),
 
-  apply @CF_deri_of_tran_deri T (combined_grammar g₁ g₂) _ [symbol.nonterminal (some (sum.inl (g₁.initial))), symbol.nonterminal (some (sum.inr (g₂.initial)))] _,
+  apply @CF_deri_of_tran_deri T
+    (combined_grammar g₁ g₂)
+    _ [
+      symbol.nonterminal (some (sum.inl (g₁.initial))),
+      symbol.nonterminal (some (sum.inr (g₂.initial)))
+    ] _,
   {
-    use (none, [symbol.nonterminal (some (sum.inl (g₁.initial))), symbol.nonterminal (some (sum.inr (g₂.initial)))]),
+    use (none, [
+        symbol.nonterminal (some (sum.inl (g₁.initial))),
+        symbol.nonterminal (some (sum.inr (g₂.initial)))
+      ]),
     split,
     {
       apply list.mem_cons_self,
@@ -530,18 +565,24 @@ begin
   },
   rw ← hw,
   rw list.map_append,
-  apply @CF_deri_of_deri_deri T (combined_grammar g₁ g₂) _ (list.map symbol.terminal u ++ [symbol.nonterminal (some (sum.inr g₂.initial))]) _,
+  apply @CF_deri_of_deri_deri T
+    (combined_grammar g₁ g₂) _
+    (list.map symbol.terminal u ++ [symbol.nonterminal (some (sum.inr g₂.initial))]) _,
   {
-    change CF_derives (combined_grammar g₁ g₂)
-                      ([symbol.nonterminal (some (sum.inl g₁.initial))] ++ [symbol.nonterminal (some (sum.inr g₂.initial))])
-                      (list.map symbol.terminal u ++ [symbol.nonterminal (some (sum.inr g₂.initial))]),
+    change
+      CF_derives
+        (combined_grammar g₁ g₂)
+        ([symbol.nonterminal (some (sum.inl g₁.initial))] ++ [symbol.nonterminal (some (sum.inr g₂.initial))])
+        (list.map symbol.terminal u ++ [symbol.nonterminal (some (sum.inr g₂.initial))]),
     apply CF_derives_with_postfix,
 
     change CF_derives g₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal u) at hu,
     let gg₁ := g₁g g₁ g₂,
     change CF_derives gg₁.g [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal u),
     
-    have bar : [symbol.nonterminal (some (sum.inl g₁.initial))] = list.map (lift_symbol gg₁.lift_nt) [symbol.nonterminal g₁.initial],
+    have bar :
+      [symbol.nonterminal (some (sum.inl g₁.initial))] =
+      list.map (lift_symbol gg₁.lift_nt) [symbol.nonterminal g₁.initial],
     {
       apply list.singleton_eq,
     },
@@ -565,7 +606,9 @@ begin
     let gg₂ := g₂g g₁ g₂,
     change CF_derives gg₂.g [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal v),
     
-    have bar : [symbol.nonterminal (some (sum.inr g₂.initial))] = list.map (lift_symbol gg₂.lift_nt) [symbol.nonterminal g₂.initial],
+    have bar :
+      [symbol.nonterminal (some (sum.inr g₂.initial))] =
+      list.map (lift_symbol gg₂.lift_nt) [symbol.nonterminal g₂.initial],
     {
       apply list.singleton_eq,
     },

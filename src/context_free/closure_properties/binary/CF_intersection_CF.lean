@@ -160,16 +160,17 @@ section what_is_CF
 
 section not_CF
 
-private lemma false_of_uvvxyyz {_a _b _c : fin 3} {n : ℕ} {u v x y z: list (fin 3)}
-  (elimin : ∀ s : fin 3,  s ≠ _a  →  s ≠ _b  →  s ≠ _c  → false)
-  (no_a: _a ∉ v ++ y) (nonempty: (v ++ y).length > 0)
-  (counts_ab: ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _b)
-  (counts_ac: ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _c)
-  (counted_a : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _a = n + 1 + count_in (v ++ y) _a)
-  (counted_b : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _b = n + 1 + count_in (v ++ y) _b)
-  (counted_c : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _c = n + 1 + count_in (v ++ y) _c)
-  (pumping: u ++ v ^ 2 ++ x ++ y ^ 2 ++ z ∈ lang_eq_eq) :
-    false :=
+private lemma false_of_uvvxyyz
+    {_a _b _c : fin 3} {n : ℕ} {u v x y z: list (fin 3)}
+    (elimin : ∀ s : fin 3,  s ≠ _a  →  s ≠ _b  →  s ≠ _c  → false)
+    (no_a: _a ∉ v ++ y) (nonempty: (v ++ y).length > 0)
+    (counts_ab: ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _b)
+    (counts_ac: ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _c)
+    (counted_a : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _a = n + 1 + count_in (v ++ y) _a)
+    (counted_b : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _b = n + 1 + count_in (v ++ y) _b)
+    (counted_c : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _c = n + 1 + count_in (v ++ y) _c)
+    (pumping: u ++ v ^ 2 ++ x ++ y ^ 2 ++ z ∈ lang_eq_eq) :
+  false :=
 begin
   have extra_not_a : _b ∈ (v ++ y) ∨ _c ∈ (v ++ y),
   {
@@ -190,8 +191,7 @@ begin
       by_contradiction contr,
       push_neg at contr,
       cases contr with first_letter_not_b first_letter_not_c,
-      exact elimin ((v ++ y).nth_le 0 nonempty)
-                   first_letter_not_a first_letter_not_b first_letter_not_c,
+      exact elimin ((v ++ y).nth_le 0 nonempty) first_letter_not_a first_letter_not_b first_letter_not_c,
     },
     cases first_letter_b_or_c with first_letter_b first_letter_c,
     {
@@ -397,7 +397,11 @@ begin
         },
         rw ← list.nth_le_append_right le_add_self lt_len at h_nth_a,
 
-        have orig_nth_le_eq_a : ∃ proofoo, (list.repeat a_ (n + 1) ++ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1))).nth_le (nₐ + u.length) proofoo = a_,
+        have orig_nth_le_eq_a :
+          ∃ proofoo,
+            (list.repeat a_ (n + 1) ++ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1))).nth_le
+              (nₐ + u.length) proofoo =
+            a_,
         {
           have rebracket : u ++ (v ++ (x ++ (y ++ z))) = u ++ (v ++ x ++ y ++ z),
           {
@@ -410,17 +414,22 @@ begin
         },
         cases orig_nth_le_eq_a with rrr_nth_le_eq_a_pr rrr_nth_le_eq_a,
 
-        rw @list.nth_le_append_right (fin 3) (list.repeat a_ (n + 1)) (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1)) (nₐ + u.length) (by {
-          rw list.length_repeat,
-          calc n + 1 ≤ u.length      : u_too_much
-               ...   ≤ nₐ + u.length : le_add_self,
-        }) (by {
-          rw concatenating,
-          rw ← list.append_assoc x,
-          rw ← list.append_assoc v,
-          rw ← list.append_assoc v,
-          exact lt_len,
-        }) at rrr_nth_le_eq_a,
+        rw @list.nth_le_append_right (fin 3)
+          (list.repeat a_ (n + 1))
+          (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1))
+          (nₐ + u.length)
+          (by {
+            rw list.length_repeat,
+            calc n + 1 ≤ u.length      : u_too_much
+                 ...   ≤ nₐ + u.length : le_add_self,
+          })
+          (by {
+            rw concatenating,
+            rw ← list.append_assoc x,
+            rw ← list.append_assoc v,
+            rw ← list.append_assoc v,
+            exact lt_len,
+          }) at rrr_nth_le_eq_a,
         
         have a_in_rb_rc : a_ ∈ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1)),
         {
@@ -470,7 +479,11 @@ begin
 
           have m_big : m ≥ 2 * n + 2,
           {
-            have orig_mth_is_c : ∃ proofoo, ((list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)) ++ list.repeat c_ (n + 1)).nth_le m proofoo = c_,
+            have orig_mth_is_c :
+              ∃ proofoo,
+                ((list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)) ++ list.repeat c_ (n + 1)).nth_le
+                  m proofoo =
+                c_,
             {
               repeat { rw ← list.append_assoc at concatenating },
               rw concatenating,
@@ -586,8 +599,10 @@ begin
     exact counts_bc w w_in,
   },
 
-  have counted_letter : ∀ s, count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) s =
-      count_in (list.repeat a_ (n+1)) s + count_in (list.repeat b_ (n+1)) s + count_in (list.repeat c_ (n+1)) s + count_in (v ++ y) s,
+  have counted_letter : ∀ s,
+    count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) s =
+    count_in (list.repeat a_ (n+1)) s + count_in (list.repeat b_ (n+1)) s +
+      count_in (list.repeat c_ (n+1)) s + count_in (v ++ y) s,
   {
     intro s,
     rw ← concatenating,
@@ -831,10 +846,12 @@ begin
   },
 end
 
-private lemma helper (n₁ m₁ n₂ m₂ : ℕ) (n₁pos : n₁ > 0)
-                     (a_ b_ c_ : fin 3) (a_neq_b : a_ ≠ b_) (a_neq_c : a_ ≠ c_)
-                     (equ: list.repeat a_ n₁ ++ list.repeat b_ n₁ ++ list.repeat c_ m₁ =
-                           list.repeat a_ n₂ ++ list.repeat b_ m₂ ++ list.repeat c_ m₂) :
+private lemma helper
+    (n₁ m₁ n₂ m₂ : ℕ) (n₁pos : n₁ > 0)
+    (a_ b_ c_ : fin 3) (a_neq_b : a_ ≠ b_) (a_neq_c : a_ ≠ c_)
+    (equ:
+      list.repeat a_ n₁ ++ list.repeat b_ n₁ ++ list.repeat c_ m₁ =
+      list.repeat a_ n₂ ++ list.repeat b_ m₂ ++ list.repeat c_ m₂) :
   n₁ ≤ n₂ :=
 begin
   by_contradiction contr,
@@ -856,8 +873,9 @@ begin
     rw list.append_assoc,
     exact n₁_le_len₁,
   },
-  have n₁th : (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth_le (n₁ - 1) n₁_le_len₁ =
-              (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth_le (n₁ - 1) n₁_le_len₂,
+  have n₁th :
+    (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth_le (n₁ - 1) n₁_le_len₁ =
+    (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth_le (n₁ - 1) n₁_le_len₂,
   {
     finish,
   },

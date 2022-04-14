@@ -65,10 +65,10 @@ begin
   {
     intro w,
     /-
-    We prove this inclusion as follows:
-    (1) `w ∈ CF_language (cfg_symbol_star a)` →
-    (2) `w` contains only `a`s →
-    (3) `∃ (n : ℕ), w = list.repeat a n)` □
+      We prove this inclusion as follows:
+      (1) `w ∈ CF_language (cfg_symbol_star a)` →
+      (2) `w` contains only `a`s →
+      (3) `∃ (n : ℕ), w = list.repeat a n)` □
     -/
 
     have implication2 : (∀ t : T, t ≠ a → t ∉ w) → (∃ (n : ℕ), w = list.repeat a n),
@@ -78,8 +78,9 @@ begin
       push_neg at contr,
       specialize contr w.length,
 
-      have different : ∃ n : ℕ, ∃ hl : n < w.length, ∃ hr : n < (list.repeat a w.length).length,
-        w.nth_le n hl ≠ (list.repeat a w.length).nth_le n hr,
+      have different :
+        ∃ n : ℕ, ∃ hl : n < w.length, ∃ hr : n < (list.repeat a w.length).length,
+          w.nth_le n hl ≠ (list.repeat a w.length).nth_le n hr,
       {
         by_contradiction isnt,
         have same_len : w.length = (list.repeat a w.length).length,
@@ -109,9 +110,10 @@ begin
       change CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal w) at ass,
       unfold CF_generates_str at ass,
 
-      have indu : ∀ v : list (symbol T (cfg_symbol_star a).nt),
-              CF_derives (cfg_symbol_star a) [symbol.nonterminal (cfg_symbol_star a).initial] v →
-                symbol.terminal t ∉ v,
+      have indu :
+        ∀ v : list (symbol T (cfg_symbol_star a).nt),
+          CF_derives (cfg_symbol_star a) [symbol.nonterminal (cfg_symbol_star a).initial] v →
+            symbol.terminal t ∉ v,
       {
         intros v hyp,
         induction hyp with x y trash orig ih,
@@ -170,9 +172,11 @@ begin
     convert_to CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal (list.repeat a n)),
     unfold CF_generates_str,
     clear hwn w,
-    have comes_to : CF_derives (cfg_symbol_star a)
-                               [symbol.nonterminal (cfg_symbol_star a).initial]
-                               (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]),
+    have comes_to :
+      CF_derives
+        (cfg_symbol_star a)
+        [symbol.nonterminal (cfg_symbol_star a).initial]
+        (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]),
     {
       induction n with n ih,
       {
@@ -190,25 +194,29 @@ begin
         rw list.append_nil,
       },
       rw list.append_nil,
-      change symbol.terminal a :: (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]) =
-             list.repeat (symbol.terminal a) n ++ ([symbol.terminal a] ++ [symbol.nonterminal 0]),
+      change
+        symbol.terminal a :: (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]) =
+        list.repeat (symbol.terminal a) n ++ ([symbol.terminal a] ++ [symbol.nonterminal 0]),
       rw ← list.append_assoc,
       rw ← list.cons_append,
       apply congr_arg2, swap,
       {
         refl,
       },
-      have count_succ_left : @symbol.terminal T (fin 1) a :: list.repeat (symbol.terminal a) n =
-                             list.repeat (symbol.terminal a) (n + 1),
+      have count_succ_left :
+        @symbol.terminal T (fin 1) a :: list.repeat (symbol.terminal a) n =
+        list.repeat (symbol.terminal a) (n + 1),
       {
         symmetry,
         apply list.repeat_succ,
       },
-      have count_succ_right : list.repeat (symbol.terminal a) n ++ [symbol.terminal a] =
-                              list.repeat (symbol.terminal a) (n + 1),
+      have count_succ_right :
+        list.repeat (symbol.terminal a) n ++ [symbol.terminal a] =
+        list.repeat (symbol.terminal a) (n + 1),
       {
-        change list.repeat (symbol.terminal a) n ++ list.repeat (symbol.terminal a) 1 =
-               list.repeat (symbol.terminal a) (n + 1),
+        change
+          list.repeat (symbol.terminal a) n ++ list.repeat (symbol.terminal a) 1 =
+          list.repeat (symbol.terminal a) (n + 1),
         symmetry,
         apply list.repeat_add,
       },

@@ -22,8 +22,8 @@ variables {T : Type} (g : CS_grammar T)
 /-- One step of context-sensitive transformation. -/
 def CS_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
 ∃ r : csrule T g.nt, r ∈ g.rules  ∧  ∃ v w : list (symbol T g.nt), and
-    (oldWord = v ++ r.context_left ++ [symbol.nonterminal r.input_nonterminal] ++ r.context_right ++ w)
-    (newWord = v ++ r.context_left ++                     r.output_string      ++ r.context_right ++ w)
+  (oldWord = v ++ r.context_left ++ [symbol.nonterminal r.input_nonterminal] ++ r.context_right ++ w)
+  (newWord = v ++ r.context_left ++                     r.output_string      ++ r.context_right ++ w)
 
 /-- Any number of steps of context-sensitive transformation; reflexive+transitive closure of `CS_transforms`. -/
 def CS_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
@@ -36,7 +36,7 @@ def CS_language : language T :=
 end csg_definitions
 
 /-- Predicate "is context-sensitive"; defined by an existence of a context-sensitive grammar for given language. -/
-def is_CS {T : Type} (L : language T) :=
+def is_CS {T : Type} (L : language T) : Prop :=
 ∃ g : CS_grammar T, CS_language g = L
 
 
@@ -96,9 +96,10 @@ begin
   rw eq_iff_iff,
   split,
   {
-    have indu : ∀ v : list (symbol T g.nt),
-                  CS_derives g [symbol.nonterminal g.initial] v →
-                    grammar_derives (grammar_of_csg g) [symbol.nonterminal (grammar_of_csg g).initial] v,
+    have indu :
+      ∀ v : list (symbol T g.nt),
+        CS_derives g [symbol.nonterminal g.initial] v →
+          grammar_derives (grammar_of_csg g) [symbol.nonterminal (grammar_of_csg g).initial] v,
     {
       clear w,
       intros v h,
@@ -137,9 +138,10 @@ begin
     exact indu (list.map symbol.terminal w),
   },
   {
-    have indu : ∀ v : list (symbol T g.nt),
-                  grammar_derives (grammar_of_csg g) [symbol.nonterminal (grammar_of_csg g).initial] v →
-                    CS_derives g [symbol.nonterminal g.initial] v,
+    have indu :
+      ∀ v : list (symbol T g.nt),
+        grammar_derives (grammar_of_csg g) [symbol.nonterminal (grammar_of_csg g).initial] v →
+          CS_derives g [symbol.nonterminal g.initial] v,
     {
       clear w,
       intros v h,

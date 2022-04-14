@@ -36,7 +36,7 @@ CF_generates g
 end cfg_definitions
 
 /-- Predicate "is context-free"; defined by an existence of a context-free grammar for given language. -/
-def is_CF {T : Type} (L : language T) :=
+def is_CF {T : Type} (L : language T) : Prop :=
 ∃ g : CF_grammar T, CF_language g = L
 
 
@@ -53,30 +53,38 @@ lemma CF_deri_self {w : list (symbol T g.nt)} :
 relation.refl_trans_gen.refl
 
 /-- The relation `CF_derives` is transitive. -/
-lemma CF_deri_of_deri_deri {u v w : list (symbol T g.nt)}
-  (huv : CF_derives g u v) (hvw : CF_derives g v w) :
-    CF_derives g u w :=
+lemma CF_deri_of_deri_deri
+    {u v w : list (symbol T g.nt)}
+    (huv : CF_derives g u v)
+    (hvw : CF_derives g v w) :
+  CF_derives g u w :=
 relation.refl_trans_gen.trans huv hvw
 
-lemma CF_deri_of_deri_tran {u v w : list (symbol T g.nt)}
-  (huv : CF_derives g u v) (hvw : CF_transforms g v w) :
-    CF_derives g u w :=
+lemma CF_deri_of_deri_tran
+    {u v w : list (symbol T g.nt)}
+    (huv : CF_derives g u v)
+    (hvw : CF_transforms g v w) :
+  CF_derives g u w :=
 CF_deri_of_deri_deri huv (CF_deri_of_tran hvw)
 
-lemma CF_deri_of_tran_deri {u v w : list (symbol T g.nt)}
-  (huv : CF_transforms g u v) (hvw : CF_derives g v w) :
-    CF_derives g u w :=
+lemma CF_deri_of_tran_deri
+    {u v w : list (symbol T g.nt)}
+    (huv : CF_transforms g u v)
+    (hvw : CF_derives g v w) :
+  CF_derives g u w :=
 CF_deri_of_deri_deri (CF_deri_of_tran huv) hvw
 
-lemma CF_tran_or_id_of_deri {u w : list (symbol T g.nt)}
-  (h : CF_derives g u w) :  or  (u = w)
-    (∃ v : list (symbol T g.nt), (CF_transforms g u v) ∧ (CF_derives g v w)) :=
+lemma CF_tran_or_id_of_deri {u w : list (symbol T g.nt)} (h : CF_derives g u w) :
+  (u = w) ∨
+  (∃ v : list (symbol T g.nt), (CF_transforms g u v) ∧ (CF_derives g v w)) :=
 relation.refl_trans_gen.cases_head h
 
 
-lemma CF_derives_with_prefix {oldWord newWord : list (symbol T g.nt)}
-  (prefi : list (symbol T g.nt)) (h : CF_derives g oldWord newWord) :
-    CF_derives g (prefi ++ oldWord) (prefi ++ newWord) :=
+lemma CF_derives_with_prefix
+    {oldWord newWord : list (symbol T g.nt)}
+    (prefi : list (symbol T g.nt))
+    (h : CF_derives g oldWord newWord) :
+  CF_derives g (prefi ++ oldWord) (prefi ++ newWord) :=
 begin
   induction h with a b irr hyp ih,
   {
@@ -100,9 +108,11 @@ begin
   simp only [list.append_assoc],
 end
 
-lemma CF_derives_with_postfix {oldWord newWord : list (symbol T g.nt)}
-  (posfi : list (symbol T g.nt)) (h : CF_derives g oldWord newWord) :
-    CF_derives g (oldWord ++ posfi) (newWord ++ posfi) :=
+lemma CF_derives_with_postfix
+    {oldWord newWord : list (symbol T g.nt)}
+    (posfi : list (symbol T g.nt))
+    (h : CF_derives g oldWord newWord) :
+  CF_derives g (oldWord ++ posfi) (newWord ++ posfi) :=
 begin
   induction h with a b irr hyp ih,
   {
@@ -126,9 +136,11 @@ begin
   simp only [list.append_assoc],
 end
 
-lemma CF_derives_with_prefix_and_postfix {oldWord newWord : list (symbol T g.nt)}
-  (prefi posfi : list (symbol T g.nt)) (h : CF_derives g oldWord newWord) :
-    CF_derives g (prefi ++ oldWord ++ posfi) (prefi ++ newWord ++ posfi) :=
+lemma CF_derives_with_prefix_and_postfix
+    {oldWord newWord : list (symbol T g.nt)}
+    (prefi posfi : list (symbol T g.nt))
+    (h : CF_derives g oldWord newWord) :
+  CF_derives g (prefi ++ oldWord ++ posfi) (prefi ++ newWord ++ posfi) :=
 begin
   apply CF_derives_with_postfix,
   apply CF_derives_with_prefix,
@@ -185,14 +197,16 @@ begin
   unfold CF_language,
   unfold CS_language,
   ext1 w,
-  change CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w) =
-         CS_derives (csg_of_cfg g) [symbol.nonterminal (csg_of_cfg g).initial] (list.map symbol.terminal w),
+  change
+    CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w) =
+    CS_derives (csg_of_cfg g) [symbol.nonterminal (csg_of_cfg g).initial] (list.map symbol.terminal w),
   rw eq_iff_iff,
   split,
   {
-    have indu : ∀ v : list (symbol T g.nt),
-                  CF_derives g [symbol.nonterminal g.initial] v →
-                    CS_derives (csg_of_cfg g) [symbol.nonterminal (csg_of_cfg g).initial] v,
+    have indu :
+      ∀ v : list (symbol T g.nt),
+        CF_derives g [symbol.nonterminal g.initial] v →
+          CS_derives (csg_of_cfg g) [symbol.nonterminal (csg_of_cfg g).initial] v,
     {
       clear w,
       intros v h,
@@ -225,9 +239,10 @@ begin
     exact indu (list.map symbol.terminal w),
   },
   {
-    have indu : ∀ v : list (symbol T g.nt),
-                  CS_derives (csg_of_cfg g) [symbol.nonterminal g.initial] v →
-                    CF_derives g [symbol.nonterminal (csg_of_cfg g).initial] v,
+    have indu :
+      ∀ v : list (symbol T g.nt),
+        CS_derives (csg_of_cfg g) [symbol.nonterminal g.initial] v →
+          CF_derives g [symbol.nonterminal (csg_of_cfg g).initial] v,
     {
       clear w,
       intros v h,

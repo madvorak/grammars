@@ -46,9 +46,10 @@ begin
     change CF_generates_str g (list.map symbol.terminal (list.map π.inv_fun w)),
     unfold CF_generates_str,
 
-    have deri_of_deri : ∀ v : list (symbol T₂ g'.nt),
-                          CF_derives g' [symbol.nonterminal g'.initial] v →
-                            CF_derives g [symbol.nonterminal g.initial] (lsT₁_of_lsT₂ π v),
+    have deri_of_deri :
+      ∀ v : list (symbol T₂ g'.nt),
+        CF_derives g' [symbol.nonterminal g'.initial] v →
+          CF_derives g [symbol.nonterminal g.initial] (lsT₁_of_lsT₂ π v),
     {
       intros v hv,
       induction hv with u v trash orig ih,
@@ -135,9 +136,10 @@ begin
     change CF_generates_str g' (list.map symbol.terminal w),
     unfold CF_generates_str,
 
-    have deri_of_deri : ∀ v : list (symbol T₁ g.nt),
-                          CF_derives g [symbol.nonterminal g.initial] v →
-                            CF_derives g' [symbol.nonterminal g'.initial] (lsT₂_of_lsT₁ π v),
+    have deri_of_deri :
+      ∀ v : list (symbol T₁ g.nt),
+        CF_derives g [symbol.nonterminal g.initial] v →
+          CF_derives g' [symbol.nonterminal g'.initial] (lsT₂_of_lsT₁ π v),
     {
       intros v hv,
       induction hv with u v trash orig ih,
