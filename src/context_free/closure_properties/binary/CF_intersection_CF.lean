@@ -685,7 +685,85 @@ private def lang_aux_ab : language (fin 3) :=
 λ w, ∃ n : ℕ, w = list.repeat a_ n ++ list.repeat b_ n
 
 private lemma CF_lang_aux_ab : is_CF lang_aux_ab :=
-sorry
+begin
+  let S_ : fin 1 := 0,
+  let S : symbol (fin 3) (fin 1) := symbol.nonterminal S_,
+  let g := @CF_grammar.mk (fin 3)
+    (fin 1)
+    S_
+    [
+      (S_, [a, S, b]),
+      (S_, ([] : list (symbol (fin 3) (fin 1))))
+    ],
+  use g,
+  apply set.eq_of_subset_of_subset,
+  {
+    sorry,
+  },
+  {
+    intros w ass,
+    cases ass with n hw,
+    change CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w),
+    rw [ hw, list.map_append, list.map_repeat, list.map_repeat, ← a, ← b ],
+    clear hw,
+    induction n with n ih,
+    {
+      convert_to CF_derives g [symbol.nonterminal g.initial] [],
+      apply CF_deri_of_tran,
+      use (S_, ([] : list (symbol (fin 3) (fin 1)))),
+      split,
+      {
+        apply list.mem_cons_of_mem,
+        apply list.mem_cons_self,
+      },
+      use [[], []],
+      split;
+      refl,
+    },
+    convert_to
+      CF_derives g
+        [symbol.nonterminal g.initial]
+        (list.map
+          symbol.terminal
+          ([a_] ++ (list.repeat a_ n ++ list.repeat b_ n) ++ [b_])
+        ),
+    {
+      convert_to
+        list.repeat a (1 + n) ++ list.repeat b (n + 1) =
+        list.map symbol.terminal ([a_] ++ (list.repeat a_ n ++ list.repeat b_ n) ++ [b_]),
+      {
+        rw add_comm,
+      },
+      rw [
+        list_map_append_append,
+        list.map_singleton,
+        list.map_singleton,
+        list.repeat_add,
+        list.repeat_add,
+        a, b
+      ],
+      simp only [ list.repeat, list.append_assoc, list.map_append, list.map_repeat ],
+    },
+    apply CF_deri_of_tran_deri,
+    {
+      use (S_, [a, S, b]),
+      split,
+      {
+        apply list.mem_cons_self,
+      },
+      use [[], []],
+      finish,
+    },
+    rw list_map_append_append,
+    change
+      CF_derives g
+        ([a] ++ [S] ++ [b])
+        ([a] ++ list.map symbol.terminal (list.repeat a_ n ++ list.repeat b_ n) ++ [b]),
+    apply CF_derives_with_prefix_and_postfix,
+    convert ih,
+    rw [ list.map_append, list.map_repeat, list.map_repeat, a, b ],
+  },
+end
 
 private def lang_aux_c : language (fin 3) :=
 λ w, ∃ n : ℕ, w = list.repeat c_ n
