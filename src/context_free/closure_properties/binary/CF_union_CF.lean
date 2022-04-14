@@ -270,8 +270,11 @@ private lemma in_union_of_in_first (w : list T) :
 begin
   intro assum,
 
-  have deri_start : CF_derives (union_grammar g₁ g₂)
-      [symbol.nonterminal none] [symbol.nonterminal (some (sum.inl g₁.initial))],
+  have deri_start :
+    CF_derives
+      (union_grammar g₁ g₂)
+      [symbol.nonterminal none]
+      [symbol.nonterminal (some (sum.inl g₁.initial))],
   {
     apply CF_deri_of_tran,
     use (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]),
@@ -288,15 +291,20 @@ begin
     simp,
   },
 
-  have deri_rest : CF_derives (union_grammar g₁ g₂)
-      [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w),
+  have deri_rest :
+    CF_derives
+      (union_grammar g₁ g₂)
+      [symbol.nonterminal (some (sum.inl g₁.initial))]
+      (list.map symbol.terminal w),
   {
     have beginning :
       [symbol.nonterminal (some (sum.inl g₁.initial))] =
       lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial],
     {
       unfold lsTN_of_lsTN₁,
-      change [symbol.nonterminal (some (sum.inl g₁.initial))] = [sTN_of_sTN₁ (symbol.nonterminal g₁.initial)],
+      change
+        [symbol.nonterminal (some (sum.inl g₁.initial))] =
+        [sTN_of_sTN₁ (symbol.nonterminal g₁.initial)],
       unfold sTN_of_sTN₁,
     },
     have ending :
@@ -330,8 +338,11 @@ private lemma in_union_of_in_second (w : list T) :
 begin
   intro assum,
 
-  have deri_start : CF_derives (union_grammar g₁ g₂)
-      [symbol.nonterminal none] [symbol.nonterminal (some (sum.inr g₂.initial))],
+  have deri_start :
+    CF_derives
+      (union_grammar g₁ g₂)
+      [symbol.nonterminal none]
+      [symbol.nonterminal (some (sum.inr g₂.initial))],
   {
     apply CF_deri_of_tran,
     use (none, [symbol.nonterminal (some (sum.inr (g₂.initial)))]),
@@ -349,19 +360,25 @@ begin
     simp,
   },
 
-  have deri_rest : CF_derives (union_grammar g₁ g₂)
-      [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w),
+  have deri_rest :
+    CF_derives
+      (union_grammar g₁ g₂)
+      [symbol.nonterminal (some (sum.inr g₂.initial))]
+      (list.map symbol.terminal w),
   {
     have beginning :
       [symbol.nonterminal (some (sum.inr g₂.initial))] =
       lsTN_of_lsTN₂ [symbol.nonterminal g₂.initial],
     {
       unfold lsTN_of_lsTN₂,
-      change [symbol.nonterminal (some (sum.inr g₂.initial))] = [sTN_of_sTN₂ (symbol.nonterminal g₂.initial)],
+      change
+        [symbol.nonterminal (some (sum.inr g₂.initial))] =
+        [sTN_of_sTN₂ (symbol.nonterminal g₂.initial)],
       unfold sTN_of_sTN₂,
     },
-    have ending : (list.map symbol.terminal w)
-                  = lsTN_of_lsTN₂ (list.map symbol.terminal w),
+    have ending :
+      (list.map symbol.terminal w) =
+      lsTN_of_lsTN₂ (list.map symbol.terminal w),
     {
       ext1,
       unfold lsTN_of_lsTN₂,
@@ -530,7 +547,8 @@ end
 private lemma in_language_impossible_case_of_union
     (w : list T)
     (rule : (union_grammar g₁ g₂).nt × list (symbol T (union_grammar g₁ g₂).nt))
-    (u v: list (symbol T (union_grammar g₁ g₂).nt)) (hu : u = []) (hv : v = [])
+    (u v: list (symbol T (union_grammar g₁ g₂).nt))
+    (hu : u = []) (hv : v = [])
     (bef: [symbol.nonterminal (union_grammar g₁ g₂).initial] = u ++ [symbol.nonterminal rule.fst] ++ v)
     (sbi : rule ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules)) :
   w ∈ CF_language g₁ ∨ w ∈ CF_language g₂ :=
