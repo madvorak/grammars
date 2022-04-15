@@ -703,32 +703,251 @@ begin
     have indu :
       ∀ v : list (symbol (fin 3) (fin 1)),
         CF_derives g [S] v →
-          lang_aux_ab (
-            list.filter_map
-              (λ x : symbol (fin 3) (fin 1), 
-                match x with
-                | symbol.terminal t := some t
-                | symbol.nonterminal _ := none
-                end
-              )
-              v
-          ),
+          ∃ n : ℕ,
+            v = list.repeat a n ++ list.repeat b n   ∨
+            v = list.repeat a n ++ [S] ++ list.repeat b n,
     {
       intros v hyp,
       induction hyp with u u' trash orig hyp_ih,
       {
         use 0,
+        right,
         refl,
       },
-      cases hyp_ih with n ih,
-      rcases orig with ⟨ rul, rin, w₁, w₂, bef, aft ⟩,
-      rw aft,
-      sorry,
+      rcases orig with ⟨ rul, rin, p, q, bef, aft ⟩,
+      cases hyp_ih with k ih,
+      cases ih,
+      {
+        exfalso,
+        rw ih at bef,
+        have yes_in : symbol.nonterminal rul.fst ∈ p ++ [symbol.nonterminal rul.fst] ++ q,
+        {
+          apply list.mem_append_left,
+          apply list.mem_append_right,
+          apply list.mem_cons_self,
+        },
+        have not_in : symbol.nonterminal rul.fst ∉ list.repeat a k ++ list.repeat b k,
+        {
+          rw list.mem_append_eq,
+          push_neg,
+          split;
+          {
+            rw list.mem_repeat,
+            push_neg,
+            intro trash,
+            tauto,
+          },
+        },
+        rw bef at not_in,
+        exact not_in yes_in,
+      },
+      
+      have both_rule_rewrite_S : symbol.nonterminal rul.fst = S,
+      {
+        cases rin,
+        {
+          rw rin,
+        },
+        cases rin,
+        {
+          rw rin,
+        },
+        cases rin,
+      },
+      rw bef at ih,
+      rw both_rule_rewrite_S at ih,
+      dsimp at ih,
+      have p_len : p.length = k,
+      {
+        by_contradiction contra,
+        have kth_eq := congr_fun (congr_arg list.nth ih) p.length,
+        have plengthth_is_S : (p ++ [S] ++ q).nth p.length = some S,
+        {
+          rw list.append_assoc,
+          rw list.nth_append_right (le_of_eq rfl),
+          {
+            rw nat.sub_self,
+            refl,
+          },
+        },
+        rw plengthth_is_S at kth_eq,
+
+        cases lt_or_gt_of_ne contra,
+        {
+          have plengthth_is_a :
+            (list.repeat a k ++ [S] ++ list.repeat b k).nth p.length =
+            some a,
+          {
+            rw list.append_assoc,
+            have plength_small : p.length < (list.repeat a k).length,
+            {
+              rw list.length_repeat,
+              exact h,
+            },
+            rw list.nth_append plength_small,
+            rw list.nth_le_nth plength_small,
+            apply congr_arg,
+            exact list.nth_le_repeat a plength_small,
+          },
+          rw plengthth_is_a at kth_eq,
+          have S_neq_a : S ≠ a,
+          {
+            tauto,
+          },
+          rw option.some_inj at kth_eq,
+          exact S_neq_a kth_eq,
+        },
+        {
+          have plengthth_is_b :
+            (list.repeat a k ++ [S] ++ list.repeat b k).nth p.length =
+            some b,
+          {
+            have plength_big : (list.repeat a k ++ [S]).length ≤ p.length,
+            {
+              rw list.length_append,
+              rw list.length_repeat,
+              exact nat.succ_le_iff.mpr h,
+            },
+            rw list.nth_append_right plength_big,
+            have len_within_list : p.length - (list.repeat a k ++ [S]).length < (list.repeat b k).length,
+            {
+              have ihlen := congr_arg list.length ih,
+              simp only [ list.length_repeat, list.length_append, list.length_singleton ] at *,
+              have ihlen' : p.length + 1 ≤ k + 1 + k,
+              {
+                exact nat.le.intro ihlen,
+              },
+              have ihlen'' : p.length < k + 1 + k,
+              {
+                exact nat.succ_le_iff.mp ihlen',
+              },
+              rw ← tsub_lt_iff_left plength_big at ihlen'',
+              exact ihlen'',
+            },
+            rw list.nth_le_nth len_within_list,
+            apply congr_arg,
+            exact list.nth_le_repeat b len_within_list,
+          },
+          rw plengthth_is_b at kth_eq,
+          have S_neq_b : S ≠ b,
+          {
+            tauto,
+          },
+          rw option.some_inj at kth_eq,
+          exact S_neq_b kth_eq,
+        },
+      },
+      have ihl_len : (p ++ [symbol.nonterminal S_]).length = k + 1,
+      {
+        rw list.length_append,
+        rw p_len,
+        refl,
+      },
+      have ihr_len : (list.repeat a k ++ [S]).length = k + 1,
+      {
+        rw list.length_append,
+        rw list.length_repeat,
+        refl,
+      },
+      have qb : q = list.repeat b k,
+      {
+        apply list.append_inj_right ih,
+        rw ihl_len,
+        rw ihr_len,
+      },
+      have ih_reduced : p ++ [symbol.nonterminal S_] = list.repeat a k ++ [S],
+      {
+        rw qb at ih,
+        rw list.append_left_inj at ih,
+        exact ih,
+      },
+      have pa : p = list.repeat a k,
+      {
+        rw list.append_left_inj at ih_reduced,
+        exact ih_reduced,
+      },
+
+      cases rin,
+      {
+        use k + 1,
+        right,
+        rw aft,
+        rw rin,
+        convert_to
+          p ++ (S_, [a, S, b]).snd ++ q =
+          list.repeat a k ++ [a] ++ [S] ++ [b] ++ list.repeat b k,
+        {
+          rw list.repeat_add,
+          rw add_comm,
+          rw list.repeat_add,
+          simp only [ list.repeat, list.append_assoc ],
+        },
+        rw [ pa, qb ],
+        simp only [ list.append_assoc, list.cons_append, list.singleton_append ],
+      },
+      cases rin,
+      {
+        use k,
+        left,
+        rw aft,
+        rw rin,
+        rw list.append_nil,
+        rw [ pa, qb ],
+      },
+      exfalso,
+      exact rin,
     },
-    have instantiated := indu (list.map symbol.terminal w) ass,
-    convert instantiated,
-    rw list.filter_map_map,
-    finish,
+    cases indu (list.map symbol.terminal w) ass with n instantiated,
+    clear indu,
+    cases instantiated,
+    {
+      use n,
+      have foo := congr_arg (list.filter_map (
+        λ z : symbol (fin 3) (fin 1),
+          match z with
+            | symbol.terminal t := some t
+            | symbol.nonterminal _ := none
+          end
+        )) instantiated,
+      rw list.filter_map_append at foo,
+      rw list.filter_map_map at foo,
+      rw list.filter_map_some at foo,
+      rw [ foo, a, b ],
+      clear foo,
+      apply congr_arg2;
+      {
+        clear instantiated,
+        induction n with n ih,
+        {
+          refl,
+        },
+        rw list.repeat_succ,
+        rw list.repeat_succ,
+        rw list.filter_map_cons,
+        simp only [ eq_self_iff_true, true_and, ih ],
+      },
+    },
+    exfalso,
+    have yes_in : S ∈ list.repeat a n ++ [S] ++ list.repeat b n,
+    {
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      apply list.mem_cons_self,
+    },
+    have not_in : S ∉ list.map symbol.terminal w,
+    {
+      intro hyp,
+      have S_isnt_terminal : ¬ ∃ x, S = symbol.terminal x,
+      {
+        tauto,
+      },
+      rw list.mem_map at hyp,
+      cases hyp with y hypo,
+      push_neg at S_isnt_terminal,
+      exact S_isnt_terminal y hypo.right.symm,
+    },
+    rw instantiated at not_in,
+    exact not_in yes_in,
   },
   {
     intros w ass,
