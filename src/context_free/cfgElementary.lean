@@ -1,4 +1,5 @@
 import context_free.cfg
+import tactic
 
 variable {T : Type}
 
@@ -50,7 +51,128 @@ CF_grammar.mk (fin 1) 0 [(0, [])]
 lemma language_of_cfg_empty_word :
   CF_language (@cfg_empty_word T) = singleton [] :=
 begin
-  sorry,
+  unfold CF_language,
+  ext1 w,
+  split, swap,
+  {
+    intro h,
+    rw set.mem_singleton_iff at h,
+    change CF_derives cfg_empty_word [symbol.nonterminal cfg_empty_lang.initial] (list.map symbol.terminal w),
+    apply @CF_deri_of_tran,
+    use ((0 : fin 1), []),
+    use [[], []],
+    rw h,
+    split;
+    refl,
+    exact T,
+  },
+  intro hw,
+  change
+    CF_derives
+      (@cfg_empty_word T)
+      [symbol.nonterminal cfg_empty_lang.initial]
+      (list.map symbol.terminal w)
+    at hw,
+  cases
+    @CF_tran_or_id_of_deri T
+      (@cfg_empty_word T)
+      [symbol.nonterminal cfg_empty_lang.initial]
+      (list.map symbol.terminal w)
+      hw,
+  {
+    exfalso,
+    have zeroth := congr_fun (congr_arg list.nth h) 0,
+    dsimp at zeroth,
+    by_cases w = list.nil,
+    {
+      have is_none : (list.map symbol.terminal w).nth 0 = none,
+      {
+        rw h,
+        rw list.nth_map,
+        refl,
+      },
+      rw is_none at zeroth,
+      tauto,
+    },
+    {
+      have is_terminal : ∃ t, (list.map symbol.terminal w).nth 0 = some (symbol.terminal t),
+      {
+        apply exists.intro (w.nth_le 0 (list.length_pos_of_ne_nil h)),
+        rw list.nth_map,
+        norm_num,
+        exact list.nth_le_nth (list.length_pos_of_ne_nil h),
+      },
+      cases is_terminal with irr is_termin,
+      rw is_termin at zeroth,
+      norm_cast at zeroth,
+    },
+    exact T,
+  },
+  rcases h with ⟨ v, step_init, step_none ⟩,
+  have v_is_empty_word : v = list.nil,
+  {
+    rcases step_init with ⟨ rul, rin, pre, pos, bef, aft ⟩,
+    have rule : rul = ((0 : fin 1), []),
+    {
+      rw ← list.mem_singleton,
+      exact rin,
+    },
+    have empty_surrounding : pre = [] ∧ pos = [],
+    {
+      rw rule at bef,
+      have bef_lenghts := congr_arg list.length bef,
+      rw list.length_append at bef_lenghts,
+      rw list.length_append at bef_lenghts,
+      dsimp at bef_lenghts,
+      split,
+      {
+        have pre_zero : pre.length = 0,
+        {
+          linarith, -- from `bef_lenghts`
+        },
+        rw list.length_eq_zero at pre_zero,
+        exact pre_zero,
+      },
+      {
+        have pos_zero : pos.length = 0,
+        {
+          linarith, -- from `bef_lenghts`
+        },
+        rw list.length_eq_zero at pos_zero,
+        exact pos_zero,
+      },
+    },
+    rw empty_surrounding.1 at aft,
+    rw empty_surrounding.2 at aft,
+    rw rule at aft,
+    exact aft,
+  },
+  rw v_is_empty_word at step_none,
+  cases
+    @CF_tran_or_id_of_deri T
+      (@cfg_empty_word T)
+      list.nil
+      (list.map symbol.terminal w)
+      step_none,
+  {
+    by_contradiction contra,
+    have w_not_nil : w.length > 0,
+    {
+      apply list.length_pos_of_ne_nil,
+      convert contra,
+    },
+    have impossible_lengths := congr_arg list.length h,
+    rw list.length at impossible_lengths,
+    rw list.length_map at impossible_lengths,
+    rw ← impossible_lengths at w_not_nil,
+    exact nat.lt_asymm w_not_nil w_not_nil,
+  },
+  {
+    exfalso,
+    rcases h with ⟨ trash, ⟨ trash_r, trash_rin, trash_1, trash_2, impossible, - ⟩, - ⟩,
+    finish,
+  },
+  exact T,
 end
 
 /-- Context-free grammar for a language `{a}.star` where `a` is a given terminal symbol. -/
