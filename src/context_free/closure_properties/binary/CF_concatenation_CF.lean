@@ -281,6 +281,182 @@ private def oT_of_sTN₃ {g₃ : CF_grammar T} : symbol T g₃.nt → option T
 private def liT_of_lsTN₃ {g₃ : CF_grammar T} : list (symbol T g₃.nt) → list T :=
 list.filter_map oT_of_sTN₃
 
+private lemma u_eq_take_map_w {g₁ g₂ : CF_grammar T}
+    (u : list (symbol T g₁.nt))
+    (v : list (symbol T g₂.nt))
+    (w : list T)
+    (len : u.length ≤ w.length)
+    (hyp : list.take u.length (list.map sTN_of_sTN₁ u ++ lsTN_of_lsTN₂ v) =
+           list.take u.length (list.map symbol.terminal w)) :
+  u = list.take u.length (list.map symbol.terminal w) :=
+begin
+  ext1,
+  by_cases n < u.length,
+  {
+    have ass : list.map sTN_of_sTN₁ u = list.take u.length (list.map symbol.terminal w),
+    {
+      convert hyp,
+      have takenl := list.take_left (list.map sTN_of_sTN₁ u) (lsTN_of_lsTN₂ v),
+      rw list.length_map at takenl,
+      exact takenl.symm,
+    },
+    have nth_equ := congr_fun (congr_arg list.nth ass) n,
+    rw list.nth_take h,
+    rw list.nth_take h at nth_equ,
+    have h' : n < w.length,
+    {
+      exact gt_of_ge_of_gt len h,
+    },
+    have triv : n < (list.map sTN_of_sTN₁ u).length,
+    {
+      rw list.length_map,
+      exact h,
+    },
+    have trig : n < (list.map (@symbol.terminal T g₁.nt) w).length,
+    {
+      rw list.length_map,
+      exact h',
+    },
+    have trin : n < (list.map (@symbol.terminal T (option (g₁.nt ⊕ g₂.nt))) w).length,
+    {
+      rw list.length_map,
+      exact h',
+    },
+    rw list.nth_le_nth triv at nth_equ,
+    rw list.nth_le_nth trin at nth_equ,
+    rw option.some_inj at nth_equ,
+    rw list.nth_le_map at nth_equ,
+    swap, exact h,
+    rw list.nth_le_map at nth_equ,
+    swap, exact h',
+    rw list.nth_le_nth,
+    swap, exact h,
+    rw list.nth_le_nth,
+    swap, exact trig,
+    apply congr_arg,
+    norm_num,
+    cases u.nth_le n h with termi nonte,
+    {
+      unfold sTN_of_sTN₁ at nth_equ,
+      finish,
+    },
+    {
+      exfalso,
+      tauto,
+    },
+  },
+  convert_to none = none,
+  {
+    finish,
+  },
+  {
+    finish,
+  },
+  refl,
+end
+
+private lemma v_eq_drop_map_w {g₁ g₂ : CF_grammar T}
+    (u : list (symbol T g₁.nt))
+    (v : list (symbol T g₂.nt))
+    (w : list T)
+    (total_len : u.length + v.length = w.length)
+    (len : u.length ≤ w.length) -- probably omit this argument
+    (hyp : list.drop u.length (list.map sTN_of_sTN₁ u ++ list.map sTN_of_sTN₂ v) =
+           list.drop u.length (list.map symbol.terminal w)) :
+  v = list.drop u.length (list.map symbol.terminal w) :=
+begin
+  ext1,
+  by_cases n < v.length,
+  {
+    have nth_equ := congr_fun (congr_arg list.nth hyp) n,
+    rw list.nth_drop,
+    rw list.nth_drop at nth_equ,
+    rw list.nth_drop at nth_equ,
+
+    have hunltuv : u.length + n < u.length + v.length,
+    {
+      apply add_lt_add_left h,
+    },
+    have hunltw : u.length + n < w.length,
+    {
+      rw ← total_len,
+      exact hunltuv,
+    },
+    have hlen₁ : u.length + n < (list.map sTN_of_sTN₁ u ++ list.map sTN_of_sTN₂ v).length,
+    {
+      rw list.length_append,
+      rw list.length_map,
+      rw list.length_map,
+      exact hunltuv,
+    },
+    have hlen₂ : u.length + n < (list.map (@symbol.terminal T (option (g₁.nt ⊕ g₂.nt))) w).length,
+    {
+      rw list.length_map,
+      exact hunltw,
+    },
+    have hlen₂' : u.length + n < (list.map (@symbol.terminal T g₂.nt) w).length,
+    {
+      rw list.length_map,
+      exact hunltw,
+    },
+    rw list.nth_le_nth hlen₁ at nth_equ,
+    rw list.nth_le_nth hlen₂ at nth_equ,
+    rw list.nth_le_nth h,
+    rw list.nth_le_nth hlen₂',
+
+    rw option.some_inj at *,
+    have hlen₀ : (list.map sTN_of_sTN₁ u).length ≤ u.length + n,
+    {
+      rw list.length_map,
+      exact le_self_add,
+    },
+    have hlen : n < (list.map (@sTN_of_sTN₂ T g₁ g₂) v).length,
+    {
+      rw list.length_map,
+      exact h,
+    },
+    have nth_equ_simplified :
+      (list.map sTN_of_sTN₂ v).nth_le n hlen =
+      (list.map symbol.terminal w).nth_le (u.length + n) hlen₂,
+    {
+      rw list.nth_le_append_right hlen₀ at nth_equ,
+      convert nth_equ,
+      rw list.length_map,
+      symmetry,
+      apply add_tsub_cancel_left,
+    },
+    rw list.nth_le_map at nth_equ_simplified,
+
+    cases v.nth_le n h with x,
+    {
+      unfold sTN_of_sTN₂ at nth_equ_simplified,
+      rw list.nth_le_map _ _ hunltw at nth_equ_simplified,
+      rw list.nth_le_map _ _ hunltw,
+      injection nth_equ_simplified with hx,
+      apply congr_arg,
+      exact hx,
+    },
+    {
+      exfalso,
+      clear_except nth_equ_simplified,
+      finish,
+    },
+  },
+  convert_to none = none,
+  {
+    finish,
+  },
+  {
+    rw list.nth_drop,
+    push_neg at h,
+    rw list.nth_eq_none_iff,
+    rw list.length_map,
+    rw ← total_len,
+    apply add_le_add_left h,
+  },
+  refl,
+end
+
 private lemma in_language_comb' {g₁ g₂ : CF_grammar T} (w : list T)
                                 (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
   w ∈ CF_language g₁ * CF_language g₂ :=
@@ -489,16 +665,47 @@ begin
     change CF_derives _ _ _,
     unfold liT_of_lsTN₃,
     convert hu,
-    -- our `hw` implies that `u` contains only terminals
-    sorry,
+    have u_from_terminals : ∃ uₜ : list T, u = list.map symbol.terminal uₜ,
+    {
+      unfold lsTN_of_lsTN₁ at hw,
+      use list.take u.length w,
+      rw list.map_take,
+      exact u_eq_take_map_w u v w
+        (by {
+          have hwlen := congr_arg list.length hw,
+          rw list.length_append at hwlen,
+          rw list.length_map at hwlen,
+          rw list.length_map at hwlen,
+          exact nat.le.intro hwlen,
+        }) (congr_arg (list.take u.length) hw),
+    },
+    cases u_from_terminals with uₜ hut,
+    rw hut,
+    rw list.filter_map_map,
+    convert_to list.map symbol.terminal (list.filter_map some uₜ) = list.map symbol.terminal uₜ,
+    rw list.filter_map_some,
   },
   split,
   {
     change CF_derives _ _ _,
     unfold liT_of_lsTN₃,
     convert hv,
-    -- our `hw` implies that `v` contains only terminals
-    sorry,
+    have v_from_terminals : ∃ vₜ : list T, v = list.map symbol.terminal vₜ,
+    {
+      unfold lsTN_of_lsTN₁ at hw,
+      unfold lsTN_of_lsTN₂ at hw,
+      use list.drop u.length w,
+      rw list.map_drop,
+      have hwlen := congr_arg list.length hw,
+      rw list.length_append at hwlen,
+      repeat { rw list.length_map at hwlen },
+      exact v_eq_drop_map_w u v w hwlen (nat.le.intro hwlen) (congr_arg (list.drop u.length) hw),
+    },
+    cases v_from_terminals with vₜ hvt,
+    rw hvt,
+    rw list.filter_map_map,
+    convert_to list.map symbol.terminal (list.filter_map some vₜ) = list.map symbol.terminal vₜ,
+    rw list.filter_map_some,
   },
   unfold liT_of_lsTN₃ at huvw,
   rw list.filter_map_append at huvw,
@@ -580,13 +787,13 @@ begin
     let gg₁ := g₁g g₁ g₂,
     change CF_derives gg₁.g [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal u),
     
-    have bar :
+    have ini_equ :
       [symbol.nonterminal (some (sum.inl g₁.initial))] =
       list.map (lift_symbol gg₁.lift_nt) [symbol.nonterminal g₁.initial],
     {
       apply list.singleton_eq,
     },
-    rw bar,
+    rw ini_equ,
 
     have baz : list.map symbol.terminal u = list.map (lift_symbol gg₁.lift_nt) (list.map symbol.terminal u),
     {
@@ -606,13 +813,13 @@ begin
     let gg₂ := g₂g g₁ g₂,
     change CF_derives gg₂.g [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal v),
     
-    have bar :
+    have ini_equ :
       [symbol.nonterminal (some (sum.inr g₂.initial))] =
       list.map (lift_symbol gg₂.lift_nt) [symbol.nonterminal g₂.initial],
     {
       apply list.singleton_eq,
     },
-    rw bar,
+    rw ini_equ,
 
     have baz : list.map symbol.terminal v = list.map (lift_symbol gg₂.lift_nt) (list.map symbol.terminal v),
     {
