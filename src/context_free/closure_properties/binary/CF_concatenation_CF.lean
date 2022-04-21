@@ -631,16 +631,79 @@ begin
       },
     },
     rcases orig with ⟨ orig_rule, orig_in, c, d, bef, aft ⟩,
+    rcases ih with ⟨ u, v, ⟨ ih₁, ih₂ ⟩, ih_concat ⟩,
     cases orig_in,
     {
       exfalso,
-      rw orig_in at *,
-      -- TODO show that `orig_rule` cannot match
-      sorry,
+      rw ← ih_concat at bef,
+      rw orig_in at bef,
+      clear_except bef,
+      dsimp at bef,
+      have init_nt_in_bef_right : symbol.nonterminal none ∈ c ++ [symbol.nonterminal none] ++ d,
+      {
+        apply list.mem_append_left,
+        apply list.mem_append_right,
+        apply list.mem_singleton_self,
+      },
+      have init_nt_notin_bef_left : symbol.nonterminal none ∉ lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v,
+      {
+        rw list.mem_append,
+        push_neg,
+        split,
+        {
+          rw list.mem_iff_nth_le,
+          push_neg,
+          unfold lsTN_of_lsTN₁,
+          intros n hn,
+          rw list.nth_le_map,
+          {
+            cases u.nth_le n _ with t s,
+            {
+              tauto,
+            },
+            {
+              unfold sTN_of_sTN₁,
+              intro hypo,
+              have impossible := symbol.nonterminal.inj hypo,
+              clear_except impossible,
+              tauto,
+            },
+          },
+          {
+            rw list.length_map at hn,
+            exact hn,
+          },
+        },
+        {
+          rw list.mem_iff_nth_le,
+          push_neg,
+          unfold lsTN_of_lsTN₂,
+          intros n hn,
+          rw list.nth_le_map,
+          {
+            cases v.nth_le n _ with t s,
+            {
+              tauto,
+            },
+            {
+              unfold sTN_of_sTN₂,
+              intro hypo,
+              have impossible := symbol.nonterminal.inj hypo,
+              clear_except impossible,
+              tauto,
+            },
+          },
+          {
+            rw list.length_map at hn,
+            exact hn,
+          },
+        },
+      },
+      rw bef at init_nt_notin_bef_left,
+      exact init_nt_notin_bef_left init_nt_in_bef_right,
     },
     change orig_rule ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at orig_in,
     rw list.mem_append at orig_in,
-    rcases ih with ⟨ u, v, ⟨ ih₁, ih₂ ⟩, ih_concat ⟩,
     cases orig_in,
     {
       -- nonterminal was rewritten in the left half of `a` ... upgrade `u`
