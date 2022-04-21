@@ -281,7 +281,8 @@ private def oT_of_sTN₃ {g₃ : CF_grammar T} : symbol T g₃.nt → option T
 private def liT_of_lsTN₃ {g₃ : CF_grammar T} : list (symbol T g₃.nt) → list T :=
 list.filter_map oT_of_sTN₃
 
-private lemma u_eq_take_map_w {g₁ g₂ : CF_grammar T}
+private lemma u_eq_take_map_w
+    {g₁ g₂ : CF_grammar T}
     (u : list (symbol T g₁.nt))
     (v : list (symbol T g₂.nt))
     (w : list T)
@@ -355,12 +356,12 @@ begin
   refl,
 end
 
-private lemma v_eq_drop_map_w {g₁ g₂ : CF_grammar T}
+private lemma v_eq_drop_map_w
+    {g₁ g₂ : CF_grammar T}
     (u : list (symbol T g₁.nt))
     (v : list (symbol T g₂.nt))
     (w : list T)
     (total_len : u.length + v.length = w.length)
-    (len : u.length ≤ w.length) -- probably omit this argument
     (hyp : list.drop u.length (list.map sTN_of_sTN₁ u ++ list.map sTN_of_sTN₂ v) =
            list.drop u.length (list.map symbol.terminal w)) :
   v = list.drop u.length (list.map symbol.terminal w) :=
@@ -457,8 +458,10 @@ begin
   refl,
 end
 
-private lemma in_language_comb' {g₁ g₂ : CF_grammar T} (w : list T)
-                                (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
+private lemma in_language_comb'
+    {g₁ g₂ : CF_grammar T}
+    {w : list T}
+    (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
   w ∈ CF_language g₁ * CF_language g₂ :=
 begin
   rw language.mem_mul,
@@ -699,7 +702,7 @@ begin
       have hwlen := congr_arg list.length hw,
       rw list.length_append at hwlen,
       repeat { rw list.length_map at hwlen },
-      exact v_eq_drop_map_w u v w hwlen (nat.le.intro hwlen) (congr_arg (list.drop u.length) hw),
+      exact v_eq_drop_map_w u v w hwlen (congr_arg (list.drop u.length) hw),
     },
     cases v_from_terminals with vₜ hvt,
     rw hvt,
@@ -738,8 +741,10 @@ begin
 end
 
 
-private lemma in_language_conca {g₁ g₂ : CF_grammar T} (w : list T)
-                                (hyp : w ∈ CF_language g₁ * CF_language g₂) :
+private lemma in_language_conca
+    {g₁ g₂ : CF_grammar T}
+    {w : list T}
+    (hyp : w ∈ CF_language g₁ * CF_language g₂) :
   w ∈ CF_language (combined_grammar g₁ g₂) :=
 begin
   rw language.mem_mul at hyp,
@@ -849,13 +854,13 @@ begin
     intros w hyp,
     rw ← h₁,
     rw ← h₂,
-    exact in_language_comb w hyp,
+    exact in_language_comb' hyp,
   },
   {
     -- prove `L₁ * L₂ ⊆ ` here
     intros w hyp,
     rw ← h₁ at hyp,
     rw ← h₂ at hyp,
-    exact in_language_conca w hyp,
+    exact in_language_conca hyp,
   },
 end
