@@ -204,76 +204,6 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
 }) (by { intro, refl })
 
 
-def CF_transforms_leftmost (g : CF_grammar T) (oldWord newWord : list (symbol T g.nt)) : Prop :=
-∃ r ∈ g.rules, ∃ v w : list (symbol T g.nt),
-  (oldWord = v ++ [symbol.nonterminal (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w)
-  ∧ (∀ s ∈ v, ∃ t : T, s = symbol.terminal t)
-
-def CF_derives_leftmost (g : CF_grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
-relation.refl_trans_gen (CF_transforms_leftmost g)
-
-def CF_generates_str_leftmost (g : CF_grammar T) (str : list (symbol T g.nt)) : Prop :=
-CF_derives_leftmost g [symbol.nonterminal g.initial] str
-
-def CF_generates_leftmost (g : CF_grammar T) (word : list T) : Prop :=
-CF_generates_str_leftmost g (list.map symbol.terminal word)
-
-lemma CF_generates_iff_generates_leftmost (g : CF_grammar T) (word : list T) :
-  CF_generates g word ↔ CF_generates_leftmost g word :=
-begin
-  unfold CF_generates_leftmost,
-  unfold CF_generates,
-  unfold CF_generates_str_leftmost,
-  unfold CF_generates_str,
-  split,
-  {
-    intro ass,
-    -- TODO induction starting with the last step
-    sorry,
-  },
-  {
-    intro ass,
-    have straight_indu : ∀ w,
-      CF_derives_leftmost g [symbol.nonterminal g.initial] w →
-        CF_derives g [symbol.nonterminal g.initial] w,
-    {
-      intros w hw,
-      induction hw with x y trash orig ih,
-      {
-        exact CF_deri_self,
-      },
-      apply CF_deri_of_deri_tran,
-      {
-        exact ih,
-      },
-      rcases orig with ⟨ r, r_in, u, v, transf_correct, unnecessary ⟩,
-      use r,
-      use r_in,
-      use u,
-      use v,
-      exact transf_correct,
-    },
-    exact straight_indu (list.map symbol.terminal word) ass,
-  }
-end
-
-private lemma in_language_comb {g₁ g₂ : CF_grammar T} (w : list T)
-                               (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
-  w ∈ CF_language g₁ * CF_language g₂ :=
-begin
-  rw language.mem_mul,
-  change CF_generates (combined_grammar g₁ g₂) w at hyp,
-  rw CF_generates_iff_generates_leftmost at hyp,
-  -- 1. unfold the first `CF_transforms_leftmost` step from `hyp`
-  -- 2. we will have something like `CF_derives_leftmost (combined_grammar g₁ g₂) [g₁.initial, g₂.initial] (list.map symbol.terminal w)`
-  -- 3. use `a` := everything derived from `g₁.initial`
-  -- 4. use `b` := everything derived from `g₂.initial`
-  -- 5. prove `a ∈ CF_language g₁` by some kind of induction
-  -- 6. prove `b ∈ CF_language g₂` by some kind of induction
-  -- 7. the remaining goal `a ++ b = w` is trivial
-  sorry,
-end
-
 private def oT_of_sTN₃ {g₃ : CF_grammar T} : symbol T g₃.nt → option T
 | (symbol.terminal t) := some t
 | (symbol.nonterminal _) := none
@@ -458,7 +388,85 @@ begin
   refl,
 end
 
-private lemma in_language_comb'
+private def sTN₁_of_sTN {g₁ g₂ : CF_grammar T} : symbol T (option (g₁.nt ⊕ g₂.nt)) → option (symbol T g₁.nt)
+| (symbol.terminal te) := some (symbol.terminal te)
+| (symbol.nonterminal nont) := option.map symbol.nonterminal (oN₁_of_N nont)
+
+private def sTN₂_of_sTN {g₁ g₂ : CF_grammar T} : symbol T (option (g₁.nt ⊕ g₂.nt)) → option (symbol T g₂.nt)
+| (symbol.terminal te) := some (symbol.terminal te)
+| (symbol.nonterminal nont) := option.map symbol.nonterminal (oN₂_of_N nont)
+
+private def lsTN₁_of_lsTN {g₁ g₂ : CF_grammar T} (lis : list (symbol T (option (g₁.nt ⊕ g₂.nt)))) :
+  list (symbol T g₁.nt) :=
+list.filter_map sTN₁_of_sTN lis
+
+private def lsTN₂_of_lsTN {g₁ g₂ : CF_grammar T} (lis : list (symbol T (option (g₁.nt ⊕ g₂.nt)))) :
+  list (symbol T g₂.nt) :=
+list.filter_map sTN₂_of_sTN lis
+
+private lemma self_of_sTN₁ {g₁ g₂ : CF_grammar T} (symb : symbol T g₁.nt) :
+  sTN₁_of_sTN (@sTN_of_sTN₁ _ _ g₂ symb) = symb :=
+begin
+  cases symb;
+  finish,
+end
+
+private lemma self_of_sTN₂ {g₁ g₂ : CF_grammar T} (symb : symbol T g₂.nt) :
+  sTN₂_of_sTN (@sTN_of_sTN₂ _ g₁ _ symb) = symb :=
+begin
+  cases symb;
+  finish,
+end
+
+private lemma self_of_lsTN₁ {g₁ g₂ : CF_grammar T} (stri : list (symbol T g₁.nt)) :
+  lsTN₁_of_lsTN (@lsTN_of_lsTN₁ _ _ g₂ stri) = stri :=
+begin
+  unfold lsTN_of_lsTN₁,
+  unfold lsTN₁_of_lsTN,
+  rw list.filter_map_map,
+  change list.filter_map (λ x, sTN₁_of_sTN (sTN_of_sTN₁ x)) stri = stri,
+  convert_to list.filter_map (λ x, some x) stri = stri,
+  {
+    have equal_functions : (λ (x : symbol T g₁.nt), sTN₁_of_sTN (sTN_of_sTN₁ x)) = (λ x, some x),
+    {
+      ext1,
+      apply self_of_sTN₁,
+    },
+    rw ← equal_functions,
+    apply congr_fun,
+    apply congr_arg,
+    ext1,
+    apply congr_fun,
+    refl,
+  },
+  finish,
+end
+
+private lemma self_of_lsTN₂ {g₁ g₂ : CF_grammar T} (stri : list (symbol T g₂.nt)) :
+  lsTN₂_of_lsTN (@lsTN_of_lsTN₂ _ g₁ _ stri) = stri :=
+begin
+  unfold lsTN_of_lsTN₂,
+  unfold lsTN₂_of_lsTN,
+  rw list.filter_map_map,
+  change list.filter_map (λ x, sTN₂_of_sTN (sTN_of_sTN₂ x)) stri = stri,
+  convert_to list.filter_map (λ x, some x) stri = stri,
+  {
+    have equal_functions : (λ (x : symbol T g₂.nt), sTN₂_of_sTN (sTN_of_sTN₂ x)) = (λ x, some x),
+    {
+      ext1,
+      apply self_of_sTN₂,
+    },
+    rw ← equal_functions,
+    apply congr_fun,
+    apply congr_arg,
+    ext1,
+    apply congr_fun,
+    refl,
+  },
+  finish,
+end
+
+private lemma in_language_comb
     {g₁ g₂ : CF_grammar T}
     {w : list T}
     (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
@@ -712,7 +720,57 @@ begin
     {
       -- nonterminal was rewritten in the right half of `a` ... upgrade `v`
       use u,
-      sorry,
+      -- we have `ih_concat: lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v  = a`
+      -- we want `v'` s. t. `lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v' = b`
+      -- we might use `v' := list.drop u.length b` suitably retyped
+      let v' := lsTN₂_of_lsTN (list.drop u.length b),
+      use v',
+      have second_part_there_and_back :
+        lsTN_of_lsTN₂ (lsTN₂_of_lsTN (list.drop u.length b)) =
+        list.drop u.length b,
+      {
+        -- hopefully somehow utilize the similarity between `list.drop u.length b` and `lsTN_of_lsTN₂ v`
+        -- maybe even better if we could claim that `list.drop u.length b = lsTN_of_lsTN₂ v'`
+        -- because then we do the following
+        have just_an_experiment : list.drop u.length b = lsTN_of_lsTN₂ v',
+        {
+          sorry,
+        },
+        rw just_an_experiment,
+        rw self_of_lsTN₂,
+      },
+      have first_part_identical : lsTN_of_lsTN₁ u = list.take u.length b,
+      {
+        -- I hope to prove it by showing that both sides correspond to `list.take u.length c`
+        rw bef at ih_concat,
+        have foo := congr_arg (list.take u.length) ih_concat,
+        rw list.take_append_of_le_length at foo,
+        {
+          -- FUCK, we are back to the previous goal !!!!
+          sorry,
+        },
+        unfold lsTN_of_lsTN₁,
+        rw list.length_map,
+      },
+      split,
+      {
+        split,
+        {
+          exact ih₁,
+        },
+        -- here we need to somehow use that `(lsTN₂_of_lsTN (list.drop u.length b))` is
+        -- almost identical to `v` which is the "output" in `ih₂`
+        apply CF_deri_of_deri_tran ih₂,
+        -- using proposition `bef` and `aft`, compare
+        -- `e ++ [symbol.nonterminal orig_rule.fst] ++ d` against `e ++ orig_rule.snd ++ d`
+        -- where `e` is a suitable suffix of `c`
+        -- something like `e := list.drop u.length c`
+        -- because `orig_rule` should correspond to some rule of `g₂`
+        sorry,
+      },
+      rw first_part_identical,
+      rw second_part_there_and_back,
+      exact list.take_append_drop (list.length u) b,
     },
   },
   rcases complicated_induction (list.map symbol.terminal w) derivation with ⟨ u, v, ⟨ hu, hv ⟩, hw ⟩,
@@ -917,7 +975,7 @@ begin
     intros w hyp,
     rw ← h₁,
     rw ← h₂,
-    exact in_language_comb' hyp,
+    exact in_language_comb hyp,
   },
   {
     -- prove `L₁ * L₂ ⊆ ` here
