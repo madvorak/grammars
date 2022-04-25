@@ -466,7 +466,7 @@ begin
   finish,
 end
 
-private lemma in_language_comb
+private lemma in_language_combi
     {g₁ g₂ : CF_grammar T}
     {w : list T}
     (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
@@ -516,7 +516,8 @@ begin
   rcases h with ⟨ y, first_step, derivation ⟩,
 
   have only_option :
-    y = [
+    y =
+    [
       symbol.nonterminal (some (sum.inl (g₁.initial))),
       symbol.nonterminal (some (sum.inr (g₂.initial)))
     ],
@@ -715,25 +716,97 @@ begin
     cases orig_in,
     {
       -- nonterminal was rewritten in the left half of `a` ... upgrade `u`
-      sorry,
+      use lsTN₁_of_lsTN (list.take (b.length - v.length) b),
+      use v,
+
+      split,
+      {
+        split,
+        {
+          apply CF_deri_of_deri_tran ih₁,
+          sorry,
+        },
+        {
+          exact ih₂,
+        },
+      },
+      convert_to
+        lsTN_of_lsTN₁ (lsTN₁_of_lsTN (list.take (b.length - v.length) b)) ++ lsTN_of_lsTN₂ v =
+        list.take (b.length - v.length) b ++ list.drop (b.length - v.length) b,
+      {
+        rw list.take_append_drop,
+      },
+      apply congr_arg2,
+      {
+        sorry,
+      },
+      {
+        have v_a : lsTN_of_lsTN₂ v = list.drop (a.length - v.length) a,
+        {
+          sorry,
+        },
+        have a_d : list.drop (a.length - v.length) a = list.drop (d.length - v.length) d,
+        {
+          sorry,
+        },
+        have d_b : list.drop (d.length - v.length) d = list.drop (b.length - v.length) b,
+        {
+          clear_except aft,
+          ext1,
+          by_cases n < v.length,
+          {
+            rw list.nth_drop,
+            rw list.nth_drop,
+            rw aft,
+            rw list.nth_append_right,
+            {
+              repeat { rw list.length_append },
+              have aritme :
+                d.length - v.length + n =
+                c.length + orig_rule.snd.length + d.length - v.length + n - (c.length + orig_rule.snd.length),
+              {
+                sorry,
+              },
+              rw aritme,
+            },
+            {
+              repeat { rw list.length_append },
+              convert_to
+                c.length + orig_rule.snd.length ≤
+                c.length + orig_rule.snd.length + (d.length - v.length + n),
+              {
+                sorry,
+              },
+              omega,
+            },
+          },
+          {
+            convert_to none = none,
+            {
+              sorry,
+            },
+            {
+              sorry,
+            },
+            refl,
+          },
+        },
+        rw [ v_a, a_d, d_b ],
+      },
     },
     {
       -- nonterminal was rewritten in the right half of `a` ... upgrade `v`
       use u,
-      -- we have `ih_concat: lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v  = a`
-      -- we want `v'` s. t. `lsTN_of_lsTN₁ u ++ lsTN_of_lsTN₂ v' = b`
-      -- we might use `v' := list.drop u.length b` suitably retyped
       let v' := lsTN₂_of_lsTN (list.drop u.length b),
       use v',
+      -- check whether anything makes sense here
       have second_part_there_and_back :
         lsTN_of_lsTN₂ (lsTN₂_of_lsTN (list.drop u.length b)) =
         list.drop u.length b,
       {
-        -- hopefully somehow utilize the similarity between `list.drop u.length b` and `lsTN_of_lsTN₂ v`
-        -- maybe even better if we could claim that `list.drop u.length b = lsTN_of_lsTN₂ v'`
-        -- because then we do the following
         have just_an_experiment : list.drop u.length b = lsTN_of_lsTN₂ v',
         {
+          change list.drop u.length b = lsTN_of_lsTN₂ (lsTN₂_of_lsTN (list.drop u.length b)),
           sorry,
         },
         rw just_an_experiment,
@@ -741,16 +814,7 @@ begin
       },
       have first_part_identical : lsTN_of_lsTN₁ u = list.take u.length b,
       {
-        -- I hope to prove it by showing that both sides correspond to `list.take u.length c`
-        rw bef at ih_concat,
-        have foo := congr_arg (list.take u.length) ih_concat,
-        rw list.take_append_of_le_length at foo,
-        {
-          -- FUCK, we are back to the previous goal !!!!
-          sorry,
-        },
-        unfold lsTN_of_lsTN₁,
-        rw list.length_map,
+        sorry,
       },
       split,
       {
@@ -975,7 +1039,7 @@ begin
     intros w hyp,
     rw ← h₁,
     rw ← h₂,
-    exact in_language_comb hyp,
+    exact in_language_combi hyp,
   },
   {
     -- prove `L₁ * L₂ ⊆ ` here
