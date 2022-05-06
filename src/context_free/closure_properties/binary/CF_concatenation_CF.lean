@@ -929,6 +929,8 @@ begin
             (lsTN₁_of_lsTN (c ++ (rule_of_rule₁ r₁).snd ++ d')).length =
             c.length + (rule_of_rule₁ r₁).snd.length + d'.length,
           -- we need to show that `list.filter_map` preserved all symbols (no `none` appeared)
+          -- we can probably reuse `taken_c_from_u` and `taken_d_from_dropped_u` from below
+          -- and possibly more
           sorry,
         },
 
@@ -940,15 +942,84 @@ begin
             lsTN_of_lsTN₁ (lsTN₁_of_lsTN (c ++ (rule_of_rule₁ r₁).snd ++
               (list.take ((lsTN_of_lsTN₁ u).length - (c.length + 1)) d))) =
             list.take (lsTN_of_lsTN₁ u').length (c ++ (rule_of_rule₁ r₁).snd ++ d),
-          -- we need, for this specific instance, to have `lsTN_of_lsTN₁ ∘ lsTN₁_of_lsTN = id` which
-          -- does not hold in general, but here we don't have any nonterminals from `N₂` so it should work
           convert_to
             c ++ (rule_of_rule₁ r₁).snd ++ (list.take ((lsTN_of_lsTN₁ u).length - (c.length + 1)) d) =
             list.take (lsTN_of_lsTN₁ u').length (c ++ (rule_of_rule₁ r₁).snd ++ d),
           {
-            sorry,
+            /-
+            Simplified schema of this conversion:
+              `g ∘ f = id` but `f ∘ g` does not annihilate (in general)
+              we need `f(g(x)) = x` for a specific `x`
+              (where `x` is the given part of our string `x ++ ...` or `... ++ x` respectively)
+              which we express as `x = f(y)` and then we do
+              `f(g(x)) = f(g(f(y))) = f(y) = x` hooray!
+            -/
+            unfold lsTN₁_of_lsTN,
+            rw list_filter_map_append_append,
+
+            have taken_c_from_u := congr_arg (list.take c.length) part_for_u,
+            rw list.take_take at taken_c_from_u,
+            rw min_eq_left (le_of_lt h_len) at taken_c_from_u,
+            rw list.append_assoc at taken_c_from_u,
+            rw list.take_left at taken_c_from_u,
+            convert_to
+              lsTN_of_lsTN₁ (
+                list.filter_map sTN₁_of_sTN (list.take c.length (lsTN_of_lsTN₁ u)) ++
+                list.filter_map sTN₁_of_sTN (rule_of_rule₁ r₁).snd ++
+                list.filter_map sTN₁_of_sTN (list.take ((lsTN_of_lsTN₁ u).length - (c.length + 1)) d)
+              ) =
+              c ++ (rule_of_rule₁ r₁).snd ++ list.take ((lsTN_of_lsTN₁ u).length - (c.length + 1)) d,
+            {
+              rw taken_c_from_u,
+            },
+            unfold lsTN_of_lsTN₁,
+            rw ← list.map_take,
+            change list.map sTN_of_sTN₁ (lsTN₁_of_lsTN (lsTN_of_lsTN₁ (list.take c.length u)) ++ _ ++ _) = _,
+            rw self_of_lsTN₁,
+            rw list_map_append_append,
+            rw list.map_take,
+            change list.take c.length (lsTN_of_lsTN₁ _) ++ _ ++ _ = _,
+            rw taken_c_from_u,
+
+            change c ++ list.map sTN_of_sTN₁ (lsTN₁_of_lsTN (lsTN_of_lsTN₁ r₁.snd)) ++ _ = _,
+            rw self_of_lsTN₁,
+            apply congr_arg2,
+            {
+              refl,
+            },
+
+            have taken_d_from_dropped_u := congr_arg (list.drop (c.length + 1)) part_for_u,
+            have for_the_decomposition :
+              (@lsTN_of_lsTN₁ T g₁ g₂ u).length =
+              (c.length + 1) + ((@lsTN_of_lsTN₁ T g₁ g₂ u).length - (c.length + 1)),
+            {
+              symmetry,
+              apply nat.add_sub_of_le,
+              exact nat.succ_le_of_lt h_len,
+            },
+            rw for_the_decomposition at taken_d_from_dropped_u,
+            rw list.drop_take at taken_d_from_dropped_u,
+            have translate_counts : c.length + 1 = (c ++ [symbol.nonterminal (rule_of_rule₁ r₁).fst]).length,
+            {
+              rw list.length_append,
+              rw list.length_singleton,
+            },
+            rw translate_counts at taken_d_from_dropped_u,
+            rw list_drop_exactly_left_part at taken_d_from_dropped_u,
+            rw ← translate_counts at taken_d_from_dropped_u,
+            change
+              list.map sTN_of_sTN₁ (
+                list.filter_map sTN₁_of_sTN (list.take ((@lsTN_of_lsTN₁ T g₁ g₂ u).length - (c.length + 1)) d)
+              ) = _,
+            rw ← taken_d_from_dropped_u,
+            change list.map sTN_of_sTN₁ (lsTN₁_of_lsTN (list.drop (c.length + 1) (list.map sTN_of_sTN₁ u))) = _,
+            rw ← list.map_drop,
+            change list.map sTN_of_sTN₁ (lsTN₁_of_lsTN (lsTN_of_lsTN₁ (list.drop (c.length + 1) u))) = _,
+            rw self_of_lsTN₁,
+            rw list.map_drop,
+            convert taken_d_from_dropped_u,
           },
-          have foo :
+          have len_add_sub :
             (@lsTN_of_lsTN₁ T g₁ g₂ u').length =
             (c ++ (rule_of_rule₁ r₁).snd).length +
               ((@lsTN_of_lsTN₁ T g₁ g₂ u').length - (c ++ (rule_of_rule₁ r₁).snd).length),
@@ -961,7 +1032,7 @@ begin
             rw list.length_append,
             apply le_self_add,
           },
-          rw foo,
+          rw len_add_sub,
           rw list.take_append,
           apply congr_arg2,
           {
@@ -1036,7 +1107,6 @@ begin
 
         apply list.take_append_drop,
       },
-      --sorry,
     },
     {
       -- nonterminal was rewritten in the right half of `a` ... upgrade `v`
