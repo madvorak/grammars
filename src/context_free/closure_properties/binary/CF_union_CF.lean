@@ -1,4 +1,4 @@
-import context_free.closure_properties.CF_helper
+import context_free.cfgLiftSink
 
 
 variables {T : Type} {g₁ g₂ : CF_grammar T}
