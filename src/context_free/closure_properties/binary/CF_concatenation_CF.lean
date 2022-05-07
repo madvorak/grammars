@@ -793,15 +793,6 @@ begin
       
       let d' : list (symbol T (combined_grammar g₁ g₂).nt) :=
         list.take ((@lsTN_of_lsTN₁ T g₁ g₂ u).length - (c.length + 1)) d,
-      /-
-      have probably_useless : @lsTN_of_lsTN₁ T g₁ g₂ u = c ++ [symbol.nonterminal (rule_of_rule₁ r₁).fst] ++ d',
-      {
-        rw part_for_u,
-        clear_except h_len,
-        -- easy technical lemma
-        sorry,
-      },-/
-
       let u' := lsTN₁_of_lsTN (c ++ (rule_of_rule₁ r₁).snd ++ d'),
       use u',
       use v,
@@ -890,8 +881,26 @@ begin
             refl,
           },
           {
-            -- TODO similarly as (those circa 50 lines) above; extract common parts
-            sorry,
+            convert_to
+              lsTN₁_of_lsTN (c ++ (rule_of_rule₁ r₁).snd ++ (list.take (u.length - (c.length + 1)) d)) =
+              lsTN₁_of_lsTN c ++ r₁.snd ++ lsTN₁_of_lsTN (list.take (u.length - (c.length + 1)) d),
+            {
+              apply congr_arg,
+              apply congr_arg2,
+              {
+                refl,
+              },
+              unfold lsTN_of_lsTN₁,
+              rw list.length_map,
+            },
+            unfold lsTN₁_of_lsTN,
+            rw list_filter_map_append_append,
+            change
+              list.filter_map sTN₁_of_sTN c ++ lsTN₁_of_lsTN (lsTN_of_lsTN₁ r₁.snd) ++
+                list.filter_map sTN₁_of_sTN (list.take (u.length - (c.length + 1)) d) =
+              list.filter_map sTN₁_of_sTN c ++ r₁.snd ++
+                list.filter_map sTN₁_of_sTN (list.take (u.length - (c.length + 1)) d),
+            rw self_of_lsTN₁,
           },
         },
         {
@@ -972,7 +981,7 @@ begin
             rw list.length_singleton,
           },
           rw translate_counts at taken_d_from_dropped_u,
-          rw list_drop_exactly_left_part at taken_d_from_dropped_u,
+          rw list_drop_length_append at taken_d_from_dropped_u,
           rw ← translate_counts at taken_d_from_dropped_u,
           change
             list.map sTN_of_sTN₁ (
