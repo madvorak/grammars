@@ -110,8 +110,6 @@ begin
   {
     -- prove `x ∈ CF_language gramatika → x ∈ language_abc` here
     intro ass,
-    change CF_generates_str gramatika (list.map symbol.terminal x) at ass,
-    unfold CF_generates_str at ass,
     change CF_derives gramatika [S] (list.map symbol.terminal x) at ass,
 
     have possib : ∀ w : list (symbol (fin 3) gramatika.nt),

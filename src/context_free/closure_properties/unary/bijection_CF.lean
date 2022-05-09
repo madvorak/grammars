@@ -35,16 +35,14 @@ begin
   apply set.eq_of_subset_of_subset,
   {
     intros w hw,
-    unfold CF_language at hw,
-    change CF_generates_str g' (list.map symbol.terminal w) at hw,
-    unfold CF_generates_str at hw,
-
     unfold bijemap_lang,
     change list.map π.inv_fun w ∈ L,
     rw ← hg,
-    unfold CF_language,
-    change CF_generates_str g (list.map symbol.terminal (list.map π.inv_fun w)),
-    unfold CF_generates_str,
+
+    unfold CF_language at hw ⊢,
+    rw set.mem_set_of_eq at hw ⊢,
+    unfold CF_generates at hw ⊢,
+    unfold CF_generates_str at hw ⊢,
 
     have deri_of_deri :
       ∀ v : list (symbol T₂ g'.nt),
@@ -127,8 +125,8 @@ begin
     change list.map π.inv_fun w ∈ L at hw,
     rw ← hg at hw,
     unfold CF_language at hw,
-    delta CF_generates at hw,
-    change CF_generates_str g (list.map symbol.terminal (list.map π.inv_fun w)) at hw,
+    rw set.mem_set_of_eq at hw,
+    unfold CF_generates at hw,
     rw list.map_map at hw,
     unfold CF_generates_str at hw,
 

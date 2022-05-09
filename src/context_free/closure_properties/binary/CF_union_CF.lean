@@ -148,21 +148,22 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
 }) (by {
   intro r,
   rintro ⟨ r_in, r_ntype ⟩,
-  cases r_in,
+  cases list.eq_or_mem_of_mem_cons r_in with r_eq r_in_,
   {
     exfalso,
-    rw r_in at r_ntype,
+    rw r_eq at r_ntype,
     dsimp at r_ntype,
     tauto,
   },
-  cases r_in,
+  cases list.eq_or_mem_of_mem_cons r_in_ with r_eq_ r_in__,
   {
     exfalso,
-    rw r_in at r_ntype,
+    rw r_eq_ at r_ntype,
     dsimp at r_ntype,
     tauto,
   },
-  change r ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at r_in,
+  clear r_in r_in_,
+  rename r_in__ r_in,
   rw list.mem_append at r_in,
   cases r_in,
   {
@@ -323,7 +324,8 @@ begin
   },
 
   unfold CF_language,
-  change CF_generates_str (union_grammar g₁ g₂) (list.map symbol.terminal w),
+  rw set.mem_set_of_eq,
+  unfold CF_generates,
   unfold CF_generates_str,
   unfold CF_derives,
   apply CF_deri_of_deri_deri,
@@ -392,7 +394,8 @@ begin
   },
 
   unfold CF_language,
-  change CF_generates_str (union_grammar g₁ g₂) (list.map symbol.terminal w),
+  rw set.mem_set_of_eq,
+  unfold CF_generates,
   unfold CF_generates_str,
   unfold CF_derives,
   apply CF_deri_of_deri_deri,
@@ -422,7 +425,8 @@ private lemma in_language_left_case_of_union
   w ∈ CF_language g₁ :=
 begin
   unfold CF_language,
-  change CF_generates_str g₁ (list.map symbol.terminal w),
+  rw set.mem_set_of_eq,
+  unfold CF_generates,
   unfold CF_generates_str,
 
   let gg₁ := @g₁g T g₁ g₂,
@@ -469,7 +473,8 @@ private lemma in_language_right_case_of_union (w : list T)
   w ∈ CF_language g₂ :=
 begin
   unfold CF_language,
-  change CF_generates_str g₂ (list.map symbol.terminal w),
+  rw set.mem_set_of_eq,
+  unfold CF_generates,
   unfold CF_generates_str,
 
   let gg₂ := @g₂g T g₁ g₂,

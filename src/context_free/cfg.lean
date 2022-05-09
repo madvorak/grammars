@@ -31,7 +31,7 @@ CF_generates_str g (list.map symbol.terminal word)
 
 /-- Context-free language; just a wrapper around `CF_generates`. -/
 def CF_language : language T :=
-CF_generates g
+set_of (CF_generates g)
 
 end cfg_definitions
 
