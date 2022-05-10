@@ -8,7 +8,3 @@ by simp only [list.map_append]
 lemma list_filter_map_append_append {α β : Type} {x y z : list α} {f : α → option β} :
   list.filter_map f (x ++ y ++ z) = (list.filter_map f x) ++ (list.filter_map f y) ++ (list.filter_map f z) :=
 by simp only [list.filter_map_append]
-
-lemma list_drop_length_append {α : Type} {x y : list α} :
-  list.drop x.length (x ++ y) = y :=
-list.drop_left x y
