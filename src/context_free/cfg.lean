@@ -5,9 +5,9 @@ section cfg_definitions
 
 /-- Context-free grammar that generates words over the alphabet `termi` (a type of terminals). -/
 structure CF_grammar (termi : Type) :=
-(nt : Type)                                      -- type of nonterminals
-(initial : nt)                                   -- initial symbol
-(rules : list (nt × (list (symbol termi nt))))   -- rewriting rules
+(nt : Type)                                    -- type of nonterminals
+(initial : nt)                                 -- initial symbol
+(rules : list (nt × list (symbol termi nt)))   -- rewriting rules
 
 
 variables {T : Type} (g : CF_grammar T)
