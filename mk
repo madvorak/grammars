@@ -1,0 +1,1 @@
+lean --make src test
