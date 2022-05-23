@@ -86,9 +86,8 @@ begin
   rw set.mem_set_of_eq at *,
   unfold CF_generates at *,
   unfold CF_generates_str at *,
-  have derived := derives_reversed g (list.map symbol.terminal w) hyp,
   rw list.map_reverse,
-  exact derived,
+  exact derives_reversed g (list.map symbol.terminal w) hyp,
 end
 
 end auxiliary
@@ -99,21 +98,21 @@ theorem CF_of_reverse_CF (L : language T) :
   is_CF L  →  is_CF (reverse_language L)  :=
 begin
   rintro ⟨ g, hgL ⟩,
+  rw ← hgL,
+
   use reversal_grammar g,
+  unfold reverse_language,
+
   apply set.eq_of_subset_of_subset,
   {
     intros w hwL,
-    unfold reverse_language,
-    change w.reverse ∈ L,
-    rw ← hgL,
+    change w.reverse ∈ CF_language g,
 
     exact reversed_word_in_original_language hwL,
   },
   {
     intros w hwL,
-    unfold reverse_language at hwL,
-    change w.reverse ∈ L at hwL,
-    rw ← hgL at hwL,
+    change w.reverse ∈ CF_language g at hwL,
 
     have pre_reversal : ∃ g₀, g = reversal_grammar g₀,
     {
