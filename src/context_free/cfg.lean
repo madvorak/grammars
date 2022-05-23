@@ -35,7 +35,7 @@ set_of (CF_generates g)
 
 end cfg_definitions
 
-/-- Predicate "is context-free"; defined by an existence of a context-free grammar for given language. -/
+/-- Predicate "is context-free"; defined by an existence of a context-free grammar for the given language. -/
 def is_CF {T : Type} (L : language T) : Prop :=
 ∃ g : CF_grammar T, CF_language g = L
 

@@ -35,7 +35,7 @@ def CS_language : language T :=
 
 end csg_definitions
 
-/-- Predicate "is context-sensitive"; defined by an existence of a context-sensitive grammar for given language. -/
+/-- Predicate "is context-sensitive"; defined by an existence of a context-sensitive grammar for the given language. -/
 def is_CS {T : Type} (L : language T) : Prop :=
 ∃ g : CS_grammar T, CS_language g = L
 
