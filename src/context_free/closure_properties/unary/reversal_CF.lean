@@ -1,4 +1,5 @@
 import context_free.cfg
+import list_utilities
 
 variable {T : Type}
 
@@ -28,6 +29,53 @@ begin
   finish,
 end
 
+private lemma derives_reversed (g : CF_grammar T) (v : list (symbol T g.nt)) :
+  CF_derives (reversal_grammar g) [symbol.nonterminal (reversal_grammar g).initial] v →
+    CF_derives g [symbol.nonterminal g.initial] v.reverse :=
+begin
+  intro hv,
+  induction hv with u w trash orig ih,
+  {
+    rw list.reverse_singleton,
+    apply CF_deri_self,
+  },
+  apply CF_deri_of_deri_tran ih,
+  rcases orig with ⟨ r, rin, x, y, bef, aft ⟩,
+  change r ∈ (list.map (
+      λ r : g.nt × list (symbol T g.nt), (r.fst, list.reverse r.snd)
+    ) g.rules) at rin,
+  rw list.mem_map at rin,
+  rcases rin with ⟨ r₀, rin₀, r_from_r₀ ⟩,
+  use r₀,
+  split,
+  {
+    exact rin₀,
+  },
+  use y.reverse,
+  use x.reverse,
+  split,
+  {
+    rw ← list.reverse_singleton,
+    rw ← list_reverse_append_append,
+    have fst_from_r : r₀.fst = r.fst,
+    {
+      rw ← r_from_r₀,
+    },
+    rw fst_from_r,
+    exact congr_arg list.reverse bef,
+  },
+  {
+    have snd_from_r : r₀.snd = r.snd.reverse,
+    {
+      rw ← r_from_r₀,
+      rw list.reverse_reverse,
+    },
+    rw snd_from_r,
+    rw ← list_reverse_append_append,
+    exact congr_arg list.reverse aft,
+  },
+end
+
 private lemma reversed_word_in_original_language
     {g : CF_grammar T}
     {w : list T}
@@ -38,23 +86,9 @@ begin
   rw set.mem_set_of_eq at *,
   unfold CF_generates at *,
   unfold CF_generates_str at *,
-  have bude_indukce :
-    ∀ v : list (symbol T g.nt),
-      CF_derives (reversal_grammar g) [symbol.nonterminal (reversal_grammar g).initial] v →
-        CF_derives g [symbol.nonterminal g.initial] v.reverse,
-  {
-    intros v hv,
-    unfold CF_derives at *,
-    induction hv,
-    {
-      rw list.reverse_singleton,
-      sorry,
-    },
-    sorry,
-  },
-  have instantse := bude_indukce (list.map symbol.terminal w),
-  rw ← list.map_reverse at instantse,
-  exact instantse hyp,
+  have derived := derives_reversed g (list.map symbol.terminal w) hyp,
+  rw list.map_reverse,
+  exact derived,
 end
 
 end auxiliary
