@@ -1,5 +1,4 @@
 import context_free.cfg
-import list_utilities
 
 variable {T : Type}
 

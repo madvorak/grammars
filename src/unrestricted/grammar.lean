@@ -1,5 +1,6 @@
 import logic.relation
 import computability.language
+import list_utilities
 
 
 /-- Fundamental datatype; basically `τ ⊕ ν` (something like "Either tau nyy")
@@ -30,7 +31,7 @@ def grammar_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
 ∃ r : grule T g.nt,
   r ∈ g.rules ∧
   ∃ v w : list (symbol T g.nt), and
-    (oldWord = v ++ r.input_string.fst ++ [symbol.nonterminal r.input_string.snd.fst] ++ r.input_string.snd.snd ++ w)
+    (oldWord = v ++ r.input_string.first ++ [symbol.nonterminal r.input_string.secon] ++ r.input_string.third ++ w)
     (newWord = v ++ r.output_string ++ w)
 
 /-- Any number of steps of grammatical transformation; reflexive+transitive closure of `grammar_transforms`. -/

@@ -8,7 +8,7 @@ section auxiliary
 private def reversal_grammar (g : grammar T) : grammar T :=
 grammar.mk g.nt g.initial (list.map (
     λ r : grule T g.nt,
-      ⟨ (r.input_string.snd.snd.reverse, r.input_string.snd.fst, r.input_string.fst.reverse), r.output_string.reverse ⟩
+      ⟨ (r.input_string.third.reverse, r.input_string.secon, r.input_string.first.reverse), r.output_string.reverse ⟩
   ) g.rules)
 
 private lemma dual_of_reversal_grammar (g : grammar T) :
@@ -43,19 +43,22 @@ begin
   use x.reverse,
   split,
   {
-    have rid₁ : r₀.input_string.fst = r.input_string.snd.snd.reverse,
+    have rid₁ : r₀.input_string.first = r.input_string.third.reverse,
     {
       rw ← r_from_r₀,
+      dsimp,
       rw list.reverse_reverse,
     },
-    have rid₂ : [symbol.nonterminal r₀.input_string.snd.fst] = [symbol.nonterminal r.input_string.snd.fst].reverse,
+    have rid₂ : [symbol.nonterminal r₀.input_string.secon] = [symbol.nonterminal r.input_string.secon].reverse,
     {
       rw ← r_from_r₀,
       rw list.reverse_singleton,
+      refl,
     },
-    have rid₃ : r₀.input_string.snd.snd = r.input_string.fst.reverse,
+    have rid₃ : r₀.input_string.third = r.input_string.first.reverse,
     {
       rw ← r_from_r₀,
+      dsimp,
       rw list.reverse_reverse,
     },
     rw [ rid₁, rid₂, rid₃,
