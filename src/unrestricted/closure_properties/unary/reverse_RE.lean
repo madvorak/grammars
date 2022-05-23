@@ -5,18 +5,50 @@ variable {T : Type}
 
 section auxiliary
 
+private def reversal_gis {N : Type} (x : list (symbol T N) × N × list (symbol T N)) :
+  list (symbol T N) × N × list (symbol T N) :=
+(x.third.reverse, x.secon, x.first.reverse)
+
+private lemma dual_of_reversal_gis {N : Type} (x : list (symbol T N) × N × list (symbol T N)) :
+  reversal_gis (reversal_gis x) = x :=
+begin
+  rcases x with ⟨ x₁, x₂, x₃ ⟩,
+  unfold reversal_gis,
+  simp,
+end
+
+private def reversal_grule {N : Type} (r : grule T N) : grule T N :=
+⟨ reversal_gis r.input_string, r.output_string.reverse ⟩
+
+private lemma dual_of_reversal_grule {N : Type} (r : grule T N) :
+  reversal_grule (reversal_grule r) = r :=
+begin
+  cases r,
+  unfold reversal_grule,
+  dsimp,
+  rw dual_of_reversal_gis,
+  simp,
+end
+
+private lemma reversal_grule_reversal_grule {N : Type} :
+  @reversal_grule T N ∘ @reversal_grule T N = id :=
+begin
+  ext,
+  apply dual_of_reversal_grule,
+end
+
 private def reversal_grammar (g : grammar T) : grammar T :=
-grammar.mk g.nt g.initial (list.map (
-    λ r : grule T g.nt,
-      ⟨ (r.input_string.third.reverse, r.input_string.secon, r.input_string.first.reverse), r.output_string.reverse ⟩
-  ) g.rules)
+grammar.mk g.nt g.initial (list.map reversal_grule g.rules)
 
 private lemma dual_of_reversal_grammar (g : grammar T) :
   reversal_grammar (reversal_grammar g) = g :=
 begin
+  cases g,
   unfold reversal_grammar,
-  --simp [ list.map_map, list.reverse_reverse, list.map_id ],
-  sorry,
+  dsimp,
+  rw list.map_map,
+  rw reversal_grule_reversal_grule,
+  rw list.map_id,
 end
 
 private lemma derives_reversed (g : grammar T) (v : list (symbol T g.nt)) :
@@ -46,6 +78,8 @@ begin
     have rid₁ : r₀.input_string.first = r.input_string.third.reverse,
     {
       rw ← r_from_r₀,
+      unfold reversal_grule,
+      unfold reversal_gis,
       dsimp,
       rw list.reverse_reverse,
     },
@@ -58,6 +92,8 @@ begin
     have rid₃ : r₀.input_string.third = r.input_string.first.reverse,
     {
       rw ← r_from_r₀,
+      unfold reversal_grule,
+      unfold reversal_gis,
       dsimp,
       rw list.reverse_reverse,
     },
@@ -71,6 +107,8 @@ begin
     have snd_from_r : r₀.output_string = r.output_string.reverse,
     {
       rw ← r_from_r₀,
+      unfold reversal_grule,
+      unfold reversal_gis,
       rw list.reverse_reverse,
     },
     rw snd_from_r,

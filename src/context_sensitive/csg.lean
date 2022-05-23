@@ -8,7 +8,7 @@ structure csrule (τ : Type) (ν : Type) :=
 (context_left : list (symbol τ ν))
 (input_nonterminal : ν)
 (context_right : list (symbol τ ν))
-(output_string : list (symbol τ ν)) -- TODO require non-empty unless `S` → `[]` where `S` is on no right side
+(output_string : list (symbol τ ν)) -- !! TODO require non-empty unless `S` → `[]` where `S` is on no right side !!
 
 /-- Context-sensitive grammar that generates words over the alphabet `termi` (a type of terminals). -/
 structure CS_grammar (termi : Type) :=

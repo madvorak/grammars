@@ -18,11 +18,13 @@ private lemma dual_of_reversal_grammar (g : CF_grammar T) :
 begin
   cases g,
   unfold reversal_grammar,
+  dsimp,
   rw list.map_map,
   simp,
-  dsimp,
-  convert list.map_id, swap, exact T,
-  simp,
+  change list.map ((
+      λ (r : g_nt × list (symbol T g_nt)), (r.fst, r.snd.reverse)) ∘
+      λ (r : g_nt × list (symbol T g_nt)), (r.fst, r.snd.reverse))
+     g_rules = g_rules,
   convert_to list.map ((λ (r : g_nt × list (symbol T g_nt)), (r.fst, r.snd.reverse.reverse))) g_rules = g_rules,
   convert_to list.map ((λ (r : g_nt × list (symbol T g_nt)), (r.fst, r.snd))) g_rules = g_rules;
   finish,
