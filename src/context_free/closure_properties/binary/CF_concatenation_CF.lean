@@ -872,7 +872,7 @@ begin
               rw list.take_append,
             },
             unfold lsTN₁_of_lsTN,
-            rw list_filter_map_append_append,
+            rw list.filter_map_append_append,
             refl,
           },
           {
@@ -889,7 +889,7 @@ begin
               rw list.length_map,
             },
             unfold lsTN₁_of_lsTN,
-            rw list_filter_map_append_append,
+            rw list.filter_map_append_append,
             change
               list.filter_map sTN₁_of_sTN c ++ lsTN₁_of_lsTN (lsTN_of_lsTN₁ r₁.snd) ++
                 list.filter_map sTN₁_of_sTN (list.take (u.length - (c.length + 1)) d) =
@@ -997,7 +997,7 @@ begin
             (lsTN₁_of_lsTN (c ++ (rule_of_rule₁ r₁).snd ++ d')).length =
             c.length + (rule_of_rule₁ r₁).snd.length + d'.length,
           unfold lsTN₁_of_lsTN,
-          rw list_filter_map_append_append,
+          rw list.filter_map_append_append,
           convert_to
             (list.map sTN_of_sTN₁ (
               list.filter_map sTN₁_of_sTN c ++
@@ -1008,7 +1008,7 @@ begin
           {
             rw list.length_map,
           },
-          rw list_map_append_append,
+          rw list.map_append_append,
           rw c_converted_and_back,
           change
             (c ++ _ ++ list.map sTN_of_sTN₁ (list.filter_map sTN₁_of_sTN (
@@ -1035,9 +1035,9 @@ begin
             list.take (lsTN_of_lsTN₁ u').length (c ++ (rule_of_rule₁ r₁).snd ++ d),
           {
             unfold lsTN₁_of_lsTN,
-            rw list_filter_map_append_append,
+            rw list.filter_map_append_append,
             unfold lsTN_of_lsTN₁,
-            rw list_map_append_append,
+            rw list.map_append_append,
             rw c_converted_and_back,
             rw d_converted_and_back,
             change c ++ list.map sTN_of_sTN₁ (lsTN₁_of_lsTN (lsTN_of_lsTN₁ r₁.snd)) ++ _ = _,
@@ -1279,7 +1279,7 @@ begin
             rw list.append_assoc,
             rw list.drop_append_of_le_length hlen_uc_orig,
             rw ← list.append_assoc,
-            rw list_filter_map_append_append,
+            rw list.filter_map_append_append,
             rw eq_c',
             refl,
           },
@@ -1287,7 +1287,7 @@ begin
             unfold lsTN_of_lsTN₁,
             rw list.length_map,
             unfold lsTN₂_of_lsTN,
-            rw list_filter_map_append_append,
+            rw list.filter_map_append_append,
             change
               list.filter_map sTN₂_of_sTN (list.drop u.length c) ++
                 lsTN₂_of_lsTN (lsTN_of_lsTN₂ r₂.snd) ++ list.filter_map sTN₂_of_sTN d =
@@ -1318,8 +1318,8 @@ begin
             list.map sTN_of_sTN₂ (list.filter_map sTN₂_of_sTN (
               list.drop (lsTN_of_lsTN₁ u).length c ++ (rule_of_rule₂ r₂).snd ++ d)) =
             list.drop (lsTN_of_lsTN₁ u).length (c ++ (rule_of_rule₂ r₂).snd ++ d),
-          rw list_filter_map_append_append,
-          rw list_map_append_append,
+          rw list.filter_map_append_append,
+          rw list.map_append_append,
           rw list.append_assoc c,
           rw list.drop_append_of_le_length hlen_uc,
           rw ← list.append_assoc,

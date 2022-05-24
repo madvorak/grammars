@@ -976,7 +976,7 @@ begin
         rw add_comm,
       },
       rw [
-        list_map_append_append,
+        list.map_append_append,
         list.map_singleton,
         list.map_singleton,
         list.repeat_add,
@@ -995,7 +995,7 @@ begin
       use [[], []],
       finish,
     },
-    rw list_map_append_append,
+    rw list.map_append_append,
     change
       CF_derives g
         ([a] ++ [S] ++ [b])

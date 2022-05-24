@@ -98,7 +98,7 @@ begin
       rw list.reverse_reverse,
     },
     rw [ rid₁, rid₂, rid₃,
-         ← list_reverse_append_append, ← list_reverse_append_append,
+         ← list.reverse_append_append, ← list.reverse_append_append,
          ← list.append_assoc, ← list.append_assoc ],
     congr,
     exact bef,
@@ -112,7 +112,7 @@ begin
       rw list.reverse_reverse,
     },
     rw snd_from_r,
-    rw ← list_reverse_append_append,
+    rw ← list.reverse_append_append,
     exact congr_arg list.reverse aft,
   },
 end

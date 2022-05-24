@@ -1,6 +1,6 @@
 import logic.relation
 import computability.language
-import list_utilities
+import triplets_utilities
 
 
 /-- Fundamental datatype; basically `τ ⊕ ν` (something like "Either tau nyy")

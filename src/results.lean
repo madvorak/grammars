@@ -1,6 +1,7 @@
 import unrestricted.closure_properties.unary.reverse_RE
 import context_free.closure_properties.unary.reverse_CF
 import context_free.closure_properties.binary.CF_concatenation_CF
+import context_free.closure_properties.unary.star_CF
 import context_free.closure_properties.binary.CF_union_CF
 import context_free.closure_properties.binary.CF_intersection_CF
 import context_free.closure_properties.unary.complement_CF
@@ -14,6 +15,9 @@ import context_free.closure_properties.unary.complement_CF
 
 #check        CF_of_CF_c_CF
 #print axioms CF_of_CF_c_CF
+
+#check        CF_of_star_CF
+#print axioms CF_of_star_CF -- uses `sorry`
 
 #check        CF_of_CF_u_CF
 #print axioms CF_of_CF_u_CF

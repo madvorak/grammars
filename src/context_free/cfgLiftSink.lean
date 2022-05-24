@@ -1,7 +1,4 @@
 import context_free.cfg
-import list_utilities
-import tactic
-
 
 
 variable {T : Type}
@@ -85,13 +82,13 @@ begin
   {
     have lift_bef := congr_arg (lift_string lg.lift_nt) bef,
     unfold lift_string at *,
-    rw list_map_append_append at lift_bef,
+    rw list.map_append_append at lift_bef,
     convert lift_bef,
   },
   {
     have lift_aft := congr_arg (lift_string lg.lift_nt) aft,
     unfold lift_string at *,
-    rw list_map_append_append at lift_aft,
+    rw list.map_append_append at lift_aft,
     exact lift_aft,
   },
 end
@@ -175,7 +172,7 @@ begin
   {
     have sink_bef := congr_arg (sink_string lg.sink_nt) bef,
     unfold sink_string at *,
-    rw list_filter_map_append_append at sink_bef,
+    rw list.filter_map_append_append at sink_bef,
     convert sink_bef,
     rw ← preimage,
     unfold lift_rule,
@@ -191,7 +188,7 @@ begin
   {
     have sink_aft := congr_arg (sink_string lg.sink_nt) aft,
     unfold sink_string at *,
-    rw list_filter_map_append_append at sink_aft,
+    rw list.filter_map_append_append at sink_aft,
     convert sink_aft,
     rw ← preimage,
     unfold lift_rule,

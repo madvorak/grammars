@@ -57,7 +57,7 @@ begin
   split,
   {
     rw ← list.reverse_singleton,
-    rw ← list_reverse_append_append,
+    rw ← list.reverse_append_append,
     have fst_from_r : r₀.fst = r.fst,
     {
       rw ← r_from_r₀,
@@ -72,7 +72,7 @@ begin
       rw list.reverse_reverse,
     },
     rw snd_from_r,
-    rw ← list_reverse_append_append,
+    rw ← list.reverse_append_append,
     exact congr_arg list.reverse aft,
   },
 end
