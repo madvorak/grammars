@@ -132,7 +132,7 @@ end
 end auxiliary
 
 
-/-- The class of context-free languages is closed under reversal. -/
+/-- The class of resursively-enumerable languages is closed under reversal. -/
 theorem RE_of_reverse_RE (L : language T) :
   is_Enumerable L  →  is_Enumerable (reverse_language L)  :=
 begin
