@@ -1,9 +1,7 @@
 import context_free.cfg
+import language_operations
 
 variable {T : Type}
-
-def reverse_language (L : language T) : language T :=
-λ w : list T, w.reverse ∈ L
 
 
 section auxiliary
