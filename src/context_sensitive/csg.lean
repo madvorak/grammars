@@ -78,7 +78,7 @@ end csg_utilities
 
 section csg_conversion
 
-variable {T : Type}
+variables {T : Type}
 
 def grammar_of_csg (g : CS_grammar T) : grammar T :=
 grammar.mk g.nt g.initial (list.map 

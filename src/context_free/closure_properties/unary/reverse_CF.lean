@@ -1,7 +1,7 @@
 import context_free.cfg
 import language_operations
 
-variable {T : Type}
+variables {T : Type}
 
 
 section auxiliary
@@ -94,13 +94,13 @@ end auxiliary
 
 /-- The class of context-free languages is closed under reversal. -/
 theorem CF_of_reverse_CF (L : language T) :
-  is_CF L  →  is_CF (reverse_language L)  :=
+  is_CF L  →  is_CF (reverse_lang L)  :=
 begin
   rintro ⟨ g, hgL ⟩,
   rw ← hgL,
 
   use reversal_grammar g,
-  unfold reverse_language,
+  unfold reverse_lang,
 
   apply set.eq_of_subset_of_subset,
   {

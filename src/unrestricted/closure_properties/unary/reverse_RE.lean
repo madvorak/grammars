@@ -1,7 +1,7 @@
 import unrestricted.grammar
 import language_operations
 
-variable {T : Type}
+variables {T : Type}
 
 
 section auxiliary
@@ -135,13 +135,13 @@ end auxiliary
 
 /-- The class of resursively-enumerable languages is closed under reversal. -/
 theorem RE_of_reverse_RE (L : language T) :
-  is_Enumerable L  →  is_Enumerable (reverse_language L)  :=
+  is_Enumerable L  →  is_Enumerable (reverse_lang L)  :=
 begin
   rintro ⟨ g, hgL ⟩,
   rw ← hgL,
 
   use reversal_grammar g,
-  unfold reverse_language,
+  unfold reverse_lang,
 
   apply set.eq_of_subset_of_subset,
   {

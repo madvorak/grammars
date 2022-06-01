@@ -1,7 +1,7 @@
 import context_free.cfgLiftSink
 
 
-variable {T : Type}
+variables {T : Type}
 
 private def combined_grammar (gₗ gᵣ : CF_grammar T) : CF_grammar T :=
 CF_grammar.mk

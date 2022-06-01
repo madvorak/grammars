@@ -152,7 +152,7 @@ end cfg_utilities
 
 section cfg_conversion
 
-variable {T : Type}
+variables {T : Type}
 
 def csg_of_cfg (g : CF_grammar T) : CS_grammar T :=
 CS_grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),

@@ -3,7 +3,7 @@ import context_free.cfg
 import tactic
 
 
-variable {T : Type}
+variables {T : Type}
 
 -- TODO move out and probably redefine to (left or right) linear grammars
 def is_Reg (L : language T) :=

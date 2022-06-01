@@ -1,7 +1,7 @@
 import context_free.cfg
 import tactic
 
-variable {T : Type}
+variables {T : Type}
 
 
 /-- Context-free grammar for the empty language (i.e., `∈` always gives `false`). -/

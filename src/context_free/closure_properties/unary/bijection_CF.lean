@@ -1,24 +1,21 @@
 import context_free.cfg
+import language_operations
 
 
-variables {T₁ T₂ : Type}
+variables {T₁ T₂ N : Type}
 
-def bijemap_lang (π : equiv T₁ T₂) (L : language T₁) : language T₂ :=
-λ w : list T₂, list.map π.inv_fun w ∈ L
-
-
-private def sT₂_of_sT₁ {N : Type} (π : equiv T₁ T₂) : (symbol T₁ N) → (symbol T₂ N)
+private def sT₂_of_sT₁ (π : equiv T₁ T₂) : (symbol T₁ N) → (symbol T₂ N)
 | (symbol.terminal st) := symbol.terminal (π.to_fun st)
 | (symbol.nonterminal sn) := symbol.nonterminal sn
 
-private def sT₁_of_sT₂ {N : Type} (π : equiv T₁ T₂) : (symbol T₂ N) → (symbol T₁ N)
+private def sT₁_of_sT₂ (π : equiv T₁ T₂) : (symbol T₂ N) → (symbol T₁ N)
 | (symbol.terminal st) := symbol.terminal (π.inv_fun st)
 | (symbol.nonterminal sn) := symbol.nonterminal sn
 
-private def lsT₂_of_lsT₁ {N : Type} (π : equiv T₁ T₂) : list (symbol T₁ N) → list (symbol T₂ N) :=
+private def lsT₂_of_lsT₁ (π : equiv T₁ T₂) : list (symbol T₁ N) → list (symbol T₂ N) :=
 list.map (sT₂_of_sT₁ π)
 
-private def lsT₁_of_lsT₂ {N : Type} (π : equiv T₁ T₂) : list (symbol T₂ N) → list (symbol T₁ N) :=
+private def lsT₁_of_lsT₂ (π : equiv T₁ T₂) : list (symbol T₂ N) → list (symbol T₁ N) :=
 list.map (sT₁_of_sT₂ π)
 
 /-- The class of context-free languages is closed under bijection between terminal alphabets. -/
