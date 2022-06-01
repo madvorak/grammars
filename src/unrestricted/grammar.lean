@@ -44,8 +44,8 @@ def grammar_language : language T :=
 
 end grammar_definitions
 
-/-- Predicate "is enumerable"; defined by an existence of a grammar for the given language. -/
-def is_Enumerable {T : Type} (L : language T) : Prop :=
+/-- Predicate "is recursively-enumerable"; defined by an existence of a grammar for the given language. -/
+def is_RE {T : Type} (L : language T) : Prop :=
 ∃ g : grammar T, grammar_language g = L
 
 

@@ -135,7 +135,7 @@ end auxiliary
 
 /-- The class of resursively-enumerable languages is closed under reversal. -/
 theorem RE_of_reverse_RE (L : language T) :
-  is_Enumerable L  →  is_Enumerable (reverse_lang L)  :=
+  is_RE L  →  is_RE (reverse_lang L)  :=
 begin
   rintro ⟨ g, hgL ⟩,
   rw ← hgL,

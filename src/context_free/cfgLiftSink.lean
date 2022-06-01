@@ -1,7 +1,7 @@
 import context_free.cfg
 
 
-variable {T : Type}
+variables {T : Type}
 
 def lift_symbol {N₀ N : Type} (lift_N : N₀ → N) : symbol T N₀ → symbol T N
 | (symbol.terminal ter) := symbol.terminal ter

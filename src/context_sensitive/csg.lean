@@ -185,7 +185,7 @@ begin
 end
 
 theorem CS_subclass_Enumerable (L : language T) :
-  is_CS L → is_Enumerable L :=
+  is_CS L → is_RE L :=
 begin
   rintro ⟨ g, h ⟩,
   use grammar_of_csg g,

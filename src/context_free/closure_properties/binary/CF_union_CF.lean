@@ -623,10 +623,7 @@ end lemmata_supset
 theorem CF_of_CF_u_CF {T : Type} (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂)   :=
 begin
-  intro input,
-  cases input with cf₁ cf₂,
-  cases cf₁ with g₁ h₁,
-  cases cf₂ with g₂ h₂,
+  rintro ⟨ ⟨ g₁, h₁ ⟩, ⟨ g₂, h₂ ⟩ ⟩,
 
   use union_grammar g₁ g₂,
 
