@@ -1077,7 +1077,7 @@ private def permut : equiv.perm (fin 3) := equiv.mk
 
 private lemma CF_lang_aux_bc : is_CF lang_aux_bc :=
 begin
-  have permuted : lang_aux_bc = permute_lang permut lang_aux_ab,
+  have permuted : lang_aux_bc = permute_lang lang_aux_ab permut,
   {
     have compos : permut.to_fun ∘ permut.inv_fun = id,
     {

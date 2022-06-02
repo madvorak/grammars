@@ -2,25 +2,25 @@ import context_free.cfg
 import language_operations
 
 
-variables {T₁ T₂ N : Type}
+variables {T₁ T₂ N : Type} (π : equiv T₁ T₂)
 
-private def sT₂_of_sT₁ (π : equiv T₁ T₂) : (symbol T₁ N) → (symbol T₂ N)
+private def sT₂_of_sT₁ : (symbol T₁ N) → (symbol T₂ N)
 | (symbol.terminal st) := symbol.terminal (π.to_fun st)
 | (symbol.nonterminal sn) := symbol.nonterminal sn
 
-private def sT₁_of_sT₂ (π : equiv T₁ T₂) : (symbol T₂ N) → (symbol T₁ N)
+private def sT₁_of_sT₂ : (symbol T₂ N) → (symbol T₁ N)
 | (symbol.terminal st) := symbol.terminal (π.inv_fun st)
 | (symbol.nonterminal sn) := symbol.nonterminal sn
 
-private def lsT₂_of_lsT₁ (π : equiv T₁ T₂) : list (symbol T₁ N) → list (symbol T₂ N) :=
+private def lsT₂_of_lsT₁ : list (symbol T₁ N) → list (symbol T₂ N) :=
 list.map (sT₂_of_sT₁ π)
 
-private def lsT₁_of_lsT₂ (π : equiv T₁ T₂) : list (symbol T₂ N) → list (symbol T₁ N) :=
+private def lsT₁_of_lsT₂ : list (symbol T₂ N) → list (symbol T₁ N) :=
 list.map (sT₁_of_sT₂ π)
 
 /-- The class of context-free languages is closed under bijection between terminal alphabets. -/
-theorem CF_of_bijemap_CF (π : equiv T₁ T₂) (L : language T₁) :
-  is_CF L  →  is_CF (bijemap_lang π L)  :=
+theorem CF_of_bijemap_CF (L : language T₁) :
+  is_CF L  →  is_CF (bijemap_lang L π)  :=
 begin
   rintro ⟨ g, hg ⟩,
 
