@@ -1,9 +1,9 @@
 import unrestricted.grammarLiftSink
 
 
-variables {T : Type} (g₁ g₂ : grammar T)
+variables {T : Type}
 
-private def union_grammar : grammar T :=
+private def union_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
   ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩  ::
   ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩  ::
@@ -12,32 +12,36 @@ grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
 ))
 
 
+section auxiliary
+variables {g₁ g₂ : grammar T}
+
 private def lg₁ : lifted_grammar_ T :=
-lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) sorry sorry sorry sorry sorry sorry
+lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) sorry sorry sorry sorry sorry sorry
 
 private def lg₂ : lifted_grammar_ T :=
-lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) sorry sorry sorry sorry sorry sorry
+lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) sorry sorry sorry sorry sorry sorry
 
 
-private lemma in_language_of_in_union (w : list T) :
-  w ∈ grammar_language (union_grammar g₁ g₂)  →
-    w ∈ grammar_language g₁  ∨  w ∈ grammar_language g₂  :=
+private lemma in_L₁_or_L₂_of_in_union {w : list T} (h : w ∈ grammar_language (union_grammar g₁ g₂)) :
+  w ∈ grammar_language g₁  ∨  w ∈ grammar_language g₂  :=
 begin
   sorry,
 end
 
 
-private lemma in_union_of_in_L₁ (w : list T) :
-  w ∈ grammar_language g₁ → w ∈ grammar_language (union_grammar g₁ g₂) :=
+private lemma in_union_of_in_L₁ {w : list T} (h : w ∈ grammar_language g₁) :
+  w ∈ grammar_language (union_grammar g₁ g₂) :=
 begin
   sorry,
 end
 
-private lemma in_union_of_in_L₂ (w : list T) :
-  w ∈ grammar_language g₂ → w ∈ grammar_language (union_grammar g₁ g₂) :=
+private lemma in_union_of_in_L₂ {w : list T} (h : w ∈ grammar_language g₂) :
+  w ∈ grammar_language (union_grammar g₁ g₂) :=
 begin
   sorry,
 end
+
+end auxiliary
 
 
 /-- The class of recursively-enumerable languages is closed under union. -/
@@ -55,18 +59,18 @@ begin
     rw language.mem_add,
     rw ← h₁,
     rw ← h₂,
-    exact in_language_of_in_union g₁ g₂ w ass,
+    exact in_L₁_or_L₂_of_in_union ass,
   },
   {
     intros w ass,
     cases ass with case₁ case₂,
     {
       rw ← h₁ at case₁,
-      exact in_union_of_in_L₁ g₁ g₂ w case₁,
+      exact in_union_of_in_L₁ case₁,
     },
     {
       rw ← h₂ at case₂,
-      exact in_union_of_in_L₂ g₁ g₂ w case₂,
+      exact in_union_of_in_L₂ case₂,
     },
   },
 end

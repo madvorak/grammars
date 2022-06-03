@@ -17,27 +17,27 @@ structure CS_grammar (termi : Type) :=
 (rules : list (csrule termi nt))             -- rewriting rules
 
 
-variables {T : Type} (g : CS_grammar T)
+variables {T : Type}
 
 /-- One step of context-sensitive transformation. -/
-def CS_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
-∃ r : csrule T g.nt, r ∈ g.rules  ∧  ∃ v w : list (symbol T g.nt), and
-  (oldWord = v ++ r.context_left ++ [symbol.nonterminal r.input_nonterminal] ++ r.context_right ++ w)
-  (newWord = v ++ r.context_left ++                     r.output_string      ++ r.context_right ++ w)
+def CS_transforms (g : CS_grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :=
+∃ r : csrule T g.nt, r ∈ g.rules  ∧  ∃ u v : list (symbol T g.nt), and
+  (w₁ = u ++ r.context_left ++ [symbol.nonterminal r.input_nonterminal] ++ r.context_right ++ v)
+  (w₂ = u ++ r.context_left ++                     r.output_string      ++ r.context_right ++ v)
 
 /-- Any number of steps of context-sensitive transformation; reflexive+transitive closure of `CS_transforms`. -/
-def CS_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
+def CS_derives (g : CS_grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (CS_transforms g)
 
 /-- Returns the set of words (lists of terminals) that can be derived from the initial nonterminal. -/
-def CS_language : language T :=
+def CS_language (g : CS_grammar T) : language T :=
 λ w : list T, CS_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
 
-end csg_definitions
-
 /-- Predicate "is context-sensitive"; defined by an existence of a context-sensitive grammar for the given language. -/
-def is_CS {T : Type} (L : language T) : Prop :=
+def is_CS (L : language T) : Prop :=
 ∃ g : CS_grammar T, CS_language g = L
+
+end csg_definitions
 
 
 section csg_utilities

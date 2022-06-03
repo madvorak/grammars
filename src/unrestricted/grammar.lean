@@ -24,29 +24,29 @@ structure grammar (termi : Type) :=
 (rules : list (grule termi nt)) -- rewriting rules
 
 
-variables {T : Type} (g : grammar T)
+variables {T : Type}
 
 /-- One step of grammatical transformation. -/
-def grammar_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
+def grammar_transforms (g : grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :=
 ∃ r : grule T g.nt,
   r ∈ g.rules ∧
-  ∃ v w : list (symbol T g.nt), and
-    (oldWord = v ++ r.input_string.first ++ [symbol.nonterminal r.input_string.secon] ++ r.input_string.third ++ w)
-    (newWord = v ++ r.output_string ++ w)
+  ∃ u v : list (symbol T g.nt), and
+    (w₁ = u ++ r.input_string.first ++ [symbol.nonterminal r.input_string.secon] ++ r.input_string.third ++ v)
+    (w₂ = u ++ r.output_string ++ v)
 
 /-- Any number of steps of grammatical transformation; reflexive+transitive closure of `grammar_transforms`. -/
-def grammar_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
+def grammar_derives (g : grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (grammar_transforms g)
 
 /-- Returns the set of words (lists of terminals) that can be derived from the initial nonterminal. -/
-def grammar_language : language T :=
+def grammar_language (g : grammar T) : language T :=
 λ w : list T, grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
 
-end grammar_definitions
-
 /-- Predicate "is recursively-enumerable"; defined by an existence of a grammar for the given language. -/
-def is_RE {T : Type} (L : language T) : Prop :=
+def is_RE (L : language T) : Prop :=
 ∃ g : grammar T, grammar_language g = L
+
+end grammar_definitions
 
 
 section grammar_utilities

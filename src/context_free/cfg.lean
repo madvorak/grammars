@@ -10,34 +10,34 @@ structure CF_grammar (termi : Type) :=
 (rules : list (nt × list (symbol termi nt)))   -- rewriting rules
 
 
-variables {T : Type} (g : CF_grammar T)
+variables {T : Type}
 
 /-- One step of context-free transformation. -/
-def CF_transforms (oldWord newWord : list (symbol T g.nt)) : Prop :=
-∃ r ∈ g.rules, ∃ v w : list (symbol T g.nt),
-  oldWord = v ++ [symbol.nonterminal (prod.fst r)] ++ w ∧ newWord = v ++ (prod.snd r) ++ w
+def CF_transforms (g : CF_grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :=
+∃ r ∈ g.rules, ∃ u v : list (symbol T g.nt),
+  w₁ = u ++ [symbol.nonterminal (prod.fst r)] ++ v  ∧  w₂ = u ++ (prod.snd r) ++ v
 
 /-- Any number of steps of context-free transformation; reflexive+transitive closure of `CF_transforms`. -/
-def CF_derives : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
+def CF_derives (g : CF_grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (CF_transforms g)
 
 /-- Accepts a string (a list of symbols) iff it can be derived from the initial nonterminal. -/
-def CF_generates_str (str : list (symbol T g.nt)) : Prop :=
-CF_derives g [symbol.nonterminal g.initial] str
+def CF_generates_str (g : CF_grammar T) (s : list (symbol T g.nt)) : Prop :=
+CF_derives g [symbol.nonterminal g.initial] s
 
 /-- Accepts a word (a list of terminals) iff it can be derived from the initial nonterminal. -/
-def CF_generates (word : list T) : Prop :=
-CF_generates_str g (list.map symbol.terminal word)
+def CF_generates (g : CF_grammar T) (w : list T) : Prop :=
+CF_generates_str g (list.map symbol.terminal w)
 
 /-- Context-free language; just a wrapper around `CF_generates`. -/
-def CF_language : language T :=
+def CF_language (g : CF_grammar T) : language T :=
 set_of (CF_generates g)
 
-end cfg_definitions
-
 /-- Predicate "is context-free"; defined by an existence of a context-free grammar for the given language. -/
-def is_CF {T : Type} (L : language T) : Prop :=
+def is_CF (L : language T) : Prop :=
 ∃ g : CF_grammar T, CF_language g = L
+
+end cfg_definitions
 
 
 section cfg_utilities
