@@ -38,9 +38,12 @@ def grammar_transforms (g : grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop
 def grammar_derives (g : grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (grammar_transforms g)
 
+def grammar_generates (g : grammar T) (w : list T) : Prop :=
+grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
+
 /-- Returns the set of words (lists of terminals) that can be derived from the initial nonterminal. -/
 def grammar_language (g : grammar T) : language T :=
-λ w : list T, grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
+set_of (grammar_generates g)
 
 /-- Predicate "is recursively-enumerable"; defined by an existence of a grammar for the given language. -/
 def is_RE (L : language T) : Prop :=

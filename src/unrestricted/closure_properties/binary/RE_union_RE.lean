@@ -5,8 +5,8 @@ variables {T : Type}
 
 private def union_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
-  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩  ::
-  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩  ::
+  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩ ::
+  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩ ::
   ((list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules) ++
    (list.map (lift_rule_ (some ∘ sum.inr)) g₂.rules)
 ))
@@ -15,11 +15,22 @@ grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
 section auxiliary
 variables {g₁ g₂ : grammar T}
 
+private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)
+| none               := none
+| (some (sum.inl n)) := some n
+| (some (sum.inr _)) := none
+
+private def oN₂_of_N : (union_grammar g₁ g₂).nt → (option g₂.nt)
+| none               := none
+| (some (sum.inl _)) := none
+| (some (sum.inr n)) := some n
+
+
 private def lg₁ : lifted_grammar_ T :=
-lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) sorry sorry sorry sorry sorry sorry
+lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) sorry sorry sorry oN₁_of_N sorry sorry
 
 private def lg₂ : lifted_grammar_ T :=
-lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) sorry sorry sorry sorry sorry sorry
+lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) sorry sorry sorry oN₂_of_N sorry sorry
 
 
 private lemma in_L₁_or_L₂_of_in_union {w : list T} (h : w ∈ grammar_language (union_grammar g₁ g₂)) :
@@ -32,6 +43,25 @@ end
 private lemma in_union_of_in_L₁ {w : list T} (h : w ∈ grammar_language g₁) :
   w ∈ grammar_language (union_grammar g₁ g₂) :=
 begin
+  unfold grammar_language at h ⊢,
+  rw set.mem_set_of_eq at h ⊢,
+  unfold grammar_generates at h ⊢,
+  --change grammar_derives _ _ (list.map symbol.terminal w),
+  --change grammar_derives _ _ (list.map symbol.terminal w) at h,
+  apply grammar_deri_of_tran_deri,
+  {
+    use ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩,
+    split,
+    {
+      apply list.mem_cons_self,
+    },
+    use [[], []],
+    split;
+    refl,
+  },
+  simp,
+  --change grammar_derives lg₁.g₀ [symbol.nonterminal lg₁.g₀.initial] (list.map symbol.terminal w) at h,
+  --convert_to (sink_deri_ h sorry).1,
   sorry,
 end
 

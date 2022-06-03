@@ -87,7 +87,7 @@ def good_string_ (str : list (symbol T lg.g.nt)) :=
 -- TODO `lift_tran_`
 
 lemma lift_deri_
-    (input output : list (symbol T lg.g₀.nt))
+    {input output : list (symbol T lg.g₀.nt)}
     (hyp : grammar_derives lg.g₀ input output) :
   grammar_derives lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
 begin
@@ -97,7 +97,7 @@ end
 -- TODO `sink_tran_`
 
 lemma sink_deri_
-    (input output : list (symbol T lg.g.nt))
+    {input output : list (symbol T lg.g.nt)}
     (hyp : grammar_derives lg.g input output)
     (ok_input : good_string_ input) :
   grammar_derives lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)

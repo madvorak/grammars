@@ -13,13 +13,11 @@ CF_grammar.mk (option (gₗ.nt ⊕ gᵣ.nt)) none (
 
 section lifted_grammars
 
-/-- similar to `sink_symbol` -/
 private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)
 | none := none
 | (some (sum.inl nonte)) := some nonte
 | (some (sum.inr _)) := none
 
-/-- similar to `sink_symbol` -/
 private def oN₂_of_N : (union_grammar g₁ g₂).nt → (option g₂.nt)
 | none := none
 | (some (sum.inl _)) := none

@@ -93,7 +93,7 @@ begin
   unfold CS_language,
   unfold grammar_language,
   ext1 w,
-  rw eq_iff_iff,
+  rw set.mem_set_of_eq,
   split,
   {
     have indu :
