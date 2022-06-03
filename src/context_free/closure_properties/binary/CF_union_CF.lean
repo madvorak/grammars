@@ -631,7 +631,7 @@ begin
   {
     -- prove `L₁ + L₂ ⊇ `
     intros w hyp,
-    simp,
+    rw language.mem_add,
     rw ← h₁,
     rw ← h₂,
     exact in_language_of_in_union w hyp,
@@ -639,7 +639,6 @@ begin
   {
     -- prove `L₁ + L₂ ⊆ `
     intros w hyp,
-    rw language.mem_add at hyp,
     cases hyp with case₁ case₂,
     {
       rw ← h₁ at case₁,
