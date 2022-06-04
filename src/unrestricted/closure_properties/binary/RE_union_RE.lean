@@ -27,10 +27,208 @@ private def oN₂_of_N : (union_grammar g₁ g₂).nt → (option g₂.nt)
 
 
 private def lg₁ : lifted_grammar_ T :=
-lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) sorry sorry sorry oN₁_of_N sorry sorry
+lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN₁_of_N (by
+{
+  intros x y h,
+  apply sum.inl_injective,
+  apply option.some_injective,
+  exact h,
+}
+) (by
+{
+  intros x y h,
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases x, swap,
+  {
+    right,
+    refl,
+  },
+  cases y,
+  {
+    tauto,
+  },
+  cases y, swap,
+  {
+    tauto,
+  },
+  left,
+  simp only [oN₁_of_N] at h,
+  apply congr_arg,
+  apply congr_arg,
+  exact h,
+}
+) (by
+{
+  intro,
+  refl,
+}
+) (by
+{
+  intros r h,
+  apply list.mem_cons_of_mem,
+  apply list.mem_cons_of_mem,
+  apply list.mem_append_left,
+  rw list.mem_map,
+  use r,
+  split,
+  {
+    exact h,
+  },
+  refl,
+}
+) (by
+{
+  rintros r ⟨ rin, n₀, rnt ⟩,
+  cases rin,
+  {
+    exfalso,
+    rw rin at rnt,
+    dsimp at rnt,
+    clear_except rnt,
+    tauto,
+  },
+  cases rin,
+  {
+    exfalso,
+    rw rin at rnt,
+    dsimp at rnt,
+    clear_except rnt,
+    tauto,
+  },
+  change r ∈ (
+      list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules ++
+      list.map (lift_rule_ (some ∘ sum.inr)) g₂.rules
+    ) at rin,
+  rw list.mem_append at rin,
+  cases rin,
+  {
+    rw list.mem_map at rin,
+    rcases rin with ⟨ r₁, r₁_in, r₁_lift ⟩,
+    use r₁,
+    split,
+    {
+      exact r₁_in,
+    },
+    exact r₁_lift,
+  },
+  {
+    exfalso,
+    rw list.mem_map at rin,
+    rcases rin with ⟨ r₂, r₂_in, r₂_lift ⟩,
+    rw ← r₂_lift at rnt,
+    unfold lift_rule_ at rnt,
+    dsimp at rnt,
+    have rnti := option.some.inj rnt,
+    clear_except rnti,
+    tauto,
+  },
+})
 
 private def lg₂ : lifted_grammar_ T :=
-lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) sorry sorry sorry oN₂_of_N sorry sorry
+lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN₂_of_N (by
+{
+  intros x y h,
+  apply sum.inr_injective,
+  apply option.some_injective,
+  exact h,
+}
+) (by
+{
+  intros x y h,
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases y,
+  {
+    tauto,
+  },
+  cases y,
+  {
+    tauto,
+  },
+  left,
+  simp only [oN₂_of_N] at h,
+  apply congr_arg,
+  apply congr_arg,
+  exact h,
+}
+) (by
+{
+  intro,
+  refl,
+}
+) (by
+{
+  intros r h,
+  apply list.mem_cons_of_mem,
+  apply list.mem_cons_of_mem,
+  apply list.mem_append_right,
+  rw list.mem_map,
+  use r,
+  split,
+  {
+    exact h,
+  },
+  refl,
+}
+) (by
+{
+  rintros r ⟨ rin, n₀, rnt ⟩,
+  cases rin,
+  {
+    exfalso,
+    rw rin at rnt,
+    dsimp at rnt,
+    clear_except rnt,
+    tauto,
+  },
+  cases rin,
+  {
+    exfalso,
+    rw rin at rnt,
+    dsimp at rnt,
+    clear_except rnt,
+    tauto,
+  },
+  change r ∈ (
+      list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules ++
+      list.map (lift_rule_ (some ∘ sum.inr)) g₂.rules
+    ) at rin,
+  rw list.mem_append at rin,
+  cases rin,
+  {
+    exfalso,
+    rw list.mem_map at rin,
+    rcases rin with ⟨ r₁, r₁_in, r₁_lift ⟩,
+    rw ← r₁_lift at rnt,
+    unfold lift_rule_ at rnt,
+    dsimp at rnt,
+    have rnti := option.some.inj rnt,
+    clear_except rnti,
+    tauto,
+  },
+  {
+    rw list.mem_map at rin,
+    rcases rin with ⟨ r₂, r₂_in, r₂_lift ⟩,
+    use r₂,
+    split,
+    {
+      exact r₂_in,
+    },
+    exact r₂_lift,
+  },
+})
 
 
 private lemma in_L₁_or_L₂_of_in_union {w : list T} (h : w ∈ grammar_language (union_grammar g₁ g₂)) :
@@ -161,22 +359,7 @@ begin
   },
   exfalso,
   clear_except rin bef,
-  /-
-  have common_part :
-    ∀ N : Type, ∀ func : N → g₁.nt ⊕ g₂.nt, ∀ grul : grule T N, false =
-      (symbol.nonterminal (lift_rule_ (option.some ∘ func) grul).input_string.secon ∈
-        [symbol.nonterminal (union_grammar g₁ g₂).initial]),
-  {
-    intros N func grul,
-    rw list.mem_singleton,
-    rw symbol.nonterminal.inj_eq,
-    change false = (_ = option.none),
-    unfold lift_rule_,
-    dsimp,
-    clear_except,
-    norm_num,
-  },
-  -/
+
   change rul ∈ (
       list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules ++
       list.map (lift_rule_ (some ∘ sum.inr)) g₂.rules
@@ -186,7 +369,7 @@ begin
   rw list.mem_map at rin;
   rcases rin with ⟨ ror, rri, rli ⟩;
   rw ← rli at bef;
-  clear_except bef /-common_part-/,
+  clear_except bef,
 
   {
     have inb := congr_arg
@@ -261,7 +444,35 @@ end
 private lemma in_union_of_in_L₂ {w : list T} (h : w ∈ grammar_language g₂) :
   w ∈ grammar_language (union_grammar g₁ g₂) :=
 begin
-  sorry,
+  unfold grammar_language at h ⊢,
+  rw set.mem_set_of_eq at h ⊢,
+  unfold grammar_generates at h ⊢,
+  apply grammar_deri_of_tran_deri,
+  {
+    use ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩,
+    split,
+    {
+      apply list.mem_cons_of_mem,
+      apply list.mem_cons_self,
+    },
+    use [[], []],
+    split;
+    refl,
+  },
+  simp,
+  have lifted := lift_deri_ lg₂ h,
+  swap, {
+    exact g₁,
+  },
+  change grammar_derives lg₂.g (lift_string_ lg₂.lift_nt [symbol.nonterminal g₂.initial]) (list.map symbol.terminal w),
+  have equiv_out : (lift_string_ lg₂.lift_nt (list.map symbol.terminal w)) = (list.map symbol.terminal w),
+  {
+    unfold lift_string_,
+    rw list.map_map,
+    refl,
+  },
+  rw equiv_out at lifted,
+  exact lifted,
 end
 
 end auxiliary

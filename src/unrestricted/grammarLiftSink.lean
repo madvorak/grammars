@@ -32,7 +32,12 @@ section lifting_conditions
 structure lifted_grammar_ (T : Type) :=
 (g₀ g : grammar T)
 (lift_nt : g₀.nt → g.nt)
+(sink_nt : g.nt → option g₀.nt)
 (lift_inj : function.injective lift_nt)
+(sink_inj : ∀ x y, sink_nt x = sink_nt y →
+  x = y  ∨  sink_nt x = none
+)
+(lift_nt_sink : ∀ n₀ : g₀.nt, sink_nt (lift_nt n₀) = some n₀)
 (corresponding_rules : ∀ r : grule T g₀.nt,
   r ∈ g₀.rules →
     lift_rule_ lift_nt r ∈ g.rules
@@ -41,11 +46,6 @@ structure lifted_grammar_ (T : Type) :=
   (r ∈ g.rules ∧ ∃ n₀ : g₀.nt, lift_nt n₀ = r.input_string.secon) →
     (∃ r₀ ∈ g₀.rules, lift_rule_ lift_nt r₀ = r)
 )
-(sink_nt : g.nt → option g₀.nt)
-(sink_inj : ∀ x y, sink_nt x = sink_nt y →
-  x = y  ∨  sink_nt x = none
-)
-(lift_nt_sink : ∀ n₀ : g₀.nt, sink_nt (lift_nt n₀) = some n₀)
 
 private lemma lifted_grammar_inverse {T : Type} (lg : lifted_grammar_ T) :
   ∀ x : lg.g.nt,
@@ -84,7 +84,36 @@ def good_letter_ {lg : lifted_grammar_ T} : symbol T lg.g.nt → Prop
 def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ s, good_letter_ letter
 
--- TODO `lift_tran_`
+
+lemma lift_tran_
+    (lg : lifted_grammar_ T)
+    {input output : list (symbol T lg.g₀.nt)}
+    (hyp : grammar_transforms lg.g₀ input output) :
+  grammar_transforms lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
+begin
+  rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
+  use lift_rule_ lg.lift_nt rule,
+  split,
+  {
+    exact lg.corresponding_rules rule rule_in,
+  },
+  use lift_string_ lg.lift_nt v,
+  use lift_string_ lg.lift_nt w,
+  split,
+  {
+    have lift_bef := congr_arg (lift_string_ lg.lift_nt) bef,
+    unfold lift_string_ at *,
+    rw list.map_append_append at lift_bef,
+    convert lift_bef,
+    finish,
+  },
+  {
+    have lift_aft := congr_arg (lift_string_ lg.lift_nt) aft,
+    unfold lift_string_ at *,
+    rw list.map_append_append at lift_aft,
+    exact lift_aft,
+  },
+end
 
 lemma lift_deri_
     (lg : lifted_grammar_ T)
@@ -92,7 +121,15 @@ lemma lift_deri_
     (hyp : grammar_derives lg.g₀ input output) :
   grammar_derives lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
 begin
-  sorry,
+  induction hyp with u v trash orig ih,
+  {
+    apply grammar_deri_self,
+  },
+  apply grammar_deri_of_deri_tran,
+  {
+    exact ih,
+  },
+  exact lift_tran_ lg orig,
 end
 
 -- TODO `sink_tran_`
