@@ -75,18 +75,19 @@ end lifting_conditions
 
 section translating_derivations
 
-variables {T : Type} {lg : lifted_grammar_ T}
+variables {T : Type}
 
-def good_letter_ : symbol T lg.g.nt → Prop
+def good_letter_ {lg : lifted_grammar_ T} : symbol T lg.g.nt → Prop
 | (symbol.terminal t)     := true
 | (symbol.nonterminal nt) := ∃ n₀ : lg.g₀.nt, lg.sink_nt nt = n₀
 
-def good_string_ (str : list (symbol T lg.g.nt)) :=
-∀ letter ∈ str, good_letter_ letter
+def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
+∀ letter ∈ s, good_letter_ letter
 
 -- TODO `lift_tran_`
 
 lemma lift_deri_
+    (lg : lifted_grammar_ T)
     {input output : list (symbol T lg.g₀.nt)}
     (hyp : grammar_derives lg.g₀ input output) :
   grammar_derives lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
@@ -96,7 +97,8 @@ end
 
 -- TODO `sink_tran_`
 
-lemma sink_deri_
+private lemma sink_deri_aux
+    {lg : lifted_grammar_ T}
     {input output : list (symbol T lg.g.nt)}
     (hyp : grammar_derives lg.g input output)
     (ok_input : good_string_ input) :
@@ -105,5 +107,14 @@ lemma sink_deri_
 begin
   sorry,
 end
+
+lemma sink_deri_
+    (lg : lifted_grammar_ T)
+    {input output : list (symbol T lg.g.nt)}
+    (hyp : grammar_derives lg.g input output)
+    (ok_input : good_string_ input) :
+  grammar_derives lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output) :=
+(sink_deri_aux hyp ok_input).1
+
 
 end translating_derivations
