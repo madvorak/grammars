@@ -86,7 +86,7 @@ def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
 
 
 lemma lift_tran_
-    (lg : lifted_grammar_ T)
+    {lg : lifted_grammar_ T}
     {input output : list (symbol T lg.g₀.nt)}
     (hyp : grammar_transforms lg.g₀ input output) :
   grammar_transforms lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
@@ -104,8 +104,8 @@ begin
     have lift_bef := congr_arg (lift_string_ lg.lift_nt) bef,
     unfold lift_string_ at *,
     rw list.map_append_append at lift_bef,
+    rw list.map_append_append at lift_bef,
     convert lift_bef,
-    finish,
   },
   {
     have lift_aft := congr_arg (lift_string_ lg.lift_nt) aft,
@@ -129,10 +129,19 @@ begin
   {
     exact ih,
   },
-  exact lift_tran_ lg orig,
+  exact lift_tran_ orig,
 end
 
--- TODO `sink_tran_`
+private lemma sink_tran_
+    {lg : lifted_grammar_ T}
+    {input output : list (symbol T lg.g.nt)}
+    (hyp : grammar_transforms lg.g input output)
+    (ok_input : good_string_ input) :
+  grammar_transforms lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)
+  ∧ good_string_ output :=
+begin
+  sorry,
+end
 
 private lemma sink_deri_aux
     {lg : lifted_grammar_ T}
@@ -142,7 +151,29 @@ private lemma sink_deri_aux
   grammar_derives lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)
   ∧ good_string_ output :=
 begin
-  sorry,
+  induction hyp with u v trash orig ih,
+  {
+    split,
+    {
+      apply grammar_deri_self,
+    },
+    {
+      exact ok_input,
+    },
+  },
+  have both := sink_tran_ orig ih.2,
+
+  split, swap,
+  {
+    exact both.2,
+  },
+  apply grammar_deri_of_deri_tran,
+  {
+    exact ih.1,
+  },
+  {
+    exact both.1,
+  },
 end
 
 lemma sink_deri_
