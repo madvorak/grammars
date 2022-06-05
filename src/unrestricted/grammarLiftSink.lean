@@ -140,7 +140,137 @@ private lemma sink_tran_
   grammar_transforms lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)
   ∧ good_string_ output :=
 begin
-  sorry,
+  rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
+
+  rcases lg.preimage_of_rules rule (by {
+    split,
+    {
+      exact rule_in,
+    },
+    rw bef at ok_input,
+    have good_matched_nonterminal : good_letter_ (symbol.nonterminal rule.input_string.secon),
+    {
+      specialize ok_input (symbol.nonterminal rule.input_string.secon),
+      finish,
+    },
+    change ∃ n₀ : lg.g₀.nt, lg.sink_nt rule.input_string.secon = some n₀ at good_matched_nonterminal,
+    cases good_matched_nonterminal with n₀ hn₀,
+    use n₀,
+    have almost := congr_arg (option.map lg.lift_nt) hn₀,
+    rw lifted_grammar_inverse lg rule.input_string.secon ⟨ n₀, hn₀ ⟩ at almost,
+    simp at almost,
+    apply option.some_injective,
+    exact almost.symm,
+  }) with ⟨ pre_rule, pre_in, preimage ⟩,
+
+  split, swap,
+  {
+    rw bef at ok_input,
+    rw aft,
+    unfold good_string_ at ok_input ⊢,
+    rw ← preimage,
+    clear_except ok_input,
+    rw list.forall_mem_append_append at ok_input ⊢,
+    rw list.forall_mem_append_append at ok_input,
+    split,
+    {
+      exact ok_input.1.1,
+    },
+    split, swap,
+    {
+      exact ok_input.2.2,
+    },
+    intros a a_in_ros,
+    cases a,
+    {
+      clear_except,
+      tauto,
+    },
+    unfold lift_rule_ at a_in_ros,
+    dsimp at a_in_ros,
+    unfold lift_string_ at a_in_ros,
+    rw list.mem_map at a_in_ros,
+    rcases a_in_ros with ⟨ s, trash, a_from_s ⟩,
+    rw ← a_from_s,
+    cases s,
+    {
+      exfalso,
+      clear_except a_from_s,
+      unfold lift_symbol_ at a_from_s,
+      tauto,
+    },
+    unfold lift_symbol_,
+    unfold good_letter_,
+    use s,
+    exact lg.lift_nt_sink s,
+  },
+  use pre_rule,
+  split,
+  {
+    exact pre_in,
+  },
+  use sink_string_ lg.sink_nt v,
+  use sink_string_ lg.sink_nt w,
+  have correct_inverse : sink_symbol_ lg.sink_nt ∘ lift_symbol_ lg.lift_nt = option.some,
+  {
+    ext1,
+    cases x,
+    {
+      refl,
+    },
+    dsimp,
+    unfold lift_symbol_,
+    unfold sink_symbol_,
+    rw lg.lift_nt_sink,
+    apply option.map_some',
+  },
+  split,
+  {
+    have sink_bef := congr_arg (sink_string_ lg.sink_nt) bef,
+    unfold sink_string_ at *,
+    rw list.filter_map_append_append at sink_bef,
+    rw list.filter_map_append_append at sink_bef,
+    convert sink_bef;
+    rw ← preimage;
+    unfold lift_rule_;
+    dsimp;
+    clear_except correct_inverse,
+    {
+      unfold lift_string_,
+      rw list.filter_map_map,
+      rw correct_inverse,
+      rw list.filter_map_some,
+    },
+    {
+      change
+        [symbol.nonterminal pre_rule.input_string.secon] =
+        list.filter_map (sink_symbol_ lg.sink_nt)
+          (list.map (lift_symbol_ lg.lift_nt) [symbol.nonterminal pre_rule.input_string.secon]),
+      rw list.filter_map_map,
+      rw correct_inverse,
+      rw list.filter_map_some,
+    },
+    {
+      unfold lift_string_,
+      rw list.filter_map_map,
+      rw correct_inverse,
+      rw list.filter_map_some,
+    },
+  },
+  {
+    have sink_aft := congr_arg (sink_string_ lg.sink_nt) aft,
+    unfold sink_string_ at *,
+    rw list.filter_map_append_append at sink_aft,
+    convert sink_aft,
+    rw ← preimage,
+    clear_except correct_inverse,
+    unfold lift_rule_,
+    dsimp,
+    unfold lift_string_,
+    rw list.filter_map_map,
+    rw correct_inverse,
+    rw list.filter_map_some,
+  },
 end
 
 private lemma sink_deri_aux

@@ -15,6 +15,10 @@ lemma filter_map_append_append {f : α → option γ} :
   list.filter_map f (x ++ y ++ z) = list.filter_map f x ++ list.filter_map f y ++ list.filter_map f z :=
 by rw [ list.filter_map_append, list.filter_map_append ]
 
+lemma forall_mem_append_append {p : α → Prop} :
+  (∀ a ∈ x ++ y ++ z, p a)  ↔  (∀ a ∈ x, p a) ∧ (∀ a ∈ y, p a) ∧ (∀ a ∈ z, p a)  :=
+by rw [ list.forall_mem_append, list.forall_mem_append, and_assoc ]
+
 lemma reverse_append_append :
   list.reverse (x ++ y ++ z) = z.reverse ++ y.reverse ++ x.reverse :=
 by rw [ list.reverse_append, list.reverse_append, list.append_assoc ]

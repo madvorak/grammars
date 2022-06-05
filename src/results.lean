@@ -33,4 +33,4 @@ import unrestricted.closure_properties.binary.RE_union_RE
 #print axioms RE_of_reverse_RE
 
 #check        RE_of_RE_u_RE
-#print axioms RE_of_RE_u_RE -- will be soon finished
+#print axioms RE_of_RE_u_RE
