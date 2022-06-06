@@ -161,9 +161,9 @@ begin
     },
     cases pre_reversal with g₀ pre_rev,
     rw pre_rev at hwL ⊢,
-    have finished_modulo_reverses := reversed_word_in_original_language hwL,
+    have finished_up_to_reverses := reversed_word_in_original_language hwL,
     rw dual_of_reversal_grammar,
-    rw list.reverse_reverse at finished_modulo_reverses,
-    exact finished_modulo_reverses,
+    rw list.reverse_reverse at finished_up_to_reverses,
+    exact finished_up_to_reverses,
   },
 end
