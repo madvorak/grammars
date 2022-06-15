@@ -314,5 +314,4 @@ lemma sink_deri_
   grammar_derives lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output) :=
 (sink_deri_aux hyp ok_input).1
 
-
 end translating_derivations

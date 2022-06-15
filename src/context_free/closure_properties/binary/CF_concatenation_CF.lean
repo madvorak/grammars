@@ -623,7 +623,8 @@ begin
           symbol.nonterminal (some (sum.inl (g₁.initial))),
           symbol.nonterminal (some (sum.inr (g₂.initial)))
         ]
-        x →
+        x
+      →
         ∃ u : list (symbol T g₁.nt), ∃ v : list (symbol T g₂.nt), and
           (CF_derives g₁ [symbol.nonterminal g₁.initial] u)
           (CF_derives g₂ [symbol.nonterminal g₂.initial] v)

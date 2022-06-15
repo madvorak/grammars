@@ -81,10 +81,10 @@ relation.refl_trans_gen.cases_head h
 
 
 lemma CF_derives_with_prefix
-    {oldWord newWord : list (symbol T g.nt)}
-    (prefi : list (symbol T g.nt))
-    (h : CF_derives g oldWord newWord) :
-  CF_derives g (prefi ++ oldWord) (prefi ++ newWord) :=
+    {w₁ w₂ : list (symbol T g.nt)}
+    (pᵣ : list (symbol T g.nt))
+    (h : CF_derives g w₁ w₂) :
+  CF_derives g (pᵣ ++ w₁) (pᵣ ++ w₂) :=
 begin
   induction h with a b irr hyp ih,
   {
@@ -100,7 +100,7 @@ begin
   {
     exact rule_in,
   },
-  use prefi ++ v,
+  use pᵣ ++ v,
   use w,
   rw h_bef,
   rw h_aft,
@@ -109,10 +109,10 @@ begin
 end
 
 lemma CF_derives_with_postfix
-    {oldWord newWord : list (symbol T g.nt)}
-    (posfi : list (symbol T g.nt))
-    (h : CF_derives g oldWord newWord) :
-  CF_derives g (oldWord ++ posfi) (newWord ++ posfi) :=
+    {w₁ w₂ : list (symbol T g.nt)}
+    (pₒ : list (symbol T g.nt))
+    (h : CF_derives g w₁ w₂) :
+  CF_derives g (w₁ ++ pₒ) (w₂ ++ pₒ) :=
 begin
   induction h with a b irr hyp ih,
   {
@@ -129,7 +129,7 @@ begin
     exact rule_in,
   },
   use v,
-  use w ++ posfi,
+  use w ++ pₒ,
   rw h_bef,
   rw h_aft,
   split;
@@ -137,10 +137,10 @@ begin
 end
 
 lemma CF_derives_with_prefix_and_postfix
-    {oldWord newWord : list (symbol T g.nt)}
-    (prefi posfi : list (symbol T g.nt))
-    (h : CF_derives g oldWord newWord) :
-  CF_derives g (prefi ++ oldWord ++ posfi) (prefi ++ newWord ++ posfi) :=
+    {w₁ w₂ : list (symbol T g.nt)}
+    (pᵣ pₒ : list (symbol T g.nt))
+    (h : CF_derives g w₁ w₂) :
+  CF_derives g (pᵣ ++ w₁ ++ pₒ) (pᵣ ++ w₂ ++ pₒ) :=
 begin
   apply CF_derives_with_postfix,
   apply CF_derives_with_prefix,
