@@ -77,15 +77,7 @@ section translating_derivations
 
 variables {T : Type}
 
-def good_letter_ {lg : lifted_grammar_ T} : symbol T lg.g.nt → Prop
-| (symbol.terminal t)     := true
-| (symbol.nonterminal nt) := ∃ n₀ : lg.g₀.nt, lg.sink_nt nt = n₀
-
-def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
-∀ letter ∈ s, good_letter_ letter
-
-
-lemma lift_tran_
+private lemma lift_tran_
     {lg : lifted_grammar_ T}
     {input output : list (symbol T lg.g₀.nt)}
     (hyp : grammar_transforms lg.g₀ input output) :
@@ -131,6 +123,14 @@ begin
   },
   exact lift_tran_ orig,
 end
+
+
+def good_letter_ {lg : lifted_grammar_ T} : symbol T lg.g.nt → Prop
+| (symbol.terminal t)     := true
+| (symbol.nonterminal nt) := ∃ n₀ : lg.g₀.nt, lg.sink_nt nt = n₀
+
+def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
+∀ letter ∈ s, good_letter_ letter
 
 private lemma sink_tran_
     {lg : lifted_grammar_ T}

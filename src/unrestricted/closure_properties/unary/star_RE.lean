@@ -23,18 +23,37 @@ grammar.mk (option g.nt) none (
     (list.map wrap_grule g.rules)
   )
 
+
+section difficult_direction
+
+private def oT_of_sTN {g : grammar T} : symbol T g.nt → option T
+| (symbol.terminal t) := some t
+| (symbol.nonterminal _) := none
+
+private lemma nameme {g₀ : grammar T} {w : list T} (h : grammar_generates (star_grammar g₀) w) :
+  w ∈ (grammar_language g₀).star :=
+begin
+  unfold grammar_generates at h,
+  unfold language.star,
+  rw set.mem_set_of_eq,
+  unfold grammar_language,
+  sorry,
+end
+
+end difficult_direction
+
+
 /-- The class of recursively-enumerable languages is closed under the Kleene star. -/
 theorem RE_of_star_RE (L : language T) :
   is_RE L  →  is_RE L.star  :=
 begin
-  intro ass,
-  cases ass with g₀ hg₀,
+  rintro ⟨ g₀, hg₀ ⟩,
   use star_grammar g₀,
   rw ← hg₀,
   ext1 w,
   split,
   {
-    sorry,
+    exact nameme,
   },
   {
     rintro ⟨ parts, joined, each_part_in_lang ⟩,
