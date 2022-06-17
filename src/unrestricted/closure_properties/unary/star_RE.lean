@@ -24,20 +24,170 @@ grammar.mk (option g.nt) none (
   )
 
 
+private lemma in_star_grammar_of_in_language_star {g₀ : grammar T} {w : list T}
+    (h : w ∈ (grammar_language g₀).star) :
+  grammar_generates (star_grammar g₀) w :=
+begin
+  rcases h with ⟨ parts, joined, each_part_in_lang ⟩,
+  unfold grammar_generates,
+  rw joined,
+  clear_except each_part_in_lang,
+  induction parts with head tail ih,
+  {
+    apply grammar_deri_of_tran,
+    use (grule.mk ([], none, []) ([])),
+    split,
+    {
+      apply list.mem_cons_self,
+    },
+    use [[], []],
+    split;
+    refl,
+  },
+  specialize ih (by finish),
+  have epoch_init :
+    grammar_derives
+      (star_grammar g₀)
+      [symbol.nonterminal (star_grammar g₀).initial]
+      ((list.map (@symbol.terminal T (option g₀.nt)) head) ++ [symbol.nonterminal none]),
+  {
+    clear ih,
+    apply grammar_deri_of_tran_deri,
+    {
+      use grule.mk ([], none, []) ([symbol.nonterminal (option.some g₀.initial), symbol.nonterminal none]),
+      split,
+      {
+        apply list.mem_cons_of_mem,
+        apply list.mem_cons_self,
+      },
+      use [[], []],
+      split;
+      refl,
+    },
+    rw list.nil_append,
+    rw list.append_nil,
+    change
+      grammar_derives
+        (star_grammar g₀)
+        ([symbol.nonterminal (some g₀.initial)] ++ [symbol.nonterminal none])
+        (list.map symbol.terminal head ++ [symbol.nonterminal none]),
+    apply grammar_derives_with_postfix,
+    have head_in_lang := each_part_in_lang head (list.mem_cons_self head _),
+    clear each_part_in_lang,
+    unfold grammar_language at head_in_lang,
+    rw set.mem_set_of_eq at head_in_lang,
+    unfold grammar_generates at head_in_lang,
+    have induc :
+      ∀ v : list (symbol T g₀.nt),
+        grammar_derives g₀ [symbol.nonterminal g₀.initial] v →
+          grammar_derives (star_grammar g₀) [symbol.nonterminal (option.some g₀.initial)] (list.map wrap_symbol v),
+    {
+      intros w deri₀,
+      induction deri₀ with u v trash orig ih,
+      {
+        apply grammar_deri_self,
+      },
+      apply grammar_deri_of_deri_tran ih,
+      rcases orig with ⟨ r, rin, x, y, bef, aft ⟩,
+      use wrap_grule r,
+      split,
+      {
+        apply list.mem_cons_of_mem,
+        apply list.mem_cons_of_mem,
+        rw list.mem_map,
+        use r,
+        exact ⟨ rin, rfl ⟩,
+      },
+      use list.map wrap_symbol x,
+      use list.map wrap_symbol y,
+
+      have wrap_bef := congr_arg (list.map wrap_symbol) bef,
+      rw list.map_append_append at wrap_bef,
+      rw list.map_append_append at wrap_bef,
+      rw list.map_singleton at wrap_bef,
+      have wrap_aft := congr_arg (list.map wrap_symbol) aft,
+      rw list.map_append_append at wrap_aft,
+      clear_except wrap_bef wrap_aft,
+      split,
+      {
+        convert wrap_bef,
+      },
+      {
+        convert wrap_aft,
+      },
+    },
+    specialize induc (list.map symbol.terminal head) head_in_lang,
+    rw list.map_map at induc,
+    convert induc,
+  },
+  apply grammar_deri_of_deri_deri epoch_init,
+  clear epoch_init,
+  rw list.map_join,
+  rw list.map_cons,
+  apply grammar_derives_with_prefix (list.map symbol.terminal head),
+  rw ← list.map_join,
+  exact ih,
+end
+
+
 section difficult_direction
 
 private def oT_of_sTN {g : grammar T} : symbol T g.nt → option T
 | (symbol.terminal t) := some t
 | (symbol.nonterminal _) := none
 
-private lemma nameme {g₀ : grammar T} {w : list T} (h : grammar_generates (star_grammar g₀) w) :
+private lemma in_language_star_of_in_star_grammar {g₀ : grammar T} {w : list T}
+    (h : grammar_generates (star_grammar g₀) w) :
   w ∈ (grammar_language g₀).star :=
 begin
   unfold grammar_generates at h,
   unfold language.star,
   rw set.mem_set_of_eq,
   unfold grammar_language,
-  sorry,
+
+  have big_induction :
+    ∀ v : list (symbol T (star_grammar g₀).nt),
+      grammar_derives (star_grammar g₀) [symbol.nonterminal (star_grammar g₀).initial] v →
+        ∃ (S : list (list (symbol T g₀.nt))), v = (list.map (list.map wrap_symbol) S).join ∧
+        ∀ (u : list (symbol T g₀.nt)), u ∈ S → grammar_derives g₀ [symbol.nonterminal g₀.initial] u,
+  {
+    intros v gdv,
+    sorry,
+  },
+  rcases big_induction _ h with ⟨ parts, joined, each_part_in_lang ⟩,
+  use list.map (list.filter_map oT_of_sTN) parts,
+  split,
+  {
+    clear_except joined,
+    have remapped := congr_arg (list.filter_map oT_of_sTN) joined,
+    convert remapped,
+    {
+      symmetry,
+      rw list.filter_map_map,
+      convert_to list.filter_map option.some w = w,
+      apply list.filter_map_some,
+    },
+    {
+      rw list.filter_map_join,
+      rw list.map_map,
+      congr,
+      sorry,
+    },
+  },
+  {
+    clear_except each_part_in_lang,
+    intros w hw,
+    rw list.mem_map at hw,
+    rcases hw with ⟨ Z, Zin, lfm ⟩,
+    rw ← lfm,
+    rw set.mem_set_of_eq,
+    unfold grammar_generates,
+    have this_part_in_lang := each_part_in_lang _ Zin,
+    convert this_part_in_lang,
+    -- I think it cannot be proved (wrong ordering of conversions).
+    -- Maybe we can use the "forgotten" assumption `joined` to establish that we deal with terminals only.
+    sorry,
+  },
 end
 
 end difficult_direction
@@ -50,112 +200,13 @@ begin
   rintro ⟨ g₀, hg₀ ⟩,
   use star_grammar g₀,
   rw ← hg₀,
+  clear hg₀,
   ext1 w,
   split,
   {
-    exact nameme,
+    exact in_language_star_of_in_star_grammar,
   },
   {
-    rintro ⟨ parts, joined, each_part_in_lang ⟩,
-    unfold grammar_language,
-    rw set.mem_set_of_eq,
-    unfold grammar_generates,
-    rw joined,
-    clear_except each_part_in_lang,
-    induction parts with head tail ih,
-    {
-      apply grammar_deri_of_tran,
-      use (grule.mk ([], none, []) ([])),
-      split,
-      {
-        apply list.mem_cons_self,
-      },
-      use [[], []],
-      split;
-      refl,
-    },
-    specialize ih (by finish),
-    have epoch_init :
-      grammar_derives
-        (star_grammar g₀)
-        [symbol.nonterminal (star_grammar g₀).initial]
-        ((list.map (@symbol.terminal T (option g₀.nt)) head) ++ [symbol.nonterminal none]),
-    {
-      clear ih,
-      apply grammar_deri_of_tran_deri,
-      {
-        use grule.mk ([], none, []) ([symbol.nonterminal (option.some g₀.initial), symbol.nonterminal none]),
-        split,
-        {
-          apply list.mem_cons_of_mem,
-          apply list.mem_cons_self,
-        },
-        use [[], []],
-        split;
-        refl,
-      },
-      rw list.nil_append,
-      rw list.append_nil,
-      change
-        grammar_derives
-          (star_grammar g₀)
-          ([symbol.nonterminal (some g₀.initial)] ++ [symbol.nonterminal none])
-          (list.map symbol.terminal head ++ [symbol.nonterminal none]),
-      apply grammar_derives_with_postfix,
-      have head_in_lang := each_part_in_lang head (list.mem_cons_self head _),
-      clear each_part_in_lang,
-      unfold grammar_language at head_in_lang,
-      rw set.mem_set_of_eq at head_in_lang,
-      unfold grammar_generates at head_in_lang,
-      have induc :
-        ∀ v : list (symbol T g₀.nt),
-          grammar_derives g₀ [symbol.nonterminal g₀.initial] v →
-            grammar_derives (star_grammar g₀) [symbol.nonterminal (option.some g₀.initial)] (list.map wrap_symbol v),
-      {
-        intros w deri₀,
-        induction deri₀ with u v trash orig ih,
-        {
-          apply grammar_deri_self,
-        },
-        apply grammar_deri_of_deri_tran ih,
-        rcases orig with ⟨ r, rin, x, y, bef, aft ⟩,
-        use wrap_grule r,
-        split,
-        {
-          apply list.mem_cons_of_mem,
-          apply list.mem_cons_of_mem,
-          rw list.mem_map,
-          use r,
-          exact ⟨ rin, rfl ⟩,
-        },
-        use list.map wrap_symbol x,
-        use list.map wrap_symbol y,
-
-        have wrap_bef := congr_arg (list.map wrap_symbol) bef,
-        rw list.map_append_append at wrap_bef,
-        rw list.map_append_append at wrap_bef,
-        rw list.map_singleton at wrap_bef,
-        have wrap_aft := congr_arg (list.map wrap_symbol) aft,
-        rw list.map_append_append at wrap_aft,
-        clear_except wrap_bef wrap_aft,
-        split,
-        {
-          convert wrap_bef,
-        },
-        {
-          convert wrap_aft,
-        },
-      },
-      specialize induc (list.map symbol.terminal head) head_in_lang,
-      rw list.map_map at induc,
-      convert induc,
-    },
-    apply grammar_deri_of_deri_deri epoch_init,
-    clear epoch_init,
-    rw list.map_join,
-    rw list.map_cons,
-    apply grammar_derives_with_prefix (list.map symbol.terminal head),
-    rw ← list.map_join,
-    exact ih,
+    exact in_star_grammar_of_in_language_star,
   },
 end
