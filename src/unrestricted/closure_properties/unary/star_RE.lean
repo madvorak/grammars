@@ -5,13 +5,13 @@ variable {T : Type}
 
 private def wrap_symbol {N : Type} : symbol T N → symbol T (option N)
 | (symbol.terminal t)    := symbol.terminal t
-| (symbol.nonterminal n) := symbol.nonterminal (option.some n)
+| (symbol.nonterminal n) := symbol.nonterminal (some n)
 
 private def wrap_grule {N : Type} (r : grule T N) : grule T (option N) :=
 grule.mk
   (
     list.map wrap_symbol r.input_string.first,
-    option.some r.input_string.secon,
+    some r.input_string.secon,
     list.map wrap_symbol r.input_string.third
   )
   (list.map wrap_symbol r.output_string)
@@ -19,7 +19,7 @@ grule.mk
 private def star_grammar (g : grammar T) : grammar T :=
 grammar.mk (option g.nt) none (
     (grule.mk ([], none, []) ([])) ::
-    (grule.mk ([], none, []) ([symbol.nonterminal (option.some g.initial), symbol.nonterminal none])) ::
+    (grule.mk ([], none, []) ([symbol.nonterminal (some g.initial), symbol.nonterminal none])) ::
     (list.map wrap_grule g.rules)
   )
 
@@ -54,7 +54,7 @@ begin
     clear ih,
     apply grammar_deri_of_tran_deri,
     {
-      use grule.mk ([], none, []) ([symbol.nonterminal (option.some g₀.initial), symbol.nonterminal none]),
+      use grule.mk ([], none, []) ([symbol.nonterminal (some g₀.initial), symbol.nonterminal none]),
       split,
       {
         apply list.mem_cons_of_mem,
@@ -136,6 +136,12 @@ private def oT_of_sTN {g : grammar T} : symbol T g.nt → option T
 | (symbol.terminal t) := some t
 | (symbol.nonterminal _) := none
 
+private def unwrap_symbol {N : Type} : symbol T (option N) → option (symbol T N)
+-- maybe useless
+| (symbol.terminal t)           := some (symbol.terminal t)
+| (symbol.nonterminal (some n)) := some (symbol.nonterminal n)
+| (symbol.nonterminal none)     := none
+
 private lemma in_language_star_of_in_star_grammar {g₀ : grammar T} {w : list T}
     (h : grammar_generates (star_grammar g₀) w) :
   w ∈ (grammar_language g₀).star :=
@@ -154,7 +160,7 @@ begin
     intros v gdv,
     sorry,
   },
-  rcases big_induction _ h with ⟨ parts, joined, each_part_in_lang ⟩,
+  rcases big_induction (list.map symbol.terminal w) h with ⟨ parts, joined, each_part_in_lang ⟩,
   use list.map (list.filter_map oT_of_sTN) parts,
   split,
   {
@@ -207,28 +213,82 @@ begin
     unfold grammar_generates,
     have this_part_in_lang := each_part_in_lang Z Zin,
     convert this_part_in_lang,
+
     have z_as_terminal : ∀ z ∈ Z, ∃ t : T, symbol.terminal t = z,
     {
-      -- TODO clean up after finishing
       intros z zin,
       clear_except joined zin Zin,
-      rcases list.nth_le_of_mem zin with ⟨ n₁, hn₁, z_as_n₁th ⟩,
-      rcases list.nth_le_of_mem Zin with ⟨ n₂, hn₂, Z_as_n₂th ⟩,
-      have pomoc : ∃ l : list T, list.map symbol.terminal l = Z,
+      have Z_as_list_of_terminals : ∃ l : list T, list.map symbol.terminal l = Z,
       {
-        sorry,
+        have parts_as_list_of_list_of_terminals : ∃ s : list (list T), list.map (list.map symbol.terminal) s = parts,
+        {
+          -- maybe do from scratch
+          rw ← list.map_join at joined,
+          induction parts,
+          {
+            use list.nil,
+            refl,
+          },
+          specialize parts_ih (by {
+            cases Zin,
+            {
+              exfalso,
+              rw Zin at *,
+              sorry,
+            },
+            {
+              exact Zin,
+            },
+          }),
+          cases parts_ih sorry with s ih,
+          use list.take parts_hd.length w :: s,
+          unfold list.map,
+          congr, swap,
+          {
+            exact ih,
+          },
+          clear_except joined,
+          have taken := congr_arg (list.take parts_hd.length) joined,
+          rw ← list.map_take at taken,
+          rw ← list.map_take at taken,
+          unfold list.join at taken,
+          rw list.take_left at taken,
+          ext1,
+          have nth := congr_arg (λ l, list.nth l n) taken,
+          simp only [ list.nth_map ] at nth,
+          clear_except nth,
+          cases parts_hd.nth n,
+          {
+            dsimp at nth,
+            sorry,
+          },
+          {
+            simp at nth,
+            rcases nth with ⟨ t, nth_some, wrap_t ⟩,
+            rw list.nth_map,
+            rw nth_some,
+            clear_except wrap_t,
+            change some (symbol.terminal t) = some val,
+            congr,
+            have unwrapped := congr_arg unwrap_symbol wrap_t,
+            unfold unwrap_symbol at unwrapped,
+            sorry,
+          },
+          -- end [maybe do from scratch]
+        },
+        cases parts_as_list_of_list_of_terminals with s parts_from_s,
+        rw ← parts_from_s at Zin,
+        rw list.mem_map at Zin,
+        rcases Zin with ⟨ l, -, foo ⟩,
+        use l,
+        exact foo,
       },
-      cases pomoc with l pomocne,
-      use l.nth_le n₁ (by {
-        have pom_len := congr_arg list.length pomocne,
-        rw list.length_map at pom_len,
-        rw pom_len,
-        exact hn₁,
-      }),
-      rw ← z_as_n₁th,
-      have hurdurr := congr_arg (λ lis, list.nth_le lis n₁ sorry) pomocne,
-      simp at hurdurr,
-      exact hurdurr,
+      cases Z_as_list_of_terminals with l Z_from_l,
+      rw ← Z_from_l at zin,
+      rw list.mem_map at zin,
+      rcases zin with ⟨ t, -, bar ⟩,
+      use t,
+      exact bar,
     },
     rw ← w_as_lfmZ,
     clear_except z_as_terminal,

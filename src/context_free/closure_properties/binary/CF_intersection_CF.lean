@@ -375,13 +375,12 @@ begin
         },
         repeat { rw list.append_assoc at concatenating },
         rcases list.nth_le_of_mem relaxed_a with ⟨ nₐ, hnₐ, h_nthₐ ⟩,
-        have h_borrow : ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
+        obtain ⟨ h_nth_a_pr, h_nth_a ⟩ : ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
         {
           rw nat.add_sub_cancel nₐ u.length,
           use hnₐ,
           exact h_nthₐ,
         },
-        cases h_borrow with h_nth_a_pr h_nth_a,
         have lt_len : (nₐ + u.length) < (u ++ (v ++ x ++ y ++ z)).length,
         {
           rw list.length_append,
