@@ -136,11 +136,27 @@ private def oT_of_sTN {g : grammar T} : symbol T g.nt → option T
 | (symbol.terminal t) := some t
 | (symbol.nonterminal _) := none
 
-private def unwrap_symbol {N : Type} : symbol T (option N) → option (symbol T N)
--- maybe useless
-| (symbol.terminal t)           := some (symbol.terminal t)
-| (symbol.nonterminal (some n)) := some (symbol.nonterminal n)
-| (symbol.nonterminal none)     := none
+private lemma big_induction {g₀ : grammar T} :
+  ∀ v : list (symbol T (star_grammar g₀).nt),
+    grammar_derives (star_grammar g₀) [symbol.nonterminal (star_grammar g₀).initial] v →
+      ∃ (S : list (list (symbol T g₀.nt))), v = (list.map (list.map wrap_symbol) S).join ∧
+      ∀ (u : list (symbol T g₀.nt)), u ∈ S → grammar_derives g₀ [symbol.nonterminal g₀.initial] u :=
+begin
+  intros v hgv,
+  induction v with d w ih,
+  {
+    use list.nil,
+    split,
+    {
+      refl,
+    },
+    intros u u_in_empty,
+    exfalso,
+    exact list.not_mem_nil u u_in_empty,
+  },
+  -- the `ih` does not seem right
+  sorry,
+end
 
 private lemma in_language_star_of_in_star_grammar {g₀ : grammar T} {w : list T}
     (h : grammar_generates (star_grammar g₀) w) :
@@ -151,15 +167,6 @@ begin
   rw set.mem_set_of_eq,
   unfold grammar_language,
 
-  have big_induction :
-    ∀ v : list (symbol T (star_grammar g₀).nt),
-      grammar_derives (star_grammar g₀) [symbol.nonterminal (star_grammar g₀).initial] v →
-        ∃ (S : list (list (symbol T g₀.nt))), v = (list.map (list.map wrap_symbol) S).join ∧
-        ∀ (u : list (symbol T g₀.nt)), u ∈ S → grammar_derives g₀ [symbol.nonterminal g₀.initial] u,
-  {
-    intros v gdv,
-    sorry,
-  },
   rcases big_induction (list.map symbol.terminal w) h with ⟨ parts, joined, each_part_in_lang ⟩,
   use list.map (list.filter_map oT_of_sTN) parts,
   split,
@@ -222,59 +229,82 @@ begin
       {
         have parts_as_list_of_list_of_terminals : ∃ s : list (list T), list.map (list.map symbol.terminal) s = parts,
         {
-          -- maybe do from scratch
-          rw ← list.map_join at joined,
+          clear_except joined,
+          have only_terminals : ∀ part ∈ parts, ∀ x ∈ part, ∃ t : T, x = symbol.terminal t,
+          {
+            intros p pinp,
+            by_contradiction contra,
+            push_neg at contra,
+            rcases contra with ⟨s, sinp, counterexampl⟩,
+            have impossible := congr_arg (λ l, wrap_symbol s ∈ l) joined,
+            change
+                (wrap_symbol s ∈ (list.map symbol.terminal w)) =
+                (wrap_symbol s ∈ (list.join (list.map (list.map wrap_symbol) parts)))
+              at impossible,
+            have rightrue : (wrap_symbol s ∈ (list.join (list.map (list.map wrap_symbol) parts))) = true,
+            {
+              simp only [eq_iff_iff, iff_true],
+              rw list.mem_join,
+              use list.map wrap_symbol p,
+              split,
+              {
+                clear_except pinp,
+                exact list.mem_map_of_mem (list.map wrap_symbol) pinp,
+              },
+              {
+                clear_except sinp,
+                exact list.mem_map_of_mem wrap_symbol sinp,
+              },
+            },
+            rw rightrue at impossible,
+            rw list.mem_map at impossible,
+            simp only [eq_iff_iff, iff_true] at impossible,
+            rcases impossible with ⟨t, -, problema⟩,
+            specialize counterexampl t,
+            cases s,
+            {
+              unfold wrap_symbol at problema,
+              apply counterexampl,
+              rw symbol.terminal.inj_eq at problema ⊢,
+              exact problema.symm,
+            },
+            rw ← joined at rightrue,
+            simp only [eq_iff_iff, iff_true] at rightrue,
+            rw list.mem_map at rightrue,
+            rcases rightrue with ⟨t, -, contr⟩,
+            unfold wrap_symbol at contr,
+            clear_except contr,
+            tauto,
+          },
+          use list.map (list.filter_map oT_of_sTN) parts,
+          rw list.map_map,
+          clear_except only_terminals,
           induction parts,
           {
-            use list.nil,
             refl,
           },
-          specialize parts_ih (by {
-            cases Zin,
-            {
-              exfalso,
-              rw Zin at *,
-              sorry,
-            },
-            {
-              exact Zin,
-            },
+          rw list.map,
+          rw parts_ih (by {
+            intros p pinpt,
+            exact only_terminals p (list.mem_cons_of_mem parts_hd pinpt),
           }),
-          cases parts_ih sorry with s ih,
-          use list.take parts_hd.length w :: s,
-          unfold list.map,
-          congr, swap,
+          congr,
+          specialize only_terminals parts_hd (list.mem_cons_self parts_hd _),
+          induction parts_hd,
           {
-            exact ih,
+            refl,
           },
-          clear_except joined,
-          have taken := congr_arg (list.take parts_hd.length) joined,
-          rw ← list.map_take at taken,
-          rw ← list.map_take at taken,
-          unfold list.join at taken,
-          rw list.take_left at taken,
-          ext1,
-          have nth := congr_arg (λ l, list.nth l n) taken,
-          simp only [ list.nth_map ] at nth,
-          clear_except nth,
-          cases parts_hd.nth n,
-          {
-            dsimp at nth,
-            sorry,
-          },
-          {
-            simp at nth,
-            rcases nth with ⟨ t, nth_some, wrap_t ⟩,
-            rw list.nth_map,
-            rw nth_some,
-            clear_except wrap_t,
-            change some (symbol.terminal t) = some val,
-            congr,
-            have unwrapped := congr_arg unwrap_symbol wrap_t,
-            unfold unwrap_symbol at unwrapped,
-            sorry,
-          },
-          -- end [maybe do from scratch]
+          specialize parts_hd_ih (by {
+            intros x xinpht,
+            exact only_terminals x (list.mem_cons_of_mem parts_hd_hd xinpht),
+          }),
+          cases only_terminals parts_hd_hd (list.mem_cons_self parts_hd_hd _) with t ht,
+          rw ht,
+          convert_to
+            list.map symbol.terminal (t :: list.filter_map oT_of_sTN parts_hd_tl) =
+            symbol.terminal t :: parts_hd_tl,
+          simp,
+          exact parts_hd_ih,
         },
         cases parts_as_list_of_list_of_terminals with s parts_from_s,
         rw ← parts_from_s at Zin,
@@ -322,7 +352,6 @@ begin
   rintro ⟨ g₀, hg₀ ⟩,
   use star_grammar g₀,
   rw ← hg₀,
-  clear hg₀,
   ext1 w,
   split,
   {
