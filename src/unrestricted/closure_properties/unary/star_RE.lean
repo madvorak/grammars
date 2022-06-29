@@ -139,22 +139,27 @@ private def oT_of_sTN {g : grammar T} : symbol T g.nt → option T
 private lemma big_induction {g₀ : grammar T} :
   ∀ v : list (symbol T (star_grammar g₀).nt),
     grammar_derives (star_grammar g₀) [symbol.nonterminal (star_grammar g₀).initial] v →
-      ∃ (S : list (list (symbol T g₀.nt))), v = (list.map (list.map wrap_symbol) S).join ∧
-      ∀ (u : list (symbol T g₀.nt)), u ∈ S → grammar_derives g₀ [symbol.nonterminal g₀.initial] u :=
+      ∃ (S : list (list (symbol T g₀.nt))), and (or
+          (v = (list.map (list.map wrap_symbol) S).join)
+          (v = (list.map (list.map wrap_symbol) S).join ++ [symbol.nonterminal none]))
+        (∀ (u : list (symbol T g₀.nt)), u ∈ S → grammar_derives g₀ [symbol.nonterminal g₀.initial] u) :=
 begin
-  intros v hgv,
-  induction v with d w ih,
+  intros v hgdv,
+  induction hgdv with x y trash orig ih,
   {
     use list.nil,
     split,
     {
+      right,
       refl,
     },
-    intros u u_in_empty,
-    exfalso,
-    exact list.not_mem_nil u u_in_empty,
+    {
+      intros u u_in_nil,
+      exfalso,
+      exact list.not_mem_nil u u_in_nil,
+    },
   },
-  -- the `ih` does not seem right
+  rcases ih with ⟨S, compoS, validity⟩,
   sorry,
 end
 
@@ -168,6 +173,20 @@ begin
   unfold grammar_language,
 
   rcases big_induction (list.map symbol.terminal w) h with ⟨ parts, joined, each_part_in_lang ⟩,
+  cases joined, swap,
+  {
+    exfalso,
+    have last_symb := congr_arg (λ l : list (symbol T (star_grammar g₀).nt), l.reverse.nth 0) joined,
+    clear_except last_symb,
+    simp only [list.nth, list.reverse_append, list.reverse_singleton, list.singleton_append] at last_symb,
+    have none_in_that := list.nth_mem last_symb,
+    clear last_symb,
+    rw list.mem_reverse at none_in_that,
+    rw list.mem_map at none_in_that,
+    rcases none_in_that with ⟨a, -, contradic⟩,
+    tauto,
+  },
+
   use list.map (list.filter_map oT_of_sTN) parts,
   split,
   {
