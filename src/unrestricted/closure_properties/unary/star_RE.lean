@@ -160,6 +160,120 @@ begin
     },
   },
   rcases ih with ⟨S, compoS, validity⟩,
+  rcases orig with ⟨r, rin, u, w, bef, aft⟩,
+  --cases list.eq_or_mem_of_mem_cons rin,
+  cases rin,
+  {
+    -- could match only at the last position
+    rw rin at *,
+    clear rin,
+    dsimp at *,
+    cases compoS,
+    {
+      exfalso,
+      rw bef at compoS,
+      clear_except compoS,
+      rw ← list.map_join at compoS,
+      have none_in := congr_arg (λ l, symbol.nonterminal none ∈ l) compoS,
+      simp at none_in,
+      rcases none_in with ⟨a, -, b, -, imposs⟩,
+      clear_except imposs,
+      cases b,
+      {
+        tauto,
+      },
+      {
+        change symbol.nonterminal (some b) = symbol.nonterminal none at imposs,
+        rw symbol.nonterminal.inj_eq at imposs,
+        tauto,
+      },
+    },
+    have w_has_nothing : w = [],
+    {
+      rw bef at compoS,
+      clear_except compoS,
+      rw list.append_nil at compoS,
+      rw list.append_nil at compoS,
+      rw ← list.length_eq_zero,
+      by_contradiction contra,
+      change w.length ≠ 0 at contra,
+      rw ← pos_iff_ne_zero at contra,
+      have ul_lt : u.length < (list.map wrap_symbol S.join).length,
+      {
+        have lens := congr_arg list.length compoS,
+        clear compoS,
+        repeat { rw list.length_append at lens },
+        repeat { rw list.length_singleton at lens },
+        rw list.map_join,
+        linarith,
+      },
+      have ulth := congr_fun (congr_arg list.nth compoS) u.length,
+      clear compoS,
+
+      have trivi_ul : u.length < (u ++ [symbol.nonterminal none]).length,
+      {
+        rw list.length_append,
+        rw list.length_singleton,
+        apply lt_add_one,
+      },
+      rw list.nth_append trivi_ul at ulth,
+      rw list.nth_concat_length at ulth,
+
+      rw ← list.map_join at ulth,
+      rw list.nth_append ul_lt at ulth,
+      clear_except ulth,
+      rw list.nth_map at ulth,
+      cases S.join.nth u.length,
+      {
+        tauto,
+      },
+      {
+        dsimp at ulth,
+        rw option.some.inj_eq at ulth,
+        cases val,
+        {
+          unfold wrap_symbol at ulth,
+          tauto,
+        },
+        {
+          unfold wrap_symbol at ulth,
+          rw symbol.nonterminal.inj_eq at ulth,
+          tauto,
+        },
+      },
+    },
+    have u_has_everything : u = (list.map (list.map wrap_symbol) S).join,
+    {
+      rw bef at compoS,
+      rw w_has_nothing at compoS,
+      repeat { rw list.append_nil at compoS },
+      rw list.append_left_inj at compoS,
+      exact compoS,
+    },
+    rw [ u_has_everything, w_has_nothing ] at *,
+    clear u_has_everything w_has_nothing,
+    simp only [list.append_nil] at *,
+    use S,
+    split,
+    {
+      -- one-way change from ending with `none` to ending with `some n` or with a terminal
+      left,
+      exact aft,
+    },
+    {
+      exact validity,
+    },
+  },
+  cases rin,
+  {
+    -- could match only at the last position
+    sorry,
+    -- we have created one more part
+  },
+  change r ∈ (list.map wrap_grule g₀.rules) at rin,
+  rw list.mem_map at rin,
+  rcases rin with ⟨r₀, rin₀, r_from_r₀⟩,
+  -- could match anywhere except for possible `none` for spawning new parts at the end
   sorry,
 end
 
