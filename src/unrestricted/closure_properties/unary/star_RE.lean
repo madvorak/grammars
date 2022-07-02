@@ -16,6 +16,8 @@ grule.mk
   )
   (list.map wrap_symbol r.output_string)
 
+-- this cannot work; it generates a superset of L*
+-- TODO redo completely
 private def star_grammar (g : grammar T) : grammar T :=
 grammar.mk (option g.nt) none (
     (grule.mk ([], none, []) ([])) ::

@@ -5,6 +5,7 @@ variables {α β γ : Type*}
 
 namespace list
 
+-- TODO remove
 lemma filter_map_join (f : α → option β) (l : list (list α)) :
   filter_map f (join l) = join (map (filter_map f) l) :=
 begin
