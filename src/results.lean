@@ -5,6 +5,7 @@ import context_free.closure_properties.binary.CF_intersection_CF
 import context_free.closure_properties.unary.complement_CF
 
 import unrestricted.closure_properties.unary.reverse_RE
+import unrestricted.closure_properties.binary.RE_concatenation_RE
 import unrestricted.closure_properties.unary.star_RE
 import unrestricted.closure_properties.binary.RE_union_RE
 
@@ -33,6 +34,9 @@ section unrestricted
 
 #check        RE_of_reverse_RE
 #print axioms RE_of_reverse_RE
+
+#check        RE_of_RE_c_RE
+#print axioms RE_of_RE_c_RE
 
 #check        RE_of_star_RE
 #print axioms RE_of_star_RE
