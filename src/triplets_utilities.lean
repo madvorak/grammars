@@ -5,19 +5,6 @@ variables {α β γ : Type*}
 
 namespace list
 
--- TODO remove
-lemma filter_map_join (f : α → option β) (l : list (list α)) :
-  filter_map f (join l) = join (map (filter_map f) l) :=
-begin
-  induction l with d t ih,
-  {
-    refl,
-  },
-  {
-    rw [ map, join, join, filter_map_append, ih ],
-  },
-end
-
 variables {x y z : list α}
 
 lemma map_append_append {f : α → β} :
