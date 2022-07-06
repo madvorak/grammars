@@ -466,7 +466,7 @@ begin
   finish,
 end
 
-private lemma in_language_combi
+private lemma in_concatenated_of_in_combined
     {g₁ g₂ : CF_grammar T}
     {w : list T}
     (hyp : w ∈ CF_language (combined_grammar g₁ g₂)) :
@@ -934,8 +934,8 @@ begin
             Simplified schema of this conversion (applies to some other conversions, too):
             we have `g ∘ f = id` but `f ∘ g` does not annihilate (in general)
             we need `(f ∘ g)(c) = c` for a specific `c`
-            which we can express as `c = f(x)` and then we calculate
-            `f(g(c)) = f(g(f(x))) = f(x) = c` hooray!
+            which we can express as `c = f(x)` and then
+            we calculate `f(g(c)) = f(g(f(x))) = f(x) = c` hooray!
           -/
           have taken_c_from_u := congr_arg (list.take c.length) part_for_u,
           rw list.take_take at taken_c_from_u,
@@ -1485,7 +1485,7 @@ begin
 end
 
 
-private lemma in_language_conca
+private lemma in_combined_of_in_concatenated
     {g₁ g₂ : CF_grammar T}
     {w : list T}
     (hyp : w ∈ CF_language g₁ * CF_language g₂) :
@@ -1598,13 +1598,13 @@ begin
     intros w hyp,
     rw ← h₁,
     rw ← h₂,
-    exact in_language_combi hyp,
+    exact in_concatenated_of_in_combined hyp,
   },
   {
     -- prove `L₁ * L₂ ⊆ ` here
     intros w hyp,
     rw ← h₁ at hyp,
     rw ← h₂ at hyp,
-    exact in_language_conca hyp,
+    exact in_combined_of_in_concatenated hyp,
   },
 end

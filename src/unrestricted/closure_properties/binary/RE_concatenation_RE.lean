@@ -33,23 +33,29 @@ grule.mk (
     list.map (wrap_symbol₂ N₁) r.input_string.third)
   (list.map (wrap_symbol₂ N₁) r.output_string)
 
-private def all_used_terminals (g : grammar T) : list T :=
-[] -- TODO (ditto in `star_RE.lean`)
+private def as_terminal {N : Type} : symbol T N → option T
+| (symbol.terminal t)    := some t
+| (symbol.nonterminal _) := none
 
+private def all_used_terminals [decidable_eq T] (g : grammar T) : list T :=
+list.dedup (list.filter_map as_terminal (
+  list.join (list.map grule.output_string g.rules)))
+
+-- TODO do we want to require `decidable_eq T` from the beginning (definition of `grammar` and so on) ??
 private def rules_for_terminals₁ (N₂ : Type) (g : grammar T) : list (grule T (nnn g.nt N₂)) :=
-list.map (λ t, grule.mk ([], sum.inr (sum.inl t), []) [symbol.terminal t]) (all_used_terminals g)
+list.map (λ t, grule.mk ([], sum.inr (sum.inl t), []) [symbol.terminal t]) (@all_used_terminals T sorry g)
 
 private def rules_for_terminals₂ (N₁ : Type) (g : grammar T) : list (grule T (nnn N₁ g.nt)) :=
-list.map (λ t, grule.mk ([], sum.inr (sum.inr t), []) [symbol.terminal t]) (all_used_terminals g)
+list.map (λ t, grule.mk ([], sum.inr (sum.inr t), []) [symbol.terminal t]) (@all_used_terminals T sorry g)
 
 private def concat_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk
   (nnn g₁.nt g₂.nt)
   (sum.inl none)
-  (grule.mk ([], sum.inl none, []) [
+  ((grule.mk ([], sum.inl none, []) [
     symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
-    symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))
-  ] :: (
+    symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
+  ) :: (
     (list.map (wrap_grule₁ g₂.nt) g₁.rules) ++ (list.map (wrap_grule₂ g₁.nt) g₂.rules)
   ))
 

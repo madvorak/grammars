@@ -231,15 +231,15 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
 })
 
 
-private lemma in_L₁_or_L₂_of_in_union {w : list T} (h : w ∈ grammar_language (union_grammar g₁ g₂)) :
+private lemma in_L₁_or_L₂_of_in_union {w : list T} (ass : w ∈ grammar_language (union_grammar g₁ g₂)) :
   w ∈ grammar_language g₁  ∨  w ∈ grammar_language g₂  :=
 begin
-  unfold grammar_language at h ⊢,
-  rw set.mem_set_of_eq at ⊢ h,
+  unfold grammar_language at ass ⊢,
+  rw set.mem_set_of_eq at ⊢ ass,
   rw set.mem_set_of_eq at ⊢,
-  unfold grammar_generates at h ⊢,
-  have hyp := grammar_tran_or_id_of_deri h,
-  clear h,
+  unfold grammar_generates at ass ⊢,
+  have hyp := grammar_tran_or_id_of_deri ass,
+  clear ass,
   cases hyp,
   {
     exfalso,
@@ -408,12 +408,12 @@ begin
 end
 
 
-private lemma in_union_of_in_L₁ {w : list T} (h : w ∈ grammar_language g₁) :
+private lemma in_union_of_in_L₁ {w : list T} (ass : w ∈ grammar_language g₁) :
   w ∈ grammar_language (union_grammar g₁ g₂) :=
 begin
-  unfold grammar_language at h ⊢,
-  rw set.mem_set_of_eq at h ⊢,
-  unfold grammar_generates at h ⊢,
+  unfold grammar_language at ass ⊢,
+  rw set.mem_set_of_eq at ass ⊢,
+  unfold grammar_generates at ass ⊢,
   apply grammar_deri_of_tran_deri,
   {
     use ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩,
@@ -426,7 +426,7 @@ begin
     refl,
   },
   simp,
-  have lifted := lift_deri_ lg₁ h,
+  have lifted := lift_deri_ lg₁ ass,
   swap, {
     exact g₂,
   },
@@ -441,12 +441,12 @@ begin
   exact lifted,
 end
 
-private lemma in_union_of_in_L₂ {w : list T} (h : w ∈ grammar_language g₂) :
+private lemma in_union_of_in_L₂ {w : list T} (ass : w ∈ grammar_language g₂) :
   w ∈ grammar_language (union_grammar g₁ g₂) :=
 begin
-  unfold grammar_language at h ⊢,
-  rw set.mem_set_of_eq at h ⊢,
-  unfold grammar_generates at h ⊢,
+  unfold grammar_language at ass ⊢,
+  rw set.mem_set_of_eq at ass ⊢,
+  unfold grammar_generates at ass ⊢,
   apply grammar_deri_of_tran_deri,
   {
     use ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩,
@@ -460,7 +460,7 @@ begin
     refl,
   },
   simp,
-  have lifted := lift_deri_ lg₂ h,
+  have lifted := lift_deri_ lg₂ ass,
   swap, {
     exact g₁,
   },

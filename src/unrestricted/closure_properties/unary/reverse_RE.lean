@@ -154,13 +154,12 @@ begin
     intros w hwL,
     change w.reverse ∈ grammar_language g at hwL,
 
-    have pre_reversal : ∃ g₀, g = reversal_grammar g₀,
+    obtain ⟨g₀, pre_reversal⟩ : ∃ g₀, g = reversal_grammar g₀,
     {
       use reversal_grammar g,
       rw dual_of_reversal_grammar,
     },
-    cases pre_reversal with g₀ pre_rev,
-    rw pre_rev at hwL ⊢,
+    rw pre_reversal at hwL ⊢,
     have finished_up_to_reverses := reversed_word_in_original_language hwL,
     rw dual_of_reversal_grammar,
     rw list.reverse_reverse at finished_up_to_reverses,

@@ -1,1 +1,1 @@
-lean --make src test
+lean --make src test && echo "Result: SUCCESS" || echo "Result: FAILED"

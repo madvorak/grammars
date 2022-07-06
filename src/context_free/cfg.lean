@@ -74,19 +74,19 @@ lemma CF_deri_of_tran_deri
   CF_derives g u w :=
 CF_deri_of_deri_deri (CF_deri_of_tran huv) hvw
 
-lemma CF_tran_or_id_of_deri {u w : list (symbol T g.nt)} (h : CF_derives g u w) :
+lemma CF_tran_or_id_of_deri {u w : list (symbol T g.nt)} (ass : CF_derives g u w) :
   (u = w) ∨
   (∃ v : list (symbol T g.nt), (CF_transforms g u v) ∧ (CF_derives g v w)) :=
-relation.refl_trans_gen.cases_head h
+relation.refl_trans_gen.cases_head ass
 
 
 lemma CF_derives_with_prefix
     {w₁ w₂ : list (symbol T g.nt)}
     (pᵣ : list (symbol T g.nt))
-    (h : CF_derives g w₁ w₂) :
+    (ass : CF_derives g w₁ w₂) :
   CF_derives g (pᵣ ++ w₁) (pᵣ ++ w₂) :=
 begin
-  induction h with a b irr hyp ih,
+  induction ass with a b irr hyp ih,
   {
     apply CF_deri_self,
   },
@@ -111,10 +111,10 @@ end
 lemma CF_derives_with_postfix
     {w₁ w₂ : list (symbol T g.nt)}
     (pₒ : list (symbol T g.nt))
-    (h : CF_derives g w₁ w₂) :
+    (ass : CF_derives g w₁ w₂) :
   CF_derives g (w₁ ++ pₒ) (w₂ ++ pₒ) :=
 begin
-  induction h with a b irr hyp ih,
+  induction ass with a b irr hyp ih,
   {
     apply CF_deri_self,
   },
@@ -139,12 +139,12 @@ end
 lemma CF_derives_with_prefix_and_postfix
     {w₁ w₂ : list (symbol T g.nt)}
     (pᵣ pₒ : list (symbol T g.nt))
-    (h : CF_derives g w₁ w₂) :
+    (ass : CF_derives g w₁ w₂) :
   CF_derives g (pᵣ ++ w₁ ++ pₒ) (pᵣ ++ w₂ ++ pₒ) :=
 begin
   apply CF_derives_with_postfix,
   apply CF_derives_with_prefix,
-  exact h,
+  exact ass,
 end
 
 end cfg_utilities

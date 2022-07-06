@@ -69,9 +69,9 @@ lemma CS_deri_of_tran_deri {u v w : list (symbol T g.nt)}
 CS_deri_of_deri_deri (CS_deri_of_tran huv) hvw
 
 lemma CS_tran_or_id_of_deri {u w : list (symbol T g.nt)}
-  (h : CS_derives g u w) :  or  (u = w)
+  (ass : CS_derives g u w) :  or  (u = w)
     (∃ v : list (symbol T g.nt), (CS_transforms g u v) ∧ (CS_derives g v w)) :=
-relation.refl_trans_gen.cases_head h
+relation.refl_trans_gen.cases_head ass
 
 end csg_utilities
 

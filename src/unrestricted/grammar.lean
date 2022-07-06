@@ -81,27 +81,76 @@ lemma grammar_deri_of_tran_deri {u v w : list (symbol T g.nt)}
 grammar_deri_of_deri_deri (grammar_deri_of_tran huv) hvw
 
 lemma grammar_tran_or_id_of_deri {u w : list (symbol T g.nt)}
-  (h : grammar_derives g u w) :  or  (u = w)
+  (ass : grammar_derives g u w) :  or  (u = w)
     (∃ v : list (symbol T g.nt), (grammar_transforms g u v) ∧ (grammar_derives g v w)) :=
-relation.refl_trans_gen.cases_head h
+relation.refl_trans_gen.cases_head ass
 
 
 lemma grammar_derives_with_prefix
     {w₁ w₂ : list (symbol T g.nt)}
     (pᵣ : list (symbol T g.nt))
-    (h : grammar_derives g w₁ w₂) :
+    (ass : grammar_derives g w₁ w₂) :
   grammar_derives g (pᵣ ++ w₁) (pᵣ ++ w₂) :=
 begin
-  sorry,
+  induction ass with x y trash hyp ih,
+  {
+    apply grammar_deri_self,
+  },
+  apply grammar_deri_of_deri_tran,
+  {
+    exact ih,
+  },
+  rcases hyp with ⟨ rule, rule_in, u, v, h_bef, h_aft ⟩,
+  use rule,
+  split,
+  {
+    exact rule_in,
+  },
+  use pᵣ ++ u,
+  use v,
+  rw h_bef,
+  rw h_aft,
+  split;
+  simp only [list.append_assoc],
 end
 
 lemma grammar_derives_with_postfix
     {w₁ w₂ : list (symbol T g.nt)}
     (pₒ : list (symbol T g.nt))
-    (h : grammar_derives g w₁ w₂) :
+    (ass : grammar_derives g w₁ w₂) :
   grammar_derives g (w₁ ++ pₒ) (w₂ ++ pₒ) :=
 begin
-  sorry,
+  induction ass with x y trash hyp ih,
+  {
+    apply grammar_deri_self,
+  },
+  apply grammar_deri_of_deri_tran,
+  {
+    exact ih,
+  },
+  rcases hyp with ⟨ rule, rule_in, u, v, h_bef, h_aft ⟩,
+  use rule,
+  split,
+  {
+    exact rule_in,
+  },
+  use u,
+  use v ++ pₒ,
+  rw h_bef,
+  rw h_aft,
+  split;
+  simp only [list.append_assoc],
+end
+
+lemma grammar_derives_with_prefix_and_postfix
+    {w₁ w₂ : list (symbol T g.nt)}
+    (pᵣ pₒ : list (symbol T g.nt))
+    (ass : grammar_derives g w₁ w₂) :
+  grammar_derives g (pᵣ ++ w₁ ++ pₒ) (pᵣ ++ w₂ ++ pₒ) :=
+begin
+  apply grammar_derives_with_postfix,
+  apply grammar_derives_with_prefix,
+  exact ass,
 end
 
 end grammar_utilities
