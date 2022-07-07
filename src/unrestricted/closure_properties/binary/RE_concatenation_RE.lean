@@ -41,7 +41,6 @@ private def all_used_terminals (g : grammar T) : list T :=
 list.dedup (list.filter_map as_terminal (
   list.join (list.map grule.output_string g.rules)))
 
--- TODO do we want to require `decidable_eq T` from the beginning (definition of `grammar` and so on) ??
 private def rules_for_terminals₁ (N₂ : Type) (g : grammar T) : list (grule T (nnn g.nt N₂)) :=
 list.map (λ t, grule.mk ([], sum.inr (sum.inl t), []) [symbol.terminal t]) (all_used_terminals g)
 
@@ -81,7 +80,8 @@ begin
   use (big_grammar g₁ g₂).rules.nth_le 0 dec_trivial,
   split,
   {
-    sorry,
+    change _ ∈ list.cons _ _,
+    finish,
   },
   use [[], []],
   split;
@@ -94,7 +94,9 @@ rfl
 lemma append_of_quadrupledot {α : Type} (a : α) (l : list α) : a :: l = [a] ++ l :=
 rfl
 
-private lemma substitute_terminals {g₁ g₂ : grammar T} (w : list T) :
+private lemma substitute_terminals {g₁ g₂ : grammar T} {w : list T}
+    (legit_terminals : ∀ t ∈ w, ∃ (a : grule T g₁.nt),
+      a ∈ g₁.rules ∧ symbol.terminal t ∈ a.output_string) :
   grammar_derives (big_grammar g₁ g₂)
     (list.map (symbol.nonterminal ∘ sum.inr ∘ sum.inl) w)
     (list.map symbol.terminal w) :=
@@ -115,7 +117,38 @@ begin
     use grule.mk ([], sum.inr (sum.inl d), []) [symbol.terminal d],
     split,
     {
-      sorry,
+      change _ ∈ list.cons _ _,
+      apply list.mem_cons_of_mem,
+      apply list.mem_append_right,
+      apply list.mem_append_left,
+      unfold rules_for_terminals₁,
+      rw list.mem_map,
+      use d,
+      split,
+      {
+        unfold all_used_terminals,
+        rw list.mem_dedup,
+        rw list.mem_filter_map,
+        use symbol.terminal d,
+        split,
+        {
+          rw list.mem_join,
+          obtain ⟨r, rin, d_eq⟩ := legit_terminals d (list.mem_cons_self d l),
+          use r.output_string,
+          split,
+          {
+            apply list.mem_map_of_mem,
+            exact rin,
+          },
+          {
+            exact d_eq,
+          },
+        },
+        {
+          refl,
+        },
+      },
+      refl,
     },
     use [[], list.map (symbol.nonterminal ∘ sum.inr ∘ sum.inl) l],
     split;
@@ -123,7 +156,60 @@ begin
   },
   apply grammar_deri_of_tran_deri step_head,
   apply grammar_derives_with_prefix,
-  exact ih,
+  apply ih,
+  intros t tin,
+  apply legit_terminals t,
+  exact list.mem_cons_of_mem d tin,
+end
+
+private lemma grammar_generates_only_legit_terminals -- this lemma is kinda general
+    {g : grammar T} {w : list (symbol T g.nt)}
+    (ass : grammar_derives g [symbol.nonterminal g.initial] w)
+    {s : symbol T g.nt} (symbol_derived : s ∈ w) :
+  (∃ r : grule T g.nt, r ∈ g.rules ∧ s ∈ r.output_string) ∨
+  (s = symbol.nonterminal g.initial) :=
+begin
+  induction ass with x y trash orig ih,
+  {
+    rw list.mem_singleton at symbol_derived,
+    right,
+    exact symbol_derived,
+  },
+  rcases orig with ⟨ r, rin, u, v, bef, aft ⟩,
+  rw aft at symbol_derived,
+  rw list.mem_append at symbol_derived,
+  rw list.mem_append at symbol_derived,
+  cases symbol_derived,
+  cases symbol_derived,
+  {
+    exact ih (by {
+      rw bef,
+      repeat {
+        rw list.mem_append,
+        left,
+      },
+      exact symbol_derived,
+    }),
+  },
+  {
+    left,
+    use r,
+    split,
+    {
+      exact rin,
+    },
+    {
+      exact symbol_derived,
+    },
+  },
+  {
+    exact ih (by {
+      rw bef,
+      rw list.mem_append,
+      right,
+      exact symbol_derived,
+    }),
+  },
 end
 
 private lemma in_big_of_in_concatenated
@@ -149,7 +235,6 @@ begin
     rw two_singletons_of_doubleton,
     apply grammar_derives_with_postfix,
     apply @grammar_deri_of_deri_deri _ _ _ _ (list.map (
-        -- λ t : T, @symbol.nonterminal T (big_grammar g₁ g₂).nt (sum.inr (sum.inl t))
         (@symbol.nonterminal T (big_grammar g₁ g₂).nt) ∘ sum.inr ∘ sum.inl
       ) u) _,
     {
@@ -210,6 +295,29 @@ begin
     },
     {
       apply substitute_terminals,
+      intros t tin,
+      have tin' : symbol.terminal t ∈ list.map symbol.terminal u,
+      {
+        rw list.mem_map,
+        use t,
+        split,
+        {
+          exact tin,
+        },
+        {
+          refl,
+        },
+      },
+      have legit := grammar_generates_only_legit_terminals hu tin',
+      cases legit,
+      {
+        exact legit,
+      },
+      {
+        exfalso,
+        clear_except legit,
+        tauto,
+      },
     },
   },
   {
