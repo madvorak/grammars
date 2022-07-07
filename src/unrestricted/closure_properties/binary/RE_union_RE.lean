@@ -1,7 +1,7 @@
 import unrestricted.grammarLiftSink
 
 
-variables {T : Type}
+variables {T : Type} [decidable_eq T]
 
 private def union_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (

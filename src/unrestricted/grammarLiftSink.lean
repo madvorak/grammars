@@ -29,7 +29,7 @@ end functions_lift_sink
 
 section lifting_conditions
 
-structure lifted_grammar_ (T : Type) :=
+structure lifted_grammar_ (T : Type) [decidable_eq T] :=
 (g₀ g : grammar T)
 (lift_nt : g₀.nt → g.nt)
 (sink_nt : g.nt → option g₀.nt)
@@ -47,7 +47,7 @@ structure lifted_grammar_ (T : Type) :=
     (∃ r₀ ∈ g₀.rules, lift_rule_ lift_nt r₀ = r)
 )
 
-private lemma lifted_grammar_inverse {T : Type} (lg : lifted_grammar_ T) :
+private lemma lifted_grammar_inverse {T : Type} [decidable_eq T] (lg : lifted_grammar_ T) :
   ∀ x : lg.g.nt,
     (∃ val, lg.sink_nt x = some val) →
       option.map lg.lift_nt (lg.sink_nt x) = x :=
@@ -75,7 +75,7 @@ end lifting_conditions
 
 section translating_derivations
 
-variables {T : Type}
+variables {T : Type} [decidable_eq T]
 
 private lemma lift_tran_
     {lg : lifted_grammar_ T}

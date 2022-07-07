@@ -5,7 +5,7 @@ import unrestricted.grammarLiftSink
 private def nn (T N : Type) : Type :=
 option (fin 2 × (N ⊕ T))
 
-variable {T : Type}
+variables {T : Type} [decidable_eq T]
 
 private def wrap_symbol {N : Type} (parity : fin 2) : symbol T N → symbol T (nn T N)
 | (symbol.terminal t)    := symbol.nonterminal (some (parity, sum.inr t))
@@ -29,14 +29,14 @@ grammar.mk (nn T g.nt) none (
     (grule.mk ([], none, []) []) ::
     (grule.mk ([], none, []) [
         symbol.nonterminal (some (0, sum.inl g.initial))
-      ]) ::
-    (grule.mk ([], none, []) [
+      ]) :: (
+    grule.mk ([], none, []) [
         symbol.nonterminal (some (0, sum.inl g.initial)),
         symbol.nonterminal (some (1, sum.inl g.initial)),
         symbol.nonterminal none
-      ]) ::
-    ((list.map (wrap_grule 0) g.rules) ++ (list.map (wrap_grule 1) g.rules)) ++
-    ((rules_for_individual_terminals 0 g) ++ (rules_for_individual_terminals 1 g))
+      ]) :: (
+    (list.map (wrap_grule 0) g.rules ++ list.map (wrap_grule 1) g.rules) ++
+    (rules_for_individual_terminals 0 g ++ rules_for_individual_terminals 1 g))
   )
 
 
