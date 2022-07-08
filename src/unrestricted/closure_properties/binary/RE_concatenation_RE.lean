@@ -60,16 +60,7 @@ grammar.mk
   ))
 
 
-private lemma in_concatenated_of_in_big
-    {g₁ g₂ : grammar T}
-    {w : list T}
-    (ass : w ∈ grammar_language (big_grammar g₁ g₂)) :
-  w ∈ grammar_language g₁ * grammar_language g₂ :=
-begin
-  rw language.mem_mul,
-  sorry,
-end
-
+section easy_direction
 
 private lemma first_transformation {g₁ g₂ : grammar T} :
   grammar_transforms (big_grammar g₁ g₂) [symbol.nonterminal (big_grammar g₁ g₂).initial] [
@@ -88,81 +79,19 @@ begin
   refl,
 end
 
+
+section todo_move
+
 lemma two_singletons_of_doubleton {α : Type} {a b : α} : [a, b] = [a] ++ [b] :=
 rfl
 
 lemma append_of_quadrupledot {α : Type} (a : α) (l : list α) : a :: l = [a] ++ l :=
 rfl
 
-private lemma substitute_terminals {g₁ g₂ : grammar T} {w : list T}
-    (legit_terminals : ∀ t ∈ w, ∃ (a : grule T g₁.nt),
-      a ∈ g₁.rules ∧ symbol.terminal t ∈ a.output_string) :
-  grammar_derives (big_grammar g₁ g₂)
-    (list.map (symbol.nonterminal ∘ sum.inr ∘ sum.inl) w)
-    (list.map symbol.terminal w) :=
-begin
-  induction w with d l ih,
-  {
-    apply grammar_deri_self,
-  },
-  rw list.map,
-  rw list.map,
-  rw append_of_quadrupledot,
-  rw append_of_quadrupledot (symbol.terminal d),
-  have step_head :
-    grammar_transforms (big_grammar g₁ g₂)
-      ([(symbol.nonterminal ∘ sum.inr ∘ sum.inl) d] ++ list.map (symbol.nonterminal ∘ sum.inr ∘ sum.inl) l)
-      ([symbol.terminal d] ++ list.map (symbol.nonterminal ∘ sum.inr ∘ sum.inl) l),
-  {
-    use grule.mk ([], sum.inr (sum.inl d), []) [symbol.terminal d],
-    split,
-    {
-      change _ ∈ list.cons _ _,
-      apply list.mem_cons_of_mem,
-      apply list.mem_append_right,
-      apply list.mem_append_left,
-      unfold rules_for_terminals₁,
-      rw list.mem_map,
-      use d,
-      split,
-      {
-        unfold all_used_terminals,
-        rw list.mem_dedup,
-        rw list.mem_filter_map,
-        use symbol.terminal d,
-        split,
-        {
-          rw list.mem_join,
-          obtain ⟨r, rin, d_eq⟩ := legit_terminals d (list.mem_cons_self d l),
-          use r.output_string,
-          split,
-          {
-            apply list.mem_map_of_mem,
-            exact rin,
-          },
-          {
-            exact d_eq,
-          },
-        },
-        {
-          refl,
-        },
-      },
-      refl,
-    },
-    use [[], list.map (symbol.nonterminal ∘ sum.inr ∘ sum.inl) l],
-    split;
-    refl,
-  },
-  apply grammar_deri_of_tran_deri step_head,
-  apply grammar_derives_with_prefix,
-  apply ih,
-  intros t tin,
-  apply legit_terminals t,
-  exact list.mem_cons_of_mem d tin,
-end
+end todo_move
 
-private lemma grammar_generates_only_legit_terminals -- this lemma is kinda general
+
+private lemma grammar_generates_only_legit_terminals
     {g : grammar T} {w : list (symbol T g.nt)}
     (ass : grammar_derives g [symbol.nonterminal g.initial] w)
     {s : symbol T g.nt} (symbol_derived : s ∈ w) :
@@ -182,14 +111,13 @@ begin
   cases symbol_derived,
   cases symbol_derived,
   {
-    exact ih (by {
-      rw bef,
-      repeat {
-        rw list.mem_append,
-        left,
-      },
-      exact symbol_derived,
-    }),
+    apply ih,
+    rw bef,
+    repeat {
+      rw list.mem_append,
+      left,
+    },
+    exact symbol_derived,
   },
   {
     left,
@@ -203,12 +131,55 @@ begin
     },
   },
   {
-    exact ih (by {
-      rw bef,
-      rw list.mem_append,
-      right,
-      exact symbol_derived,
-    }),
+    apply ih,
+    rw bef,
+    rw list.mem_append,
+    right,
+    exact symbol_derived,
+  },
+end
+
+private lemma substitute_terminals {g₁ g₂ : grammar T} {side : T → T ⊕ T} {w : list T}
+    (rule_for_each_terminal : ∀ t ∈ w,
+      (grule.mk ([], sum.inr (side t), []) [symbol.terminal t]) ∈
+        (rules_for_terminals₁ g₂.nt g₁ ++ rules_for_terminals₂ g₁.nt g₂)) :
+  grammar_derives (big_grammar g₁ g₂)
+    (list.map (symbol.nonterminal ∘ sum.inr ∘ side) w)
+    (list.map symbol.terminal w) :=
+begin
+  induction w with d l ih,
+  {
+    apply grammar_deri_self,
+  },
+  rw list.map,
+  rw list.map,
+  rw append_of_quadrupledot,
+  rw append_of_quadrupledot (symbol.terminal d),
+  have step_head :
+    grammar_transforms (big_grammar g₁ g₂)
+      ([(symbol.nonterminal ∘ sum.inr ∘ side) d] ++ list.map (symbol.nonterminal ∘ sum.inr ∘ side) l)
+      ([symbol.terminal d] ++ list.map (symbol.nonterminal ∘ sum.inr ∘ side) l),
+  {
+    use grule.mk ([], sum.inr (side d), []) [symbol.terminal d],
+    split,
+    {
+      change _ ∈ list.cons _ _,
+      apply list.mem_cons_of_mem,
+      apply list.mem_append_right,
+      apply rule_for_each_terminal,
+      apply list.mem_cons_self,
+    },
+    use [[], list.map (symbol.nonterminal ∘ sum.inr ∘ side) l],
+    split;
+    refl,
+  },
+  apply grammar_deri_of_tran_deri step_head,
+  apply grammar_derives_with_prefix,
+  apply ih,
+  {
+    intros t tin,
+    apply rule_for_each_terminal t,
+    exact list.mem_cons_of_mem d tin,
   },
 end
 
@@ -294,38 +265,218 @@ begin
       exact upgraded,
     },
     {
-      apply substitute_terminals,
-      intros t tin,
-      have tin' : symbol.terminal t ∈ list.map symbol.terminal u,
+      have legit_terminals₁ :
+        ∀ t ∈ u, ∃ r : grule T g₁.nt,
+          r ∈ g₁.rules ∧ symbol.terminal t ∈ r.output_string,
       {
+        intros t tin,
+        have tin' : symbol.terminal t ∈ list.map symbol.terminal u,
+        {
+          rw list.mem_map,
+          use t,
+          split,
+          {
+            exact tin,
+          },
+          {
+            refl,
+          },
+        },
+        have legit := grammar_generates_only_legit_terminals hu tin',
+        cases legit,
+        {
+          exact legit,
+        },
+        {
+          exfalso,
+          clear_except legit,
+          tauto,
+        },
+      },
+      apply substitute_terminals,
+      {
+        intros t tin,
+        apply list.mem_append_left,
+        unfold rules_for_terminals₁,
         rw list.mem_map,
         use t,
         split,
         {
-          exact tin,
+          unfold all_used_terminals,
+          rw list.mem_dedup,
+          rw list.mem_filter_map,
+          use symbol.terminal t,
+          split,
+          {
+            rw list.mem_join,
+            obtain ⟨r, rin, sttin⟩ := legit_terminals₁ t tin,
+            use r.output_string,
+            split,
+            {
+              apply list.mem_map_of_mem,
+              exact rin,
+            },
+            {
+              exact sttin,
+            },
+          },
+          {
+            refl,
+          },
         },
         {
           refl,
         },
-      },
-      have legit := grammar_generates_only_legit_terminals hu tin',
-      cases legit,
-      {
-        exact legit,
-      },
-      {
-        exfalso,
-        clear_except legit,
-        tauto,
       },
     },
   },
   {
     clear_except hv,
     apply grammar_derives_with_prefix,
-    sorry,
+    apply @grammar_deri_of_deri_deri _ _ _ _ (list.map (
+        (@symbol.nonterminal T (big_grammar g₁ g₂).nt) ∘ sum.inr ∘ sum.inr
+      ) v) _,
+    {
+      have upgrade_deri₂ :
+        ∀ w : list (symbol T g₂.nt),
+          grammar_derives g₂ [symbol.nonterminal g₂.initial] w →
+            grammar_derives (big_grammar g₁ g₂)
+              [symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
+              (list.map (wrap_symbol₂ g₁.nt) w),
+      {
+        clear_except,
+        intros w deri₁,
+        induction deri₁ with x y trash orig ih,
+        {
+          apply grammar_deri_self,
+        },
+        apply grammar_deri_of_deri_tran ih,
+        clear_except orig,
+        rcases orig with ⟨ r, rin, u, v, bef, aft ⟩,
+        use wrap_grule₂ g₁.nt r,
+        split,
+        {
+          change wrap_grule₂ g₁.nt r ∈ (_ :: ((
+              (list.map (wrap_grule₁ g₂.nt) g₁.rules) ++
+              (list.map (wrap_grule₂ g₁.nt) g₂.rules)
+            ) ++ _)),
+          apply list.mem_cons_of_mem,
+          apply list.mem_append_left,
+          apply list.mem_append_right,
+          rw list.mem_map,
+          use r,
+          split,
+          {
+            exact rin,
+          },
+          {
+            refl,
+          },
+        },
+        use list.map (wrap_symbol₂ g₁.nt) u,
+        use list.map (wrap_symbol₂ g₁.nt) v,
+        split,
+        {
+          convert congr_arg (list.map (wrap_symbol₂ g₁.nt)) bef,
+          rw list.map_append_append,
+          rw list.map_append_append,
+          refl,
+        },
+        {
+          convert congr_arg (list.map (wrap_symbol₂ g₁.nt)) aft,
+          rw list.map_append_append,
+          refl,
+        },
+      },
+      have upgraded := upgrade_deri₂ _ hv,
+      rw list.map_map at upgraded,
+      exact upgraded,
+    },
+    {
+      have legit_terminals₂ :
+        ∀ t ∈ v, ∃ r : grule T g₂.nt,
+          r ∈ g₂.rules ∧ symbol.terminal t ∈ r.output_string,
+      {
+        intros t tin,
+        have tin' : symbol.terminal t ∈ list.map symbol.terminal v,
+        {
+          rw list.mem_map,
+          use t,
+          split,
+          {
+            exact tin,
+          },
+          {
+            refl,
+          },
+        },
+        have legit := grammar_generates_only_legit_terminals hv tin',
+        cases legit,
+        {
+          exact legit,
+        },
+        {
+          exfalso,
+          clear_except legit,
+          tauto,
+        },
+      },
+      apply substitute_terminals,
+      {
+        intros t tin,
+        apply list.mem_append_right,
+        unfold rules_for_terminals₂,
+        rw list.mem_map,
+        use t,
+        split,
+        {
+          unfold all_used_terminals,
+          rw list.mem_dedup,
+          rw list.mem_filter_map,
+          use symbol.terminal t,
+          split,
+          {
+            rw list.mem_join,
+            obtain ⟨r, rin, sttin⟩ := legit_terminals₂ t tin,
+            use r.output_string,
+            split,
+            {
+              apply list.mem_map_of_mem,
+              exact rin,
+            },
+            {
+              exact sttin,
+            },
+          },
+          {
+            refl,
+          },
+        },
+        {
+          refl,
+        },
+      },
+    },
   },
 end
+
+end easy_direction
+
+
+section hard_direction
+
+private lemma in_concatenated_of_in_big
+    {g₁ g₂ : grammar T}
+    {w : list T}
+    (ass : w ∈ grammar_language (big_grammar g₁ g₂)) :
+  w ∈ grammar_language g₁ * grammar_language g₂ :=
+begin
+  rw language.mem_mul,
+  sorry,
+end
+
+end hard_direction
+
 
 /-- The class of recursively-enumerable languages is closed under concatenation. -/
 theorem RE_of_RE_c_RE (L₁ : language T) (L₂ : language T) :
