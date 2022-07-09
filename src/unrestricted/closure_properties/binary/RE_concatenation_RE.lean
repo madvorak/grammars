@@ -465,6 +465,22 @@ end easy_direction
 
 section hard_direction
 
+private def unwrap_symbol₁ {N₁ N₂ : Type} : nst T N₁ N₂ → option (symbol T N₁)
+| (symbol.terminal t)                               := some (symbol.terminal t)
+| (symbol.nonterminal (sum.inr (sum.inl a)))        := some (symbol.terminal a)
+| (symbol.nonterminal (sum.inr (sum.inr a)))        := none
+| (symbol.nonterminal (sum.inl (some (sum.inl n)))) := some (symbol.nonterminal n)
+| (symbol.nonterminal (sum.inl (some (sum.inr n)))) := none
+| (symbol.nonterminal (sum.inl (none)))             := none
+
+private def unwrap_symbol₂ {N₁ N₂ : Type} : nst T N₁ N₂ → option (symbol T N₂)
+| (symbol.terminal t)                               := some (symbol.terminal t)
+| (symbol.nonterminal (sum.inr (sum.inl a)))        := none
+| (symbol.nonterminal (sum.inr (sum.inr a)))        := some (symbol.terminal a)
+| (symbol.nonterminal (sum.inl (some (sum.inl n)))) := none
+| (symbol.nonterminal (sum.inl (some (sum.inr n)))) := some (symbol.nonterminal n)
+| (symbol.nonterminal (sum.inl (none)))             := none
+
 private lemma in_concatenated_of_in_big
     {g₁ g₂ : grammar T}
     {w : list T}
@@ -472,6 +488,39 @@ private lemma in_concatenated_of_in_big
   w ∈ grammar_language g₁ * grammar_language g₂ :=
 begin
   rw language.mem_mul,
+  cases grammar_tran_or_id_of_deri ass,
+  {
+    exfalso,
+    have nonmatch := congr_fun (congr_arg list.nth h) 0,
+    clear_except nonmatch,
+    unfold list.nth at nonmatch,
+    cases w,
+    {
+      change some _ = none at nonmatch,
+      tauto,
+    },
+    {
+      unfold list.map at nonmatch,
+      unfold list.nth at nonmatch,
+      rw option.some.inj_eq at nonmatch,
+      tauto,
+    },
+  },
+  clear ass,
+  rcases h with ⟨w₁, hyp_tran, hyp_deri⟩,
+  have w₁eq : w₁ = [
+      symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
+      symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))
+    ],
+  {
+    clear_except hyp_tran,
+    -- easy lemma because only the first rule is applicable
+    sorry,
+  },
+  clear hyp_tran,
+  rw w₁eq at hyp_deri,
+  clear w₁eq w₁,
+  -- TODO big induction
   sorry,
 end
 
