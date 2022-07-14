@@ -3,6 +3,15 @@ import unrestricted.grammarLiftSink
 
 variables {T : Type} [decidable_eq T]
 
+def as_terminal {N : Type} : symbol T N → option T
+| (symbol.terminal t)    := some t
+| (symbol.nonterminal _) := none
+
+def all_used_terminals (g : grammar T) : list T :=
+list.dedup (list.filter_map as_terminal (
+  list.join (list.map grule.output_string g.rules)))
+
+
 -- new nonterminal type
 private def nnn (N₁ N₂ : Type) : Type :=
 option (N₁ ⊕ N₂) ⊕ (T ⊕ T)
@@ -32,14 +41,6 @@ grule.mk (
     sum.inl (some (sum.inr r.input_string.secon)),
     list.map (wrap_symbol₂ N₁) r.input_string.third)
   (list.map (wrap_symbol₂ N₁) r.output_string)
-
-private def as_terminal {N : Type} : symbol T N → option T
-| (symbol.terminal t)    := some t
-| (symbol.nonterminal _) := none
-
-private def all_used_terminals (g : grammar T) : list T :=
-list.dedup (list.filter_map as_terminal (
-  list.join (list.map grule.output_string g.rules)))
 
 private def rules_for_terminals₁ (N₂ : Type) (g : grammar T) : list (grule T (nnn g.nt N₂)) :=
 list.map (λ t, grule.mk ([], sum.inr (sum.inl t), []) [symbol.terminal t]) (all_used_terminals g)
@@ -520,8 +521,78 @@ begin
   clear hyp_tran,
   rw w₁eq at hyp_deri,
   clear w₁eq w₁,
-  -- TODO big induction
-  sorry,
+  have big_induction :
+    ∀ v : list (symbol T (big_grammar g₁ g₂).nt),
+      grammar_derives (big_grammar g₁ g₂)
+        [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
+         symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
+        v → ∃ x y,
+          grammar_derives g₁ [symbol.nonterminal g₁.initial] x ∧
+          grammar_derives g₂ [symbol.nonterminal g₂.initial] y ∧
+          list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y = v,
+  {
+    intros v ass,
+    induction ass, -- TODO name the new terms
+    {
+      use [[symbol.nonterminal g₁.initial], [symbol.nonterminal g₂.initial]],
+      split,
+      {
+        apply grammar_deri_self,
+      },
+      split,
+      {
+        apply grammar_deri_self,
+      },
+      refl,
+    },
+    sorry,
+  },
+  have hope_result := big_induction (list.map symbol.terminal w) hyp_deri,
+  clear_except hope_result,
+  rcases hope_result with ⟨x, y, deri_x, deri_y, concat_xy⟩,
+  use list.filter_map as_terminal x,
+  use list.filter_map as_terminal y,
+  split,
+  {
+    sorry,
+  },
+  split,
+  {
+    sorry,
+  },
+  -- probably not wrap_symbol; it would translate terminals into nonterminals
+  have left_part : list.map (wrap_symbol₁ g₂.nt) x = list.take x.length (list.map symbol.terminal w),
+  {
+    sorry,
+  },
+  have right_part : list.map (wrap_symbol₂ g₁.nt) y = list.drop x.length (list.map symbol.terminal w),
+  {
+    sorry,
+  },
+  rw ← list.map_take at left_part,
+  rw ← list.map_drop at right_part,
+  have left_side_w := congr_arg (list.filter_map as_terminal) left_part,
+  have right_side_w := congr_arg (list.filter_map as_terminal) right_part,
+  rw list.filter_map_map at left_side_w right_side_w,
+  rw list.filter_map_map at left_side_w right_side_w,
+  have terminal_as_terminal : as_terminal ∘ symbol.terminal = option.some,
+  {
+    sorry,
+  },
+  rw terminal_as_terminal at left_side_w right_side_w,
+  rw list.filter_map_some at left_side_w right_side_w,
+  have x_eq : list.filter_map as_terminal x = list.take x.length w,
+  {
+    convert left_side_w,
+    ext1 s,
+    sorry,
+  },
+  have y_eq : list.filter_map as_terminal y = list.drop x.length w,
+  {
+    sorry,
+  },
+  rw [x_eq, y_eq],
+  apply list.take_append_drop,
 end
 
 end hard_direction

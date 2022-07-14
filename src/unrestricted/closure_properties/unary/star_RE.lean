@@ -1,4 +1,4 @@
-import unrestricted.grammarLiftSink
+import unrestricted.closure_properties.binary.RE_concatenation_RE
 
 
 -- new nonterminal type
@@ -17,9 +17,6 @@ grule.mk (
     some (parity, sum.inl r.input_string.secon),
     list.map (wrap_symbol parity) r.input_string.third)
   (list.map (wrap_symbol parity) r.output_string)
-
-private def all_used_terminals (g : grammar T) : list T :=
-[] -- TODO (ditto in `RE_concatenation_RE.lean`)
 
 private def rules_for_individual_terminals (parity : fin 2) (g : grammar T) : list (grule T (nn T g.nt)) :=
 list.map (λ t, grule.mk ([], some (parity, sum.inr t), []) [symbol.terminal t]) (all_used_terminals g)
