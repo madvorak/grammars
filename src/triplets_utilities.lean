@@ -23,6 +23,24 @@ lemma forall_mem_append_append {p : α → Prop} :
   (∀ a ∈ x ++ y ++ z, p a)  ↔  (∀ a ∈ x, p a) ∧ (∀ a ∈ y, p a) ∧ (∀ a ∈ z, p a)  :=
 by rw [ list.forall_mem_append, list.forall_mem_append, and_assoc ]
 
+-- version for mathlib
+theorem length_filter_map (f : α → option β) (l : list α) :
+  (filter_map f l).length ≤ l.length :=
+begin
+  induction l with hd tl ih,
+  { refl },
+  { rw length,
+    unfold filter_map,
+    cases f hd,
+    { change (filter_map f tl).length ≤ tl.length + 1,
+      apply le_trans ih,
+      apply nat.le_succ },
+    { change (val :: (filter_map f tl)).length ≤ tl.length + 1,
+      rw length,
+      apply add_le_add_right,
+      exact ih } }
+end
+
 end list
 
 
