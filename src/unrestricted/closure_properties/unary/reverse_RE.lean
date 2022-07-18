@@ -15,7 +15,7 @@ private lemma dual_of_reversal_gis {N : Type} (x : list (symbol T N) × N × lis
 begin
   rcases x with ⟨ x₁, x₂, x₃ ⟩,
   unfold reversal_gis,
-  simp,
+  simp [ prod.first, prod.secon, prod.third ],
 end
 
 private def reversal_grule {N : Type} (r : grule T N) : grule T N :=
@@ -81,7 +81,7 @@ begin
       rw ← r_from_r₀,
       unfold reversal_grule,
       unfold reversal_gis,
-      dsimp,
+      dsimp [prod.third],
       rw list.reverse_reverse,
     },
     have rid₂ : [symbol.nonterminal r₀.input_string.secon] = [symbol.nonterminal r.input_string.secon].reverse,
@@ -95,7 +95,7 @@ begin
       rw ← r_from_r₀,
       unfold reversal_grule,
       unfold reversal_gis,
-      dsimp,
+      dsimp [prod.first],
       rw list.reverse_reverse,
     },
     rw [ rid₁, rid₂, rid₃,

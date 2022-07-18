@@ -237,6 +237,7 @@ begin
     clear_except correct_inverse,
     {
       unfold lift_string_,
+      unfold prod.first,
       rw list.filter_map_map,
       rw correct_inverse,
       rw list.filter_map_some,
@@ -252,6 +253,7 @@ begin
     },
     {
       unfold lift_string_,
+      unfold prod.third,
       rw list.filter_map_map,
       rw correct_inverse,
       rw list.filter_map_some,

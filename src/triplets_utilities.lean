@@ -15,6 +15,10 @@ lemma filter_map_append_append {f : α → option γ} :
   list.filter_map f (x ++ y ++ z) = list.filter_map f x ++ list.filter_map f y ++ list.filter_map f z :=
 by rw [ list.filter_map_append, list.filter_map_append ]
 
+lemma length_append_append :
+  list.length (x ++ y ++ z) = x.length + y.length + z.length :=
+by rw [ list.length_append, list.length_append ]
+
 lemma reverse_append_append :
   list.reverse (x ++ y ++ z) = z.reverse ++ y.reverse ++ x.reverse :=
 by rw [ list.reverse_append, list.reverse_append, list.append_assoc ]
@@ -48,8 +52,8 @@ namespace prod
 
 variables (t : α × β × γ)
 
-@[simp] def first : α := t.fst
-@[simp] def secon : β := t.snd.fst
-@[simp] def third : γ := t.snd.snd
+def first : α := t.fst
+def secon : β := t.snd.fst
+def third : γ := t.snd.snd
 
 end prod
