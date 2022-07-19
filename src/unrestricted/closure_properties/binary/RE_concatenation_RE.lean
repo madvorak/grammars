@@ -515,7 +515,7 @@ begin
     ],
   {
     clear_except hyp_tran,
-    -- easy lemma because only the first rule is applicable
+    -- only the first rule is applicable
     rcases hyp_tran with ⟨r, rin, u, v, bef, aft⟩,
     change _ ∈ list.cons _ _ at rin,
     rw list.mem_cons_iff at rin,
@@ -670,9 +670,68 @@ begin
   },
   split,
   {
-    sorry,
+    unfold grammar_language,
+    rw set.mem_set_of_eq,
+    unfold grammar_generates,
+    convert deri_y,
+    clear_except,
+    induction y with s y' ih,
+    {
+      refl,
+    },
+    cases s,
+    {
+      rw list.filter_map_cons_some as_terminal (symbol.terminal s),
+      swap, {
+        refl,
+      },
+      rw list.filter_map_cons_some unwrap_symbol₂ (symbol.terminal s),
+      swap, {
+        refl,
+      },
+      rw list.map_cons,
+      congr,
+      apply ih,
+    },
+    {
+      rw list.filter_map_cons_none,
+      swap, {
+        refl,
+      },
+      rw list.filter_map_cons_none,
+      swap, {
+        cases s,
+        cases s,
+        refl,
+        cases s,
+        refl,
+        {
+          unfold unwrap_symbol₂,
+          -- fuck
+          sorry,
+        },
+        cases s,
+        refl,
+        {
+          unfold unwrap_symbol₂,
+          -- shit
+          sorry,
+        },
+      },
+      sorry,
+    },
   },
-  sorry,
+  have almost := congr_arg (list.filter_map as_terminal) concat_xy,
+  rw list.filter_map_append at almost,
+  convert almost,
+  rw list.filter_map_map,
+  have cancel_out : as_terminal ∘ symbol.terminal = option.some,
+  swap, {
+    rw cancel_out,
+    rw list.filter_map_some,
+  },
+  ext1 t,
+  refl,
 end
 
 end hard_direction
