@@ -466,21 +466,50 @@ end easy_direction
 
 section hard_direction
 
-private def unwrap_symbol₁ {N₁ N₂ : Type} : nst T N₁ N₂ → option (symbol T N₁)
-| (symbol.terminal t)                               := some (symbol.terminal t)
-| (symbol.nonterminal (sum.inr (sum.inl a)))        := some (symbol.terminal a)
-| (symbol.nonterminal (sum.inr (sum.inr a)))        := none
-| (symbol.nonterminal (sum.inl (some (sum.inl n)))) := some (symbol.nonterminal n)
-| (symbol.nonterminal (sum.inl (some (sum.inr n)))) := none
-| (symbol.nonterminal (sum.inl (none)))             := none
+private def equivalent_symbols {N₁ N₂ : Type} : nst T N₁ N₂ → nst T N₁ N₂ → Prop
+| (symbol.terminal t)                               (symbol.terminal t')                               := t = t'
+| (symbol.nonterminal (sum.inr (sum.inl a)))        (symbol.nonterminal (sum.inr (sum.inl a')))        := a = a'
+| (symbol.nonterminal (sum.inr (sum.inl a)))        (symbol.nonterminal (sum.inr (sum.inr a')))        := a = a'
+| (symbol.nonterminal (sum.inr (sum.inr a)))        (symbol.nonterminal (sum.inr (sum.inl a')))        := a = a'
+| (symbol.nonterminal (sum.inr (sum.inr a)))        (symbol.nonterminal (sum.inr (sum.inr a')))        := a = a'
+| (symbol.terminal t)                               (symbol.nonterminal (sum.inr (sum.inl a)))         := t = a
+| (symbol.nonterminal (sum.inr (sum.inl a)))        (symbol.terminal t)                                := t = a
+| (symbol.terminal t)                               (symbol.nonterminal (sum.inr (sum.inr a)))         := t = a
+| (symbol.nonterminal (sum.inr (sum.inr a)))        (symbol.terminal t)                                := t = a
+| (symbol.nonterminal (sum.inl (some (sum.inl n)))) (symbol.nonterminal (sum.inl (some (sum.inl n')))) := n = n'
+| (symbol.nonterminal (sum.inl (some (sum.inr n)))) (symbol.nonterminal (sum.inl (some (sum.inr n')))) := n = n'
+| (symbol.nonterminal (sum.inl (none)))             (symbol.nonterminal (sum.inl (none)))              := true
+| _                                                 _                                                  := false
 
-private def unwrap_symbol₂ {N₁ N₂ : Type} : nst T N₁ N₂ → option (symbol T N₂)
-| (symbol.terminal t)                               := some (symbol.terminal t)
-| (symbol.nonterminal (sum.inr (sum.inl a)))        := none
-| (symbol.nonterminal (sum.inr (sum.inr a)))        := some (symbol.terminal a)
-| (symbol.nonterminal (sum.inl (some (sum.inl n)))) := none
-| (symbol.nonterminal (sum.inl (some (sum.inr n)))) := some (symbol.nonterminal n)
-| (symbol.nonterminal (sum.inl (none)))             := none
+private def equivalent_strings {N₁ N₂ : Type} : list (nst T N₁ N₂) → list (nst T N₁ N₂) → Prop
+| []         []         := true
+| (h₁ :: t₁) (h₂ :: t₂) := equivalent_symbols h₁ h₂ ∧ equivalent_strings t₁ t₂
+| _          _          := false
+
+private lemma equivalent_strings_refl {N₁ N₂ : Type} {x : list (nst T N₁ N₂)} :
+  equivalent_strings x x :=
+begin
+  -- TODO change the definitions to something that already provides reflexivity "out of the box"
+  sorry,
+end
+
+private lemma equivalent_strings_trans {N₁ N₂ : Type} {x y z : list (nst T N₁ N₂)}
+    (hxy : equivalent_strings x y)
+    (hyz : equivalent_strings y z) :
+  equivalent_strings x z :=
+begin
+  -- TODO change the definitions to something that already provides transitivity "out of the box"
+  sorry,
+end
+
+private lemma equivalent_strings_append {N₁ N₂ : Type} {x₁ x₂ y₁ y₂ : list (nst T N₁ N₂)}
+    (ass₁ : equivalent_strings x₁ y₁)
+    (ass₂ : equivalent_strings x₂ y₂) :
+  equivalent_strings (x₁ ++ x₂) (y₁ ++ y₂) :=
+begin
+  -- TODO should be somehow provided by mathlib, probably via `list.forall` or something like that
+  sorry,
+end
 
 private lemma in_concatenated_of_in_big
     {g₁ g₂ : grammar T}
@@ -616,18 +645,42 @@ begin
         [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
          symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
         v →
-      ∃ x y : list (symbol T (nnn g₁.nt g₂.nt)), and
-        (x ++ y = v) (and
-          (grammar_derives g₁ [symbol.nonterminal g₁.initial] (list.filter_map unwrap_symbol₁ x))
-          (grammar_derives g₂ [symbol.nonterminal g₂.initial] (list.filter_map unwrap_symbol₂ y))
-        ),
+      ∃ x : list (symbol T g₁.nt), ∃ y : list (symbol T g₂.nt), and
+        (and
+          (grammar_derives g₁ [symbol.nonterminal g₁.initial] x)
+          (grammar_derives g₂ [symbol.nonterminal g₂.initial] y)
+        )
+        (equivalent_strings (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) v),
   {
     intros v ass,
     induction ass with u z trash orig ih,
     {
-      sorry,
+      use [[symbol.nonterminal g₁.initial], [symbol.nonterminal g₂.initial]],
+      split,
+      {
+        split;
+        apply grammar_deri_self,
+      },
+      {
+        rw list.map_singleton,
+        rw list.map_singleton,
+        unfold wrap_symbol₁,
+        unfold wrap_symbol₂,
+        rw ← two_singletons_of_doubleton,
+        unfold equivalent_strings,
+
+        split,
+        {
+          unfold equivalent_symbols,
+        },
+        split,
+        {
+          unfold equivalent_symbols,
+        },
+        exact trivial,
+      },
     },
-    rcases ih with ⟨x', y', ih_x', ih_y', ih_concat⟩,
+    rcases ih with ⟨x', y', ⟨ih_x', ih_y'⟩, ih_concat⟩,
     rcases orig with ⟨r, rin, zᵣ, zₛ, bef, aft⟩,
     change _ ∈ list.cons _ _ at rin,
     rw list.mem_cons_eq at rin,
@@ -652,7 +705,43 @@ begin
       rw list.mem_append at rin,
       cases rin,
       {
-        sorry,
+        unfold rules_for_terminals₁ at rin,
+        rw list.mem_map at rin,
+        rcases rin with ⟨t, -, eq_r⟩,
+        rw ← eq_r at *,
+        clear eq_r,
+        dsimp [prod.first, prod.secon, prod.third] at *,
+        use [x', y'],
+        split,
+        {
+          split,
+          {
+            exact ih_x',
+          },
+          {
+            exact ih_y',
+          },
+        },
+        rw aft,
+        rw bef at ih_concat,
+        rw list.append_nil at ih_concat,
+        rw list.append_nil at ih_concat,
+        have equiv_ztz :
+          equivalent_strings
+            (zᵣ ++ [symbol.nonterminal (sum.inr (sum.inl t))] ++ zₛ)
+            (zᵣ ++ [symbol.terminal t] ++ zₛ),
+        {
+          apply equivalent_strings_append,
+          apply equivalent_strings_append,
+          apply equivalent_strings_refl,
+          {
+            unfold equivalent_strings,
+            unfold equivalent_symbols,
+            exact ⟨rfl, trivial⟩,
+          },
+          apply equivalent_strings_refl,
+        },
+        exact equivalent_strings_trans ih_concat equiv_ztz,
       },
       {
         sorry,
@@ -661,77 +750,41 @@ begin
   },
   have hope_result := big_induction (list.map symbol.terminal w) hyp_deri,
   clear_except hope_result,
-  rcases hope_result with ⟨x, y, concat_xy, deri_x, deri_y⟩,
-  use list.filter_map as_terminal x,
-  use list.filter_map as_terminal y,
+  rcases hope_result with ⟨x, y, ⟨deri_x, deri_y⟩, concat_xy⟩,
+
+  use list.take x.length w,
+  use list.drop x.length w,
   split,
   {
+    -- TODO finish first this proof
+    clear deri_y,
+    unfold grammar_language,
+    rw set.mem_set_of_eq,
+    unfold grammar_generates,
+    convert deri_x,
+    rw list.map_take,
+    have eqi_x_w :
+      equivalent_strings
+        (list.map (wrap_symbol₁ g₂.nt) x)
+        (list.take x.length (list.map symbol.terminal w)),
+    {
+      sorry,
+    },
+    clear_except eqi_x_w,
+    induction x with s z ih,
+    {
+      refl,
+    },
+    -- we have wrong `ih` here
+    rw list.length_cons,
+    specialize ih sorry,
     sorry,
   },
   split,
   {
-    unfold grammar_language,
-    rw set.mem_set_of_eq,
-    unfold grammar_generates,
-    convert deri_y,
-    clear_except,
-    induction y with s y' ih,
-    {
-      refl,
-    },
-    cases s,
-    {
-      rw list.filter_map_cons_some as_terminal (symbol.terminal s),
-      swap, {
-        refl,
-      },
-      rw list.filter_map_cons_some unwrap_symbol₂ (symbol.terminal s),
-      swap, {
-        refl,
-      },
-      rw list.map_cons,
-      congr,
-      apply ih,
-    },
-    {
-      rw list.filter_map_cons_none,
-      swap, {
-        refl,
-      },
-      rw list.filter_map_cons_none,
-      swap, {
-        cases s,
-        cases s,
-        refl,
-        cases s,
-        refl,
-        {
-          unfold unwrap_symbol₂,
-          -- fuck
-          sorry,
-        },
-        cases s,
-        refl,
-        {
-          unfold unwrap_symbol₂,
-          -- shit
-          sorry,
-        },
-      },
-      sorry,
-    },
+    sorry,
   },
-  have almost := congr_arg (list.filter_map as_terminal) concat_xy,
-  rw list.filter_map_append at almost,
-  convert almost,
-  rw list.filter_map_map,
-  have cancel_out : as_terminal ∘ symbol.terminal = option.some,
-  swap, {
-    rw cancel_out,
-    rw list.filter_map_some,
-  },
-  ext1 t,
-  refl,
+  apply list.take_append_drop,
 end
 
 end hard_direction
