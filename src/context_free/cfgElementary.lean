@@ -121,14 +121,14 @@ begin
     {
       rw rule at bef,
       have bef_lenghts := congr_arg list.length bef,
-      rw list.length_append at bef_lenghts,
-      rw list.length_append at bef_lenghts,
+      rw list.length_append_append at bef_lenghts,
       dsimp at bef_lenghts,
       split,
       {
         have pre_zero : pre.length = 0,
         {
-          linarith, -- from `bef_lenghts`
+          clear_except bef_lenghts,
+          linarith,
         },
         rw list.length_eq_zero at pre_zero,
         exact pre_zero,
@@ -136,7 +136,8 @@ begin
       {
         have pos_zero : pos.length = 0,
         {
-          linarith, -- from `bef_lenghts`
+          clear_except bef_lenghts,
+          linarith,
         },
         rw list.length_eq_zero at pos_zero,
         exact pos_zero,

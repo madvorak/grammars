@@ -611,34 +611,23 @@ begin
   rw w₁eq at hyp_deri,
   clear w₁eq w₁,
   have big_induction :
-    ∀ v : list (symbol T (big_grammar g₁ g₂).nt),
+    ∀ v : list (symbol T (nnn g₁.nt g₂.nt)),
       grammar_derives (big_grammar g₁ g₂)
         [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
          symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
         v →
-          ∃ x : list (symbol T g₁.nt), ∃ y : list (symbol T g₂.nt),
-            grammar_derives g₁ [symbol.nonterminal g₁.initial] x ∧
-            grammar_derives g₂ [symbol.nonterminal g₂.initial] y ∧
-            list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y = v,
-            -- TODO this won't work
-            -- try to reformulate using `unwrap_symbol`s instead of `wrap_symbol`s
+      ∃ x y : list (symbol T (nnn g₁.nt g₂.nt)), and
+        (x ++ y = v) (and
+          (grammar_derives g₁ [symbol.nonterminal g₁.initial] (list.filter_map unwrap_symbol₁ x))
+          (grammar_derives g₂ [symbol.nonterminal g₂.initial] (list.filter_map unwrap_symbol₂ y))
+        ),
   {
     intros v ass,
     induction ass with u z trash orig ih,
     {
-      use [[symbol.nonterminal g₁.initial], [symbol.nonterminal g₂.initial]],
-      split,
-      {
-        apply grammar_deri_self,
-      },
-      split,
-      {
-        apply grammar_deri_self,
-      },
-      refl,
+      sorry,
     },
     rcases ih with ⟨x', y', ih_x', ih_y', ih_concat⟩,
-
     rcases orig with ⟨r, rin, zᵣ, zₛ, bef, aft⟩,
     change _ ∈ list.cons _ _ at rin,
     rw list.mem_cons_eq at rin,
@@ -660,15 +649,6 @@ begin
       },
     },
     {
-      use [x', y'],
-      split,
-      {
-        exact ih_x',
-      },
-      split,
-      {
-        exact ih_y',
-      },
       rw list.mem_append at rin,
       cases rin,
       {
@@ -681,7 +661,7 @@ begin
   },
   have hope_result := big_induction (list.map symbol.terminal w) hyp_deri,
   clear_except hope_result,
-  rcases hope_result with ⟨x, y, deri_x, deri_y, concat_xy⟩,
+  rcases hope_result with ⟨x, y, concat_xy, deri_x, deri_y⟩,
   use list.filter_map as_terminal x,
   use list.filter_map as_terminal y,
   split,
@@ -692,59 +672,7 @@ begin
   {
     sorry,
   },
-  have left_part : list.filter_map as_terminal x = list.take x.length w,
-  {
-    have take_left_part := congr_arg (list.take (list.map (wrap_symbol₁ g₂.nt) x).length) concat_xy,
-    rw list.take_left at take_left_part,
-    rw list.length_map at take_left_part,
-    ext1,
-    by_cases n < x.length,
-    {
-      have tlp := congr_fun (congr_arg list.nth take_left_part) n,
-      rw list.nth_le_nth at tlp,
-      swap, {
-        rw list.length_map,
-        exact h,
-      },
-      rw list.nth_le_nth at tlp,
-      swap, {
-        sorry,
-      },
-      have nth_left := option.some.inj tlp,
-      rw ← list.map_take at nth_left,
-      rw list.nth_le_map at nth_left,
-      swap, {
-        exact h,
-      },
-      rw list.nth_le_map at nth_left,
-      swap, {
-        sorry,
-      },
-      sorry,
-    },
-    {
-      convert_to none = none,
-      {
-        rw list.nth_eq_none_iff,
-        push_neg at h,
-        apply le_trans _ h,
-        apply list.length_filter_map,
-      },
-      {
-        rw list.nth_eq_none_iff,
-        push_neg at h,
-        apply le_trans _ h,
-        apply list.length_take_le,
-      },
-      refl,
-    },
-  },
-  have right_part : list.filter_map as_terminal y = list.drop x.length w,
-  {
-    sorry,
-  },
-  rw [left_part, right_part],
-  apply list.take_append_drop,
+  sorry,
 end
 
 end hard_direction

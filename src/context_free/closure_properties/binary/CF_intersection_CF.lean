@@ -339,8 +339,7 @@ begin
         rw ← add_assoc v.length at total_length,
         rw ← add_assoc v.length at total_length,
         rw ← add_assoc u.length at total_length,
-        rw ← list.length_append at total_length,
-        rw ← list.length_append at total_length,
+        rw ← list.length_append_append at total_length,
         exact total_length.symm,
       },
 

@@ -291,17 +291,16 @@ begin
     clear_except bef,
     have elemeq : [symbol.nonterminal (union_grammar g₁ g₂).initial] = [symbol.nonterminal rul.input_string.secon],
     {
-      have bele := congr_arg list.length bef,
-      rw [
-        list.length_append, list.length_append,
-        list.length_singleton, list.length_singleton
-      ] at bele,
+      have bef_len := congr_arg list.length bef,
+      rw [ list.length_append_append, list.length_singleton, list.length_singleton ] at bef_len,
       have rl_first : rul.input_string.first.length = 0,
       {
+        clear_except bef_len,
         linarith,
       },
       have rl_third : rul.input_string.third.length = 0,
       {
+        clear_except bef_len,
         linarith,
       },
       rw list.length_eq_zero at rl_first rl_third,
