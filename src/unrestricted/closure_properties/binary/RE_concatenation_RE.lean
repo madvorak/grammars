@@ -762,23 +762,66 @@ begin
     rw set.mem_set_of_eq,
     unfold grammar_generates,
     convert deri_x,
-    rw list.map_take,
-    have eqi_x_w :
-      equivalent_strings
-        (list.map (wrap_symbol₁ g₂.nt) x)
-        (list.take x.length (list.map symbol.terminal w)),
+    ext1 i,
+    by_cases i ≥ x.length,
     {
       sorry,
     },
-    clear_except eqi_x_w,
-    induction x with s z ih,
+    push_neg at h,
+    rw list.nth_map,
+    rw list.nth_take h,
+    have i_lt_len₁ : i < (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).length,
     {
-      refl,
+      sorry,
     },
-    -- we have wrong `ih` here
-    rw list.length_cons,
-    specialize ih sorry,
-    sorry,
+    have i_lt_len₂ : i < (list.map symbol.terminal w).length,
+    {
+      sorry,
+    },
+    have equivalent_ith :
+      equivalent_symbols
+        (list.nth_le (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) i i_lt_len₁)
+        (list.nth_le (list.map symbol.terminal w) i i_lt_len₂),
+    {
+      sorry,
+    },
+    have i_lt_len_w : i < w.length,
+    {
+      sorry,
+    },
+    have i_lt_len_lwx : i < (list.map (wrap_symbol₁ g₂.nt) x).length,
+    {
+      sorry,
+    },
+    have i_lt_len_x : i < x.length,
+    {
+      sorry,
+    },
+    rw list.nth_le_map at equivalent_ith,
+    swap, {
+      exact i_lt_len_w,
+    },
+    rw list.nth_le_append at equivalent_ith,
+    swap, {
+      exact i_lt_len_lwx,
+    },
+    rw list.nth_le_map at equivalent_ith,
+    swap, {
+      exact i_lt_len_x,
+    },
+    clear_except equivalent_ith,
+    rw list.nth_le_nth i_lt_len_x,
+    cases x.nth_le i i_lt_len_x with t n;
+    unfold wrap_symbol₁ at equivalent_ith;
+    unfold equivalent_symbols at equivalent_ith,
+    {
+      -- TODO continue here
+      sorry,
+    },
+    {
+      exfalso,
+      exact equivalent_ith,
+    },
   },
   split,
   {
