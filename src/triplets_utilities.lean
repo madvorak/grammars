@@ -43,7 +43,7 @@ begin
       rw length,
       apply add_le_add_right,
       exact ih } }
-end
+end -- TODO refactor
 
 end list
 

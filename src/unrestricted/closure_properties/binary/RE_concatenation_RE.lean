@@ -481,16 +481,37 @@ private def equivalent_symbols {N₁ N₂ : Type} : nst T N₁ N₂ → nst T N�
 | (symbol.nonterminal (sum.inl (none)))             (symbol.nonterminal (sum.inl (none)))              := true
 | _                                                 _                                                  := false
 
-private def equivalent_strings {N₁ N₂ : Type} : list (nst T N₁ N₂) → list (nst T N₁ N₂) → Prop
-| []         []         := true
-| (h₁ :: t₁) (h₂ :: t₂) := equivalent_symbols h₁ h₂ ∧ equivalent_strings t₁ t₂
-| _          _          := false
+private lemma equivalent_symbols_reflexive {N₁ N₂ : Type} : reflexive (@equivalent_symbols T _ N₁ N₂) :=
+begin
+  intro x,
+  cases x,
+  unfold equivalent_symbols,
+  cases x,
+  cases x,
+  unfold equivalent_symbols,
+  cases x,
+  unfold equivalent_symbols,
+  unfold equivalent_symbols,
+  cases x,
+  unfold equivalent_symbols,
+  unfold equivalent_symbols,
+end
+
+private lemma equivalent_symbols_symmetric {N₁ N₂ : Type} : symmetric (@equivalent_symbols T _ N₁ N₂) :=
+begin
+  intros x y hxy,
+  sorry,
+end
+
+private def equivalent_strings {N₁ N₂ : Type} : list (nst T N₁ N₂) → list (nst T N₁ N₂) → Prop :=
+list.forall₂ equivalent_symbols
 
 private lemma equivalent_strings_refl {N₁ N₂ : Type} {x : list (nst T N₁ N₂)} :
   equivalent_strings x x :=
 begin
-  -- TODO change the definitions to something that already provides reflexivity "out of the box"
-  sorry,
+  apply list.forall₂_same,
+  intros x xin,
+  apply equivalent_symbols_reflexive,
 end
 
 private lemma equivalent_strings_trans {N₁ N₂ : Type} {x y z : list (nst T N₁ N₂)}
@@ -498,7 +519,6 @@ private lemma equivalent_strings_trans {N₁ N₂ : Type} {x y z : list (nst T N
     (hyz : equivalent_strings y z) :
   equivalent_strings x z :=
 begin
-  -- TODO change the definitions to something that already provides transitivity "out of the box"
   sorry,
 end
 
@@ -507,24 +527,136 @@ private lemma equivalent_strings_append {N₁ N₂ : Type} {x₁ x₂ y₁ y₂ 
     (ass₂ : equivalent_strings x₂ y₂) :
   equivalent_strings (x₁ ++ x₂) (y₁ ++ y₂) :=
 begin
-  -- TODO should be somehow provided by mathlib, probably via list.forall or something like that
+  unfold equivalent_strings at *,
   sorry,
 end
 
 private lemma equivalent_strings_length {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
     (ass : equivalent_strings x y) :
   x.length = y.length :=
-begin
-  sorry,
-end
+list.forall₂_length_eq ass
+
 
 private lemma equivalent_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
     {i : ℕ} (i_lt_len_x : i < x.length) (i_lt_len_y : i < y.length) -- one of them should follow from the other
     (ass : equivalent_strings x y) :
   equivalent_symbols (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y) :=
 begin
-  -- TODO should be somehow provided by mathlib, probably via list.forall or something like that
+  unfold equivalent_strings at *,
   sorry,
+end
+
+private lemma big_induction {g₁ g₂ : grammar T} {w : list (symbol T (nnn g₁.nt g₂.nt))} (ass :
+    grammar_derives (big_grammar g₁ g₂)
+      [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
+       symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
+      w
+    ) :
+  ∃ x : list (symbol T g₁.nt),
+  ∃ y : list (symbol T g₂.nt),
+    and
+      (and
+        (grammar_derives g₁ [symbol.nonterminal g₁.initial] x)
+        (grammar_derives g₂ [symbol.nonterminal g₂.initial] y)
+      )
+      (equivalent_strings (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) w) :=
+begin
+  induction ass with a b trash orig ih,
+  {
+    use [[symbol.nonterminal g₁.initial], [symbol.nonterminal g₂.initial]],
+    split,
+    {
+      split;
+      apply grammar_deri_self,
+    },
+    {
+      rw list.map_singleton,
+      rw list.map_singleton,
+      unfold wrap_symbol₁,
+      unfold wrap_symbol₂,
+      rw ← two_singletons_of_doubleton,
+      unfold equivalent_strings,
+      rw list.forall₂_cons,
+      split,
+      {
+        unfold equivalent_symbols,
+      },
+      rw list.forall₂_cons,
+      split,
+      {
+        unfold equivalent_symbols,
+      },
+      exact list.forall₂.nil,
+    },
+  },
+  rcases ih with ⟨x, y, ⟨ih_x, ih_y⟩, ih_concat⟩,
+  rcases orig with ⟨r, rin, u, v, bef, aft⟩,
+  change _ ∈ list.cons _ _ at rin,
+  rw list.mem_cons_eq at rin,
+  cases rin,
+  {
+    exfalso,
+    sorry,
+  },
+  rw list.mem_append at rin,
+  cases rin,
+  {
+    rw list.mem_append at rin,
+    cases rin,
+    {
+      sorry,
+    },
+    {
+      sorry,
+    },
+  },
+  {
+    rw list.mem_append at rin,
+    cases rin,
+    {
+      unfold rules_for_terminals₁ at rin,
+      rw list.mem_map at rin,
+      rcases rin with ⟨t, -, eq_r⟩,
+      rw ← eq_r at *,
+      clear eq_r,
+      dsimp [prod.first, prod.secon, prod.third] at *,
+      use [x, y],
+      split,
+      {
+        split,
+        {
+          exact ih_x,
+        },
+        {
+          exact ih_y,
+        },
+      },
+      rw aft,
+      rw bef at ih_concat,
+      rw list.append_nil at ih_concat,
+      rw list.append_nil at ih_concat,
+      have equiv_utv :
+        equivalent_strings
+          (u ++ [symbol.nonterminal (sum.inr (sum.inl t))] ++ v)
+          (u ++ [symbol.terminal t] ++ v),
+      {
+        apply equivalent_strings_append,
+        apply equivalent_strings_append,
+        apply equivalent_strings_refl,
+        {
+          unfold equivalent_strings,
+          rw list.forall₂_cons,
+          unfold equivalent_symbols,
+          exact ⟨rfl, list.forall₂.nil⟩,
+        },
+        apply equivalent_strings_refl,
+      },
+      exact equivalent_strings_trans ih_concat equiv_utv,
+    },
+    {
+      sorry,
+    },
+  },
 end
 
 private lemma in_concatenated_of_in_big
@@ -654,117 +786,8 @@ begin
   },
   clear hyp_tran,
   rw w₁eq at hyp_deri,
-  clear w₁eq w₁,
-  have big_induction :
-    ∀ v : list (symbol T (nnn g₁.nt g₂.nt)),
-      grammar_derives (big_grammar g₁ g₂)
-        [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
-         symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
-        v →
-      ∃ x : list (symbol T g₁.nt), ∃ y : list (symbol T g₂.nt), and
-        (and
-          (grammar_derives g₁ [symbol.nonterminal g₁.initial] x)
-          (grammar_derives g₂ [symbol.nonterminal g₂.initial] y)
-        )
-        (equivalent_strings (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) v),
-  {
-    intros v ass,
-    induction ass with u z trash orig ih,
-    {
-      use [[symbol.nonterminal g₁.initial], [symbol.nonterminal g₂.initial]],
-      split,
-      {
-        split;
-        apply grammar_deri_self,
-      },
-      {
-        rw list.map_singleton,
-        rw list.map_singleton,
-        unfold wrap_symbol₁,
-        unfold wrap_symbol₂,
-        rw ← two_singletons_of_doubleton,
-        unfold equivalent_strings,
 
-        split,
-        {
-          unfold equivalent_symbols,
-        },
-        split,
-        {
-          unfold equivalent_symbols,
-        },
-        exact trivial,
-      },
-    },
-    rcases ih with ⟨x', y', ⟨ih_x', ih_y'⟩, ih_concat⟩,
-    rcases orig with ⟨r, rin, zᵣ, zₛ, bef, aft⟩,
-    change _ ∈ list.cons _ _ at rin,
-    rw list.mem_cons_eq at rin,
-    cases rin,
-    {
-      exfalso,
-      sorry,
-    },
-    rw list.mem_append at rin,
-    cases rin,
-    {
-      rw list.mem_append at rin,
-      cases rin,
-      {
-        sorry,
-      },
-      {
-        sorry,
-      },
-    },
-    {
-      rw list.mem_append at rin,
-      cases rin,
-      {
-        unfold rules_for_terminals₁ at rin,
-        rw list.mem_map at rin,
-        rcases rin with ⟨t, -, eq_r⟩,
-        rw ← eq_r at *,
-        clear eq_r,
-        dsimp [prod.first, prod.secon, prod.third] at *,
-        use [x', y'],
-        split,
-        {
-          split,
-          {
-            exact ih_x',
-          },
-          {
-            exact ih_y',
-          },
-        },
-        rw aft,
-        rw bef at ih_concat,
-        rw list.append_nil at ih_concat,
-        rw list.append_nil at ih_concat,
-        have equiv_ztz :
-          equivalent_strings
-            (zᵣ ++ [symbol.nonterminal (sum.inr (sum.inl t))] ++ zₛ)
-            (zᵣ ++ [symbol.terminal t] ++ zₛ),
-        {
-          apply equivalent_strings_append,
-          apply equivalent_strings_append,
-          apply equivalent_strings_refl,
-          {
-            unfold equivalent_strings,
-            unfold equivalent_symbols,
-            exact ⟨rfl, trivial⟩,
-          },
-          apply equivalent_strings_refl,
-        },
-        exact equivalent_strings_trans ih_concat equiv_ztz,
-      },
-      {
-        sorry,
-      },
-    },
-  },
-  have hope_result := big_induction (list.map symbol.terminal w) hyp_deri,
+  have hope_result := big_induction hyp_deri,
   clear_except hope_result,
   rcases hope_result with ⟨x, y, ⟨deri_x, deri_y⟩, concat_xy⟩,
 
