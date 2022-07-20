@@ -507,7 +507,23 @@ private lemma equivalent_strings_append {N₁ N₂ : Type} {x₁ x₂ y₁ y₂ 
     (ass₂ : equivalent_strings x₂ y₂) :
   equivalent_strings (x₁ ++ x₂) (y₁ ++ y₂) :=
 begin
-  -- TODO should be somehow provided by mathlib, probably via `list.forall` or something like that
+  -- TODO should be somehow provided by mathlib, probably via list.forall or something like that
+  sorry,
+end
+
+private lemma equivalent_strings_length {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
+    (ass : equivalent_strings x y) :
+  x.length = y.length :=
+begin
+  sorry,
+end
+
+private lemma equivalent_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
+    {i : ℕ} (i_lt_len_x : i < x.length) (i_lt_len_y : i < y.length) -- one of them should follow from the other
+    (ass : equivalent_strings x y) :
+  equivalent_symbols (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y) :=
+begin
+  -- TODO should be somehow provided by mathlib, probably via list.forall or something like that
   sorry,
 end
 
@@ -756,46 +772,74 @@ begin
   use list.drop x.length w,
   split,
   {
-    -- TODO finish first this proof
     clear deri_y,
     unfold grammar_language,
     rw set.mem_set_of_eq,
     unfold grammar_generates,
     convert deri_x,
+
+    have xylen := equivalent_strings_length concat_xy,
+    rw list.length_append at xylen,
+    repeat { rw list.length_map at xylen },
+
     ext1 i,
     by_cases i ≥ x.length,
     {
-      sorry,
+      convert_to none = none,
+      {
+        have xlens : x.length = (list.map (@symbol.terminal T g₁.nt) (list.take x.length w)).length,
+        {
+          clear_except xylen,
+          rw list.length_map,
+          rw list.length_take,
+          symmetry,
+          apply min_eq_left,
+          exact nat.le.intro xylen,
+        },
+        rw xlens at h,
+        clear_except h,
+        finish,
+      },
+      {
+        clear_except h,
+        finish,
+      },
+      refl,
     },
-    push_neg at h,
-    rw list.nth_map,
-    rw list.nth_take h,
+    rename h i_lt_len_x,
+    push_neg at i_lt_len_x,
+
+    have i_lt_len_lwx : i < (list.map (wrap_symbol₁ g₂.nt) x).length,
+    {
+      rw list.length_map,
+      exact i_lt_len_x,
+    },
+    have i_lt_len_w : i < w.length,
+    {
+      apply lt_of_lt_of_le i_lt_len_x,
+      exact nat.le.intro xylen,
+    },
     have i_lt_len₁ : i < (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).length,
     {
-      sorry,
+      rw list.length_append,
+      apply lt_of_lt_of_le i_lt_len_lwx,
+      apply le_self_add,
     },
     have i_lt_len₂ : i < (list.map symbol.terminal w).length,
     {
-      sorry,
+      rw list.length_map,
+      exact i_lt_len_w,
     },
+    rw list.nth_map,
+    rw list.nth_take i_lt_len_x,
+
     have equivalent_ith :
       equivalent_symbols
         (list.nth_le (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) i i_lt_len₁)
         (list.nth_le (list.map symbol.terminal w) i i_lt_len₂),
     {
-      sorry,
-    },
-    have i_lt_len_w : i < w.length,
-    {
-      sorry,
-    },
-    have i_lt_len_lwx : i < (list.map (wrap_symbol₁ g₂.nt) x).length,
-    {
-      sorry,
-    },
-    have i_lt_len_x : i < x.length,
-    {
-      sorry,
+      apply equivalent_strings_nth_le,
+      exact concat_xy,
     },
     rw list.nth_le_map at equivalent_ith,
     swap, {
@@ -815,8 +859,10 @@ begin
     unfold wrap_symbol₁ at equivalent_ith;
     unfold equivalent_symbols at equivalent_ith,
     {
-      -- TODO continue here
-      sorry,
+      have symbol_ith := congr_arg (@symbol.terminal T g₁.nt) equivalent_ith,
+      rw list.nth_le_nth i_lt_len_w,
+      rw option.map_some',
+      exact congr_arg option.some symbol_ith,
     },
     {
       exfalso,
@@ -843,14 +889,14 @@ begin
 
   apply set.eq_of_subset_of_subset,
   {
-    -- prove `L₁ * L₂ ⊇ ` here
+    -- prove `L₁ * L₂ ⊇` here
     intros w hyp,
     rw ← h₁,
     rw ← h₂,
     exact in_concatenated_of_in_big hyp,
   },
   {
-    -- prove `L₁ * L₂ ⊆ ` here
+    -- prove `L₁ * L₂ ⊆` here
     intros w hyp,
     rw ← h₁ at hyp,
     rw ← h₂ at hyp,
