@@ -1,10 +1,10 @@
 import unrestricted.grammar
 import language_operations
 
+
 variables {T : Type} [decidable_eq T]
 
-
-section auxiliary
+section reverse_RE_aux
 
 private def reversal_gis {N : Type} (x : list (symbol T N) × N × list (symbol T N)) :
   list (symbol T N) × N × list (symbol T N) :=
@@ -130,7 +130,7 @@ begin
   exact almost_done,
 end
 
-end auxiliary
+end reverse_RE_aux
 
 
 /-- The class of resursively-enumerable languages is closed under reversal. -/
