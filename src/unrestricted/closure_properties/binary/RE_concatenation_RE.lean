@@ -607,10 +607,25 @@ begin
       sorry,
     },
     {
+      use x,
       sorry,
     },
   },
   {
+    use [x, y],
+    split,
+    {
+      split,
+      {
+        exact ih_x,
+      },
+      {
+        exact ih_y,
+      },
+    },
+    rw aft,
+    rw bef at ih_concat,
+
     rw list.mem_append at rin,
     cases rin,
     {
@@ -620,19 +635,6 @@ begin
       rw ← eq_r at *,
       clear eq_r,
       dsimp [prod.first, prod.secon, prod.third] at *,
-      use [x, y],
-      split,
-      {
-        split,
-        {
-          exact ih_x,
-        },
-        {
-          exact ih_y,
-        },
-      },
-      rw aft,
-      rw bef at ih_concat,
       rw list.append_nil at ih_concat,
       rw list.append_nil at ih_concat,
       have equiv_utv :
@@ -654,7 +656,31 @@ begin
       exact equivalent_strings_trans ih_concat equiv_utv,
     },
     {
-      sorry,
+      unfold rules_for_terminals₂ at rin,
+      rw list.mem_map at rin,
+      rcases rin with ⟨t, -, eq_r⟩,
+      rw ← eq_r at *,
+      clear eq_r,
+      dsimp [prod.first, prod.secon, prod.third] at *,
+      rw list.append_nil at ih_concat,
+      rw list.append_nil at ih_concat,
+      have equiv_utv :
+        equivalent_strings
+          (u ++ [symbol.nonterminal (sum.inr (sum.inr t))] ++ v)
+          (u ++ [symbol.terminal t] ++ v),
+      {
+        apply equivalent_strings_append,
+        apply equivalent_strings_append,
+        apply equivalent_strings_refl,
+        {
+          unfold equivalent_strings,
+          rw list.forall₂_cons,
+          unfold equivalent_symbols,
+          exact ⟨rfl, list.forall₂.nil⟩,
+        },
+        apply equivalent_strings_refl,
+      },
+      exact equivalent_strings_trans ih_concat equiv_utv,
     },
   },
 end
@@ -829,8 +855,8 @@ begin
       },
       refl,
     },
+    push_neg at h,
     rename h i_lt_len_x,
-    push_neg at i_lt_len_x,
 
     have i_lt_len_lwx : i < (list.map (wrap_symbol₁ g₂.nt) x).length,
     {
@@ -894,6 +920,87 @@ begin
   },
   split,
   {
+    clear deri_x,
+    unfold grammar_language,
+    rw set.mem_set_of_eq,
+    unfold grammar_generates,
+    convert deri_y,
+
+    have xylen := equivalent_strings_length concat_xy,
+    rw list.length_append at xylen,
+    repeat { rw list.length_map at xylen },
+    rw add_comm at xylen,
+
+    ext1 i,
+    by_cases i ≥ y.length,
+    {
+      convert_to none = none,
+      {
+        have ylens : y.length = (list.map (@symbol.terminal T g₁.nt) (list.drop x.length w)).length,
+        {
+          clear_except xylen,
+          rw list.length_map,
+          rw list.length_drop,
+          rw add_comm at xylen,
+          finish,
+        },
+        rw ylens at h,
+        clear_except h,
+        finish,
+      },
+      {
+        clear_except h,
+        finish,
+      },
+      refl,
+    },
+    push_neg at h,
+    rename h i_lt_len_y,
+
+    have xli_lt_len_lwx : x.length + i < (list.map (wrap_symbol₁ g₂.nt) x).length,
+    {
+      rw list.length_map,
+      sorry,
+    },
+    have xli_lt_len_w : x.length + i < w.length,
+    {
+      sorry,
+    },
+    have xli_lt_len₁ : x.length + i < (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).length,
+    {
+      rw list.length_append,
+      apply lt_of_lt_of_le xli_lt_len_lwx,
+      apply le_self_add,
+    },
+    have xli_lt_len₂ : x.length + i < (list.map symbol.terminal w).length,
+    {
+      rw list.length_map,
+      exact xli_lt_len_w,
+    },
+
+    have equivalent_ith :
+      equivalent_symbols
+        (list.nth_le (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) (x.length + i) xli_lt_len₁)
+        (list.nth_le (list.map symbol.terminal w) (x.length + i) xli_lt_len₂),
+    {
+      apply equivalent_strings_nth_le,
+      exact concat_xy,
+    },
+    rw list.nth_le_map at equivalent_ith,
+    swap, {
+      exact xli_lt_len_w,
+    },
+    rw list.nth_le_append_right at equivalent_ith,
+    have foo : x.length + i - (list.map (wrap_symbol₁ g₂.nt) x).length = i,
+    {
+      rw list.length_map,
+      rw add_comm,
+      rw nat.add_sub_assoc,
+      rw nat.sub_self,
+      rw add_zero,
+      refl,
+    },
+    sorry,
     sorry,
   },
   apply list.take_append_drop,
