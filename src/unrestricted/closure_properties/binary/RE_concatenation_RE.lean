@@ -48,6 +48,7 @@ list.map (λ t, grule.mk ([], sum.inr (sum.inl t), []) [symbol.terminal t]) (all
 private def rules_for_terminals₂ (N₁ : Type) (g : grammar T) : list (grule T (nnn N₁ g.nt)) :=
 list.map (λ t, grule.mk ([], sum.inr (sum.inr t), []) [symbol.terminal t]) (all_used_terminals g)
 
+-- the grammar for concatenation of `g₁` and `g₂` languages
 private def big_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk
   (nnn g₁.nt g₂.nt)
@@ -79,18 +80,6 @@ begin
   split;
   refl,
 end
-
-
-section todo_move
-
-lemma two_singletons_of_doubleton {α : Type} {a b : α} : [a, b] = [a] ++ [b] :=
-rfl
-
-lemma append_of_quadrupledot {α : Type} (a : α) (l : list α) : a :: l = [a] ++ l :=
-rfl
-
-end todo_move
-
 
 private lemma grammar_generates_only_legit_terminals
     {g : grammar T} {w : list (symbol T g.nt)}
@@ -154,8 +143,8 @@ begin
   },
   rw list.map,
   rw list.map,
-  rw append_of_quadrupledot,
-  rw append_of_quadrupledot (symbol.terminal d),
+  rw list.append_singleton_of_cons,
+  rw list.append_singleton_of_cons (symbol.terminal d),
   have step_head :
     grammar_transforms (big_grammar g₁ g₂)
       ([(symbol.nonterminal ∘ sum.inr ∘ side) d] ++ list.map (symbol.nonterminal ∘ sum.inr ∘ side) l)
@@ -204,7 +193,7 @@ begin
     (list.map symbol.terminal u ++ [symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]) _,
   {
     clear_except hu,
-    rw two_singletons_of_doubleton,
+    rw list.two_singletons_of_doubleton,
     apply grammar_derives_with_postfix,
     apply @grammar_deri_of_deri_deri _ _ _ _ (list.map (
         (@symbol.nonterminal T (big_grammar g₁ g₂).nt) ∘ sum.inr ∘ sum.inl
@@ -484,17 +473,14 @@ private def equivalent_symbols {N₁ N₂ : Type} : nst T N₁ N₂ → nst T N�
 private lemma equivalent_symbols_reflexive {N₁ N₂ : Type} : reflexive (@equivalent_symbols T _ N₁ N₂) :=
 begin
   intro x,
-  cases x,
-  unfold equivalent_symbols,
-  cases x,
-  cases x,
-  unfold equivalent_symbols,
-  cases x,
-  unfold equivalent_symbols,
-  unfold equivalent_symbols,
-  cases x,
-  unfold equivalent_symbols,
-  unfold equivalent_symbols,
+  repeat {
+    try {
+      cases x,
+    },
+    try {
+      unfold equivalent_symbols,
+    },
+  },
 end
 
 private lemma equivalent_symbols_symmetric {N₁ N₂ : Type} : symmetric (@equivalent_symbols T _ N₁ N₂) :=
@@ -574,7 +560,7 @@ begin
       rw list.map_singleton,
       unfold wrap_symbol₁,
       unfold wrap_symbol₂,
-      rw ← two_singletons_of_doubleton,
+      rw ← list.two_singletons_of_doubleton,
       unfold equivalent_strings,
       rw list.forall₂_cons,
       split,
@@ -957,50 +943,8 @@ begin
     push_neg at h,
     rename h i_lt_len_y,
 
-    have xli_lt_len_lwx : x.length + i < (list.map (wrap_symbol₁ g₂.nt) x).length,
-    {
-      rw list.length_map,
-      sorry,
-    },
-    have xli_lt_len_w : x.length + i < w.length,
-    {
-      sorry,
-    },
-    have xli_lt_len₁ : x.length + i < (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).length,
-    {
-      rw list.length_append,
-      apply lt_of_lt_of_le xli_lt_len_lwx,
-      apply le_self_add,
-    },
-    have xli_lt_len₂ : x.length + i < (list.map symbol.terminal w).length,
-    {
-      rw list.length_map,
-      exact xli_lt_len_w,
-    },
-
-    have equivalent_ith :
-      equivalent_symbols
-        (list.nth_le (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) (x.length + i) xli_lt_len₁)
-        (list.nth_le (list.map symbol.terminal w) (x.length + i) xli_lt_len₂),
-    {
-      apply equivalent_strings_nth_le,
-      exact concat_xy,
-    },
-    rw list.nth_le_map at equivalent_ith,
-    swap, {
-      exact xli_lt_len_w,
-    },
-    rw list.nth_le_append_right at equivalent_ith,
-    have foo : x.length + i - (list.map (wrap_symbol₁ g₂.nt) x).length = i,
-    {
-      rw list.length_map,
-      rw add_comm,
-      rw nat.add_sub_assoc,
-      rw nat.sub_self,
-      rw add_zero,
-      refl,
-    },
-    sorry,
+    rw ← list.take_append_drop (list.map (wrap_symbol₁ g₂.nt) x).length (list.map symbol.terminal w) at concat_xy,
+    -- TODO continue here
     sorry,
   },
   apply list.take_append_drop,

@@ -27,7 +27,16 @@ lemma forall_mem_append_append {p : α → Prop} :
   (∀ a ∈ x ++ y ++ z, p a)  ↔  (∀ a ∈ x, p a) ∧ (∀ a ∈ y, p a) ∧ (∀ a ∈ z, p a)  :=
 by rw [ list.forall_mem_append, list.forall_mem_append, and_assoc ]
 
--- version for mathlib
+
+section todo_move_elsewhere
+
+lemma two_singletons_of_doubleton {α : Type} {a b : α} : [a, b] = [a] ++ [b] :=
+rfl
+
+lemma append_singleton_of_cons {α : Type} (a : α) (l : list α) : a :: l = [a] ++ l :=
+rfl
+
+-- version for mathlib (TODO refactor)
 theorem length_filter_map (f : α → option β) (l : list α) :
   (filter_map f l).length ≤ l.length :=
 begin
@@ -43,7 +52,9 @@ begin
       rw length,
       apply add_le_add_right,
       exact ih } }
-end -- TODO refactor
+end
+
+end todo_move_elsewhere
 
 end list
 
