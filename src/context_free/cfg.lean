@@ -152,7 +152,7 @@ end cfg_utilities
 
 section cfg_conversion
 
-variables {T : Type} [decidable_eq T]
+variables {T : Type}
 
 def csg_of_cfg (g : CF_grammar T) : CS_grammar T :=
 CS_grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
@@ -185,7 +185,7 @@ begin
 end
 
 lemma grammar_of_csg_of_cfg :
-  grammar_of_csg ∘ csg_of_cfg = @grammar_of_cfg T _ :=
+  grammar_of_csg ∘ csg_of_cfg = @grammar_of_cfg T :=
 begin
   ext,
   apply grammar_of_cfg_well_defined,

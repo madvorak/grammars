@@ -18,13 +18,13 @@ structure grule (τ : Type) (ν : Type) :=
 (output_string : list (symbol τ ν))
 
 /-- Grammar (general) that generates words over the alphabet `termi` (a type of terminals). -/
-structure grammar (termi : Type) [decidable_eq termi] :=
+structure grammar (termi : Type) :=
 (nt : Type)                     -- type of nonterminals
 (initial : nt)                  -- initial symbol
 (rules : list (grule termi nt)) -- rewriting rules
 
 
-variables {T : Type} [decidable_eq T]
+variables {T : Type}
 
 /-- One step of grammatical transformation. -/
 def grammar_transforms (g : grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :=
@@ -53,7 +53,7 @@ end grammar_definitions
 
 
 section grammar_utilities
-variables {T : Type} [decidable_eq T] {g : grammar T}
+variables {T : Type} {g : grammar T}
 
 /-- The relation `grammar_derives` is reflexive. -/
 lemma grammar_deri_self {w : list (symbol T g.nt)} :

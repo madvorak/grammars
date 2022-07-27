@@ -54,6 +54,12 @@ begin
       exact ih } }
 end
 
+lemma nth_eq_nth_of_nth_le_eq_nth_le
+  {i j : ℕ} {ix : i < x.length} {jy : j < y.length}
+  (h : x.nth_le i ix = y.nth_le j jy) :
+  x.nth i = y.nth j :=
+by rw [list.nth_le_nth ix, list.nth_le_nth jy, h]
+
 end todo_move_elsewhere
 
 end list
