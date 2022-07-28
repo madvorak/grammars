@@ -919,34 +919,34 @@ begin
     clear_except hyp_tran,
     -- only the first rule is applicable
     rcases hyp_tran with ⟨r, rin, u, v, bef, aft⟩,
+
+    have bef_len := congr_arg list.length bef,
+    rw list.length_append_append at bef_len,
+    rw list.length_append_append at bef_len,
+    dsimp at bef_len,
+    have u_nil : u = [], swap,
+    have v_nil : v = [], swap,
+    have rif_nil : r.input_string.first = [], swap,
+    any_goals {
+      clear_except bef_len,
+      rw ← list.length_eq_zero,
+      linarith,
+    },
+
     change _ ∈ list.cons _ _ at rin,
     rw list.mem_cons_iff at rin,
     cases rin,
     {
       rw rin at bef aft,
       dsimp at bef aft,
-      have bef_len := congr_arg list.length bef,
-      rw list.length_append_append at bef_len,
-      rw list.length_append_append at bef_len,
-      dsimp at bef_len,
-      have u_nil : u = [], swap,
-      have v_nil : v = [], swap,
       rw [u_nil, v_nil] at aft,
       rw [list.nil_append, list.append_nil] at aft,
       exact aft,
-
-      all_goals {
-        clear_except bef_len,
-        rw ← list.length_eq_zero,
-        linarith,
-      },
     },
     exfalso,
     have nt_match : symbol.nonterminal (big_grammar g₁ g₂).initial = symbol.nonterminal r.input_string.secon,
     {
       have bef_fst := congr_fun (congr_arg list.nth bef) 0,
-      have u_nil : u = [], sorry, -- proved above
-      have rif_nil : r.input_string.first = [], sorry, -- easy
       rw [u_nil, rif_nil] at bef_fst,
       clear_except bef_fst,
       dsimp at bef_fst,
@@ -954,6 +954,7 @@ begin
       exact bef_fst,
     },
     clear_except rin nt_match,
+
     repeat { rw list.mem_append at rin },
     cases rin,
     {
@@ -1223,7 +1224,9 @@ begin
       y.nth_le i i_lt_len_y = (list.map symbol.terminal (list.drop x.length w)).nth_le i i_lt_len_mtw,
     {
       rw goal_as_ith_drop,
-      sorry,
+      clear_except,
+      congr,
+      rw list.map_drop,
     },
     clear_except goal_as_ith_map,
     convert list.nth_eq_nth_of_nth_le_eq_nth_le goal_as_ith_map,
