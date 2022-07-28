@@ -1,7 +1,7 @@
 import unrestricted.grammar
 import language_operations
 
-variables {T : Type} [decidable_eq T]
+variables {T : Type}
 
 
 section auxiliary
@@ -32,7 +32,7 @@ begin
 end
 
 private lemma reversal_grule_reversal_grule {N : Type} :
-  @reversal_grule T _ N ∘ @reversal_grule T _ N = id :=
+  @reversal_grule T N ∘ @reversal_grule T N = id :=
 begin
   ext,
   apply dual_of_reversal_grule,

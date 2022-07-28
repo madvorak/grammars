@@ -5,7 +5,7 @@ import unrestricted.closure_properties.binary.RE_concatenation_RE
 private def nn (T N : Type) : Type :=
 option (fin 2 × (N ⊕ T))
 
-variables {T : Type} [decidable_eq T]
+variables {T : Type}
 
 private def wrap_symbol {N : Type} (parity : fin 2) : symbol T N → symbol T (nn T N)
 | (symbol.terminal t)    := symbol.nonterminal (some (parity, sum.inr t))
