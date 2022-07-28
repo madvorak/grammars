@@ -1,8 +1,8 @@
 import context_free.cfg
 import tactic
 
-variables {T : Type}
 
+variables {T : Type}
 
 /-- Context-free grammar for the empty language (i.e., `∈` always gives `false`). -/
 def cfg_empty_lang : CF_grammar T :=

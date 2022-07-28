@@ -1,8 +1,8 @@
 import unrestricted.grammar
 import language_operations
 
-variables {T : Type}
 
+variables {T : Type}
 
 section auxiliary
 

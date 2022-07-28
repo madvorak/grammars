@@ -1215,10 +1215,10 @@ begin
         have imposs_gt_self : c.length + 1 + d.length > c.length + 1 + d.length,
         {
           calc c.length + 1 + d.length
-              = (@lsTN_of_lsTN₁ T g₁ g₂ u).length + (@lsTN_of_lsTN₂ T g₁ g₂ v).length : total_length.symm
-          ... > (@lsTN_of_lsTN₁ T g₁ g₂ u).length + d.length : add_lt_add_left hlen_vd _
-          ... ≥ c.length + d.length + 1 : by { apply nat.succ_le_of_lt, apply add_lt_add_right too_long, }
-        ... = c.length + 1 + d.length : nat.add_right_comm _ _ _,
+              = (@lsTN_of_lsTN₁ T g₁ g₂ u).length + (@lsTN_of_lsTN₂ T g₁ g₂ v).length :   total_length.symm
+          ... > (@lsTN_of_lsTN₁ T g₁ g₂ u).length + d.length :   add_lt_add_left hlen_vd _
+          ... ≥ c.length + d.length + 1 :   by { apply nat.succ_le_of_lt, apply add_lt_add_right too_long, }
+          ... = c.length + 1 + d.length :   nat.add_right_comm _ _ _,
         },
         exact nat.lt_asymm imposs_gt_self imposs_gt_self,
       },
