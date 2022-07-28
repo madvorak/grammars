@@ -1131,7 +1131,6 @@ begin
     have xylen := equivalent_strings_length concat_xy,
     rw list.length_append at xylen,
     repeat { rw list.length_map at xylen },
-    rw add_comm at xylen,
 
     ext1 i,
     by_cases i ≥ y.length,
@@ -1143,7 +1142,6 @@ begin
           clear_except xylen,
           rw list.length_map,
           rw list.length_drop,
-          rw add_comm at xylen,
           finish,
         },
         rw ylens at h,
@@ -1176,8 +1174,7 @@ begin
         apply min_eq_left,
         rw list.length_map,
         rw list.length_map,
-        clear_except xylen,
-        linarith,
+        exact nat.le.intro xylen,
       },
       swap, {
         exact T,
@@ -1199,39 +1196,62 @@ begin
       rw list.length_map,
       exact i_lt_len_y,
     },
-    have i_lt_len_dlmxw :
-      i < (list.drop (list.map (wrap_symbol₁ g₂.nt) x).length (list.map symbol.terminal w)).length,
-    {
-      sorry,
-    },
     have i_lt_len_dxw : i < (list.drop x.length (list.map symbol.terminal w)).length,
     {
-      sorry,
+      rw list.length_drop,
+      rw list.length_map,
+      rw ← xylen,
+      convert i_lt_len_lwy,
+      rw list.length_map,
+      rw add_comm,
+      rw nat.add_sub_assoc,
+      rw nat.sub_self,
+      rw nat.add_zero,
+      refl,
     },
     have i_lt_len_mtw : i < (list.map symbol.terminal (list.drop x.length w)).length,
     {
-      sorry,
+      convert i_lt_len_dxw,
+      apply list.map_drop,
+    },
+    have i_lt_len_dlmxw :
+      i < (list.drop (list.map (wrap_symbol₁ g₂.nt) x).length (list.map symbol.terminal w)).length,
+    {
+      rw list.length_map,
+      -- DO NOT call `i_lt_len_dxw` even though it looks like a good idea!
+      rw list.length_drop,
+      rw list.length_map,
+      rw ← xylen,
+      convert i_lt_len_lwy,
+      rw list.length_map,
+      rw add_comm,
+      rw nat.add_sub_assoc,
+      rw nat.sub_self,
+      rw nat.add_zero,
+      refl,
     },
     have eqiv_symb := equivalent_strings_nth_le i_lt_len_lwy i_lt_len_dlmxw equivalent_second_parts,
 
     have goal_as_ith_drop :
       y.nth_le i i_lt_len_y = (list.drop x.length (list.map symbol.terminal w)).nth_le i i_lt_len_dxw,
     {
-      clear_except eqiv_symb,
+      have foo : x.length + i < w.length,
+      {
+        clear_except i_lt_len_y xylen,
+        linarith,
+      },
+      have bar : (list.map (wrap_symbol₁ g₂.nt) x).length + i < w.length,
+      {
+        rw list.length_map,
+        exact foo,
+      },
+      clear_except eqiv_symb foo bar,
+
       rw list.nth_le_map _ _ i_lt_len_y at eqiv_symb,
       rw list.nth_le_drop' at *,
-
-      have foo : x.length + i < w.length, sorry,
-      have bar : (list.map (wrap_symbol₁ g₂.nt) x).length + i < w.length, sorry,
-      
       cases y.nth_le i i_lt_len_y with t n,
       {
         unfold wrap_symbol₂ at eqiv_symb,
-/- The following 3 patterns are possible at `eqiv_symb` now:
-` | (symbol.nonterminal (sum.inr (sum.inr a)))        (symbol.nonterminal (sum.inr (sum.inl a')))        := a = a'  `
-` | (symbol.nonterminal (sum.inr (sum.inr a)))        (symbol.nonterminal (sum.inr (sum.inr a')))        := a = a'  `
-` | (symbol.nonterminal (sum.inr (sum.inr a)))        (symbol.terminal t)                                := t = a   `
--/
         rw list.nth_le_map at *,
         swap, exact foo,
         swap, exact bar,
