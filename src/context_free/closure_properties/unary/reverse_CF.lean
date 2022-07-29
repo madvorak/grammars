@@ -39,12 +39,12 @@ begin
     apply CF_deri_self,
   },
   apply CF_deri_of_deri_tran ih,
-  rcases orig with ⟨ r, rin, x, y, bef, aft ⟩,
+  rcases orig with ⟨r, rin, x, y, bef, aft⟩,
   change r ∈ (list.map (
       λ r : g.nt × list (symbol T g.nt), (r.fst, list.reverse r.snd)
     ) g.rules) at rin,
   rw list.mem_map at rin,
-  rcases rin with ⟨ r₀, rin₀, r_from_r₀ ⟩,
+  rcases rin with ⟨r₀, rin₀, r_from_r₀⟩,
   use r₀,
   split,
   {
@@ -96,7 +96,7 @@ end auxiliary
 theorem CF_of_reverse_CF (L : language T) :
   is_CF L  →  is_CF (reverse_lang L)  :=
 begin
-  rintro ⟨ g, hgL ⟩,
+  rintro ⟨g, hgL⟩,
   rw ← hgL,
 
   use reversal_grammar g,

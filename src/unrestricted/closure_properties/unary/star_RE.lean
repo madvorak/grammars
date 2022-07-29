@@ -41,7 +41,7 @@ grammar.mk (nn T g.nt) none (
 theorem RE_of_star_RE (L : language T) :
   is_RE L  →  is_RE L.star  :=
 begin
-  rintro ⟨ g₀, hg₀ ⟩,
+  rintro ⟨g₀, hg₀⟩,
   use star_grammar g₀,
   rw ← hg₀,
   ext1 w,

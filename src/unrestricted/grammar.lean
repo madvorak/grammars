@@ -100,7 +100,7 @@ begin
   {
     exact ih,
   },
-  rcases hyp with ⟨ rule, rule_in, u, v, h_bef, h_aft ⟩,
+  rcases hyp with ⟨rule, rule_in, u, v, h_bef, h_aft⟩,
   use rule,
   split,
   {
@@ -128,7 +128,7 @@ begin
   {
     exact ih,
   },
-  rcases hyp with ⟨ rule, rule_in, u, v, h_bef, h_aft ⟩,
+  rcases hyp with ⟨rule, rule_in, u, v, h_bef, h_aft⟩,
   use rule,
   split,
   {

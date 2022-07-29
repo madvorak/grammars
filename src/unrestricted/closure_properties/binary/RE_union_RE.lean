@@ -5,11 +5,11 @@ variables {T : Type}
 
 private def union_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
-  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩ ::
-  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩ ::
-  ((list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules) ++
-   (list.map (lift_rule_ (some ∘ sum.inr)) g₂.rules)
-))
+  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩ :: (
+  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩ :: (
+  (list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules) ++
+  (list.map (lift_rule_ (some ∘ sum.inr)) g₂.rules)
+)))
 
 
 section auxiliary
@@ -82,7 +82,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
 }
 ) (by
 {
-  rintros r ⟨ rin, n₀, rnt ⟩,
+  rintros r ⟨rin, n₀, rnt⟩,
   cases rin,
   {
     exfalso,
@@ -107,7 +107,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
   cases rin,
   {
     rw list.mem_map at rin,
-    rcases rin with ⟨ r₁, r₁_in, r₁_lift ⟩,
+    rcases rin with ⟨r₁, r₁_in, r₁_lift⟩,
     use r₁,
     split,
     {
@@ -118,7 +118,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
   {
     exfalso,
     rw list.mem_map at rin,
-    rcases rin with ⟨ r₂, r₂_in, r₂_lift ⟩,
+    rcases rin with ⟨r₂, r₂_in, r₂_lift⟩,
     rw ← r₂_lift at rnt,
     unfold lift_rule_ at rnt,
     dsimp at rnt,
@@ -184,7 +184,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
 }
 ) (by
 {
-  rintros r ⟨ rin, n₀, rnt ⟩,
+  rintros r ⟨rin, n₀, rnt⟩,
   cases rin,
   {
     exfalso,
@@ -210,7 +210,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
   {
     exfalso,
     rw list.mem_map at rin,
-    rcases rin with ⟨ r₁, r₁_in, r₁_lift ⟩,
+    rcases rin with ⟨r₁, r₁_in, r₁_lift⟩,
     rw ← r₁_lift at rnt,
     unfold lift_rule_ at rnt,
     dsimp at rnt,
@@ -220,7 +220,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
   },
   {
     rw list.mem_map at rin,
-    rcases rin with ⟨ r₂, r₂_in, r₂_lift ⟩,
+    rcases rin with ⟨r₂, r₂_in, r₂_lift⟩,
     use r₂,
     split,
     {
@@ -257,7 +257,7 @@ begin
       tauto,
     }
   },
-  rcases hyp with ⟨ i, ⟨ rul, rin, u, v, bef, aft ⟩, deri ⟩,
+  rcases hyp with ⟨i, ⟨rul, rin, u, v, bef, aft⟩, deri⟩,
 
   have uv_nil :  u = []  ∧  v = [],
   {
@@ -284,7 +284,7 @@ begin
       exact v_len_0,
     },
   },
-  rw [ uv_nil.1, list.nil_append, uv_nil.2, list.append_nil ] at bef aft,
+  rw [uv_nil.1, list.nil_append, uv_nil.2, list.append_nil] at bef aft,
 
   have same_nt : (union_grammar g₁ g₂).initial = rul.input_string.secon,
   {
@@ -292,7 +292,7 @@ begin
     have elemeq : [symbol.nonterminal (union_grammar g₁ g₂).initial] = [symbol.nonterminal rul.input_string.secon],
     {
       have bef_len := congr_arg list.length bef,
-      rw [ list.length_append_append, list.length_singleton, list.length_singleton ] at bef_len,
+      rw [list.length_append_append, list.length_singleton, list.length_singleton] at bef_len,
       have rl_first : rul.input_string.first.length = 0,
       {
         clear_except bef_len,
@@ -304,7 +304,7 @@ begin
         linarith,
       },
       rw list.length_eq_zero at rl_first rl_third,
-      rw [ rl_first, rl_third ] at bef,
+      rw [rl_first, rl_third] at bef,
       exact bef,
     },
     exact symbol.nonterminal.inj (list.head_eq_of_cons_eq elemeq),
@@ -321,7 +321,7 @@ begin
     clear_except sinked,
     specialize sinked (by {
       unfold good_string_,
-      simp only [ list.mem_singleton, forall_eq ],
+      simp only [list.mem_singleton, forall_eq],
       use g₁.initial,
       refl,
     }),
@@ -344,7 +344,7 @@ begin
     clear_except sinked,
     specialize sinked (by {
       unfold good_string_,
-      simp only [ list.mem_singleton, forall_eq ],
+      simp only [list.mem_singleton, forall_eq],
       use g₂.initial,
       refl,
     }),
@@ -366,7 +366,7 @@ begin
   rw list.mem_append at rin,
   cases rin;
   rw list.mem_map at rin;
-  rcases rin with ⟨ ror, rri, rli ⟩;
+  rcases rin with ⟨ror, rri, rli⟩;
   rw ← rli at bef;
   clear_except bef,
 
@@ -481,7 +481,7 @@ end auxiliary
 theorem RE_of_RE_u_RE (L₁ : language T) (L₂ : language T) :
   is_RE L₁  ∧  is_RE L₂   →   is_RE (L₁ + L₂)   :=
 begin
-  rintro ⟨ ⟨ g₁, h₁ ⟩, ⟨ g₂, h₂ ⟩ ⟩,
+  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
 
   unfold is_RE,
   use union_grammar g₁ g₂,

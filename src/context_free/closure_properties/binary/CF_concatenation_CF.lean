@@ -53,7 +53,7 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
   five_steps,
 }) (by {
   intro r,
-  rintro ⟨ r_in, r_ntype ⟩,
+  rintro ⟨r_in, r_ntype⟩,
   cases r_in,
   {
     exfalso,
@@ -66,21 +66,23 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
   cases r_in,
   {
     rw list.mem_map at r_in,
-    rcases r_in with ⟨ r₁, r₁_in, r₁_convert_r ⟩,
+    rcases r_in with ⟨r₁, r₁_in, r₁_convert_r⟩,
     use r₁,
     split,
     {
       exact r₁_in,
     },
     rw ← r₁_convert_r,
-    simp only [ lift_rule, rule_of_rule₁, lift_string, lsTN_of_lsTN₁,
-                prod.mk.inj_iff, eq_self_iff_true, true_and ],
+    simp only [
+      lift_rule, rule_of_rule₁, lift_string, lsTN_of_lsTN₁,
+      prod.mk.inj_iff, eq_self_iff_true, true_and
+    ],
     five_steps,
   },
   {
     exfalso,
     rw list.mem_map at r_in,
-    rcases r_in with ⟨ r₂, r₂_in, r₂_convert_r ⟩,
+    rcases r_in with ⟨r₂, r₂_in, r₂_convert_r⟩,
     rw ← r₂_convert_r at r_ntype,
     unfold rule_of_rule₂ at r_ntype,
     dsimp at r_ntype,
@@ -141,7 +143,7 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
   five_steps,
 }) (by {
   intro r,
-  rintro ⟨ r_in, r_ntype ⟩,
+  rintro ⟨r_in, r_ntype⟩,
   cases r_in,
   {
     exfalso,
@@ -155,7 +157,7 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
   {
     exfalso,
     rw list.mem_map at r_in,
-    rcases r_in with ⟨ r₁, r₁_in, r₁_convert_r ⟩,
+    rcases r_in with ⟨r₁, r₁_in, r₁_convert_r⟩,
     rw ← r₁_convert_r at r_ntype,
     unfold rule_of_rule₁ at r_ntype,
     dsimp at r_ntype,
@@ -165,15 +167,17 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
   },
   {
     rw list.mem_map at r_in,
-    rcases r_in with ⟨ r₂, r₂_in, r₂_convert_r ⟩,
+    rcases r_in with ⟨r₂, r₂_in, r₂_convert_r⟩,
     use r₂,
     split,
     {
       exact r₂_in,
     },
     rw ← r₂_convert_r,
-    simp only [ lift_rule, rule_of_rule₂, lift_string, lsTN_of_lsTN₂,
-                prod.mk.inj_iff, eq_self_iff_true, true_and ],
+    simp only [
+      lift_rule, rule_of_rule₂, lift_string, lsTN_of_lsTN₂,
+      prod.mk.inj_iff, eq_self_iff_true, true_and
+    ],
     five_steps,
   },
 }) oN₂_of_N (by {
@@ -269,6 +273,7 @@ begin
     cases u.nth_le n h with termi nonte,
     {
       unfold sTN_of_sTN₁ at nth_equ,
+      clear_except nth_equ,
       finish,
     },
     {
@@ -281,7 +286,10 @@ begin
     finish,
   },
   {
-    finish,
+    push_neg at h,
+    rw list.nth_eq_none_iff,
+    rw list.length_take,
+    exact min_le_of_left_le h,
   },
   refl,
 end
@@ -408,14 +416,14 @@ private lemma self_of_sTN₁ {g₁ g₂ : CF_grammar T} (symb : symbol T g₁.nt
   sTN₁_of_sTN (@sTN_of_sTN₁ _ _ g₂ symb) = symb :=
 begin
   cases symb;
-  finish,
+  refl,
 end
 
 private lemma self_of_sTN₂ {g₁ g₂ : CF_grammar T} (symb : symbol T g₂.nt) :
   sTN₂_of_sTN (@sTN_of_sTN₂ _ g₁ _ symb) = symb :=
 begin
   cases symb;
-  finish,
+  refl,
 end
 
 private lemma self_of_lsTN₁ {g₁ g₂ : CF_grammar T} (stri : list (symbol T g₁.nt)) :
@@ -439,7 +447,7 @@ begin
     apply congr_fun,
     refl,
   },
-  finish,
+  apply list.filter_map_some,
 end
 
 private lemma self_of_lsTN₂ {g₁ g₂ : CF_grammar T} (stri : list (symbol T g₂.nt)) :
@@ -463,7 +471,7 @@ begin
     apply congr_fun,
     refl,
   },
-  finish,
+  apply list.filter_map_some,
 end
 
 private lemma in_concatenated_of_in_combined
@@ -506,14 +514,14 @@ begin
       },
       use val,
     },
-    rcases hw0 with ⟨ s, hs ⟩,
+    rcases hw0 with ⟨s, hs⟩,
     rw hs at hh,
     dsimp at hh,
     rw option.some_inj at hh,
     tauto,
     exact T,
   },
-  rcases h with ⟨ y, first_step, derivation ⟩,
+  rcases h with ⟨y, first_step, derivation⟩,
   clear hyp,
 
   have only_option :
@@ -523,7 +531,7 @@ begin
       symbol.nonterminal (some (sum.inr (g₂.initial)))
     ],
   {
-    rcases first_step with ⟨ first_rule, first_rule_in, p, q, bef, aft ⟩,
+    rcases first_step with ⟨first_rule, first_rule_in, p, q, bef, aft⟩,
     have len_bef := congr_arg list.length bef,
     simp at len_bef,
     have p_nil : p = [],
@@ -606,7 +614,7 @@ begin
         exact rfst,
       },
     },
-    rw [ p_nil, q_nil, only_rule ] at aft,
+    rw [p_nil, q_nil, only_rule] at aft,
     rw list.append_nil at aft,
     rw list.nil_append at aft,
     exact aft,
@@ -644,8 +652,8 @@ begin
       },
     },
     clear trash,
-    rcases orig with ⟨ orig_rule, orig_in, c, d, bef, aft ⟩,
-    rcases ih with ⟨ u, v, ⟨ ih₁, ih₂ ⟩, ih_concat ⟩,
+    rcases orig with ⟨orig_rule, orig_in, c, d, bef, aft⟩,
+    rcases ih with ⟨u, v, ⟨ih₁, ih₂⟩, ih_concat⟩,
     cases orig_in,
     {
       exfalso,
@@ -722,7 +730,7 @@ begin
     cases orig_in,
     {
       rw list.mem_map at orig_in,
-      rcases orig_in with ⟨ r₁, r₁_in, r₁_conv ⟩,
+      rcases orig_in with ⟨r₁, r₁_in, r₁_conv⟩,
       rw aft,
       rw bef at ih_concat,
       clear bef aft a b,
@@ -742,7 +750,7 @@ begin
         {
           unfold lsTN_of_lsTN₂,
           rw list.mem_map,
-          rintro ⟨ s, trash, imposs ⟩,
+          rintro ⟨s, trash, imposs⟩,
           cases s,
           {
             have terminal_eq_nonte : symbol.terminal s = symbol.nonterminal (some (sum.inl r₁.fst)),
@@ -1137,7 +1145,7 @@ begin
     },
     {
       rw list.mem_map at orig_in,
-      rcases orig_in with ⟨ r₂, r₂_in, r₂_conv ⟩,
+      rcases orig_in with ⟨r₂, r₂_in, r₂_conv⟩,
       rw aft,
       rw bef at ih_concat,
       clear bef aft a b,
@@ -1157,7 +1165,7 @@ begin
         {
           unfold lsTN_of_lsTN₁,
           rw list.mem_map,
-          rintro ⟨ s, trash, imposs ⟩,
+          rintro ⟨s, trash, imposs⟩,
           cases s,
           {
             have terminal_eq_nonte : symbol.terminal s = symbol.nonterminal (some (sum.inr r₂.fst)),
@@ -1396,7 +1404,7 @@ begin
   },
   specialize complicated_induction (list.map symbol.terminal w) derivation,
 
-  rcases complicated_induction with ⟨ u, v, ⟨ hu, hv ⟩, hw ⟩,
+  rcases complicated_induction with ⟨u, v, ⟨hu, hv⟩, hw⟩,
   use liT_of_lsTN₃ u,
   use liT_of_lsTN₃ v,
   have huvw :
@@ -1492,7 +1500,7 @@ private lemma in_combined_of_in_concatenated
   w ∈ CF_language (combined_grammar g₁ g₂) :=
 begin
   rw language.mem_mul at hyp,
-  rcases hyp with ⟨ u, v, hu, hv, hw ⟩,
+  rcases hyp with ⟨u, v, hu, hv, hw⟩,
   unfold CF_language at *,
   change
     CF_derives
@@ -1588,7 +1596,7 @@ end
 theorem CF_of_CF_c_CF (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ * L₂)   :=
 begin
-  rintro ⟨ ⟨ g₁, h₁ ⟩, ⟨ g₂, h₂ ⟩ ⟩,
+  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
 
   use combined_grammar g₁ g₂,
 

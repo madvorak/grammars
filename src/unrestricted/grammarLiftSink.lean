@@ -21,8 +21,8 @@ list.filter_map (sink_symbol_ sink_N)
 
 def lift_rule_ (lift_N : N₀ → N) : grule T N₀ → grule T N :=
 λ r : grule T N₀,
-  ⟨ (lift_string_ lift_N r.input_string.first, lift_N r.input_string.secon, lift_string_ lift_N r.input_string.third),
-    lift_string_ lift_N r.output_string ⟩
+  ⟨(lift_string_ lift_N r.input_string.first, lift_N r.input_string.secon, lift_string_ lift_N r.input_string.third),
+    lift_string_ lift_N r.output_string⟩
 
 end functions_lift_sink
 
@@ -83,7 +83,7 @@ private lemma lift_tran_
     (hyp : grammar_transforms lg.g₀ input output) :
   grammar_transforms lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
 begin
-  rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
+  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
   use lift_rule_ lg.lift_nt rule,
   split,
   {
@@ -140,7 +140,7 @@ private lemma sink_tran_
   grammar_transforms lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)
   ∧ good_string_ output :=
 begin
-  rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
+  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
 
   rcases lg.preimage_of_rules rule (by {
     split,
@@ -150,18 +150,21 @@ begin
     rw bef at ok_input,
     have good_matched_nonterminal : good_letter_ (symbol.nonterminal rule.input_string.secon),
     {
-      specialize ok_input (symbol.nonterminal rule.input_string.secon),
-      finish,
+      apply ok_input (symbol.nonterminal rule.input_string.secon),
+      apply list.mem_append_left,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      rw list.mem_singleton,
     },
     change ∃ n₀ : lg.g₀.nt, lg.sink_nt rule.input_string.secon = some n₀ at good_matched_nonterminal,
     cases good_matched_nonterminal with n₀ hn₀,
     use n₀,
     have almost := congr_arg (option.map lg.lift_nt) hn₀,
-    rw lifted_grammar_inverse lg rule.input_string.secon ⟨ n₀, hn₀ ⟩ at almost,
+    rw lifted_grammar_inverse lg rule.input_string.secon ⟨n₀, hn₀⟩ at almost,
     simp at almost,
     apply option.some_injective,
     exact almost.symm,
-  }) with ⟨ pre_rule, pre_in, preimage ⟩,
+  }) with ⟨pre_rule, pre_in, preimage⟩,
 
   split, swap,
   {
@@ -190,7 +193,7 @@ begin
     dsimp at a_in_ros,
     unfold lift_string_ at a_in_ros,
     rw list.mem_map at a_in_ros,
-    rcases a_in_ros with ⟨ s, trash, a_from_s ⟩,
+    rcases a_in_ros with ⟨s, trash, a_from_s⟩,
     rw ← a_from_s,
     cases s,
     {

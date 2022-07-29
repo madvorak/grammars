@@ -93,7 +93,7 @@ begin
     right,
     exact symbol_derived,
   },
-  rcases orig with ⟨ r, rin, u, v, bef, aft ⟩,
+  rcases orig with ⟨r, rin, u, v, bef, aft⟩,
   rw aft at symbol_derived,
   rw list.mem_append at symbol_derived,
   rw list.mem_append at symbol_derived,
@@ -179,7 +179,7 @@ private lemma in_big_of_in_concatenated
   w ∈ grammar_language (big_grammar g₁ g₂) :=
 begin
   rw language.mem_mul at ass,
-  rcases ass with ⟨ u, v, hu, hv, hw ⟩,
+  rcases ass with ⟨u, v, hu, hv, hw⟩,
   unfold grammar_language at *,
   rw set.mem_set_of_eq at *,
   unfold grammar_generates at *,
@@ -213,7 +213,7 @@ begin
         },
         apply grammar_deri_of_deri_tran ih,
         clear_except orig,
-        rcases orig with ⟨ r, rin, u, v, bef, aft ⟩,
+        rcases orig with ⟨r, rin, u, v, bef, aft⟩,
         use wrap_grule₁ g₂.nt r,
         split,
         {
@@ -340,7 +340,7 @@ begin
         },
         apply grammar_deri_of_deri_tran ih,
         clear_except orig,
-        rcases orig with ⟨ r, rin, u, v, bef, aft ⟩,
+        rcases orig with ⟨r, rin, u, v, bef, aft⟩,
         use wrap_grule₂ g₁.nt r,
         split,
         {
@@ -803,10 +803,12 @@ begin
         rw list.filter_map_some,
         apply equivalent_strings_refl,
       },
+      -- TODO
       sorry,
     },
     {
       use x,
+      -- this should be the last step of the proof
       sorry,
     },
   },
@@ -1048,11 +1050,13 @@ begin
         },
         rw xlens at h,
         clear_except h,
-        finish,
+        rw list.nth_eq_none_iff,
+        exact h,
       },
       {
         clear_except h,
-        finish,
+        rw list.nth_eq_none_iff,
+        exact h,
       },
       refl,
     },
@@ -1142,15 +1146,18 @@ begin
           clear_except xylen,
           rw list.length_map,
           rw list.length_drop,
-          finish,
+          omega,
         },
         rw ylens at h,
         clear_except h,
-        finish,
+        rw list.nth_eq_none_iff,
+        rw list.length_map at *,
+        exact h,
       },
       {
         clear_except h,
-        finish,
+        rw list.nth_eq_none_iff,
+        exact h,
       },
       refl,
     },
@@ -1235,50 +1242,52 @@ begin
     have goal_as_ith_drop :
       y.nth_le i i_lt_len_y = (list.drop x.length (list.map symbol.terminal w)).nth_le i i_lt_len_dxw,
     {
-      have foo : x.length + i < w.length,
+      have xli_lt_len_w : x.length + i < w.length,
       {
         clear_except i_lt_len_y xylen,
         linarith,
       },
-      have bar : (list.map (wrap_symbol₁ g₂.nt) x).length + i < w.length,
-      {
-        rw list.length_map,
-        exact foo,
-      },
-      clear_except eqiv_symb foo bar,
-
       rw list.nth_le_map _ _ i_lt_len_y at eqiv_symb,
       rw list.nth_le_drop' at *,
+      rw list.nth_le_map at *,
+      swap, {
+        exact xli_lt_len_w,
+      },
+      swap, {
+        rw list.length_map,
+        exact xli_lt_len_w,
+      },
+      clear_except eqiv_symb,
+
       cases y.nth_le i i_lt_len_y with t n,
       {
         unfold wrap_symbol₂ at eqiv_symb,
-        rw list.nth_le_map at *,
-        swap, exact foo,
-        swap, exact bar,
         unfold equivalent_symbols at eqiv_symb,
-        have basically_it := congr_arg symbol.terminal eqiv_symb,
-        rw ← basically_it,
-        finish, -- TODO uhladit reseni
+        have eq_symb := congr_arg symbol.terminal eqiv_symb,
+        rw ← eq_symb,
+        apply congr_arg symbol.terminal,
+        simp only [list.length_map],
       },
       {
+        exfalso,
         unfold wrap_symbol₂ at eqiv_symb,
-        rw list.nth_le_map at *,
-        swap, exact foo,
-        swap, exact bar,
         unfold equivalent_symbols at eqiv_symb,
-        tauto, -- TODO uhladit reseni
+        exact eqiv_symb,
       },
     },
-    have goal_as_ith_map :
-      y.nth_le i i_lt_len_y = (list.map symbol.terminal (list.drop x.length w)).nth_le i i_lt_len_mtw,
+    have goal_as_some_ith :
+      some (y.nth_le i i_lt_len_y) =
+      some ((list.map symbol.terminal (list.drop x.length w)).nth_le i i_lt_len_mtw),
     {
       rw goal_as_ith_drop,
       clear_except,
       congr,
       rw list.map_drop,
     },
-    clear_except goal_as_ith_map,
-    convert list.nth_eq_nth_of_nth_le_eq_nth_le goal_as_ith_map,
+    clear_except goal_as_some_ith,
+    rw ← list.nth_le_nth i_lt_len_y at goal_as_some_ith,
+    rw ← list.nth_le_nth i_lt_len_mtw at goal_as_some_ith,
+    convert goal_as_some_ith,
     rw list.nth_map,
   },
   apply list.take_append_drop,
@@ -1291,7 +1300,7 @@ end hard_direction
 theorem RE_of_RE_c_RE (L₁ : language T) (L₂ : language T) :
   is_RE L₁  ∧  is_RE L₂   →   is_RE (L₁ * L₂)   :=
 begin
-  rintro ⟨ ⟨ g₁, h₁ ⟩, ⟨ g₂, h₂ ⟩ ⟩,
+  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
 
   use big_grammar g₁ g₂,
 

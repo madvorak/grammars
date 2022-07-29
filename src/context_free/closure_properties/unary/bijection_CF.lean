@@ -22,7 +22,7 @@ list.map (sT₁_of_sT₂ π)
 theorem CF_of_bijemap_CF (L : language T₁) :
   is_CF L  →  is_CF (bijemap_lang L π)  :=
 begin
-  rintro ⟨ g, hg ⟩,
+  rintro ⟨g, hg⟩,
 
   let g' : CF_grammar T₂ := CF_grammar.mk g.nt g.initial (list.map (
       λ r : g.nt × (list (symbol T₁ g.nt)), (r.fst, lsT₂_of_lsT₁ π r.snd)
@@ -55,7 +55,7 @@ begin
       {
         exact ih,
       },
-      rcases orig with ⟨ r, r_in, x, y, bef, aft ⟩,
+      rcases orig with ⟨r, r_in, x, y, bef, aft⟩,
       let r₁ := (r.fst, lsT₁_of_lsT₂ π r.snd),
       let x₁ := lsT₁_of_lsT₂ π x,
       let y₁ := lsT₁_of_lsT₂ π y,
@@ -64,7 +64,7 @@ begin
       {
         change (r.fst, lsT₁_of_lsT₂ π r.snd) ∈ g.rules,
         simp at r_in,
-        rcases r_in with ⟨ a, b, ab_in, ab_eq ⟩,
+        rcases r_in with ⟨a, b, ab_in, ab_eq⟩,
         have a_eq : a = r.fst :=
           (congr_arg prod.fst ab_eq).congr_right.mp rfl,
         have b_eq : lsT₂_of_lsT₁ π b = r.snd :=
@@ -145,7 +145,7 @@ begin
       {
         exact ih,
       },
-      rcases orig with ⟨ r, r_in, x, y, bef, aft ⟩,
+      rcases orig with ⟨r, r_in, x, y, bef, aft⟩,
       let r₂ := (r.fst, lsT₂_of_lsT₁ π r.snd),
       let x₂ := lsT₂_of_lsT₁ π x,
       let y₂ := lsT₂_of_lsT₁ π y,

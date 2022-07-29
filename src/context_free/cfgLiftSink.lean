@@ -70,7 +70,7 @@ private lemma lift_tran
     (hyp : CF_transforms lg.g₀ input output) :
   CF_transforms lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
 begin
-  rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
+  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
   use lift_rule lg.lift_nt rule,
   split,
   {
@@ -125,7 +125,7 @@ private lemma sink_tran
     (ok_input : good_string input) :
   CF_transforms lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
 begin
-  rcases hyp with ⟨ rule, rule_in, v, w, bef, aft ⟩,
+  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
 
   rcases lg.preimage_of_rules rule (by {
     split,
@@ -142,11 +142,11 @@ begin
     cases good_matched_nonterminal with n₀ hn₀,
     use n₀,
     have almost := congr_arg (option.map lg.lift_nt) hn₀,
-    rw lifted_grammar_inverse lg rule.fst ⟨ n₀, hn₀ ⟩ at almost,
+    rw lifted_grammar_inverse lg rule.fst ⟨n₀, hn₀⟩ at almost,
     simp at almost,
     apply option.some_injective,
     exact almost.symm,
-  }) with ⟨ pre_rule, pre_in, preimage ⟩,
+  }) with ⟨pre_rule, pre_in, preimage⟩,
 
   use pre_rule,
   split,
@@ -229,7 +229,7 @@ begin
   {
     intros letter in_v,
     have ihr := ih.right letter,
-    rcases orig with ⟨ rule, in_rules, w₁, w₂, bef, aft ⟩,
+    rcases orig with ⟨rule, in_rules, w₁, w₂, bef, aft⟩,
     rw bef at ihr,
     rw list.mem_append at ihr,
     rw aft at in_v,
@@ -269,19 +269,19 @@ begin
         },
         cases (option.ne_none_iff_exists'.mp h) with x ex,
         use x,
-        have gix := lifted_grammar_inverse lg rule.fst ⟨ x, ex ⟩,
+        have gix := lifted_grammar_inverse lg rule.fst ⟨x, ex⟩,
         rw ex at gix,
         rw option.map_some' at gix,
         apply option.some_injective,
         exact gix,
       },
-      rcases lg.preimage_of_rules rule ⟨ in_rules, exn₀ ⟩ with ⟨ rul, in0, lif ⟩,
+      rcases lg.preimage_of_rules rule ⟨in_rules, exn₀⟩ with ⟨rul, in0, lif⟩,
       rw ← lif at in_v,
       unfold lift_rule at in_v,
       dsimp at in_v,
       unfold lift_string at in_v,
       rw list.mem_map at in_v,
-      rcases in_v with ⟨ s, s_in_rulsnd, symbol_letter ⟩,
+      rcases in_v with ⟨s, s_in_rulsnd, symbol_letter⟩,
       rw ← symbol_letter,
       cases s,
       {

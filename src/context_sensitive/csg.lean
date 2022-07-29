@@ -115,13 +115,21 @@ begin
       unfold grammar_transforms,
       delta grammar_of_csg,
       dsimp,
-      rcases hyp with ⟨ r, rin, u, w, bef, aft ⟩,
+      rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       use grule.mk
         (r.context_left, r.input_nonterminal, r.context_right)
         (r.context_left ++ r.output_string ++ r.context_right),
       split,
       {
-        finish,
+        rw list.mem_map,
+        use r,
+        split,
+        {
+          exact rin,
+        },
+        {
+          refl,
+        },
       },
       use u,
       use w,
@@ -157,9 +165,9 @@ begin
       unfold CS_transforms,
       delta grammar_of_csg at hyp,
       dsimp at hyp,
-      rcases hyp with ⟨ r, rin, u, w, bef, aft ⟩,
+      rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       simp at rin,
-      rcases rin with ⟨ new_rule, new_rule_in, new_rule_def ⟩,
+      rcases rin with ⟨new_rule, new_rule_in, new_rule_def⟩,
       use new_rule,
       split,
       {
@@ -187,7 +195,7 @@ end
 theorem CS_subclass_Enumerable (L : language T) :
   is_CS L → is_RE L :=
 begin
-  rintro ⟨ g, h ⟩,
+  rintro ⟨g, h⟩,
   use grammar_of_csg g,
   rw ← h,
   rw CS_language_eq_grammar_language,

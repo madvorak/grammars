@@ -37,7 +37,7 @@ begin
     },
   },
   {
-    rcases h with ⟨ v, ⟨ rul, rin, prefi, postfi, bef, aft ⟩, trash ⟩,
+    rcases h with ⟨v, ⟨rul, rin, prefi, postfi, bef, aft⟩, trash⟩,
     clear trash,
     cases rin,
   },
@@ -70,7 +70,7 @@ begin
   change
     CF_derives
       (@cfg_empty_word T)
-      [symbol.nonterminal cfg_empty_lang.initial]
+      [symbol.nonterminal (@cfg_empty_lang T).initial]
       (list.map symbol.terminal w)
     at hw,
   cases
@@ -106,12 +106,11 @@ begin
       rw is_termin at zeroth,
       norm_cast at zeroth,
     },
-    exact T,
   },
-  rcases h with ⟨ v, step_init, step_none ⟩,
+  rcases h with ⟨v, step_init, step_none⟩,
   have v_is_empty_word : v = list.nil,
   {
-    rcases step_init with ⟨ rul, rin, pre, pos, bef, aft ⟩,
+    rcases step_init with ⟨rul, rin, pre, pos, bef, aft⟩,
     have rule : rul = ((0 : fin 1), []),
     {
       rw ← list.mem_singleton,
@@ -170,10 +169,14 @@ begin
   },
   {
     exfalso,
-    rcases h with ⟨ trash, ⟨ trash_r, trash_rin, trash_1, trash_2, impossible, - ⟩, - ⟩,
-    finish,
+    rcases h with ⟨-, ⟨trash_r, -, trash_1, trash_2, impossible, -⟩, -⟩,
+    have impossible_len := congr_arg list.length impossible,
+    clear_except impossible_len,
+    rw list.length_append_append at impossible_len,
+    rw list.length_singleton at impossible_len,
+    rw list.length at impossible_len,
+    linarith,
   },
-  exact T,
 end
 
 /-- Context-free grammar for a language `{a}.star` where `a` is a given terminal symbol. -/
@@ -219,7 +222,7 @@ begin
         push_neg at isnt,
         exact isnt,
       },
-      rcases different with ⟨ n, hl, hr, nq ⟩,
+      rcases different with ⟨n, hl, hr, nq⟩,
 
       rw list.nth_le_repeat a hr at nq,
       specialize ass (w.nth_le n hl) nq,
@@ -241,9 +244,11 @@ begin
         intros v hyp,
         induction hyp with x y trash orig ih,
         {
-          finish,
+          clear_except,
+          rw list.mem_singleton,
+          tauto,
         },
-        rcases orig with ⟨ rul, rin, p, q, bef, aft ⟩,
+        rcases orig with ⟨rul, rin, p, q, bef, aft⟩,
         rw aft,
         rw bef at ih,
         repeat { rw list.mem_append at * },

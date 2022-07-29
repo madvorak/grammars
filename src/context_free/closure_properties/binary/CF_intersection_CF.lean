@@ -315,14 +315,14 @@ begin
         ≥ n + 1 : le_add_self
     ... ≥ n     : nat.le_succ n,
   }),
-  rcases pump with ⟨ u, v, x, y, z, concatenating, nonempty, vxy_short, pumping ⟩,
+  rcases pump with ⟨u, v, x, y, z, concatenating, nonempty, vxy_short, pumping⟩,
   specialize pumping 2,
 
   have not_all_letters : a_ ∉ (v ++ y) ∨ b_ ∉ (v ++ y) ∨ c_ ∉ (v ++ y),
   {
     by_contradiction contr,
     push_neg at contr,
-    rcases contr with ⟨ hva, -, hvc ⟩,
+    rcases contr with ⟨hva, -, hvc⟩,
 
     have vxy_long : (v ++ x ++ y).length > n,
     {
@@ -373,8 +373,8 @@ begin
           },
         },
         repeat { rw list.append_assoc at concatenating },
-        rcases list.nth_le_of_mem relaxed_a with ⟨ nₐ, hnₐ, h_nthₐ ⟩,
-        obtain ⟨ h_nth_a_pr, h_nth_a ⟩ : ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
+        rcases list.nth_le_of_mem relaxed_a with ⟨nₐ, hnₐ, h_nthₐ⟩,
+        obtain ⟨h_nth_a_pr, h_nth_a⟩ : ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
         {
           rw nat.add_sub_cancel nₐ u.length,
           use hnₐ,
@@ -395,7 +395,7 @@ begin
         {
           have rebracket : u ++ (v ++ (x ++ (y ++ z))) = u ++ (v ++ x ++ y ++ z),
           {
-            simp only [ list.append_assoc ],
+            simp only [list.append_assoc],
           },
           rw concatenating,
           rw rebracket,
@@ -465,7 +465,7 @@ begin
           },
 
           repeat { rw list.append_assoc at concatenating },
-          rcases list.nth_le_of_mem relaxed_c with ⟨ m, hm, mth_is_c ⟩,
+          rcases list.nth_le_of_mem relaxed_c with ⟨m, hm, mth_is_c⟩,
 
           have m_big : m ≥ 2 * n + 2,
           {
@@ -704,7 +704,7 @@ begin
         right,
         refl,
       },
-      rcases orig with ⟨ rul, rin, p, q, bef, aft ⟩,
+      rcases orig with ⟨rul, rin, p, q, bef, aft⟩,
       cases hyp_ih with k ih,
       cases ih,
       {
@@ -802,7 +802,7 @@ begin
             have len_within_list : p.length - (list.repeat a k ++ [S]).length < (list.repeat b k).length,
             {
               have ihlen := congr_arg list.length ih,
-              simp only [ list.length_repeat, list.length_append, list.length_singleton ] at *,
+              simp only [list.length_repeat, list.length_append, list.length_singleton] at *,
               have ihlen' : p.length + 1 ≤ k + 1 + k,
               {
                 exact nat.le.intro ihlen,
@@ -870,10 +870,10 @@ begin
           rw list.repeat_add,
           rw add_comm,
           rw list.repeat_add,
-          simp only [ list.repeat, list.append_assoc ],
+          simp only [list.repeat, list.append_assoc],
         },
-        rw [ pa, qb ],
-        simp only [ list.append_assoc, list.cons_append, list.singleton_append ],
+        rw [pa, qb],
+        simp only [list.append_assoc, list.cons_append, list.singleton_append],
       },
       cases rin,
       {
@@ -882,7 +882,7 @@ begin
         rw aft,
         rw rin,
         rw list.append_nil,
-        rw [ pa, qb ],
+        rw [pa, qb],
       },
       exfalso,
       exact rin,
@@ -902,7 +902,7 @@ begin
       rw list.filter_map_append at foo,
       rw list.filter_map_map at foo,
       rw list.filter_map_some at foo,
-      rw [ foo, a, b ],
+      rw [foo, a, b],
       clear foo,
       apply congr_arg2;
       {
@@ -914,7 +914,7 @@ begin
         rw list.repeat_succ,
         rw list.repeat_succ,
         rw list.filter_map_cons,
-        simp only [ eq_self_iff_true, true_and, ih ],
+        simp only [eq_self_iff_true, true_and, ih],
       },
     },
     exfalso,
@@ -943,7 +943,7 @@ begin
     intros w ass,
     cases ass with n hw,
     change CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w),
-    rw [ hw, list.map_append, list.map_repeat, list.map_repeat, ← a, ← b ],
+    rw [hw, list.map_append, list.map_repeat, list.map_repeat, ← a, ← b],
     clear hw,
     induction n with n ih,
     {
@@ -981,7 +981,7 @@ begin
         list.repeat_add,
         a, b
       ],
-      simp only [ list.repeat, list.append_assoc, list.map_append, list.map_repeat ],
+      simp only [list.repeat, list.append_assoc, list.map_append, list.map_repeat],
     },
     apply CF_deri_of_tran_deri,
     {
@@ -991,7 +991,8 @@ begin
         apply list.mem_cons_self,
       },
       use [[], []],
-      finish,
+      split;
+      refl,
     },
     rw list.map_append_append,
     change
@@ -1000,7 +1001,7 @@ begin
         ([a] ++ list.map symbol.terminal (list.repeat a_ n ++ list.repeat b_ n) ++ [b]),
     apply CF_derives_with_prefix_and_postfix,
     convert ih,
-    rw [ list.map_append, list.map_repeat, list.map_repeat, a, b ],
+    rw [list.map_append, list.map_repeat, list.map_repeat, a, b],
   },
 end
 
@@ -1021,7 +1022,7 @@ begin
     ext1 w,
     split,
     {
-      rintro ⟨ n, m, hnm ⟩,
+      rintro ⟨n, m, hnm⟩,
       fconstructor,
         use list.repeat a_ n ++ list.repeat b_ n,
         use list.repeat c_ m,
@@ -1032,7 +1033,7 @@ begin
       exact hnm.symm,
     },
     {
-      rintro ⟨ u, v, ⟨n, hu⟩, ⟨m, hv⟩, h ⟩,
+      rintro ⟨u, v, ⟨n, hu⟩, ⟨m, hv⟩, h⟩,
       use n,
       use m,
       rw ← h,
@@ -1117,7 +1118,7 @@ begin
     ext1 w,
     split,
     {
-      rintro ⟨ n, m, hnm ⟩,
+      rintro ⟨n, m, hnm⟩,
       fconstructor,
         use list.repeat a_ n,
         use list.repeat b_ m ++ list.repeat c_ m,
@@ -1129,7 +1130,7 @@ begin
       exact hnm.symm,
     },
     {
-      rintro ⟨ u, v, ⟨n, hu⟩, ⟨m, hv⟩, h ⟩,
+      rintro ⟨u, v, ⟨n, hu⟩, ⟨m, hv⟩, h⟩,
       use n,
       use m,
       rw ← h,
@@ -1322,7 +1323,7 @@ end
 private lemma lang_eq_eq_of_intersection {w : list (fin 3)} :
   w ∈ lang_eq_any ⊓ lang_any_eq  →  w ∈ lang_eq_eq :=
 begin
-  rintro ⟨ ⟨ n₁, m₁, h₁ ⟩, ⟨ n₂, m₂, h₂ ⟩ ⟩,
+  rintro ⟨⟨n₁, m₁, h₁⟩, ⟨n₂, m₂, h₂⟩⟩,
   have equ := eq.trans h₁.symm h₂,
 
   by_cases hn₁ : n₁ = 0,

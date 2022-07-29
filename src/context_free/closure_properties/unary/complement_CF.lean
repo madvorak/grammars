@@ -10,7 +10,7 @@ begin
   intro h,
   have nny := nnyCF_of_CF_i_CF,
   push_neg at nny,
-  rcases nny with ⟨ T, L₁, L₂, ⟨ ⟨ hL₁, hL₂ ⟩, hyp_neg ⟩ ⟩,
+  rcases nny with ⟨T, L₁, L₂, ⟨hL₁, hL₂⟩, hyp_neg⟩,
   specialize h T,
   have h₁ := h L₁ hL₁,
   have h₂ := h L₂ hL₂,

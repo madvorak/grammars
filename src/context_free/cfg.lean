@@ -94,7 +94,7 @@ begin
   {
     exact ih,
   },
-  rcases hyp with ⟨ rule, rule_in, v, w, h_bef, h_aft ⟩,
+  rcases hyp with ⟨rule, rule_in, v, w, h_bef, h_aft⟩,
   use rule,
   split,
   {
@@ -122,7 +122,7 @@ begin
   {
     exact ih,
   },
-  rcases hyp with ⟨ rule, rule_in, v, w, h_bef, h_aft ⟩,
+  rcases hyp with ⟨rule, rule_in, v, w, h_bef, h_aft⟩,
   use rule,
   split,
   {
@@ -222,11 +222,19 @@ begin
       unfold CS_transforms,
       delta csg_of_cfg,
       dsimp,
-      rcases hyp with ⟨ r, rin, u, w, bef, aft ⟩,
+      rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       use csrule.mk [] r.fst [] r.snd,
       split,
       {
-        finish,
+        rw list.mem_map,
+        use r,
+        split,
+        {
+          exact rin,
+        },
+        {
+          refl,
+        },
       },
       use u,
       use w,
@@ -258,7 +266,7 @@ begin
       unfold CF_transforms,
       delta csg_of_cfg at hyp,
       dsimp at hyp,
-      rcases hyp with ⟨ r, rin, u, w, bef, aft ⟩,
+      rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       use (r.input_nonterminal, r.output_string),
       split,
       {
@@ -295,7 +303,7 @@ end
 theorem CF_subclass_CS (L : language T) :
   is_CF L → is_CS L :=
 begin
-  rintro ⟨ g, h ⟩,
+  rintro ⟨g, h⟩,
   use csg_of_cfg g,
   rw ← h,
   rw CF_language_eq_CS_language,

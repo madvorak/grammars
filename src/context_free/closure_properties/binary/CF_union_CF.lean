@@ -49,7 +49,7 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
   five_steps,
 }) (by {
   intro r,
-  rintro ⟨ r_in, r_ntype ⟩,
+  rintro ⟨r_in, r_ntype⟩,
   cases r_in,
   {
     exfalso,
@@ -69,7 +69,7 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
   cases r_in,
   {
     rw list.mem_map at r_in,
-    rcases r_in with ⟨ r₁, r₁_in, r₁_convert_r ⟩,
+    rcases r_in with ⟨r₁, r₁_in, r₁_convert_r⟩,
     use r₁,
     split,
     {
@@ -77,15 +77,15 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
     },
     rw ← r₁_convert_r,
     simp only [
-        lift_rule, rule_of_rule₁, lift_string, lsTN_of_lsTN₁,
-        prod.mk.inj_iff, eq_self_iff_true, true_and
-      ],
+      lift_rule, rule_of_rule₁, lift_string, lsTN_of_lsTN₁,
+      prod.mk.inj_iff, eq_self_iff_true, true_and
+    ],
     five_steps,
   },
   {
     exfalso,
     rw list.mem_map at r_in,
-    rcases r_in with ⟨ r₂, r₂_in, r₂_convert_r ⟩,
+    rcases r_in with ⟨r₂, r₂_in, r₂_convert_r⟩,
     rw ← r₂_convert_r at r_ntype,
     unfold rule_of_rule₂ at r_ntype,
     dsimp at r_ntype,
@@ -145,7 +145,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
   five_steps,
 }) (by {
   intro r,
-  rintro ⟨ r_in, r_ntype ⟩,
+  rintro ⟨r_in, r_ntype⟩,
   cases list.eq_or_mem_of_mem_cons r_in with r_eq r_in_,
   {
     exfalso,
@@ -167,7 +167,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
   {
     exfalso,
     rw list.mem_map at r_in,
-    rcases r_in with ⟨ r₁, r₁_in, r₁_convert_r ⟩,
+    rcases r_in with ⟨r₁, r₁_in, r₁_convert_r⟩,
     rw ← r₁_convert_r at r_ntype,
     unfold rule_of_rule₁ at r_ntype,
     dsimp at r_ntype,
@@ -177,15 +177,17 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
   },
   {
     rw list.mem_map at r_in,
-    rcases r_in with ⟨ r₂, r₂_in, r₂_convert_r ⟩,
+    rcases r_in with ⟨r₂, r₂_in, r₂_convert_r⟩,
     use r₂,
     split,
     {
       exact r₂_in,
     },
     rw ← r₂_convert_r,
-    simp only [ lift_rule, rule_of_rule₂, lift_string, lsTN_of_lsTN₂,
-                prod.mk.inj_iff, eq_self_iff_true, true_and ],
+    simp only [
+      lift_rule, rule_of_rule₂, lift_string, lsTN_of_lsTN₂,
+      prod.mk.inj_iff, eq_self_iff_true, true_and
+    ],
     five_steps,
   },
 }) oN₂_of_N (by {
@@ -326,10 +328,7 @@ begin
   unfold CF_generates,
   unfold CF_generates_str,
   unfold CF_derives,
-  apply CF_deri_of_deri_deri,
-  {
-    finish, -- uses `deri_start` here
-  },
+  apply CF_deri_of_deri_deri deri_start,
   exact deri_rest,
 end
 
@@ -396,10 +395,7 @@ begin
   unfold CF_generates,
   unfold CF_generates_str,
   unfold CF_derives,
-  apply CF_deri_of_deri_deri,
-  {
-    finish, -- uses `deri_start` here
-  },
+  apply CF_deri_of_deri_deri deri_start,
   exact deri_rest,
 end
 
@@ -584,8 +580,8 @@ begin
     cases (w.nth 0);
     finish,
   },
-  rcases h with ⟨ S₁, deri_head, deri_tail ⟩,
-  rcases deri_head with ⟨ rule, ruleok, u, v, h_bef, h_aft ⟩,
+  rcases h with ⟨S₁, deri_head, deri_tail⟩,
+  rcases deri_head with ⟨rule, ruleok, u, v, h_bef, h_aft⟩,
 
   rw h_aft at deri_tail,
   cases both_empty u v (symbol.nonterminal rule.fst) h_bef with u_nil v_nil,
@@ -621,7 +617,7 @@ end lemmata_supset
 theorem CF_of_CF_u_CF {T : Type} (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂)   :=
 begin
-  rintro ⟨ ⟨ g₁, h₁ ⟩, ⟨ g₂, h₂ ⟩ ⟩,
+  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
 
   use union_grammar g₁ g₂,
 

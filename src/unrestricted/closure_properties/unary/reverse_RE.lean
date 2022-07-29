@@ -13,13 +13,13 @@ private def reversal_gis {N : Type} (x : list (symbol T N) × N × list (symbol 
 private lemma dual_of_reversal_gis {N : Type} (x : list (symbol T N) × N × list (symbol T N)) :
   reversal_gis (reversal_gis x) = x :=
 begin
-  rcases x with ⟨ x₁, x₂, x₃ ⟩,
+  rcases x with ⟨x₁, x₂, x₃⟩,
   unfold reversal_gis,
-  simp [ prod.first, prod.secon, prod.third ],
+  simp [prod.first, prod.secon, prod.third],
 end
 
 private def reversal_grule {N : Type} (r : grule T N) : grule T N :=
-⟨ reversal_gis r.input_string, r.output_string.reverse ⟩
+⟨reversal_gis r.input_string, r.output_string.reverse⟩
 
 private lemma dual_of_reversal_grule {N : Type} (r : grule T N) :
   reversal_grule (reversal_grule r) = r :=
@@ -63,10 +63,10 @@ begin
     apply grammar_deri_self,
   },
   apply grammar_deri_of_deri_tran ih,
-  rcases orig with ⟨ r, rin, x, y, bef, aft ⟩,
+  rcases orig with ⟨r, rin, x, y, bef, aft⟩,
   change r ∈ (list.map _ g.rules) at rin,
   rw list.mem_map at rin,
-  rcases rin with ⟨ r₀, rin₀, r_from_r₀ ⟩,
+  rcases rin with ⟨r₀, rin₀, r_from_r₀⟩,
   use r₀,
   split,
   {
@@ -98,9 +98,11 @@ begin
       dsimp [prod.first],
       rw list.reverse_reverse,
     },
-    rw [ rid₁, rid₂, rid₃,
-         ← list.reverse_append_append, ← list.reverse_append_append,
-         ← list.append_assoc, ← list.append_assoc ],
+    rw [
+      rid₁, rid₂, rid₃,
+      ← list.reverse_append_append, ← list.reverse_append_append,
+      ← list.append_assoc, ← list.append_assoc
+    ],
     congr,
     exact bef,
   },
@@ -137,7 +139,7 @@ end auxiliary
 theorem RE_of_reverse_RE (L : language T) :
   is_RE L  →  is_RE (reverse_lang L)  :=
 begin
-  rintro ⟨ g, hgL ⟩,
+  rintro ⟨g, hgL⟩,
   rw ← hgL,
 
   use reversal_grammar g,

@@ -113,11 +113,11 @@ end
 
 private meta def CS_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
   apply CS_deri_of_tran_deri,
-  tactic.use [ rule ],
-  simp only [ list.mem_cons_iff, eq_self_iff_true, true_or, or_true ],
+  tactic.use [rule],
+  simp only [list.mem_cons_iff, eq_self_iff_true, true_or, or_true],
   split,
   exact trivial,
-  tactic.use [ pref, post ],
+  tactic.use [pref, post],
   split;
   refl
 ]
