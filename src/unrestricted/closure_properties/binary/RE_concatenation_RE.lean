@@ -523,7 +523,10 @@ end
 private lemma equivalent_strings_length {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
     (ass : equivalent_strings x y) :
   x.length = y.length :=
-list.forall₂_length_eq ass
+begin
+  unfold equivalent_strings at ass,
+  exact list.forall₂_length_eq ass,
+end
 
 private lemma equivalent_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
     {i : ℕ} (i_lt_len_x : i < x.length) (i_lt_len_y : i < y.length) -- one of them should follow from the other
@@ -532,6 +535,32 @@ private lemma equivalent_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N�
 begin
   unfold equivalent_strings at *,
   sorry,
+end
+
+private lemma equivalent_strings_reverse {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
+    (ass : equivalent_strings x y) :
+  equivalent_strings x.reverse y.reverse :=
+begin
+  unfold equivalent_strings at *,
+  rw list.forall₂_reverse_iff,
+  exact ass,
+end
+
+private lemma equivalent_strings_of_reverse {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
+    (ass : equivalent_strings x.reverse y.reverse) :
+  equivalent_strings x y :=
+begin
+  unfold equivalent_strings at *,
+  rw list.forall₂_reverse_iff at ass,
+  exact ass,
+end
+
+private lemma equivalent_strings_take {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
+    (n : ℕ) (ass : equivalent_strings x y) :
+  equivalent_strings (list.take n x) (list.take n y) :=
+begin
+  unfold equivalent_strings at *,
+  exact list.forall₂_take n ass,
 end
 
 
@@ -716,6 +745,11 @@ begin
       use list.filter_map unwrap_symbol₁ a',
       use y,
 
+      have bef_len := congr_arg list.length bef,
+      repeat { rw list.length_append at bef_len },
+      repeat { rw list.length_map at bef_len },
+      rw list.length_singleton at bef_len,
+
       split,
       {
         split,
@@ -759,10 +793,6 @@ begin
                 rw list.take_left,
               },
             },
-            have bef_len := congr_arg list.length bef,
-            repeat { rw list.length_append at bef_len },
-            repeat { rw list.length_map at bef_len },
-            rw list.length_singleton at bef_len,
             rw bef_len,
             simp only [list.take, list.length, list.append_assoc, add_tsub_cancel_left],
             -- a lot of work with `x_equiv` will be required to finish the proof
@@ -786,12 +816,13 @@ begin
       rw list.map_append_append,
       rw list.append_assoc,
       rw list.append_assoc,
+
       apply equivalent_strings_append,
       {
-        have wrap_unwrap_u : (list.map (wrap_symbol₁ g₂.nt) (list.filter_map unwrap_symbol₁ u)) = u,
+        have wrap_unwrap_u : list.map (wrap_symbol₁ g₂.nt) (list.filter_map unwrap_symbol₁ u) = u,
         {
           -- express `u` as a fragment of `x` probably
-          sorry,
+          sorry, -- TODO
         },
         rw wrap_unwrap_u,
         apply equivalent_strings_refl,
@@ -803,12 +834,75 @@ begin
         rw list.filter_map_some,
         apply equivalent_strings_refl,
       },
-      -- TODO
-      sorry,
+      convert_to equivalent_strings _ (list.take (a.length - u.length - m) v ++ list.drop (a.length - u.length - m) v),
+      {
+        rw list.take_append_drop,
+      },
+      apply equivalent_strings_append,
+      {
+        have wrap_unwrap_v :
+          list.map (wrap_symbol₁ g₂.nt) (list.filter_map unwrap_symbol₁ (
+              list.take (a.length - u.length - m) v)
+            ) =
+          list.take (a.length - u.length - m) v,
+        {
+          -- the prefix of `v` should probably be expressed as a fragment of `x` too
+          sorry,
+        },
+        rw wrap_unwrap_v,
+        apply equivalent_strings_refl,
+      },
+      -- now we have what `g₂` generated
+      have reverse_concat := equivalent_strings_reverse ih_concat,
+      repeat { rw list.reverse_append at reverse_concat },
+      have the_part := equivalent_strings_take (a.length - u.length - m) reverse_concat,
+      apply equivalent_strings_of_reverse,
+      convert_to equivalent_strings _ (list.take (a.length - u.length - m) v.reverse), -- ???????????????????
+      {
+        sorry,
+      },
+      have le_len_v : a.length - u.length - m ≤ v.length,
+      {
+        sorry,
+      },
+      have eq_len_y : a.length - u.length - m = y.length,
+      {
+        change 
+          a.length - u.length - (
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+          ) =
+          y.length,
+        rw list.length_map,
+        rw list.length_map,
+        rw bef_len,
+        -- missing assumption `v.length = y.length`
+        -- cannot hold
+        sorry,
+      },
+      clear_except the_part le_len_v eq_len_y,
+      rw list.take_append_of_le_length at the_part,
+      swap, {
+        rw list.length_reverse,
+        rw list.length_map,
+        exact le_of_eq eq_len_y,
+      },
+      repeat { rw list.append_assoc at the_part },
+      rw list.take_append_of_le_length at the_part,
+      swap, {
+        rw list.length_reverse,
+        exact le_len_v,
+      },
+      convert the_part,
+      symmetry,
+      apply list.take_all_of_le,
+      rw list.length_reverse,
+      rw list.length_map,
+      exact ge_of_eq eq_len_y,
     },
     {
       use x,
-      -- this should be the last step of the proof
+      -- prove this part only after everything else is finished and polished
       sorry,
     },
   },
