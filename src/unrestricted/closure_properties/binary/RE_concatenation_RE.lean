@@ -492,6 +492,33 @@ begin
   sorry,
 end
 
+private lemma equivalent_symbols_never {N₁ N₂ : Type}
+    (s₁ : symbol T N₁) (s₂ : symbol T N₂) :
+--  ¬ equivalent_symbols (wrap_symbol₁ N₂ s₁) (wrap_symbol₂ N₁ s₂) :=
+  ¬ equivalent_symbols (wrap_symbol₂ N₁ s₂) (wrap_symbol₁ N₂ s₁) :=
+-- this lemma does not hold as it is written
+-- we need to exclude the existence of direct terminals in the transformed rule
+begin
+  cases s₁,
+  cases s₂,
+  unfold wrap_symbol₁,
+  unfold wrap_symbol₂,
+  sorry,
+  unfold wrap_symbol₁,
+  unfold wrap_symbol₂,
+  unfold equivalent_symbols,
+  exact not_false,
+  cases s₂,
+  unfold wrap_symbol₁,
+  unfold wrap_symbol₂,
+  unfold equivalent_symbols,
+  exact not_false,
+  unfold wrap_symbol₁,
+  unfold wrap_symbol₂,
+  unfold equivalent_symbols,
+  exact not_false,
+end
+
 private def equivalent_strings {N₁ N₂ : Type} : list (nst T N₁ N₂) → list (nst T N₁ N₂) → Prop :=
 list.forall₂ equivalent_symbols
 
@@ -528,8 +555,8 @@ begin
   exact list.forall₂_length_eq ass,
 end
 
-private lemma equivalent_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
-    {i : ℕ} (i_lt_len_x : i < x.length) (i_lt_len_y : i < y.length) -- one of them should follow from the other
+private lemma equivalent_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)} {i : ℕ}
+    (i_lt_len_x : i < x.length) (i_lt_len_y : i < y.length) -- one of them should follow from the other
     (ass : equivalent_strings x y) :
   equivalent_symbols (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y) :=
 begin
@@ -774,7 +801,110 @@ begin
       {
         -- cannot by proved by manipulation with lenghts and inequalities only
         -- we need to show that everything got matched in the left half
-        sorry,
+        clear_except ih_concat bef,
+        have as_positive :
+          u.length + (
+              (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+              (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+            ) ≤
+          x.length,
+        {
+          by_contradiction contra,
+          push_neg at contra,
+          rw bef at ih_concat,
+          clear bef,
+          repeat { rw ← list.append_assoc at ih_concat },
+
+          have inequality_map :
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+            ).length - 1 <
+            ((list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)).length,
+          {
+            sorry,
+          },
+          have inequality_map_opp :
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+            ).length - 1 ≥
+            (list.map (wrap_symbol₁ g₂.nt) x).length,
+          {
+            sorry,
+          },
+          have inequality_m1 :
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+            ).length - 1 <
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+            ).length,
+          {
+            sorry,
+          },
+          have inequality_cat :
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+            ).length - 1 <
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd ++ v
+            ).length,
+          {
+            sorry,
+          },
+          have clash := equivalent_strings_nth_le inequality_map inequality_cat ih_concat,
+          rw list.nth_le_append inequality_cat inequality_m1 at clash,
+          rw list.nth_le_append_right inequality_map_opp inequality_map at clash,
+          clear_except clash,
+
+          rw list.nth_le_map at clash,
+          swap, {
+            sorry,
+          },
+          by_cases (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd).length ≥ 1,
+          {
+            rw list.nth_le_append_right at clash,
+            swap, {
+              sorry,
+            },
+            rw list.nth_le_map at clash,
+            swap, {
+              sorry,
+            },
+            apply equivalent_symbols_never,
+            -- TODO find out whether we can deal with it when `r₁.input_string.third` contains a terminal
+            exact clash,
+          },
+          {
+            /-push_neg at h,
+            -- `clash` will speak contradition about `[symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]`
+            have ris_third_is_nil : list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd = [],
+            {
+              -- from `h` we have zero length
+              -- eq nil is trivial
+              sorry,
+            },
+            rw ris_third_is_nil at clash,
+            rw list.append_nil at clash,
+            rw list.nth_le_append at clash,
+            swap, {
+              sorry,
+            },-/
+            sorry,
+          },
+        },
+        omega,
       },
 
       split,
