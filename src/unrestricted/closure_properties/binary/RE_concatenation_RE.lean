@@ -563,6 +563,28 @@ begin
   exact list.forall₂_take n ass,
 end
 
+private lemma equivalent_strings_drop {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
+    (n : ℕ) (ass : equivalent_strings x y) :
+  equivalent_strings (list.drop n x) (list.drop n y) :=
+begin
+  unfold equivalent_strings at *,
+  exact list.forall₂_drop n ass,
+end
+
+private lemma equivalent_strings_split {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
+    (n : ℕ) (ass : equivalent_strings x y) :
+  equivalent_strings (list.take n x) (list.take n y) ∧
+  equivalent_strings (list.drop n x) (list.drop n y) :=
+begin
+  split,
+  {
+    exact equivalent_strings_take n ass,
+  },
+  {
+    exact equivalent_strings_drop n ass,
+  },
+end
+
 
 private def unwrap_symbol₁ {N₁ N₂ : Type} : nst T N₁ N₂ → option (symbol T N₁)
 | (symbol.terminal t)                               := some (symbol.terminal t)
@@ -786,9 +808,8 @@ begin
               rw list.append_assoc u,
               rw list.append_assoc u,
               rw list.append_assoc (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
-              unfold equivalent_strings at *,
 
-              convert list.forall₂_take x.length ih_concat,
+              convert equivalent_strings_take x.length ih_concat,
               {
                 have x_len_eq : x.length = (list.map (wrap_symbol₁ g₂.nt) x).length,
                 {
@@ -798,11 +819,56 @@ begin
                 rw list.take_left,
               },
             },
-            have bef_side_x := congr_arg (list.take x.length) bef,
-            repeat { rw list.append_assoc at bef_side_x },
-            rw [prod.first, prod.secon, prod.third] at x_equiv,
-            repeat { rw list.append_assoc at x_equiv },
             clear_except bef_side_x x_equiv critical,
+            repeat { rw list.take_append_eq_append_take at x_equiv },
+
+            rw list.take_all_of_le at x_equiv,
+            swap, {
+              sorry,
+            },
+            obtain ⟨foo, equiv_segment_5⟩ := equivalent_strings_split (
+                u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
+                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++
+                list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third
+              ).length x_equiv,
+            clear x_equiv,
+
+            obtain ⟨bar, equiv_segment_4⟩ := equivalent_strings_split (
+                u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
+                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
+              ).length foo,
+            clear foo,
+
+            obtain ⟨baz, equiv_segment_3⟩ := equivalent_strings_split (
+                u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
+              ).length bar,
+            clear bar,
+
+            obtain ⟨equiv_segment_1, equiv_segment_2⟩ :=
+              equivalent_strings_split u.length baz,
+            clear baz,
+
+            repeat { rw list.take_take at equiv_segment_1 },
+            have min_is_ul : (min (min (min u.length (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length) (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]).length) (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length) = u.length,
+            {
+              sorry,
+            },
+            rw min_is_ul at equiv_segment_1,
+            repeat { rw list.append_assoc at equiv_segment_1 },
+            rw list.take_left at equiv_segment_1,
+            have segment_1_converted :
+              list.take u.length x = list.filter_map unwrap_symbol₁ u,
+            {
+              sorry,
+            },
+            repeat { rw list.append_assoc },
+            rw ← list.take_append_drop u.length x,
+            apply congr_arg2,
+            {
+              exact segment_1_converted,
+            },
+            clear segment_1_converted min_is_ul equiv_segment_1,
+
             sorry,
           },
           {
@@ -1319,8 +1385,7 @@ begin
       swap, {
         exact T,
       },
-      unfold equivalent_strings at concat_xy ⊢,
-      convert list.forall₂_drop (list.map (wrap_symbol₁ g₂.nt) x).length concat_xy,
+      convert equivalent_strings_drop (list.map (wrap_symbol₁ g₂.nt) x).length concat_xy,
       {
         rw list.drop_left,
       },
