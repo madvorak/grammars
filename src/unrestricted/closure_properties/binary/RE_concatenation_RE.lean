@@ -745,6 +745,16 @@ begin
       use list.filter_map unwrap_symbol₁ a',
       use y,
 
+      have critical :
+        (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+          (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length ≤
+        x.length - u.length,
+      {
+        -- cannot by proved by manipulation with lenghts and inequalities only
+        -- we need to show that everything got matched in the left half
+        sorry,
+      },
+
       split,
       {
         split,
@@ -788,6 +798,11 @@ begin
                 rw list.take_left,
               },
             },
+            have bef_side_x := congr_arg (list.take x.length) bef,
+            repeat { rw list.append_assoc at bef_side_x },
+            rw [prod.first, prod.secon, prod.third] at x_equiv,
+            repeat { rw list.append_assoc at x_equiv },
+            clear_except bef_side_x x_equiv critical,
             sorry,
           },
           {
@@ -813,7 +828,7 @@ begin
       {
         have wrap_unwrap_u : list.map (wrap_symbol₁ g₂.nt) (list.filter_map unwrap_symbol₁ u) = u,
         {
-          -- express `u` as a fragment of `x` probably
+          -- express `u` as a fragment of `x` ... probably use `critical` in a weaker version
           sorry,
         },
         rw wrap_unwrap_u,
@@ -838,7 +853,7 @@ begin
             ) =
           list.take (x.length - u.length - m) v,
         {
-          -- the prefix of `v` should probably be expressed as a fragment of `x` too
+          -- the prefix of `v` should probably be expressed as a fragment of `x` too, use `critical`
           sorry,
         },
         rw wrap_unwrap_v,
@@ -859,16 +874,23 @@ begin
           )) =
           v.length,
         have len_concat := equivalent_strings_length ih_concat,
-        clear_except len_concat,
+        clear_except len_concat critical,
         repeat { rw list.length_append at len_concat },
         rw list.length_map at len_concat,
         rw list.length_map at len_concat,
         rw list.length_singleton at len_concat,
         rw [prod.first, prod.third],
         rw ← nat.add_sub_assoc,
-        swap, sorry, -- TODO
+        swap,
+        {
+          exact critical,
+        },
         rw ← nat.add_sub_assoc,
-        swap, sorry,
+        swap,
+        {
+          clear_except critical,
+          omega,
+        },
         rw add_comm at len_concat,
         rw len_concat,
         clear len_concat,
