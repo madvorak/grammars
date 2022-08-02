@@ -741,14 +741,9 @@ begin
 
       let m := (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
                (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length,
-      let a' := u ++ list.map (wrap_symbol₁ g₂.nt) r₁.output_string ++ list.take (a.length - u.length - m) v, -- first
+      let a' := u ++ list.map (wrap_symbol₁ g₂.nt) r₁.output_string ++ list.take (x.length - u.length - m) v,
       use list.filter_map unwrap_symbol₁ a',
       use y,
-
-      have bef_len := congr_arg list.length bef,
-      repeat { rw list.length_append at bef_len },
-      repeat { rw list.length_map at bef_len },
-      rw list.length_singleton at bef_len,
 
       split,
       {
@@ -761,7 +756,7 @@ begin
             exact rin₁,
           },
           use list.filter_map unwrap_symbol₁ u,
-          use list.filter_map unwrap_symbol₁ (list.take (a.length - u.length - m) v),
+          use list.filter_map unwrap_symbol₁ (list.take (x.length - u.length - m) v),
           split,
           {
             have x_equiv :
@@ -793,9 +788,6 @@ begin
                 rw list.take_left,
               },
             },
-            rw bef_len,
-            simp only [list.take, list.length, list.append_assoc, add_tsub_cancel_left],
-            -- a lot of work with `x_equiv` will be required to finish the proof
             sorry,
           },
           {
@@ -822,7 +814,7 @@ begin
         have wrap_unwrap_u : list.map (wrap_symbol₁ g₂.nt) (list.filter_map unwrap_symbol₁ u) = u,
         {
           -- express `u` as a fragment of `x` probably
-          sorry, -- TODO
+          sorry,
         },
         rw wrap_unwrap_u,
         apply equivalent_strings_refl,
@@ -834,7 +826,7 @@ begin
         rw list.filter_map_some,
         apply equivalent_strings_refl,
       },
-      convert_to equivalent_strings _ (list.take (a.length - u.length - m) v ++ list.drop (a.length - u.length - m) v),
+      convert_to equivalent_strings _ (list.take (x.length - u.length - m) v ++ list.drop (x.length - u.length - m) v),
       {
         rw list.take_append_drop,
       },
@@ -842,9 +834,9 @@ begin
       {
         have wrap_unwrap_v :
           list.map (wrap_symbol₁ g₂.nt) (list.filter_map unwrap_symbol₁ (
-              list.take (a.length - u.length - m) v)
+              list.take (x.length - u.length - m) v)
             ) =
-          list.take (a.length - u.length - m) v,
+          list.take (x.length - u.length - m) v,
         {
           -- the prefix of `v` should probably be expressed as a fragment of `x` too
           sorry,
@@ -858,20 +850,32 @@ begin
       have the_part := equivalent_strings_take y.length reverse_concat,
       apply equivalent_strings_of_reverse,
 
-      have len_sum : y.length + (a.length - u.length - m) = v.length,
+      have len_sum : y.length + (x.length - u.length - m) = v.length,
       {
-        rw bef_len,
         change
-          y.length +
-            (u.length + (r₁.input_string.fst.length + (1 + (r₁.input_string.snd.snd.length + v.length))) - u.length - (
-              (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-              (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length)) =
+          y.length + (x.length - u.length - (
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+          )) =
           v.length,
-        clear_except,
-        rw list.length_map,
-        rw list.length_map,
-        -- Does this require `y.length = 0` ???
-        sorry,
+        have len_concat := equivalent_strings_length ih_concat,
+        clear_except len_concat,
+        repeat { rw list.length_append at len_concat },
+        rw list.length_map at len_concat,
+        rw list.length_map at len_concat,
+        rw list.length_singleton at len_concat,
+        rw [prod.first, prod.third],
+        rw ← nat.add_sub_assoc,
+        swap, sorry, -- TODO
+        rw ← nat.add_sub_assoc,
+        swap, sorry,
+        rw add_comm at len_concat,
+        rw len_concat,
+        clear len_concat,
+        rw add_tsub_cancel_left,
+        rw ← nat.add_assoc,
+        rw ← nat.add_assoc,
+        rw add_tsub_cancel_left,
       },
       have yl_lt_vl : y.length ≤ v.length,
       {
