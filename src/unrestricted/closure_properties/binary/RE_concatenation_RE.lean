@@ -741,7 +741,7 @@ begin
 
       let m := (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
                (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length,
-      let a' := u ++ list.map (wrap_symbol₁ g₂.nt) r₁.output_string ++ list.take (a.length - u.length - m) v,
+      let a' := u ++ list.map (wrap_symbol₁ g₂.nt) r₁.output_string ++ list.take (a.length - u.length - m) v, -- first
       use list.filter_map unwrap_symbol₁ a',
       use y,
 
@@ -855,50 +855,63 @@ begin
       -- now we have what `g₂` generated
       have reverse_concat := equivalent_strings_reverse ih_concat,
       repeat { rw list.reverse_append at reverse_concat },
-      have the_part := equivalent_strings_take (a.length - u.length - m) reverse_concat,
+      have the_part := equivalent_strings_take y.length reverse_concat,
       apply equivalent_strings_of_reverse,
-      convert_to equivalent_strings _ (list.take (a.length - u.length - m) v.reverse), -- ???????????????????
+
+      have len_sum : y.length + (a.length - u.length - m) = v.length,
       {
-        sorry,
-      },
-      have le_len_v : a.length - u.length - m ≤ v.length,
-      {
-        sorry,
-      },
-      have eq_len_y : a.length - u.length - m = y.length,
-      {
-        change 
-          a.length - u.length - (
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
-          ) =
-          y.length,
-        rw list.length_map,
-        rw list.length_map,
         rw bef_len,
-        -- missing assumption `v.length = y.length`
-        -- cannot hold
+        change
+          y.length +
+            (u.length + (r₁.input_string.fst.length + (1 + (r₁.input_string.snd.snd.length + v.length))) - u.length - (
+              (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+              (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length)) =
+          v.length,
+        clear_except,
+        rw list.length_map,
+        rw list.length_map,
+        -- Does this require `y.length = 0` ???
         sorry,
       },
-      clear_except the_part le_len_v eq_len_y,
+      have yl_lt_vl : y.length ≤ v.length,
+      {
+        exact nat.le.intro len_sum,
+      },
+      convert_to equivalent_strings _ (list.take y.length v.reverse),
+      {
+        convert_to (list.drop (v.length - y.length) v).reverse = list.take y.length v.reverse,
+        {
+          apply congr_arg,
+          apply congr_arg2,
+          {
+            clear_except len_sum,
+            omega,
+          },
+          {
+            refl,
+          },
+        },
+        rw list.reverse_take,
+        exact yl_lt_vl,
+      },
+      clear_except the_part yl_lt_vl,
       rw list.take_append_of_le_length at the_part,
       swap, {
         rw list.length_reverse,
         rw list.length_map,
-        exact le_of_eq eq_len_y,
       },
       repeat { rw list.append_assoc at the_part },
       rw list.take_append_of_le_length at the_part,
       swap, {
         rw list.length_reverse,
-        exact le_len_v,
+        exact yl_lt_vl,
       },
-      convert the_part,
-      symmetry,
-      apply list.take_all_of_le,
-      rw list.length_reverse,
-      rw list.length_map,
-      exact ge_of_eq eq_len_y,
+      rw list.take_all_of_le at the_part,
+      swap, {
+        rw list.length_reverse,
+        rw list.length_map,
+      },
+      exact the_part,
     },
     {
       use x,
