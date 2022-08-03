@@ -456,9 +456,7 @@ private def equivalent_symbols {N₁ N₂ : Type} : nst T N₁ N₂ → nst T N�
 | (symbol.terminal t)                               (symbol.terminal t')                               := t = t'
 | (symbol.nonterminal (sum.inr (sum.inl a)))        (symbol.nonterminal (sum.inr (sum.inl a')))        := a = a'
 | (symbol.nonterminal (sum.inr (sum.inr a)))        (symbol.nonterminal (sum.inr (sum.inr a')))        := a = a'
-| (symbol.terminal t)                               (symbol.nonterminal (sum.inr (sum.inl a)))         := t = a
 | (symbol.nonterminal (sum.inr (sum.inl a)))        (symbol.terminal t)                                := t = a
-| (symbol.terminal t)                               (symbol.nonterminal (sum.inr (sum.inr a)))         := t = a
 | (symbol.nonterminal (sum.inr (sum.inr a)))        (symbol.terminal t)                                := t = a
 | (symbol.nonterminal (sum.inl (some (sum.inl n)))) (symbol.nonterminal (sum.inl (some (sum.inl n')))) := n = n'
 | (symbol.nonterminal (sum.inl (some (sum.inr n)))) (symbol.nonterminal (sum.inl (some (sum.inr n')))) := n = n'
@@ -484,10 +482,12 @@ private lemma equivalent_symbols_never {N₁ N₂ : Type}
 begin
   cases s₁;
   cases s₂;
-  unfold wrap_symbol₁;
-  unfold wrap_symbol₂;
-  unfold equivalent_symbols;
-  exact not_false,
+  {
+    unfold wrap_symbol₁,
+    unfold wrap_symbol₂,
+    unfold equivalent_symbols,
+    exact not_false,
+  },
 end
 
 private lemma equivalent_symbols_never' {N₁ N₂ : Type}
@@ -497,10 +497,12 @@ begin
   -- TODO redundant
   cases s₁;
   cases s₂;
-  unfold wrap_symbol₁;
-  unfold wrap_symbol₂;
-  unfold equivalent_symbols;
-  exact not_false,
+  {
+    unfold wrap_symbol₁,
+    unfold wrap_symbol₂,
+    unfold equivalent_symbols,
+    exact not_false,
+  },
 end
 
 private def equivalent_strings {N₁ N₂ : Type} : list (nst T N₁ N₂) → list (nst T N₁ N₂) → Prop :=
@@ -870,6 +872,7 @@ begin
               rw ← nat.lt_one_iff,
               exact h,
             },
+            --rw list.nth_le_of_eq (congr_fun _ (congr_arg list.append ris_third_is_nil)),
             sorry,
           },
         },
