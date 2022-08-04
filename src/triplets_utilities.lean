@@ -30,11 +30,55 @@ by rw [list.forall_mem_append, list.forall_mem_append, and_assoc]
 
 section todo_move_elsewhere
 
-lemma two_singletons_of_doubleton {α : Type} {a b : α} : [a, b] = [a] ++ [b] :=
+lemma two_singletons_of_doubleton {a b : α} : [a, b] = [a] ++ [b] :=
 rfl
 
-lemma append_singleton_of_cons {α : Type} (a : α) (l : list α) : a :: l = [a] ++ l :=
+lemma append_singleton_of_cons (a : α) (l : list α) : a :: l = [a] ++ l :=
 rfl
+
+lemma take_one_eq_singleton {l : list α} (nonempty : 0 < l.length):
+  list.take 1 l = [l.nth_le 0 nonempty] :=
+begin
+  cases l with d x,
+  {
+    exfalso,
+    unfold length at nonempty,
+    exact false_of_ne (ne_of_lt nonempty),
+  },
+  {
+    refl,
+  },
+end
+
+lemma take_one_drop {l : list α} {i : ℕ} (hil : i < l.length) :
+  list.take 1 (list.drop i l) = [l.nth_le i hil] :=
+begin
+  have l_split : l = take i l ++ drop i l,
+  {
+    rw take_append_drop,
+  },
+  rw nth_le_of_eq l_split,
+  rw nth_le_append_right,
+  {
+    have smaller_i : min i l.length = i,
+    {
+      exact min_eq_left (le_of_lt hil),
+    },
+    norm_num,
+    simp only [smaller_i, tsub_self],
+    apply take_one_eq_singleton,
+  },
+  {
+    norm_num,
+  },
+end
+
+lemma drop_take_succ {l : list α} {i : ℕ} (hil : i < l.length) :
+  list.drop i (list.take (i + 1) l) = [l.nth_le i hil] :=
+begin
+  rw drop_take,
+  apply take_one_drop,
+end
 
 -- version for mathlib (TODO refactor)
 theorem length_filter_map (f : α → option β) (l : list α) :

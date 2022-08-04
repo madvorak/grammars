@@ -494,7 +494,7 @@ private lemma equivalent_symbols_never' {N₁ N₂ : Type}
     (s₁ : symbol T N₁) (s₂ : symbol T N₂) :
   ¬ equivalent_symbols (wrap_symbol₂ N₁ s₂) (wrap_symbol₁ N₂ s₁) :=
 begin
-  -- TODO redundant
+  -- probably redundant
   cases s₁;
   cases s₂;
   {
@@ -516,13 +516,28 @@ begin
   apply equivalent_symbols_reflexive,
 end
 
+private lemma equivalent_strings_singleton {N₁ N₂ : Type} {s₁ s₂ : nst T N₁ N₂}
+    (ass : equivalent_symbols s₁ s₂) :
+  equivalent_strings [s₁] [s₂] :=
+begin
+  unfold equivalent_strings,
+  rw list.forall₂_cons,
+  split,
+  {
+    exact ass,
+  },
+  {
+    exact list.forall₂.nil,
+  },
+end
+
 private lemma equivalent_strings_append {N₁ N₂ : Type} {x₁ x₂ y₁ y₂ : list (nst T N₁ N₂)}
     (ass₁ : equivalent_strings x₁ y₁)
     (ass₂ : equivalent_strings x₂ y₂) :
   equivalent_strings (x₁ ++ x₂) (y₁ ++ y₂) :=
 begin
   unfold equivalent_strings at *,
-  sorry,
+  exact list.rel_append ass₁ ass₂,
 end
 
 private lemma equivalent_strings_length {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
@@ -539,7 +554,21 @@ private lemma equivalent_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N�
   equivalent_symbols (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y) :=
 begin
   unfold equivalent_strings at *,
-  sorry,
+  have dropped := list.forall₂_drop i ass,
+  cases (list.drop i x),
+  {
+    exfalso,
+    sorry,
+  },
+  cases (list.drop i y),
+  {
+    exfalso,
+    sorry,
+  },
+  -- Error: we lost the relationship between `x` resp `y` and their respective parts on the way here
+  rw list.forall₂_cons at dropped,
+  convert dropped.1,
+  sorry, sorry,
 end
 
 private lemma equivalent_strings_reverse {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
@@ -1194,28 +1223,61 @@ begin
       },
       rw xy_split_nt,
       apply equivalent_strings_append,
+      swap, {
+        rw list.drop_drop,
+        have part_for_v := equivalent_strings_drop (1 + u.length) ih_concat,
+        convert part_for_v,
+        have correct_len : 1 + u.length = (u ++ [symbol.nonterminal (sum.inr (sum.inl t))]).length,
+        {
+          rw add_comm,
+          rw list.length_append,
+          rw list.length_singleton,
+        },
+        rw correct_len,
+        rw list.drop_left,
+      },
       {
-        -- follows easily from `middle_nt_elem` TODO
         convert_to
           equivalent_strings
             [list.nth_le (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) u.length ul_lt_len_xy]
             [symbol.terminal t],
         {
-          sorry,
+          apply list.take_one_drop,
         },
-        sorry,
+        clear_except middle_nt_elem,
+        apply equivalent_strings_singleton,
+        cases
+          (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).nth_le
+            u.length ul_lt_len_xy with e s,
+        {
+          exfalso,
+          unfold equivalent_symbols at middle_nt_elem,
+          exact middle_nt_elem,
+        },
+        cases s,
+        {
+          exfalso,
+          cases s,
+            swap, cases s,
+          all_goals {
+            unfold equivalent_symbols at middle_nt_elem,
+            exact middle_nt_elem,
+          },
+        },
+        {
+          cases s,
+          {
+            unfold equivalent_symbols at middle_nt_elem,
+            rw middle_nt_elem,
+            unfold equivalent_symbols,
+          },
+          {
+            exfalso,
+            unfold equivalent_symbols at middle_nt_elem,
+            exact middle_nt_elem,
+          },
+        }
       },
-      rw list.drop_drop,
-      have part_for_v := equivalent_strings_drop (1 + u.length) ih_concat,
-      convert part_for_v,
-      have correct_len : 1 + u.length = (u ++ [symbol.nonterminal (sum.inr (sum.inl t))]).length,
-      {
-        rw add_comm,
-        rw list.length_append,
-        rw list.length_singleton,
-      },
-      rw correct_len,
-      rw list.drop_left,
     },
     {
       unfold rules_for_terminals₂ at rin,
@@ -1226,25 +1288,122 @@ begin
       dsimp [prod.first, prod.secon, prod.third] at *,
       rw list.append_nil at ih_concat,
       rw list.append_nil at ih_concat,
-      have equiv_utv :
-        equivalent_strings
-          (u ++ [symbol.nonterminal (sum.inr (sum.inr t))] ++ v)
-          (u ++ [symbol.terminal t] ++ v),
+
+      have xy_split_v :
+        list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y =
+          list.take (u.length + 1) (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) ++
+          list.drop (u.length + 1) (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y),
       {
-        apply equivalent_strings_append,
-        apply equivalent_strings_append,
-        apply equivalent_strings_refl,
-        {
-          unfold equivalent_strings,
-          rw list.forall₂_cons,
-          unfold equivalent_symbols,
-          exact ⟨rfl, list.forall₂.nil⟩,
-        },
-        apply equivalent_strings_refl,
+        rw list.take_append_drop,
       },
-      --exact equivalent_strings_trans ih_concat equiv_utv,
-      sorry,
-      -- arguments from transitivity are not valid with the new definition
+      rw xy_split_v,
+      have part_for_v := equivalent_strings_drop (u.length + 1) ih_concat,
+      apply equivalent_strings_append,
+      swap, {
+        convert part_for_v,
+        have rewr_len : u.length + 1 = (u ++ [symbol.nonterminal (sum.inr (sum.inr t))]).length,
+        {
+          rw list.length_append,
+          rw list.length_singleton,
+        },
+        rw rewr_len,
+        rw list.drop_left,
+      },
+      have ul_lt_len_um : u.length < (u ++ [symbol.nonterminal (sum.inr (sum.inr t))]).length,
+      {
+        rw list.length_append,
+        rw list.length_singleton,
+        apply lt_add_one,
+      },
+      have ul_lt_len_umv : u.length < (u ++ [symbol.nonterminal (sum.inr (sum.inr t))] ++ v).length,
+      {
+        rw list.length_append,
+        apply lt_of_lt_of_le ul_lt_len_um,
+        apply le_self_add,
+      },
+      have ul_lt_len_xy : u.length < (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).length,
+      {
+        have same_len := equivalent_strings_length ih_concat,
+        rw same_len,
+        exact ul_lt_len_umv,
+      },
+      have middle_nt := equivalent_strings_nth_le ul_lt_len_xy ul_lt_len_umv ih_concat,
+      rw list.nth_le_append ul_lt_len_umv ul_lt_len_um at middle_nt,
+      rw list.nth_le_append_right (by refl) ul_lt_len_um at middle_nt,
+      have middle_nt_elem :
+        equivalent_symbols
+          ((list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).nth_le u.length ul_lt_len_xy)
+          (symbol.nonterminal (sum.inr (sum.inr t))),
+      {
+        convert middle_nt,
+        finish,
+      },
+      have xy_split_nt :
+        list.take (u.length + 1) (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) =
+          list.take u.length (list.take (u.length + 1) (
+              list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)
+            ) ++
+          list.drop u.length (list.take (u.length + 1) (
+              list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)
+            ),
+      {
+        rw list.take_append_drop u.length,
+      },
+      rw xy_split_nt,
+      apply equivalent_strings_append,
+      {
+        rw list.take_take,
+        have part_for_u := equivalent_strings_take u.length ih_concat,
+        convert part_for_u,
+        {
+          apply min_eq_left,
+          apply nat.le_succ,
+        },
+        rw list.append_assoc,
+        rw list.take_left,
+      },
+      {
+        convert_to
+          equivalent_strings
+            [list.nth_le (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) u.length ul_lt_len_xy]
+            [symbol.terminal t],
+        {
+          apply list.drop_take_succ,
+        },
+        clear_except middle_nt_elem,
+        apply equivalent_strings_singleton,
+        cases
+          (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).nth_le
+            u.length ul_lt_len_xy with e s,
+        {
+          exfalso,
+          unfold equivalent_symbols at middle_nt_elem,
+          exact middle_nt_elem,
+        },
+        cases s,
+        {
+          exfalso,
+          cases s,
+            swap, cases s,
+          all_goals {
+            unfold equivalent_symbols at middle_nt_elem,
+            exact middle_nt_elem,
+          },
+        },
+        {
+          cases s,
+          {
+            exfalso,
+            unfold equivalent_symbols at middle_nt_elem,
+            exact middle_nt_elem,
+          },
+          {
+            unfold equivalent_symbols at middle_nt_elem,
+            rw middle_nt_elem,
+            unfold equivalent_symbols,
+          },
+        }
+      },
     },
   },
 end
