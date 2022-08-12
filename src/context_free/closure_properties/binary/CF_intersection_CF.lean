@@ -53,37 +53,6 @@ begin
   refl,
 end
 
-lemma count_in_le_length {w : list α} {a : α} :
-  count_in w a ≤ w.length :=
-begin
-  rw count_in,
-  have upper_bound : ∀ y : α, (λ (x : α), ite (x = a) 1 0) y ≤ 1,
-  {
-    intro z,
-    simp,
-    by_cases (z = a),
-    {
-      rw h,
-      simp,
-    },
-    {
-      convert_to ite false 1 0 ≤ 1;
-      simp,
-      exact h,
-    },
-  },
-  induction w with head tail ih,
-  {
-    refl,
-  },
-  rw list.map_cons,
-  simp,
-  calc ite (head = a) 1 0 + (list.map (λ (x : α), ite (x = a) 1 0) tail).sum
-      ≤ 1 + (list.map (λ (x : α), ite (x = a) 1 0) tail).sum : add_le_add_right (upper_bound head) _
-  ... ≤ 1 + tail.length                                      : add_le_add_left ih 1
-  ... = tail.length + 1                                      : add_comm 1 _,
-end
-
 lemma count_in_pos_of_in {w : list α} {a : α} (hyp : a ∈ w) :
   count_in w a > 0 :=
 begin
