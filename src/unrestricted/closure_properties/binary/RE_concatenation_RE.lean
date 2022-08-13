@@ -1047,8 +1047,6 @@ begin
           (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length ≤
         x.length - u.length,
       {
-        -- cannot by proved by manipulation with lenghts and inequalities only
-        -- we need to show that everything got matched in the left half
         clear_except ih_concat bef,
         have as_positive :
           u.length + (
@@ -1063,26 +1061,20 @@ begin
           clear bef,
           repeat { rw ← list.append_assoc at ih_concat },
 
-          have inequality_map :
+          have len_pos :
             (u ++
               list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
               [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
               list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length - 1 <
-            ((list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)).length,
+            ).length > 0,
           {
-            sorry,
+            repeat { rw list.length_append },
+            rw list.length_singleton,
+            clear_except,
+            omega,
           },
-          have inequality_map_opp :
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length - 1 ≥
-            (list.map (wrap_symbol₁ g₂.nt) x).length,
-          {
-            sorry,
-          },
+          have equal_total_len := corresponding_strings_length ih_concat,
+
           have inequality_m1 :
             (u ++
               list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
@@ -1095,7 +1087,7 @@ begin
               list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
             ).length,
           {
-            sorry,
+            exact buffer.lt_aux_2 len_pos,
           },
           have inequality_cat :
             (u ++
@@ -1109,41 +1101,140 @@ begin
               list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd ++ v
             ).length,
           {
-            sorry,
+            rw list.length_append _ v,
+            apply lt_of_lt_of_le (buffer.lt_aux_2 len_pos),
+            exact le_self_add,
+          },
+          have inequality_map :
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+            ).length - 1 <
+            ((list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)).length,
+          {
+            rw equal_total_len,
+            exact inequality_cat,
+          },
+          have inequality_map_opp :
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+            ).length - 1 ≥
+            (list.map (wrap_symbol₁ g₂.nt) x).length,
+          {
+            clear_except contra,
+            apply nat.le_pred_of_lt,
+            repeat { rw list.length_append },
+            repeat { rw list.length_map },
+            repeat { rw list.length_map at contra },
+            rw list.length_singleton,
+            repeat { rw add_assoc },
+            rw add_assoc at contra,
+            exact contra,
           },
           have clash := corresponding_strings_nth_le inequality_map inequality_cat ih_concat,
           rw list.nth_le_append inequality_cat inequality_m1 at clash,
           rw list.nth_le_append_right inequality_map_opp inequality_map at clash,
-          clear_except clash,
 
           rw list.nth_le_map at clash,
           swap, {
-            sorry,
+            have inequality_map := inequality_map,
+            rw list.length_append _ (list.map (wrap_symbol₂ g₁.nt) y) at inequality_map,
+            rw list.length_map _ y at inequality_map,
+            rw tsub_lt_iff_left inequality_map_opp,
+            exact inequality_map,
           },
           by_cases (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd).length ≥ 1,
           {
             rw list.nth_le_append_right at clash,
             swap, {
-              sorry,
+              rw list.length_append _ (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd),
+              have trivi_ineq : ∀ m k : ℕ, k ≥ 1 → m ≤ m + k - 1,
+              {
+                clear_except,
+                omega,
+              },
+              convert trivi_ineq (u ++ _ ++ [_]).length _ h,
             },
             rw list.nth_le_map at clash,
             swap, {
-              sorry,
+              rw list.length_map at h,
+              repeat { rw list.length_append },
+              repeat { rw list.length_map },
+              rw list.length_singleton,
+              have easy_ineq : ∀ m k : ℕ, k ≥ 1 → m + k - 1 - m < k,
+              {
+                clear_except,
+                omega,
+              },
+              convert easy_ineq (u.length + r₁.input_string.fst.length + 1) _ h,
             },
             apply corresponding_symbols_never₂,
             exact clash,
           },
           {
             push_neg at h,
-            -- `clash` will give contradition about `symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))` here
             have ris_third_is_nil : list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd = [],
             {
               rw ← list.length_eq_zero,
               rw ← nat.lt_one_iff,
               exact h,
             },
-            --rw list.nth_le_of_eq (congr_fun _ (congr_arg list.append ris_third_is_nil)),
-            sorry,
+            have inequality_m0 :
+              (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]).length - 1 <
+              (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]).length,
+            {
+              rw ris_third_is_nil at inequality_m1,
+              rw list.append_nil at inequality_m1,
+              exact inequality_m1,
+            },
+            have I_cannot_believe_I_had_to_write_it_explicitly :
+              list.nth_le
+                (u ++
+                  list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+                  [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+                  list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+                )
+                (
+                  (u ++
+                    list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+                    [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+                    list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+                  ).length - 1
+                )
+                inequality_m1 =
+              list.nth_le
+                (u ++
+                  list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+                  [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]
+                )
+                (
+                  (u ++
+                    list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+                    [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]
+                  ).length - 1
+                )
+                inequality_m0,
+            {
+              simp [ris_third_is_nil],
+            },
+            rw I_cannot_believe_I_had_to_write_it_explicitly at clash,
+            rw list.nth_le_append_right at clash,
+            swap, {
+              apply le_of_eq,
+              rw list.length_append _ [_],
+              rw list.length_singleton,
+              apply nat.succ_sub_one,
+            },
+            rw list.nth_le_singleton at clash,
+            change
+              corresponding_symbols _ (wrap_symbol₁ g₂.nt (symbol.nonterminal r₁.input_string.snd.fst)) at clash,
+            apply corresponding_symbols_never₂,
+            exact clash,
           },
         },
         omega,
