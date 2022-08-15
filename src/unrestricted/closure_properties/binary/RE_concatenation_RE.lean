@@ -760,35 +760,8 @@ begin
     },
   },
   cases d,
-  {
     cases d,
-    {
-      exfalso, -- TODO beautify with `any_goals`
-      cases ass with z hyp,
-      cases z with z₀ z',
-      {
-        have imposs := corresponding_strings_length hyp,
-        clear_except imposs,
-        rw list.length at imposs,
-        rw list.length_map at imposs,
-        rw list.length at imposs,
-        tauto,
-      },
-      {
-        rw list.map_cons at hyp,
-        unfold corresponding_strings at hyp,
-        rw list.forall₂_cons at hyp,
-        have impos := hyp.left,
-        clear_except impos,
-        cases z₀;
-        {
-          unfold wrap_symbol₁ at impos,
-          unfold corresponding_symbols at impos,
-          exact impos,
-        },
-      },
-    },
-    {
+    swap,
       cases d,
       {
         have unwrap_first_nlsl :
@@ -809,35 +782,7 @@ begin
           exact ih,
         },
       },
-      {
-        exfalso,
-        cases ass with z hyp,
-        cases z with z₀ z',
-        {
-          have imposs := corresponding_strings_length hyp,
-          clear_except imposs,
-          rw list.length at imposs,
-          rw list.length_map at imposs,
-          rw list.length at imposs,
-          tauto,
-        },
-        {
-          rw list.map_cons at hyp,
-          unfold corresponding_strings at hyp,
-          rw list.forall₂_cons at hyp,
-          have impos := hyp.left,
-          clear_except impos,
-          cases z₀;
-          {
-            unfold wrap_symbol₁ at impos,
-            unfold corresponding_symbols at impos,
-            exact impos,
-          },
-        },
-      },
-    },
-  },
-  {
+  swap 3,
     cases d,
     {
       have unwrap_first_nrl :
@@ -858,30 +803,146 @@ begin
         exact ih,
       },
     },
+  any_goals {
+    exfalso,
+    cases ass with z hyp,
+    cases z with z₀ z',
+    {
+      have imposs := corresponding_strings_length hyp,
+      clear_except imposs,
+      rw list.length at imposs,
+      rw list.length_map at imposs,
+      rw list.length at imposs,
+      tauto,
+    },
+    {
+      rw list.map_cons at hyp,
+      unfold corresponding_strings at hyp,
+      rw list.forall₂_cons at hyp,
+      have impos := hyp.left,
+      clear_except impos,
+      cases z₀;
+      {
+        unfold wrap_symbol₁ at impos,
+        unfold corresponding_symbols at impos,
+        exact impos,
+      },
+    },
+  },
+end
+
+private lemma equivalent_after_wrap_unwrap_self₂ {N₁ N₂ : Type} {w : list (nst T N₁ N₂)}
+    (ass : ∃ z : list (symbol T N₂), corresponding_strings (list.map (wrap_symbol₂ N₁) z) w) :
+  corresponding_strings (list.map (wrap_symbol₂ N₁) (list.filter_map unwrap_symbol₂ w)) w :=
+begin
+  induction w with d l ih,
+  {
+    unfold corresponding_strings,
+    unfold list.filter_map,
+    unfold list.map,
+    exact list.forall₂.nil,
+  },
+  specialize ih (by {
+    cases ass with z hyp,
+    unfold corresponding_strings at *,
+    cases z with z₀ z',
     {
       exfalso,
-      cases ass with z hyp,
-      cases z with z₀ z',
+      finish,
+    },
+    {
+      use z',
+      finish,
+    },
+  }),
+  unfold corresponding_strings,
+  cases d,
+  {
+    have unwrap_first_t :
+      list.filter_map unwrap_symbol₂ (symbol.terminal d :: l) =
+      symbol.terminal d :: list.filter_map unwrap_symbol₂ l,
+    {
+      refl,
+    },
+    rw unwrap_first_t,
+    unfold list.map,
+    unfold wrap_symbol₂,
+    rw list.forall₂_cons,
+    split,
+    {
+      unfold corresponding_symbols,
+    },
+    {
+      exact ih,
+    },
+  },
+  cases d,
+    cases d,
+    swap,
+      cases d,
+      swap, {
+        have unwrap_first_nlsr :
+          list.filter_map unwrap_symbol₂ (symbol.nonterminal (sum.inl (some (sum.inr d))) :: l) =
+          symbol.nonterminal d :: list.filter_map unwrap_symbol₂ l,
+        {
+          refl,
+        },
+        rw unwrap_first_nlsr,
+        unfold list.map,
+        unfold wrap_symbol₂,
+        rw list.forall₂_cons,
+        split,
+        {
+          unfold corresponding_symbols,
+        },
+        {
+          exact ih,
+        },
+      },
+  swap 3,
+    cases d,
+    swap, {
+      have unwrap_first_nrr :
+        list.filter_map unwrap_symbol₂ (symbol.nonterminal (sum.inr (sum.inr d)) :: l) =
+        symbol.terminal d :: list.filter_map unwrap_symbol₂ l,
       {
-        have imposs := corresponding_strings_length hyp,
-        clear_except imposs,
-        rw list.length at imposs,
-        rw list.length_map at imposs,
-        rw list.length at imposs,
-        tauto,
+        refl,
+      },
+      rw unwrap_first_nrr,
+      unfold list.map,
+      unfold wrap_symbol₂,
+      rw list.forall₂_cons,
+      split,
+      {
+        unfold corresponding_symbols,
       },
       {
-        rw list.map_cons at hyp,
-        unfold corresponding_strings at hyp,
-        rw list.forall₂_cons at hyp,
-        have impos := hyp.left,
-        clear_except impos,
-        cases z₀;
-        {
-          unfold wrap_symbol₁ at impos,
-          unfold corresponding_symbols at impos,
-          exact impos,
-        },
+        exact ih,
+      },
+    },
+  any_goals {
+    exfalso,
+    cases ass with z hyp,
+    cases z with z₀ z',
+    {
+      have imposs := corresponding_strings_length hyp,
+      clear_except imposs,
+      rw list.length at imposs,
+      rw list.length_map at imposs,
+      rw list.length at imposs,
+      tauto,
+    },
+    {
+      rw list.map_cons at hyp,
+      unfold corresponding_strings at hyp,
+      rw list.forall₂_cons at hyp,
+      have impos := hyp.left,
+      clear_except impos,
+      cases z₀;
+      {
+        unfold wrap_symbol₂ at impos,
+        unfold corresponding_symbols at impos,
+        exact impos,
       },
     },
   },
