@@ -714,6 +714,82 @@ begin
 end
 
 
+private lemma unwrap_wrap₁_string {N₁ N₂ : Type} {w : list (symbol T N₁)} :
+  list.filter_map unwrap_symbol₁ (list.map (wrap_symbol₁ N₂) w) = w :=
+begin
+  rw list.filter_map_map,
+  rw unwrap_wrap₁,
+  apply list.filter_map_some,
+end
+-- TODO refactor uses of unwrap_wraps to the string variants
+private lemma unwrap_wrap₂_string {N₁ N₂ : Type} {w : list (symbol T N₂)} :
+  list.filter_map unwrap_symbol₂ (list.map (wrap_symbol₂ N₁) w) = w :=
+begin
+  rw list.filter_map_map,
+  rw unwrap_wrap₂,
+  apply list.filter_map_some,
+end
+
+
+private lemma todo_symbols {N₁ N₂ : Type} {s₁ : symbol T N₁} {s : nst T N₁ N₂}
+    (ass : corresponding_symbols (wrap_symbol₁ N₂ s₁) s) :
+  unwrap_symbol₁ s = some s₁ :=
+begin
+  cases s₁;
+  {
+    unfold wrap_symbol₁ at ass,
+    repeat {
+      try {
+        cases s,
+      },
+      try {
+        unfold corresponding_symbols at ass,
+        rw ass,
+        refl,
+      },
+      try {
+        unfold corresponding_symbols at ass,
+        exfalso,
+        exact ass,
+      },
+    },
+  },
+end
+
+private lemma todo_strings_aux {N₁ N₂ : Type} :
+  ∀ v : list (symbol T N₁), ∀ w : list (nst T N₁ N₂),
+    corresponding_strings (list.map (wrap_symbol₁ N₂) v) w →
+      list.map unwrap_symbol₁ w = list.map option.some v
+| []     []     := λ _, rfl
+| []     (b::y) := by { intro hyp, exfalso, unfold corresponding_strings at hyp, unfold list.map at hyp, finish, }
+| (a::x) []     := by { intro hyp, exfalso, unfold corresponding_strings at hyp, unfold list.map at hyp, finish, }
+| (a::x) (b::y) :=
+begin
+  intro ass,
+  unfold corresponding_strings at ass,
+  rw list.map_cons at ass,
+  rw list.forall₂_cons at ass,
+  rw list.map,
+  rw list.map,
+  apply congr_arg2,
+  {
+    exact todo_symbols ass.1,
+  },
+  {
+    apply todo_strings_aux,
+    exact ass.2
+  },
+end
+
+private lemma todo_strings {N₁ N₂ : Type} {v : list (symbol T N₁)} {w : list (nst T N₁ N₂)}
+    (ass : corresponding_strings (list.map (wrap_symbol₁ N₂) v) w) :
+  list.filter_map unwrap_symbol₁ w = v :=
+begin
+  have almost := todo_strings_aux v w ass,
+  sorry,
+end
+
+
 private lemma equivalent_after_wrap_unwrap_self₁ {N₁ N₂ : Type} {w : list (nst T N₁ N₂)}
     (ass : ∃ z : list (symbol T N₁), corresponding_strings (list.map (wrap_symbol₁ N₂) z) w) :
   corresponding_strings (list.map (wrap_symbol₁ N₂) (list.filter_map unwrap_symbol₁ w)) w :=
@@ -1343,9 +1419,9 @@ begin
                 rw list.take_left,
               },
             },
+--dirty part starts here (probably throw-away code)
             clear_except bef_side_x x_equiv critical,
             repeat { rw list.take_append_eq_append_take at x_equiv },
---dirty part starts
             rw list.take_all_of_le at x_equiv,
             swap, {
               sorry,
@@ -1383,7 +1459,10 @@ begin
             have segment_1_converted :
               list.take u.length x = list.filter_map unwrap_symbol₁ u,
             {
-              sorry,
+              symmetry,
+              apply todo_strings,
+              rw ← list.map_take at equiv_segment_1,
+              exact equiv_segment_1,
             },
             repeat { rw list.append_assoc },
             rw ← list.take_append_drop u.length x,
@@ -1393,6 +1472,63 @@ begin
             },
             clear segment_1_converted min_is_ul equiv_segment_1,
 --dirty part ends
+
+            have segment_2_eqi :
+              corresponding_strings
+                (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.first.length (list.drop u.length x)))
+                (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
+            {
+              sorry,
+            },
+            have segment_2_equ := (todo_strings segment_2_eqi).symm,
+            rw unwrap_wrap₁_string at segment_2_equ,
+            rw ← list.take_append_drop r₁.input_string.first.length (list.drop u.length x),
+            apply congr_arg2,
+            {
+              exact segment_2_equ,
+            },
+            clear segment_2_eqi segment_2_equ,
+            rw list.drop_drop,
+
+            have segment_3_eqi :
+              corresponding_strings
+                (list.map (wrap_symbol₁ g₂.nt) (list.take 1 (list.drop (r₁.input_string.first.length + u.length) x)))
+                (list.map (wrap_symbol₁ g₂.nt) [symbol.nonterminal r₁.input_string.secon]),
+            {
+              sorry,
+            },
+            have segment_3_equ := (todo_strings segment_3_eqi).symm,
+            rw unwrap_wrap₁_string at segment_3_equ,
+            rw ← list.take_append_drop 1 (list.drop (r₁.input_string.first.length + u.length) x),
+            apply congr_arg2,
+            {
+              exact segment_3_equ,
+            },
+            clear segment_3_eqi segment_3_equ,
+            rw list.drop_drop,
+
+            have segment_4_eqi :
+              corresponding_strings
+                (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.third.length
+                  (list.drop (1 + (r₁.input_string.first.length + u.length)) x)))
+                (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third),
+            {
+              sorry,
+            },
+            have segment_4_equ := (todo_strings segment_4_eqi).symm,
+            rw unwrap_wrap₁_string at segment_4_equ,
+            rw ← list.take_append_drop r₁.input_string.third.length
+              (list.drop (1 + (r₁.input_string.first.length + u.length)) x),
+            apply congr_arg2,
+            {
+              exact segment_4_equ,
+            },
+            clear segment_4_eqi segment_4_equ,
+            rw list.drop_drop,
+
+            repeat { rw list.length_append },
+            repeat { rw list.length_take },
+
             sorry,
           },
           {
