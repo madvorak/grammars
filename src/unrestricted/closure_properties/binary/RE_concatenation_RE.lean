@@ -61,14 +61,14 @@ begin
 end
 
 
-lemma list_filter_map_eq {β : Type} {f : α → option β} :
+lemma list_filter_map_eq_of_map_eq_map_some {β : Type} {f : α → option β} :
   ∀ {x : list α}, ∀ {y : list β},
     list.map f x = list.map option.some y →
       list.filter_map f x = y
-| []     []     := λ _, rfl
-| []     (b::y) := by { intro hyp, exfalso, repeat { rw list.map at hyp }, tauto, }
-| (a::x) []     := by { intro hyp, exfalso, repeat { rw list.map at hyp }, tauto, }
-| (a::x) (b::y) :=
+| []       []       := λ _, rfl
+| []       (a₂::l₂) := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp.symm, }
+| (a₁::l₁) []       := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp, }
+| (a₁::l₁) (a₂::l₂) :=
 begin
   intro ass,
   repeat { rw list.map at ass },
@@ -76,7 +76,7 @@ begin
   rw list.filter_map_cons_some,
   swap, exact ass.1,
   congr,
-  apply list_filter_map_eq,
+  apply list_filter_map_eq_of_map_eq_map_some,
   exact ass.2,
 end
 
@@ -806,7 +806,7 @@ private lemma filter_map_unwrap_of_corresponding_strings₁ {N₁ N₂ : Type}
     (ass : corresponding_strings (list.map (wrap_symbol₁ N₂) v) w) :
   list.filter_map unwrap_symbol₁ w = v :=
 begin
-  apply list_filter_map_eq,
+  apply list_filter_map_eq_of_map_eq_map_some,
   exact map_unwrap_eq_map_some_of_corresponding_strings₁ ass,
 end
 
@@ -1445,7 +1445,16 @@ begin
             repeat { rw list.take_append_eq_append_take at x_equiv },
             rw list.take_all_of_le at x_equiv,
             swap, {
-              sorry,
+              clear_except critical,
+              have weaker_le : 1 ≤ x.length - u.length,
+              {
+                omega,
+              },
+              have stupid_le : u.length + 1 ≤ x.length,
+              {
+                omega,
+              },
+              exact nat.le_of_succ_le stupid_le,
             },
             obtain ⟨foo, equiv_segment_5⟩ := corresponding_strings_split (
                 u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
@@ -1470,9 +1479,20 @@ begin
             clear baz,
 
             repeat { rw list.take_take at equiv_segment_1 },
-            have min_is_ul : (min (min (min u.length (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length) (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]).length) (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length) = u.length,
+            have min_is_ul :
+              (min (min (min
+                u.length
+                (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length)
+                (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
+                  ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
+                  ).length)
+                (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
+                  ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
+                  ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third
+                  ).length)
+              = u.length,
             {
-              sorry,
+              simp [list.length_append],
             },
             rw min_is_ul at equiv_segment_1,
             repeat { rw list.append_assoc at equiv_segment_1 },
@@ -1492,14 +1512,45 @@ begin
               exact segment_1_converted,
             },
             clear segment_1_converted min_is_ul equiv_segment_1,
---dirty part ends
+--the dirtiest part ends here
+            have len12_eq :
+              u.length + r₁.input_string.first.length =
+              (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length,
+            {
+              rw list.length_append,
+              rw list.length_map,
+            },
+            have takall2 :
+              list.take (x.length - u.length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first) =
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first,
+            {
+              apply list.take_all_of_le,
+              clear_except critical,
+              omega,
+            },
 
             have segment_2_eqi :
               corresponding_strings
                 (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.first.length (list.drop u.length x)))
                 (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
             {
-              sorry,
+              repeat { rw list.take_take at equiv_segment_2 },
+              convert equiv_segment_2,
+              {
+                simp, -- TODO make more robust
+                rw ← list.map_take,
+                rw ← list.map_drop,
+                congr,
+                rw list.drop_take,
+              },
+              {
+                simp, -- TODO make more robust
+                rw ← list.append_assoc,
+                rw takall2,
+                rw len12_eq,
+                rw list.take_left,
+                rw list.drop_left,
+              },
             },
             have segment_2_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_2_eqi).symm,
             rw unwrap_wrap₁_string at segment_2_equ,
@@ -1516,7 +1567,39 @@ begin
                 (list.map (wrap_symbol₁ g₂.nt) (list.take 1 (list.drop (r₁.input_string.first.length + u.length) x)))
                 (list.map (wrap_symbol₁ g₂.nt) [symbol.nonterminal r₁.input_string.secon]),
             {
-              sorry,
+              repeat { rw list.take_take at equiv_segment_3 },
+              convert equiv_segment_3,
+              {
+                simp, -- TODO make more robust
+                rw ← list.map_take,
+                rw ← list.map_drop,
+                congr,
+                rw ← add_assoc,
+                rw list.drop_take,
+                rw add_comm,
+              },
+              {
+                simp, -- TODO make more robust
+                rw ← add_assoc,
+                rw list.drop_take,
+                rw ← list.append_assoc,
+                rw takall2,
+                rw len12_eq,
+                rw list.drop_left,
+                rw list.take_append_of_le_length,
+                swap, {
+                  sorry,
+                },
+                rw list.take_take,
+                have min_exactly_1 :
+                  min 1 (x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length) = 1,
+                {
+                  sorry,
+                },
+                rw min_exactly_1,
+                unfold wrap_symbol₁,
+                refl,
+              },
             },
             have segment_3_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_3_eqi).symm,
             rw unwrap_wrap₁_string at segment_3_equ,
@@ -1534,7 +1617,29 @@ begin
                   (list.drop (1 + (r₁.input_string.first.length + u.length)) x)))
                 (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third),
             {
-              sorry,
+              repeat { rw list.take_take at equiv_segment_4 },
+              convert equiv_segment_4,
+              {
+                simp, -- TODO make more robust
+                rw ← list.map_take,
+                rw ← list.map_drop,
+                congr,
+                rw ← add_assoc,
+                rw ← list.drop_take,
+                rw add_comm,
+                rw add_comm 1 r₁.input_string.first.length,
+                apply congr_arg,
+                have sum_rearrange :
+                  u.length + (r₁.input_string.first.length + 1) + r₁.input_string.third.length =
+                  u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)),
+                {
+                  omega,
+                },
+                rw sum_rearrange,
+              },
+              {
+                sorry,
+              },
             },
             have segment_4_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_4_eqi).symm,
             rw unwrap_wrap₁_string at segment_4_equ,
@@ -1549,7 +1654,7 @@ begin
 
             repeat { rw list.length_append },
             repeat { rw list.length_take },
-
+            -- TODO continue here !!!
             sorry,
           },
           {
