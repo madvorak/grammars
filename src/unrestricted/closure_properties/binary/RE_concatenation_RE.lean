@@ -1,7 +1,7 @@
 import unrestricted.grammar
 
 
-section list_trivialities
+section list_technicalities
 
 variables {α : Type}
 
@@ -80,7 +80,28 @@ begin
   exact ass.2,
 end
 
-end list_trivialities
+lemma list_forall₂_nth_le {β : Type} {R : α → β → Prop} :
+  ∀ {x : list α}, ∀ {y : list β}, list.forall₂ R x y →
+    ∀ {i : ℕ}, ∀ i_lt_len_x : i < x.length, ∀ i_lt_len_y : i < y.length,
+      R (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y)
+| []       []       := by { intros hyp i hx, exfalso, apply nat.not_lt_zero, exact hx, }
+| []       (a₂::l₂) := by { intro hyp, exfalso, cases hyp, }
+| (a₁::l₁) []       := by { intro hyp, exfalso, cases hyp, }
+| (a₁::l₁) (a₂::l₂) :=
+begin
+  intros ass i i_lt_len_x i_lt_len_y,
+  rw list.forall₂_cons at ass,
+  cases i,
+  {
+    unfold list.nth_le,
+    exact ass.1,
+  },
+  unfold list.nth_le,
+  apply list_forall₂_nth_le,
+  exact ass.2,
+end
+
+end list_technicalities
 
 
 variables {T : Type}
@@ -642,11 +663,12 @@ begin
 end
 
 private lemma corresponding_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)} {i : ℕ}
-    (i_lt_len_x : i < x.length) (i_lt_len_y : i < y.length) -- one of them should follow from the other
+    (i_lt_len_x : i < x.length) (i_lt_len_y : i < y.length)
     (ass : corresponding_strings x y) :
   corresponding_symbols (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y) :=
 begin
-  sorry,
+  apply list_forall₂_nth_le,
+  exact ass,
 end
 
 private lemma corresponding_strings_reverse {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)}
