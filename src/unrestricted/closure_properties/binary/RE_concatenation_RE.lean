@@ -85,8 +85,8 @@ lemma list_forall₂_nth_le {β : Type} {R : α → β → Prop} :
     ∀ {i : ℕ}, ∀ i_lt_len_x : i < x.length, ∀ i_lt_len_y : i < y.length,
       R (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y)
 | []       []       := by { intros hyp i hx, exfalso, apply nat.not_lt_zero, exact hx, }
-| []       (a₂::l₂) := by { intro hyp, exfalso, cases hyp, }
-| (a₁::l₁) []       := by { intro hyp, exfalso, cases hyp, }
+| []       (a₂::l₂) := by { intro hyp, cases hyp, }
+| (a₁::l₁) []       := by { intro hyp, cases hyp, }
 | (a₁::l₁) (a₂::l₂) :=
 begin
   intros ass i i_lt_len_x i_lt_len_y,
@@ -1464,9 +1464,8 @@ begin
             },
             clear_except bef_side_x x_equiv critical,
 
-            repeat { rw list.take_append_eq_append_take at x_equiv },
-            rw list.take_all_of_le at x_equiv,
-            swap, {
+            have ul_le_xl : u.length ≤ x.length,
+            {
               clear_except critical,
               have weaker_le : 1 ≤ x.length - u.length,
               {
@@ -1478,6 +1477,10 @@ begin
               },
               exact nat.le_of_succ_le stupid_le,
             },
+            repeat { rw list.take_append_eq_append_take at x_equiv },
+            rw list.take_all_of_le ul_le_xl at x_equiv,
+            repeat { rw list.append_assoc },
+
             have chunk2 :
               list.take (x.length - u.length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first) =
               list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first,
@@ -1585,23 +1588,21 @@ begin
             rw list.take_left at equiv_segment_1,
             rw list.take_take at equiv_segment_1,
 
-            simp at equiv_segment_5 equiv_segment_4 equiv_segment_3 equiv_segment_2 equiv_segment_1, -- TODO robustness
+            -- This `simp` is dangerous. See `RE_concatenation_RE_simp_goal.txt` for intended result.
+            simp at equiv_segment_1 equiv_segment_2 equiv_segment_3 equiv_segment_4 equiv_segment_5,
 
-            have segment_1_converted : -- TODO refactor (this whole paragraph)
-              list.take u.length x = list.filter_map unwrap_symbol₁ u,
+            have segment_1_eqi : corresponding_strings (list.map (wrap_symbol₁ g₂.nt) (list.take u.length x)) u,
             {
-              symmetry,
-              apply filter_map_unwrap_of_corresponding_strings₁,
-              rw ← list.map_take at equiv_segment_1,
-              exact equiv_segment_1,
+              convert equiv_segment_1,
+              rw list.map_take,
             },
-            repeat { rw list.append_assoc },
+            have segment_1_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_1_eqi).symm,
             rw ← list.take_append_drop u.length x,
             apply congr_arg2,
             {
-              exact segment_1_converted,
+              exact segment_1_equ,
             },
-            clear segment_1_converted equiv_segment_1,
+            clear segment_1_equ segment_1_eqi equiv_segment_1,
 
             have segment_2_eqi :
               corresponding_strings
@@ -1687,7 +1688,7 @@ begin
             repeat { rw list.length_take },
             repeat { rw list.length_drop },
 
-            have sum_of_min_len :
+            have sum_of_min_lengths :
               min u.length x.length +
                 (min r₁.input_string.first.length (x.length - u.length) +
                 (min 1 (x.length - (r₁.input_string.first.length + u.length)) +
@@ -1695,9 +1696,58 @@ begin
                 (x.length - (r₁.input_string.third.length + (1 + (r₁.input_string.first.length + u.length))))))) =
               x.length,
             {
-              sorry, -- TODO first finish this
+              have add_mirror :
+                r₁.input_string.third.length + 1 + r₁.input_string.first.length =
+                r₁.input_string.first.length + 1 + r₁.input_string.third.length,
+              {
+                ring,
+              },
+              rw [list.length_map, list.length_map, ← add_mirror] at critical,
+
+              have min1 : min u.length x.length = u.length,
+              {
+                apply min_eq_left,
+                exact ul_le_xl,
+              },
+              have min2 : min r₁.input_string.first.length (x.length - u.length) = r₁.input_string.first.length,
+              {
+                clear_except critical,
+                apply min_eq_left,
+                apply le_trans _ critical,
+                apply le_add_self,
+              },
+              have min3 : min 1 (x.length - (r₁.input_string.first.length + u.length)) = 1,
+              {
+                clear_except critical,
+                apply min_eq_left,
+                omega,
+              },
+              have min4 :
+                min r₁.input_string.third.length (x.length - (1 + (r₁.input_string.first.length + u.length))) =
+                r₁.input_string.third.length,
+              {
+                clear_except critical,
+                apply min_eq_left,
+                omega,
+              },
+              rw [min1, min2, min3, min4],
+              rw le_tsub_iff_right ul_le_xl at critical,
+              clear_except critical add_mirror,
+              repeat { rw ← add_assoc },
+              have sum_eq_sum :
+                u.length + r₁.input_string.first.length + 1 + r₁.input_string.third.length =
+                r₁.input_string.third.length + 1 + r₁.input_string.first.length + u.length,
+              {
+                rw add_mirror,
+                rw add_assoc,
+                rw add_assoc,
+                rw add_comm,
+                rw ← add_assoc _ 1 _,
+              },
+              rw sum_eq_sum,
+              exact nat.add_sub_of_le critical,
             },
-            rw sum_of_min_len,
+            rw sum_of_min_lengths,
             clear_except equiv_segment_5,
 
             have another_rearranging :
