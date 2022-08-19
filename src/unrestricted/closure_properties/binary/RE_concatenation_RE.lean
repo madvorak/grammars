@@ -1072,12 +1072,838 @@ end unwrapping_nst
 
 section very_complicated
 
-private lemma big_induction {g₁ g₂ : grammar T} {w : list (nst T g₁.nt g₂.nt)} (ass :
+private lemma induction_step_for_lifted_rule_from_g₁ {g₁ g₂ : grammar T} {a b u v : list (nst T g₁.nt g₂.nt)}
+    {x : list (symbol T g₁.nt)} {y: list (symbol T g₂.nt)} {r : grule T (@nnn T g₁.nt g₂.nt)}
+    (rin : r ∈ list.map (wrap_grule₁ g₂.nt) g₁.rules)
+    (bef : a = u ++ r.input_string.first ++ [symbol.nonterminal r.input_string.secon] ++ r.input_string.third ++ v)
+    (aft : b = u ++ r.output_string ++ v)
+    (ih_x : grammar_derives g₁ [symbol.nonterminal g₁.initial] x)
+    (ih_y : grammar_derives g₂ [symbol.nonterminal g₂.initial] y)
+    (ih_concat :
+      corresponding_strings
+        (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)
+        a) :
+  ∃ (x' : list (symbol T g₁.nt)),
+    and
+      (and
+        (grammar_derives g₁ [symbol.nonterminal g₁.initial] x')
+        (grammar_derives g₂ [symbol.nonterminal g₂.initial] y)
+      )
+      (corresponding_strings (list.map (wrap_symbol₁ g₂.nt) x' ++ list.map (wrap_symbol₂ g₁.nt) y) b) :=
+begin
+  rw list.mem_map at rin,
+  rcases rin with ⟨r₁, rin₁, wrap_r₁_eq_r⟩,
+  rw ← wrap_r₁_eq_r at *,
+  clear wrap_r₁_eq_r,
+  simp [wrap_grule₁, prod.first, prod.secon, prod.third] at *,
+  rw ← list.singleton_append at bef,
+
+  let m := (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length,
+  let b' := u ++ list.map (wrap_symbol₁ g₂.nt) r₁.output_string ++ list.take (x.length - u.length - m) v,
+  use list.filter_map unwrap_symbol₁ b',
+
+  have critical :
+    (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+      (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length ≤
+    x.length - u.length,
+  {
+    clear_except ih_concat bef,
+    have as_positive :
+      u.length + (
+          (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+          (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+        ) ≤
+      x.length,
+    {
+      by_contradiction contra,
+      push_neg at contra,
+      rw bef at ih_concat,
+      clear bef,
+      repeat { rw ← list.append_assoc at ih_concat },
+
+      have len_pos :
+        (u ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+        ).length > 0,
+      {
+        repeat { rw list.length_append },
+        rw list.length_singleton,
+        clear_except,
+        omega,
+      },
+      have equal_total_len := corresponding_strings_length ih_concat,
+
+      have inequality_m1 :
+        (u ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+        ).length - 1 <
+        (u ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+        ).length,
+      {
+        exact buffer.lt_aux_2 len_pos,
+      },
+      have inequality_cat :
+        (u ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+        ).length - 1 <
+        (u ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd ++ v
+        ).length,
+      {
+        rw list.length_append _ v,
+        apply lt_of_lt_of_le (buffer.lt_aux_2 len_pos),
+        exact le_self_add,
+      },
+      have inequality_map :
+        (u ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+        ).length - 1 <
+        ((list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)).length,
+      {
+        rw equal_total_len,
+        exact inequality_cat,
+      },
+      have inequality_map_opp :
+        (u ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+        ).length - 1 ≥
+        (list.map (wrap_symbol₁ g₂.nt) x).length,
+      {
+        clear_except contra,
+        apply nat.le_pred_of_lt,
+        repeat { rw list.length_append },
+        repeat { rw list.length_map },
+        repeat { rw list.length_map at contra },
+        rw list.length_singleton,
+        repeat { rw add_assoc },
+        rw add_assoc at contra,
+        exact contra,
+      },
+      have clash := corresponding_strings_nth_le inequality_map inequality_cat ih_concat,
+      rw list.nth_le_append inequality_cat inequality_m1 at clash,
+      rw list.nth_le_append_right inequality_map_opp inequality_map at clash,
+
+      rw list.nth_le_map at clash,
+      swap, {
+        have inequality_map := inequality_map,
+        rw list.length_append _ (list.map (wrap_symbol₂ g₁.nt) y) at inequality_map,
+        rw list.length_map _ y at inequality_map,
+        rw tsub_lt_iff_left inequality_map_opp,
+        exact inequality_map,
+      },
+      by_cases (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd).length ≥ 1,
+      {
+        rw list.nth_le_append_right at clash,
+        swap, {
+          rw list.length_append _ (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd),
+          have trivi_ineq : ∀ m k : ℕ, k ≥ 1 → m ≤ m + k - 1,
+          {
+            clear_except,
+            omega,
+          },
+          convert trivi_ineq (u ++ _ ++ [_]).length _ h,
+        },
+        rw list.nth_le_map at clash,
+        swap, {
+          rw list.length_map at h,
+          repeat { rw list.length_append },
+          repeat { rw list.length_map },
+          rw list.length_singleton,
+          have easy_ineq : ∀ m k : ℕ, k ≥ 1 → m + k - 1 - m < k,
+          {
+            clear_except,
+            omega,
+          },
+          convert easy_ineq (u.length + r₁.input_string.fst.length + 1) _ h,
+        },
+        apply corresponding_symbols_never₂,
+        exact clash,
+      },
+      {
+        push_neg at h,
+        have ris_third_is_nil : list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd = [],
+        {
+          rw ← list.length_eq_zero,
+          rw ← nat.lt_one_iff,
+          exact h,
+        },
+        have inequality_m0 :
+          (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+            [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]).length - 1 <
+          (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+            [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]).length,
+        {
+          rw ris_third_is_nil at inequality_m1,
+          rw list.append_nil at inequality_m1,
+          exact inequality_m1,
+        },
+        have I_cannot_believe_I_had_to_write_it_explicitly :
+          list.nth_le
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+            )
+            (
+              (u ++
+                list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+                list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+              ).length - 1
+            )
+            inequality_m1 =
+          list.nth_le
+            (u ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]
+            )
+            (
+              (u ++
+                list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]
+              ).length - 1
+            )
+            inequality_m0,
+        {
+          simp [ris_third_is_nil],
+        },
+        rw I_cannot_believe_I_had_to_write_it_explicitly at clash,
+        rw list.nth_le_append_right at clash,
+        swap, {
+          apply le_of_eq,
+          rw list.length_append _ [_],
+          rw list.length_singleton,
+          apply nat.succ_sub_one,
+        },
+        rw list.nth_le_singleton at clash,
+        change
+          corresponding_symbols _ (wrap_symbol₁ g₂.nt (symbol.nonterminal r₁.input_string.snd.fst)) at clash,
+        apply corresponding_symbols_never₂,
+        exact clash,
+      },
+    },
+    omega,
+  },
+
+  split,
+  {
+    split,
+    {
+      apply grammar_deri_of_deri_tran ih_x,
+      use r₁,
+      split,
+      {
+        exact rin₁,
+      },
+      use list.filter_map unwrap_symbol₁ u,
+      use list.filter_map unwrap_symbol₁ (list.take (x.length - u.length - m) v),
+      split,
+      {
+        have x_equiv :
+          corresponding_strings
+            (list.map (wrap_symbol₁ g₂.nt) x)
+            (list.take x.length (u
+              ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
+              ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
+              ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third
+              ++ v)),
+        {
+          rw bef at ih_concat,
+          clear_except ih_concat,
+          rw ← list.append_assoc _ _ v at ih_concat,
+          rw ← list.append_assoc _ _ v at ih_concat,
+          rw list.append_assoc u,
+          rw list.append_assoc u,
+          rw list.append_assoc u,
+          rw list.append_assoc (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
+
+          convert corresponding_strings_take x.length ih_concat,
+          {
+            have x_len_eq : x.length = (list.map (wrap_symbol₁ g₂.nt) x).length,
+            {
+              rw list.length_map,
+            },
+            rw x_len_eq,
+            rw list.take_left,
+          },
+        },
+        clear_except bef_side_x x_equiv critical,
+
+        have ul_le_xl : u.length ≤ x.length,
+        {
+          clear_except critical,
+          have weaker_le : 1 ≤ x.length - u.length,
+          {
+            omega,
+          },
+          have stupid_le : u.length + 1 ≤ x.length,
+          {
+            omega,
+          },
+          exact nat.le_of_succ_le stupid_le,
+        },
+        repeat { rw list.take_append_eq_append_take at x_equiv },
+        rw list.take_all_of_le ul_le_xl at x_equiv,
+        repeat { rw list.append_assoc },
+
+        have chunk2 :
+          list.take (x.length - u.length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first) =
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first,
+        {
+          apply list.take_all_of_le,
+          clear_except critical,
+          omega,
+        },
+        have chunk3 :
+          list.take (x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length)
+            [@symbol.nonterminal T (nnn g₁.nt g₂.nt) (sum.inl (some (sum.inl r₁.input_string.secon)))] =
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))],
+        {
+          apply list.take_all_of_le,
+          clear_except critical,
+          change 1 ≤ x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length,
+          rw list.length_append,
+          have weakened :
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 ≤
+            x.length - u.length,
+          {
+            omega,
+          },
+          have goal_as_le_sub_sub :
+            1 ≤ (x.length - u.length) - (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length,
+          {
+            omega,
+          },
+          rw tsub_add_eq_tsub_tsub,
+          exact goal_as_le_sub_sub,
+        },
+        have chunk4 :
+          list.take (x.length - (
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
+            ).length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third) =
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third,
+        {
+          apply list.take_all_of_le,
+          clear_except critical,
+          rw list.length_append_append,
+          change
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length ≤
+            x.length - (u.length + (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1),
+          omega,
+        },
+        have chunk5 :
+          list.take (x.length - (
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+            ) v =
+          list.take (x.length - u.length - m) v,
+        {
+          repeat { rw list.length_append },
+          apply congr_arg2,
+          swap, {
+            refl,
+          },
+          have rearrange_sum_of_four : ∀ a b c d : ℕ, a + b + c + d = a + (b + c + d),
+          {
+            omega,
+          },
+          rw rearrange_sum_of_four,
+          change x.length - (u.length + m) = x.length - u.length - m,
+          clear_except,
+          omega,
+        },
+        rw [chunk2, chunk3, chunk4, chunk5] at x_equiv,
+        clear chunk2 chunk3 chunk4 chunk5,
+
+        obtain ⟨foo, equiv_segment_5⟩ :=
+          corresponding_strings_split (
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third
+            ).length x_equiv,
+        clear x_equiv,
+        rw list.drop_left at equiv_segment_5,
+        rw list.take_left at foo,
+
+        obtain ⟨bar, equiv_segment_4⟩ :=
+          corresponding_strings_split (
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
+            ).length foo,
+        clear foo,
+        rw list.drop_left at equiv_segment_4,
+        rw list.take_left at bar,
+        rw list.take_take at bar,
+
+        obtain ⟨baz, equiv_segment_3⟩ :=
+          corresponding_strings_split (
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
+            ).length bar,
+        clear bar,
+        rw list.drop_left at equiv_segment_3,
+        rw list.take_left at baz,
+        rw list.take_take at baz,
+
+        obtain ⟨equiv_segment_1, equiv_segment_2⟩ :=
+          corresponding_strings_split u.length baz,
+        clear baz,
+        rw list.drop_left at equiv_segment_2,
+        rw list.take_left at equiv_segment_1,
+        rw list.take_take at equiv_segment_1,
+
+        -- This `simp` is dangerous. See `RE_concatenation_RE_simp_goal.txt` for intended result.
+        simp at equiv_segment_1 equiv_segment_2 equiv_segment_3 equiv_segment_4 equiv_segment_5,
+
+        have segment_1_eqi : corresponding_strings (list.map (wrap_symbol₁ g₂.nt) (list.take u.length x)) u,
+        {
+          convert equiv_segment_1,
+          rw list.map_take,
+        },
+        have segment_1_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_1_eqi).symm,
+        rw ← list.take_append_drop u.length x,
+        apply congr_arg2,
+        {
+          exact segment_1_equ,
+        },
+        clear segment_1_equ segment_1_eqi equiv_segment_1,
+
+        have segment_2_eqi :
+          corresponding_strings
+            (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.first.length (list.drop u.length x)))
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
+        {
+          convert equiv_segment_2,
+          rw list.map_take,
+          rw list.map_drop,
+          rw list.drop_take,
+        },
+        have segment_2_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_2_eqi).symm,
+        rw unwrap_wrap₁_string at segment_2_equ,
+        rw ← list.take_append_drop r₁.input_string.first.length (list.drop u.length x),
+        apply congr_arg2,
+        {
+          exact segment_2_equ,
+        },
+        clear segment_2_equ segment_2_eqi equiv_segment_2,
+        rw list.drop_drop,
+
+        have segment_3_eqi :
+          corresponding_strings
+            (list.map (wrap_symbol₁ g₂.nt) (list.take 1 (list.drop (r₁.input_string.first.length + u.length) x)))
+            (list.map (wrap_symbol₁ g₂.nt) [symbol.nonterminal r₁.input_string.secon]),
+        {
+          convert equiv_segment_3,
+          rw list.map_take,
+          rw list.map_drop,
+          rw ← add_assoc,
+          rw list.drop_take,
+          rw add_comm,
+        },
+        have segment_3_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_3_eqi).symm,
+        rw unwrap_wrap₁_string at segment_3_equ,
+        rw ← list.take_append_drop 1 (list.drop (r₁.input_string.first.length + u.length) x),
+        apply congr_arg2,
+        {
+          exact segment_3_equ,
+        },
+        clear segment_3_equ segment_3_eqi equiv_segment_3,
+        rw list.drop_drop,
+
+        have segment_4_eqi :
+          corresponding_strings
+            (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.third.length
+              (list.drop (1 + (r₁.input_string.first.length + u.length)) x)))
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third),
+        {
+          convert equiv_segment_4,
+          rw list.map_take,
+          rw list.map_drop,
+
+          have sum_rearrange :
+            u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)) =
+            (u.length + (r₁.input_string.first.length + 1)) + r₁.input_string.third.length,
+          {
+            omega,
+          },
+          rw sum_rearrange,
+          rw list.drop_take,
+
+          have small_sum_rearr :
+            1 + (r₁.input_string.first.length + u.length) =
+            u.length + (r₁.input_string.first.length + 1),
+          {
+            omega,
+          },
+          rw small_sum_rearr,
+        },
+        have segment_4_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_4_eqi).symm,
+        rw unwrap_wrap₁_string at segment_4_equ,
+        rw ← list.take_append_drop r₁.input_string.third.length
+          (list.drop (1 + (r₁.input_string.first.length + u.length)) x),
+        apply congr_arg2,
+        {
+          exact segment_4_equ,
+        },
+        clear segment_4_equ segment_4_eqi equiv_segment_4,
+
+        rw list.drop_drop,
+        repeat { rw list.length_append },
+        repeat { rw list.length_take },
+        repeat { rw list.length_drop },
+
+        have sum_of_min_lengths :
+          min u.length x.length +
+            (min r₁.input_string.first.length (x.length - u.length) +
+            (min 1 (x.length - (r₁.input_string.first.length + u.length)) +
+            (min r₁.input_string.third.length (x.length - (1 + (r₁.input_string.first.length + u.length))) +
+            (x.length - (r₁.input_string.third.length + (1 + (r₁.input_string.first.length + u.length))))))) =
+          x.length,
+        {
+          have add_mirror :
+            r₁.input_string.third.length + 1 + r₁.input_string.first.length =
+            r₁.input_string.first.length + 1 + r₁.input_string.third.length,
+          {
+            ring,
+          },
+          rw [list.length_map, list.length_map, ← add_mirror] at critical,
+
+          have min1 : min u.length x.length = u.length,
+          {
+            apply min_eq_left,
+            exact ul_le_xl,
+          },
+          have min2 : min r₁.input_string.first.length (x.length - u.length) = r₁.input_string.first.length,
+          {
+            clear_except critical,
+            apply min_eq_left,
+            apply le_trans _ critical,
+            apply le_add_self,
+          },
+          have min3 : min 1 (x.length - (r₁.input_string.first.length + u.length)) = 1,
+          {
+            clear_except critical,
+            apply min_eq_left,
+            omega,
+          },
+          have min4 :
+            min r₁.input_string.third.length (x.length - (1 + (r₁.input_string.first.length + u.length))) =
+            r₁.input_string.third.length,
+          {
+            clear_except critical,
+            apply min_eq_left,
+            omega,
+          },
+          rw [min1, min2, min3, min4],
+          rw le_tsub_iff_right ul_le_xl at critical,
+          clear_except critical add_mirror,
+          repeat { rw ← add_assoc },
+          have sum_eq_sum :
+            u.length + r₁.input_string.first.length + 1 + r₁.input_string.third.length =
+            r₁.input_string.third.length + 1 + r₁.input_string.first.length + u.length,
+          {
+            rw add_mirror,
+            rw add_assoc,
+            rw add_assoc,
+            rw add_comm,
+            rw ← add_assoc _ 1 _,
+          },
+          rw sum_eq_sum,
+          exact nat.add_sub_of_le critical,
+        },
+        rw sum_of_min_lengths,
+        clear_except equiv_segment_5,
+
+        have another_rearranging :
+          r₁.input_string.third.length + (1 + (r₁.input_string.first.length + u.length)) =
+          u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)),
+        {
+          ring,
+        },
+        rw another_rearranging,
+        rw ← list.map_drop at equiv_segment_5,
+        symmetry,
+        exact filter_map_unwrap_of_corresponding_strings₁ equiv_segment_5,
+      },
+      {
+        rw list.filter_map_append_append,
+        congr,
+        rw unwrap_wrap₁_string,
+      },
+    },
+    {
+      exact ih_y,
+    },
+  },
+  rw aft,
+  rw bef at ih_concat,
+  rw list.filter_map_append_append,
+  rw list.map_append_append,
+  rw list.append_assoc,
+  rw list.append_assoc,
+
+  apply corresponding_strings_append,
+  {
+    have part_for_u := corresponding_strings_take u.length ih_concat,
+    rw list.take_left at part_for_u,
+    have trivi : u.length ≤ (list.map (wrap_symbol₁ g₂.nt) x).length,
+    {
+      clear_except critical,
+      rw list.length_map,
+      omega,
+    },
+    rw list.take_append_of_le_length trivi at part_for_u,
+    clear_except part_for_u,
+    rw ← list.map_take at part_for_u,
+    apply equivalent_after_wrap_unwrap_self₁,
+    use list.take u.length x,
+    exact part_for_u,
+  },
+  apply corresponding_strings_append,
+  {
+    rw unwrap_wrap₁_string,
+    apply corresponding_strings_refl,
+  },
+  convert_to
+    corresponding_strings _ (list.take (x.length - u.length - m) v ++ list.drop (x.length - u.length - m) v),
+  {
+    rw list.take_append_drop,
+  },
+  apply corresponding_strings_append,
+  {
+    have eqi := corresponding_strings_take (list.map (wrap_symbol₁ g₂.nt) x).length ih_concat,
+    rw list.take_left at eqi,
+    have part_for_v_beginning := corresponding_strings_drop (u.length + m) eqi,
+    clear_except part_for_v_beginning critical,
+    rw ← list.map_drop at part_for_v_beginning,
+    apply equivalent_after_wrap_unwrap_self₁,
+    use list.drop (u.length + m) x,
+    convert part_for_v_beginning,
+    clear part_for_v_beginning,
+    rw list.length_map,
+    rw list.take_append_eq_append_take,
+    rw list.drop_append_eq_append_drop,
+    have tul_lt : (list.take x.length u).length ≤ u.length + m,
+    {
+      rw list.length_take,
+      calc min x.length u.length
+          ≤ u.length     : min_le_right _ _
+      ... ≤ u.length + m : le_self_add,
+    },
+    rw list.drop_eq_nil_of_le tul_lt,
+    rw list.nil_append,
+    rw ← list.append_assoc _ _ v,
+    rw ← list.append_assoc _ _ v,
+    rw ← list.append_assoc,
+    rw list.take_append_eq_append_take,
+    rw list.drop_append_eq_append_drop,
+    have rul_inp_len :
+      (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+        ).length = m,
+    {
+      rw list.length_append_append,
+      rw list.length_singleton,
+      refl,
+    },
+    have u_is_shorter : min x.length u.length = u.length,
+    {
+      apply min_eq_right,
+      clear_except critical,
+      omega,
+    },
+    rw list.drop_eq_nil_of_le,
+    swap, {
+      rw list.length_take,
+      rw rul_inp_len,
+      rw list.length_take,
+      rw u_is_shorter,
+      calc min (x.length - u.length) m ≤ m : min_le_right _ _
+      ... ≤ u.length + m - u.length        : le_add_tsub_swap,
+    },
+    rw list.nil_append,
+    repeat { rw list.length_take },
+    rw rul_inp_len,
+    have zero_dropping : u.length + m - min x.length u.length - min (x.length - u.length) m = 0,
+    {
+      have middle_cannot_exceed : min (x.length - u.length) m = m,
+      {
+        exact min_eq_right critical,
+      },
+      rw [u_is_shorter, middle_cannot_exceed],
+      clear_except,
+      omega,
+    },
+    rw zero_dropping,
+    unfold list.drop,
+  },
+  -- now we have what `g₂` generated
+  have reverse_concat := corresponding_strings_reverse ih_concat,
+  repeat { rw list.reverse_append at reverse_concat },
+  have the_part := corresponding_strings_take y.length reverse_concat,
+  apply corresponding_strings_of_reverse,
+
+  have len_sum : y.length + (x.length - u.length - m) = v.length,
+  {
+    change
+      y.length + (x.length - u.length - (
+        (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
+        (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+      )) =
+      v.length,
+    have len_concat := corresponding_strings_length ih_concat,
+    clear_except len_concat critical,
+    repeat { rw list.length_append at len_concat },
+    rw list.length_map at len_concat,
+    rw list.length_map at len_concat,
+    rw list.length_singleton at len_concat,
+    rw [prod.first, prod.third],
+    rw ← nat.add_sub_assoc,
+    swap,
+    {
+      exact critical,
+    },
+    rw ← nat.add_sub_assoc,
+    swap,
+    {
+      clear_except critical,
+      omega,
+    },
+    rw add_comm at len_concat,
+    rw len_concat,
+    clear len_concat,
+    rw add_tsub_cancel_left,
+    rw ← nat.add_assoc,
+    rw ← nat.add_assoc,
+    rw add_tsub_cancel_left,
+  },
+  have yl_lt_vl : y.length ≤ v.length,
+  {
+    exact nat.le.intro len_sum,
+  },
+  convert_to corresponding_strings _ (list.take y.length v.reverse),
+  {
+    convert_to (list.drop (v.length - y.length) v).reverse = list.take y.length v.reverse,
+    {
+      apply congr_arg,
+      apply congr_arg2,
+      {
+        clear_except len_sum,
+        omega,
+      },
+      {
+        refl,
+      },
+    },
+    rw list.reverse_take,
+    exact yl_lt_vl,
+  },
+  clear_except the_part yl_lt_vl,
+  rw list.take_append_of_le_length at the_part,
+  swap, {
+    rw list.length_reverse,
+    rw list.length_map,
+  },
+  repeat { rw list.append_assoc at the_part },
+  rw list.take_append_of_le_length at the_part,
+  swap, {
+    rw list.length_reverse,
+    exact yl_lt_vl,
+  },
+  rw list.take_all_of_le at the_part,
+  swap, {
+    rw list.length_reverse,
+    rw list.length_map,
+  },
+  exact the_part,
+end
+
+private lemma induction_step_for_lifted_rule_from_g₂ {g₁ g₂ : grammar T} {a b u v : list (nst T g₁.nt g₂.nt)}
+    {x : list (symbol T g₁.nt)} {y: list (symbol T g₂.nt)} {r : grule T (@nnn T g₁.nt g₂.nt)}
+    (rin : r ∈ list.map (wrap_grule₂ g₁.nt) g₂.rules)
+    (bef : a = u ++ r.input_string.first ++ [symbol.nonterminal r.input_string.secon] ++ r.input_string.third ++ v)
+    (aft : b = u ++ r.output_string ++ v)
+    (ih_x : grammar_derives g₁ [symbol.nonterminal g₁.initial] x)
+    (ih_y : grammar_derives g₂ [symbol.nonterminal g₂.initial] y)
+    (ih_concat :
+      corresponding_strings
+        (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)
+        a) :
+  ∃ (y' : list (symbol T g₂.nt)),
+    and
+      (and
+        (grammar_derives g₁ [symbol.nonterminal g₁.initial] x)
+        (grammar_derives g₂ [symbol.nonterminal g₂.initial] y')
+      )
+      (corresponding_strings (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y') b) :=
+begin
+  rw list.mem_map at rin,
+  rcases rin with ⟨r₂, rin₂, wrap_r₂_eq_r⟩,
+  rw ← wrap_r₂_eq_r at *,
+  clear wrap_r₂_eq_r,
+  simp [wrap_grule₁, prod.first, prod.secon, prod.third] at *,
+  rw ← list.singleton_append at bef,
+
+  let b' := list.drop x.length u ++ list.map (wrap_symbol₂ g₁.nt) r₂.output_string ++ v,
+  use list.filter_map unwrap_symbol₂ b',
+
+  split,
+  {
+    split,
+    {
+      exact ih_x,
+    },
+    {
+      apply grammar_deri_of_deri_tran ih_y,
+      use r₂,
+      split,
+      {
+        exact rin₂,
+      },
+      use list.filter_map unwrap_symbol₂ (list.drop x.length u),
+      use list.filter_map unwrap_symbol₂ v,
+      split,
+      {
+        sorry,
+      },
+      {
+        rw list.filter_map_append_append,
+        congr,
+        apply unwrap_wrap₂_string,
+      }
+    },
+  },
+  rw aft,
+  rw bef at ih_concat,
+  rw list.filter_map_append_append,
+  rw list.map_append_append,
+  sorry,
+end
+
+private lemma big_induction {g₁ g₂ : grammar T} {w : list (nst T g₁.nt g₂.nt)}
+  (ass :
     grammar_derives (big_grammar g₁ g₂)
       [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
        symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
-      w
-    ) :
+      w) :
   ∃ x : list (symbol T g₁.nt),
   ∃ y : list (symbol T g₂.nt),
     and
@@ -1209,756 +2035,13 @@ begin
     rw list.mem_append at rin,
     cases rin,
     {
-      rw list.mem_map at rin,
-      rcases rin with ⟨r₁, rin₁, wrap_r₁_eq_r⟩,
-      rw ← wrap_r₁_eq_r at *,
-      clear wrap_r₁_eq_r,
-      simp [wrap_grule₁, prod.first, prod.secon, prod.third] at *,
-      rw ← list.singleton_append at bef,
-
-      let m := (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-               (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length,
-      let a' := u ++ list.map (wrap_symbol₁ g₂.nt) r₁.output_string ++ list.take (x.length - u.length - m) v,
-      use list.filter_map unwrap_symbol₁ a',
-      use y,
-
-      have critical :
-        (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-          (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length ≤
-        x.length - u.length,
-      {
-        clear_except ih_concat bef,
-        have as_positive :
-          u.length + (
-              (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-              (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
-            ) ≤
-          x.length,
-        {
-          by_contradiction contra,
-          push_neg at contra,
-          rw bef at ih_concat,
-          clear bef,
-          repeat { rw ← list.append_assoc at ih_concat },
-
-          have len_pos :
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length > 0,
-          {
-            repeat { rw list.length_append },
-            rw list.length_singleton,
-            clear_except,
-            omega,
-          },
-          have equal_total_len := corresponding_strings_length ih_concat,
-
-          have inequality_m1 :
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length - 1 <
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length,
-          {
-            exact buffer.lt_aux_2 len_pos,
-          },
-          have inequality_cat :
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length - 1 <
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd ++ v
-            ).length,
-          {
-            rw list.length_append _ v,
-            apply lt_of_lt_of_le (buffer.lt_aux_2 len_pos),
-            exact le_self_add,
-          },
-          have inequality_map :
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length - 1 <
-            ((list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)).length,
-          {
-            rw equal_total_len,
-            exact inequality_cat,
-          },
-          have inequality_map_opp :
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length - 1 ≥
-            (list.map (wrap_symbol₁ g₂.nt) x).length,
-          {
-            clear_except contra,
-            apply nat.le_pred_of_lt,
-            repeat { rw list.length_append },
-            repeat { rw list.length_map },
-            repeat { rw list.length_map at contra },
-            rw list.length_singleton,
-            repeat { rw add_assoc },
-            rw add_assoc at contra,
-            exact contra,
-          },
-          have clash := corresponding_strings_nth_le inequality_map inequality_cat ih_concat,
-          rw list.nth_le_append inequality_cat inequality_m1 at clash,
-          rw list.nth_le_append_right inequality_map_opp inequality_map at clash,
-
-          rw list.nth_le_map at clash,
-          swap, {
-            have inequality_map := inequality_map,
-            rw list.length_append _ (list.map (wrap_symbol₂ g₁.nt) y) at inequality_map,
-            rw list.length_map _ y at inequality_map,
-            rw tsub_lt_iff_left inequality_map_opp,
-            exact inequality_map,
-          },
-          by_cases (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd).length ≥ 1,
-          {
-            rw list.nth_le_append_right at clash,
-            swap, {
-              rw list.length_append _ (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd),
-              have trivi_ineq : ∀ m k : ℕ, k ≥ 1 → m ≤ m + k - 1,
-              {
-                clear_except,
-                omega,
-              },
-              convert trivi_ineq (u ++ _ ++ [_]).length _ h,
-            },
-            rw list.nth_le_map at clash,
-            swap, {
-              rw list.length_map at h,
-              repeat { rw list.length_append },
-              repeat { rw list.length_map },
-              rw list.length_singleton,
-              have easy_ineq : ∀ m k : ℕ, k ≥ 1 → m + k - 1 - m < k,
-              {
-                clear_except,
-                omega,
-              },
-              convert easy_ineq (u.length + r₁.input_string.fst.length + 1) _ h,
-            },
-            apply corresponding_symbols_never₂,
-            exact clash,
-          },
-          {
-            push_neg at h,
-            have ris_third_is_nil : list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd = [],
-            {
-              rw ← list.length_eq_zero,
-              rw ← nat.lt_one_iff,
-              exact h,
-            },
-            have inequality_m0 :
-              (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]).length - 1 <
-              (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]).length,
-            {
-              rw ris_third_is_nil at inequality_m1,
-              rw list.append_nil at inequality_m1,
-              exact inequality_m1,
-            },
-            have I_cannot_believe_I_had_to_write_it_explicitly :
-              list.nth_le
-                (u ++
-                  list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-                  [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-                  list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-                )
-                (
-                  (u ++
-                    list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-                    [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-                    list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-                  ).length - 1
-                )
-                inequality_m1 =
-              list.nth_le
-                (u ++
-                  list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-                  [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]
-                )
-                (
-                  (u ++
-                    list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-                    [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]
-                  ).length - 1
-                )
-                inequality_m0,
-            {
-              simp [ris_third_is_nil],
-            },
-            rw I_cannot_believe_I_had_to_write_it_explicitly at clash,
-            rw list.nth_le_append_right at clash,
-            swap, {
-              apply le_of_eq,
-              rw list.length_append _ [_],
-              rw list.length_singleton,
-              apply nat.succ_sub_one,
-            },
-            rw list.nth_le_singleton at clash,
-            change
-              corresponding_symbols _ (wrap_symbol₁ g₂.nt (symbol.nonterminal r₁.input_string.snd.fst)) at clash,
-            apply corresponding_symbols_never₂,
-            exact clash,
-          },
-        },
-        omega,
-      },
-
-      split,
-      {
-        split,
-        {
-          apply grammar_deri_of_deri_tran ih_x,
-          use r₁,
-          split,
-          {
-            exact rin₁,
-          },
-          use list.filter_map unwrap_symbol₁ u,
-          use list.filter_map unwrap_symbol₁ (list.take (x.length - u.length - m) v),
-          split,
-          {
-            have x_equiv :
-              corresponding_strings
-                (list.map (wrap_symbol₁ g₂.nt) x)
-                (list.take x.length (u
-                  ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
-                  ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
-                  ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third
-                  ++ v)),
-            {
-              rw bef at ih_concat,
-              clear_except ih_concat,
-              rw ← list.append_assoc _ _ v at ih_concat,
-              rw ← list.append_assoc _ _ v at ih_concat,
-              rw list.append_assoc u,
-              rw list.append_assoc u,
-              rw list.append_assoc u,
-              rw list.append_assoc (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
-
-              convert corresponding_strings_take x.length ih_concat,
-              {
-                have x_len_eq : x.length = (list.map (wrap_symbol₁ g₂.nt) x).length,
-                {
-                  rw list.length_map,
-                },
-                rw x_len_eq,
-                rw list.take_left,
-              },
-            },
-            clear_except bef_side_x x_equiv critical,
-
-            have ul_le_xl : u.length ≤ x.length,
-            {
-              clear_except critical,
-              have weaker_le : 1 ≤ x.length - u.length,
-              {
-                omega,
-              },
-              have stupid_le : u.length + 1 ≤ x.length,
-              {
-                omega,
-              },
-              exact nat.le_of_succ_le stupid_le,
-            },
-            repeat { rw list.take_append_eq_append_take at x_equiv },
-            rw list.take_all_of_le ul_le_xl at x_equiv,
-            repeat { rw list.append_assoc },
-
-            have chunk2 :
-              list.take (x.length - u.length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first) =
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first,
-            {
-              apply list.take_all_of_le,
-              clear_except critical,
-              omega,
-            },
-            have chunk3 :
-              list.take (x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length)
-                [@symbol.nonterminal T (nnn g₁.nt g₂.nt) (sum.inl (some (sum.inl r₁.input_string.secon)))] =
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))],
-            {
-              apply list.take_all_of_le,
-              clear_except critical,
-              change 1 ≤ x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length,
-              rw list.length_append,
-              have weakened :
-                (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 ≤
-                x.length - u.length,
-              {
-                omega,
-              },
-              have goal_as_le_sub_sub :
-                1 ≤ (x.length - u.length) - (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length,
-              {
-                omega,
-              },
-              rw tsub_add_eq_tsub_tsub,
-              exact goal_as_le_sub_sub,
-            },
-            have chunk4 :
-              list.take (x.length - (
-                  u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
-                  [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
-                ).length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third) =
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third,
-            {
-              apply list.take_all_of_le,
-              clear_except critical,
-              rw list.length_append_append,
-              change
-                (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length ≤
-                x.length - (u.length + (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1),
-              omega,
-            },
-            have chunk5 :
-              list.take (x.length - (
-                  u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
-                  [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++
-                  list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
-                ) v =
-              list.take (x.length - u.length - m) v,
-            {
-              repeat { rw list.length_append },
-              apply congr_arg2,
-              swap, {
-                refl,
-              },
-              have rearrange_sum_of_four : ∀ a b c d : ℕ, a + b + c + d = a + (b + c + d),
-              {
-                omega,
-              },
-              rw rearrange_sum_of_four,
-              change x.length - (u.length + m) = x.length - u.length - m,
-              clear_except,
-              omega,
-            },
-            rw [chunk2, chunk3, chunk4, chunk5] at x_equiv,
-            clear chunk2 chunk3 chunk4 chunk5,
-
-            obtain ⟨foo, equiv_segment_5⟩ :=
-              corresponding_strings_split (
-                  u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
-                  [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++
-                  list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third
-                ).length x_equiv,
-            clear x_equiv,
-            rw list.drop_left at equiv_segment_5,
-            rw list.take_left at foo,
-
-            obtain ⟨bar, equiv_segment_4⟩ :=
-              corresponding_strings_split (
-                  u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
-                  [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
-                ).length foo,
-            clear foo,
-            rw list.drop_left at equiv_segment_4,
-            rw list.take_left at bar,
-            rw list.take_take at bar,
-
-            obtain ⟨baz, equiv_segment_3⟩ :=
-              corresponding_strings_split (
-                  u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
-                ).length bar,
-            clear bar,
-            rw list.drop_left at equiv_segment_3,
-            rw list.take_left at baz,
-            rw list.take_take at baz,
-
-            obtain ⟨equiv_segment_1, equiv_segment_2⟩ :=
-              corresponding_strings_split u.length baz,
-            clear baz,
-            rw list.drop_left at equiv_segment_2,
-            rw list.take_left at equiv_segment_1,
-            rw list.take_take at equiv_segment_1,
-
-            -- This `simp` is dangerous. See `RE_concatenation_RE_simp_goal.txt` for intended result.
-            simp at equiv_segment_1 equiv_segment_2 equiv_segment_3 equiv_segment_4 equiv_segment_5,
-
-            have segment_1_eqi : corresponding_strings (list.map (wrap_symbol₁ g₂.nt) (list.take u.length x)) u,
-            {
-              convert equiv_segment_1,
-              rw list.map_take,
-            },
-            have segment_1_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_1_eqi).symm,
-            rw ← list.take_append_drop u.length x,
-            apply congr_arg2,
-            {
-              exact segment_1_equ,
-            },
-            clear segment_1_equ segment_1_eqi equiv_segment_1,
-
-            have segment_2_eqi :
-              corresponding_strings
-                (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.first.length (list.drop u.length x)))
-                (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
-            {
-              convert equiv_segment_2,
-              rw list.map_take,
-              rw list.map_drop,
-              rw list.drop_take,
-            },
-            have segment_2_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_2_eqi).symm,
-            rw unwrap_wrap₁_string at segment_2_equ,
-            rw ← list.take_append_drop r₁.input_string.first.length (list.drop u.length x),
-            apply congr_arg2,
-            {
-              exact segment_2_equ,
-            },
-            clear segment_2_equ segment_2_eqi equiv_segment_2,
-            rw list.drop_drop,
-
-            have segment_3_eqi :
-              corresponding_strings
-                (list.map (wrap_symbol₁ g₂.nt) (list.take 1 (list.drop (r₁.input_string.first.length + u.length) x)))
-                (list.map (wrap_symbol₁ g₂.nt) [symbol.nonterminal r₁.input_string.secon]),
-            {
-              convert equiv_segment_3,
-              rw list.map_take,
-              rw list.map_drop,
-              rw ← add_assoc,
-              rw list.drop_take,
-              rw add_comm,
-            },
-            have segment_3_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_3_eqi).symm,
-            rw unwrap_wrap₁_string at segment_3_equ,
-            rw ← list.take_append_drop 1 (list.drop (r₁.input_string.first.length + u.length) x),
-            apply congr_arg2,
-            {
-              exact segment_3_equ,
-            },
-            clear segment_3_equ segment_3_eqi equiv_segment_3,
-            rw list.drop_drop,
-
-            have segment_4_eqi :
-              corresponding_strings
-                (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.third.length
-                  (list.drop (1 + (r₁.input_string.first.length + u.length)) x)))
-                (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third),
-            {
-              convert equiv_segment_4,
-              rw list.map_take,
-              rw list.map_drop,
-
-              have sum_rearrange :
-                u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)) =
-                (u.length + (r₁.input_string.first.length + 1)) + r₁.input_string.third.length,
-              {
-                omega,
-              },
-              rw sum_rearrange,
-              rw list.drop_take,
-
-              have small_sum_rearr :
-                1 + (r₁.input_string.first.length + u.length) =
-                u.length + (r₁.input_string.first.length + 1),
-              {
-                omega,
-              },
-              rw small_sum_rearr,
-            },
-            have segment_4_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_4_eqi).symm,
-            rw unwrap_wrap₁_string at segment_4_equ,
-            rw ← list.take_append_drop r₁.input_string.third.length
-              (list.drop (1 + (r₁.input_string.first.length + u.length)) x),
-            apply congr_arg2,
-            {
-              exact segment_4_equ,
-            },
-            clear segment_4_equ segment_4_eqi equiv_segment_4,
-
-            rw list.drop_drop,
-            repeat { rw list.length_append },
-            repeat { rw list.length_take },
-            repeat { rw list.length_drop },
-
-            have sum_of_min_lengths :
-              min u.length x.length +
-                (min r₁.input_string.first.length (x.length - u.length) +
-                (min 1 (x.length - (r₁.input_string.first.length + u.length)) +
-                (min r₁.input_string.third.length (x.length - (1 + (r₁.input_string.first.length + u.length))) +
-                (x.length - (r₁.input_string.third.length + (1 + (r₁.input_string.first.length + u.length))))))) =
-              x.length,
-            {
-              have add_mirror :
-                r₁.input_string.third.length + 1 + r₁.input_string.first.length =
-                r₁.input_string.first.length + 1 + r₁.input_string.third.length,
-              {
-                ring,
-              },
-              rw [list.length_map, list.length_map, ← add_mirror] at critical,
-
-              have min1 : min u.length x.length = u.length,
-              {
-                apply min_eq_left,
-                exact ul_le_xl,
-              },
-              have min2 : min r₁.input_string.first.length (x.length - u.length) = r₁.input_string.first.length,
-              {
-                clear_except critical,
-                apply min_eq_left,
-                apply le_trans _ critical,
-                apply le_add_self,
-              },
-              have min3 : min 1 (x.length - (r₁.input_string.first.length + u.length)) = 1,
-              {
-                clear_except critical,
-                apply min_eq_left,
-                omega,
-              },
-              have min4 :
-                min r₁.input_string.third.length (x.length - (1 + (r₁.input_string.first.length + u.length))) =
-                r₁.input_string.third.length,
-              {
-                clear_except critical,
-                apply min_eq_left,
-                omega,
-              },
-              rw [min1, min2, min3, min4],
-              rw le_tsub_iff_right ul_le_xl at critical,
-              clear_except critical add_mirror,
-              repeat { rw ← add_assoc },
-              have sum_eq_sum :
-                u.length + r₁.input_string.first.length + 1 + r₁.input_string.third.length =
-                r₁.input_string.third.length + 1 + r₁.input_string.first.length + u.length,
-              {
-                rw add_mirror,
-                rw add_assoc,
-                rw add_assoc,
-                rw add_comm,
-                rw ← add_assoc _ 1 _,
-              },
-              rw sum_eq_sum,
-              exact nat.add_sub_of_le critical,
-            },
-            rw sum_of_min_lengths,
-            clear_except equiv_segment_5,
-
-            have another_rearranging :
-              r₁.input_string.third.length + (1 + (r₁.input_string.first.length + u.length)) =
-              u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)),
-            {
-              ring,
-            },
-            rw another_rearranging,
-            rw ← list.map_drop at equiv_segment_5,
-            symmetry,
-            exact filter_map_unwrap_of_corresponding_strings₁ equiv_segment_5,
-          },
-          {
-            rw list.filter_map_append_append,
-            congr,
-            rw unwrap_wrap₁_string,
-          },
-        },
-        {
-          exact ih_y,
-        },
-      },
-      rw aft,
-      rw bef at ih_concat,
-      rw list.filter_map_append_append,
-      rw list.map_append_append,
-      rw list.append_assoc,
-      rw list.append_assoc,
-
-      apply corresponding_strings_append,
-      {
-        have part_for_u := corresponding_strings_take u.length ih_concat,
-        rw list.take_left at part_for_u,
-        have trivi : u.length ≤ (list.map (wrap_symbol₁ g₂.nt) x).length,
-        {
-          clear_except critical,
-          rw list.length_map,
-          omega,
-        },
-        rw list.take_append_of_le_length trivi at part_for_u,
-        clear_except part_for_u,
-        rw ← list.map_take at part_for_u,
-        apply equivalent_after_wrap_unwrap_self₁,
-        use list.take u.length x,
-        exact part_for_u,
-      },
-      apply corresponding_strings_append,
-      {
-        rw unwrap_wrap₁_string,
-        apply corresponding_strings_refl,
-      },
-      convert_to
-        corresponding_strings _ (list.take (x.length - u.length - m) v ++ list.drop (x.length - u.length - m) v),
-      {
-        rw list.take_append_drop,
-      },
-      apply corresponding_strings_append,
-      {
-        have eqi := corresponding_strings_take (list.map (wrap_symbol₁ g₂.nt) x).length ih_concat,
-        rw list.take_left at eqi,
-        have part_for_v_beginning := corresponding_strings_drop (u.length + m) eqi,
-        clear_except part_for_v_beginning critical,
-        rw ← list.map_drop at part_for_v_beginning,
-        apply equivalent_after_wrap_unwrap_self₁,
-        use list.drop (u.length + m) x,
-        convert part_for_v_beginning,
-        clear part_for_v_beginning,
-        rw list.length_map,
-        rw list.take_append_eq_append_take,
-        rw list.drop_append_eq_append_drop,
-        have tul_lt : (list.take x.length u).length ≤ u.length + m,
-        {
-          rw list.length_take,
-          calc min x.length u.length
-              ≤ u.length     : min_le_right _ _
-          ... ≤ u.length + m : le_self_add,
-        },
-        rw list.drop_eq_nil_of_le tul_lt,
-        rw list.nil_append,
-        rw ← list.append_assoc _ _ v,
-        rw ← list.append_assoc _ _ v,
-        rw ← list.append_assoc,
-        rw list.take_append_eq_append_take,
-        rw list.drop_append_eq_append_drop,
-        have rul_inp_len :
-          (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
-            ).length = m,
-        {
-          rw list.length_append_append,
-          rw list.length_singleton,
-          refl,
-        },
-        have u_is_shorter : min x.length u.length = u.length,
-        {
-          apply min_eq_right,
-          clear_except critical,
-          omega,
-        },
-        rw list.drop_eq_nil_of_le,
-        swap, {
-          rw list.length_take,
-          rw rul_inp_len,
-          rw list.length_take,
-          rw u_is_shorter,
-          calc min (x.length - u.length) m ≤ m : min_le_right _ _
-          ... ≤ u.length + m - u.length        : le_add_tsub_swap,
-        },
-        rw list.nil_append,
-        repeat { rw list.length_take },
-        rw rul_inp_len,
-        have zero_dropping : u.length + m - min x.length u.length - min (x.length - u.length) m = 0,
-        {
-          have middle_cannot_exceed : min (x.length - u.length) m = m,
-          {
-            exact min_eq_right critical,
-          },
-          rw [u_is_shorter, middle_cannot_exceed],
-          clear_except,
-          omega,
-        },
-        rw zero_dropping,
-        unfold list.drop,
-      },
-      -- now we have what `g₂` generated
-      have reverse_concat := corresponding_strings_reverse ih_concat,
-      repeat { rw list.reverse_append at reverse_concat },
-      have the_part := corresponding_strings_take y.length reverse_concat,
-      apply corresponding_strings_of_reverse,
-
-      have len_sum : y.length + (x.length - u.length - m) = v.length,
-      {
-        change
-          y.length + (x.length - u.length - (
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
-          )) =
-          v.length,
-        have len_concat := corresponding_strings_length ih_concat,
-        clear_except len_concat critical,
-        repeat { rw list.length_append at len_concat },
-        rw list.length_map at len_concat,
-        rw list.length_map at len_concat,
-        rw list.length_singleton at len_concat,
-        rw [prod.first, prod.third],
-        rw ← nat.add_sub_assoc,
-        swap,
-        {
-          exact critical,
-        },
-        rw ← nat.add_sub_assoc,
-        swap,
-        {
-          clear_except critical,
-          omega,
-        },
-        rw add_comm at len_concat,
-        rw len_concat,
-        clear len_concat,
-        rw add_tsub_cancel_left,
-        rw ← nat.add_assoc,
-        rw ← nat.add_assoc,
-        rw add_tsub_cancel_left,
-      },
-      have yl_lt_vl : y.length ≤ v.length,
-      {
-        exact nat.le.intro len_sum,
-      },
-      convert_to corresponding_strings _ (list.take y.length v.reverse),
-      {
-        convert_to (list.drop (v.length - y.length) v).reverse = list.take y.length v.reverse,
-        {
-          apply congr_arg,
-          apply congr_arg2,
-          {
-            clear_except len_sum,
-            omega,
-          },
-          {
-            refl,
-          },
-        },
-        rw list.reverse_take,
-        exact yl_lt_vl,
-      },
-      clear_except the_part yl_lt_vl,
-      rw list.take_append_of_le_length at the_part,
-      swap, {
-        rw list.length_reverse,
-        rw list.length_map,
-      },
-      repeat { rw list.append_assoc at the_part },
-      rw list.take_append_of_le_length at the_part,
-      swap, {
-        rw list.length_reverse,
-        exact yl_lt_vl,
-      },
-      rw list.take_all_of_le at the_part,
-      swap, {
-        rw list.length_reverse,
-        rw list.length_map,
-      },
-      exact the_part,
+      cases induction_step_for_lifted_rule_from_g₁ rin bef aft ih_x ih_y ih_concat with x' pros,
+      exact ⟨x', y, pros⟩,
     },
     {
       use x,
-      -- prove this part only after everything else is finished and polished
-      sorry,
-    },
+      exact induction_step_for_lifted_rule_from_g₂ rin bef aft ih_x ih_y ih_concat,
+    }
   },
   {
     use [x, y],
