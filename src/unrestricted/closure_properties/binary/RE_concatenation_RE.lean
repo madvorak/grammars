@@ -577,12 +577,11 @@ private def corresponding_symbols {N₁ N₂ : Type} : nst T N₁ N₂ → nst T
 | (symbol.nonterminal (sum.inl (none)))             (symbol.nonterminal (sum.inl (none)))              := true
 | _                                                 _                                                  := false
 
-private lemma corresponding_symbols_reflexive {N₁ N₂ : Type} : reflexive (@corresponding_symbols T N₁ N₂) :=
+private lemma corresponding_symbols_self {N₁ N₂ : Type} (s : nst T N₁ N₂) : corresponding_symbols s s :=
 begin
-  intro x,
   repeat {
     try {
-      cases x,
+      cases s,
     },
     try {
       unfold corresponding_symbols,
@@ -590,8 +589,7 @@ begin
   },
 end
 
-private lemma corresponding_symbols_never₁ {N₁ N₂ : Type}
-    (s₁ : symbol T N₁) (s₂ : symbol T N₂) :
+private lemma corresponding_symbols_never₁ {N₁ N₂ : Type} (s₁ : symbol T N₁) (s₂ : symbol T N₂) :
   ¬ corresponding_symbols (wrap_symbol₁ N₂ s₁) (wrap_symbol₂ N₁ s₂) :=
 begin
   cases s₁;
@@ -604,8 +602,7 @@ begin
   },
 end
 
-private lemma corresponding_symbols_never₂ {N₁ N₂ : Type}
-    (s₁ : symbol T N₁) (s₂ : symbol T N₂) :
+private lemma corresponding_symbols_never₂ {N₁ N₂ : Type} (s₁ : symbol T N₁) (s₂ : symbol T N₂) :
   ¬ corresponding_symbols (wrap_symbol₂ N₁ s₂) (wrap_symbol₁ N₂ s₁) :=
 begin
   cases s₁;
@@ -622,12 +619,12 @@ end
 private def corresponding_strings {N₁ N₂ : Type} : list (nst T N₁ N₂) → list (nst T N₁ N₂) → Prop :=
 list.forall₂ corresponding_symbols
 
-private lemma corresponding_strings_refl {N₁ N₂ : Type} {x : list (nst T N₁ N₂)} :
+private lemma corresponding_strings_self {N₁ N₂ : Type} {x : list (nst T N₁ N₂)} :
   corresponding_strings x x :=
 begin
   apply list.forall₂_same,
-  intros x xin,
-  apply corresponding_symbols_reflexive,
+  intros s trash,
+  exact corresponding_symbols_self s,
 end
 
 private lemma corresponding_strings_singleton {N₁ N₂ : Type} {s₁ s₂ : nst T N₁ N₂}
@@ -832,8 +829,17 @@ begin
   exact map_unwrap_eq_map_some_of_corresponding_strings₁ ass,
 end
 
+private lemma filter_map_unwrap_of_corresponding_strings₂ {N₁ N₂ : Type}
+    {v : list (symbol T N₂)} {w : list (nst T N₁ N₂)}
+    (ass : corresponding_strings (list.map (wrap_symbol₂ N₁) v) w) :
+  list.filter_map unwrap_symbol₂ w = v :=
+begin
+  apply list_filter_map_eq_of_map_eq_map_some,
+  sorry,
+end
 
-private lemma equivalent_after_wrap_unwrap_self₁ {N₁ N₂ : Type} {w : list (nst T N₁ N₂)}
+
+private lemma corresponding_string_after_wrap_unwrap_self₁ {N₁ N₂ : Type} {w : list (nst T N₁ N₂)}
     (ass : ∃ z : list (symbol T N₁), corresponding_strings (list.map (wrap_symbol₁ N₂) z) w) :
   corresponding_strings (list.map (wrap_symbol₁ N₂) (list.filter_map unwrap_symbol₁ w)) w :=
 begin
@@ -950,7 +956,7 @@ begin
   },
 end
 
-private lemma equivalent_after_wrap_unwrap_self₂ {N₁ N₂ : Type} {w : list (nst T N₁ N₂)}
+private lemma corresponding_string_after_wrap_unwrap_self₂ {N₁ N₂ : Type} {w : list (nst T N₁ N₂)}
     (ass : ∃ z : list (symbol T N₂), corresponding_strings (list.map (wrap_symbol₂ N₁) z) w) :
   corresponding_strings (list.map (wrap_symbol₂ N₁) (list.filter_map unwrap_symbol₂ w)) w :=
 begin
@@ -1672,14 +1678,14 @@ begin
     rw list.take_append_of_le_length trivi at part_for_u,
     clear_except part_for_u,
     rw ← list.map_take at part_for_u,
-    apply equivalent_after_wrap_unwrap_self₁,
+    apply corresponding_string_after_wrap_unwrap_self₁,
     use list.take u.length x,
     exact part_for_u,
   },
   apply corresponding_strings_append,
   {
     rw unwrap_wrap₁_string,
-    apply corresponding_strings_refl,
+    apply corresponding_strings_self,
   },
   convert_to
     corresponding_strings _ (list.take (x.length - u.length - m) v ++ list.drop (x.length - u.length - m) v),
@@ -1693,7 +1699,7 @@ begin
     have part_for_v_beginning := corresponding_strings_drop (u.length + m) eqi,
     clear_except part_for_v_beginning critical,
     rw ← list.map_drop at part_for_v_beginning,
-    apply equivalent_after_wrap_unwrap_self₁,
+    apply corresponding_string_after_wrap_unwrap_self₁,
     use list.drop (u.length + m) x,
     convert part_for_v_beginning,
     clear part_for_v_beginning,
@@ -1865,6 +1871,20 @@ begin
   let b' := list.drop x.length u ++ list.map (wrap_symbol₂ g₁.nt) r₂.output_string ++ v,
   use list.filter_map unwrap_symbol₂ b',
 
+  have matched_right : u.length ≥ x.length,
+  {
+    sorry,
+  },
+  have naturally : v.length ≤ y.length, -- could be `<` easily
+  {
+    rw bef at ih_concat,
+    have total_len := corresponding_strings_length ih_concat,
+    clear_except matched_right total_len,
+    repeat { rw list.length_append at total_len },
+    repeat { rw list.length_map at total_len },
+    linarith,
+  },
+
   split,
   {
     split,
@@ -1895,7 +1915,85 @@ begin
   rw bef at ih_concat,
   rw list.filter_map_append_append,
   rw list.map_append_append,
-  sorry,
+  rw list.append_assoc,
+  rw ← list.append_assoc (list.map (wrap_symbol₁ g₂.nt) x),
+
+  apply corresponding_strings_append,
+  swap, {
+    rw unwrap_wrap₂_string,
+    apply corresponding_strings_append,
+    {
+      apply corresponding_strings_self,
+    },
+    apply corresponding_string_after_wrap_unwrap_self₂,
+    repeat { rw ← list.append_assoc at ih_concat },
+    have rev := corresponding_strings_reverse ih_concat,
+    rw list.reverse_append _ v at rev,
+    have tak := corresponding_strings_take v.reverse.length rev,
+    rw list.take_left at tak,
+    have rtr := corresponding_strings_reverse tak,
+    have nec : v.reverse.length ≤ (list.map (wrap_symbol₂ g₁.nt) y).reverse.length,
+    {
+      clear_except naturally,
+      rw list.length_reverse,
+      rw list.length_reverse,
+      rw list.length_map,
+      exact naturally,
+    },
+    clear_except rtr nec,
+
+    rw list.reverse_reverse at rtr,
+    rw list.reverse_append at rtr,
+    rw list.take_append_of_le_length nec at rtr,
+    rw list.reverse_take at rtr,
+    swap, {
+      rw list.length_reverse (list.map (wrap_symbol₂ g₁.nt) y) at nec,
+      exact nec,
+    },
+    rw ← list.map_drop at rtr,
+    rw list.reverse_reverse at rtr,
+    exact ⟨_, rtr⟩,
+  },
+  rw ← list.take_append_drop x.length u,
+  apply corresponding_strings_append,
+  {
+    have almost := corresponding_strings_take x.length ih_concat,
+    rw list.take_append_of_le_length matched_right at almost,
+    convert almost,
+    have xl_eq : x.length = (list.map (wrap_symbol₁ g₂.nt) x).length,
+    {
+      rw list.length_map,
+    },
+    rw xl_eq,
+    rw list.take_left,
+  },
+  {
+    rw list.take_append_drop,
+    apply corresponding_string_after_wrap_unwrap_self₂,
+    have tdc := corresponding_strings_drop x.length (corresponding_strings_take u.length ih_concat),
+    rw list.take_left at tdc,
+    have ul_eq : u.length = x.length + (u.length - x.length),
+    {
+      rw ← nat.add_sub_assoc matched_right,
+      rw add_comm,
+      rw nat.add_sub_assoc,
+      swap, {
+        refl,
+      },
+      rw nat.sub_self,
+      rw add_zero,
+    },
+    rw ul_eq at tdc,
+    clear_except tdc,
+
+    rw list.drop_take at tdc,
+    rw list.drop_left' at tdc,
+    swap, {
+      apply list.length_map,
+    },
+    rw ← list.map_take at tdc,
+    exact ⟨_, tdc⟩,
+  },
 end
 
 private lemma big_induction {g₁ g₂ : grammar T} {w : list (nst T g₁.nt g₂.nt)}
