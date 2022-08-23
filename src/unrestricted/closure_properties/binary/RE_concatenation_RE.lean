@@ -589,7 +589,7 @@ begin
   },
 end
 
-private lemma corresponding_symbols_never₁ {N₁ N₂ : Type} (s₁ : symbol T N₁) (s₂ : symbol T N₂) :
+private lemma corresponding_symbols_never₁ {N₁ N₂ : Type} {s₁ : symbol T N₁} {s₂ : symbol T N₂} :
   ¬ corresponding_symbols (wrap_symbol₁ N₂ s₁) (wrap_symbol₂ N₁ s₂) :=
 begin
   cases s₁;
@@ -602,7 +602,7 @@ begin
   },
 end
 
-private lemma corresponding_symbols_never₂ {N₁ N₂ : Type} (s₁ : symbol T N₁) (s₂ : symbol T N₂) :
+private lemma corresponding_symbols_never₂ {N₁ N₂ : Type} {s₁ : symbol T N₁} {s₂ : symbol T N₂} :
   ¬ corresponding_symbols (wrap_symbol₂ N₁ s₂) (wrap_symbol₁ N₂ s₁) :=
 begin
   cases s₁;
@@ -795,6 +795,32 @@ begin
   },
 end
 
+private lemma unwrap_eq_some_of_corresponding_symbols₂ {N₁ N₂ : Type} {s₂ : symbol T N₂} {s : nst T N₁ N₂}
+    (ass : corresponding_symbols (wrap_symbol₂ N₁ s₂) s) :
+  unwrap_symbol₂ s = some s₂ :=
+begin
+  cases s₂;
+  {
+    unfold wrap_symbol₂ at ass,
+    repeat {
+      try {
+        cases s,
+      },
+      try {
+        unfold corresponding_symbols at ass,
+        rw ass,
+        refl,
+      },
+      try {
+        unfold corresponding_symbols at ass,
+        exfalso,
+        exact ass,
+      },
+    },
+  },
+end
+
+
 private lemma map_unwrap_eq_map_some_of_corresponding_strings₁ {N₁ N₂ : Type} :
   ∀ {v : list (symbol T N₁)}, ∀ {w : list (nst T N₁ N₂)},
     corresponding_strings (list.map (wrap_symbol₁ N₂) v) w →
@@ -820,6 +846,32 @@ begin
   },
 end
 
+private lemma map_unwrap_eq_map_some_of_corresponding_strings₂ {N₁ N₂ : Type} :
+  ∀ {v : list (symbol T N₂)}, ∀ {w : list (nst T N₁ N₂)},
+    corresponding_strings (list.map (wrap_symbol₂ N₁) v) w →
+      list.map unwrap_symbol₂ w = list.map option.some v
+| []     []     := λ _, rfl
+| []     (b::y) := by { intro hyp, exfalso, unfold corresponding_strings at hyp, unfold list.map at hyp, finish, }
+| (a::x) []     := by { intro hyp, exfalso, unfold corresponding_strings at hyp, unfold list.map at hyp, finish, }
+| (a::x) (b::y) :=
+begin
+  intro ass,
+  unfold corresponding_strings at ass,
+  rw list.map_cons at ass,
+  rw list.forall₂_cons at ass,
+  rw list.map,
+  rw list.map,
+  apply congr_arg2,
+  {
+    exact unwrap_eq_some_of_corresponding_symbols₂ ass.1,
+  },
+  {
+    apply map_unwrap_eq_map_some_of_corresponding_strings₂,
+    exact ass.2
+  },
+end
+
+
 private lemma filter_map_unwrap_of_corresponding_strings₁ {N₁ N₂ : Type}
     {v : list (symbol T N₁)} {w : list (nst T N₁ N₂)}
     (ass : corresponding_strings (list.map (wrap_symbol₁ N₂) v) w) :
@@ -835,7 +887,7 @@ private lemma filter_map_unwrap_of_corresponding_strings₂ {N₁ N₂ : Type}
   list.filter_map unwrap_symbol₂ w = v :=
 begin
   apply list_filter_map_eq_of_map_eq_map_some,
-  sorry,
+  exact map_unwrap_eq_map_some_of_corresponding_strings₂ ass,
 end
 
 
@@ -1238,8 +1290,7 @@ begin
           },
           convert easy_ineq (u.length + r₁.input_string.fst.length + 1) _ h,
         },
-        apply corresponding_symbols_never₂,
-        exact clash,
+        exact corresponding_symbols_never₂ clash,
       },
       {
         push_neg at h,
@@ -1300,8 +1351,7 @@ begin
         rw list.nth_le_singleton at clash,
         change
           corresponding_symbols _ (wrap_symbol₁ g₂.nt (symbol.nonterminal r₁.input_string.snd.fst)) at clash,
-        apply corresponding_symbols_never₂,
-        exact clash,
+        exact corresponding_symbols_never₂ clash,
       },
     },
     omega,
@@ -1873,6 +1923,42 @@ begin
 
   have matched_right : u.length ≥ x.length,
   {
+    rw bef at ih_concat,
+    clear_except ih_concat,
+    by_contradiction,
+    push_neg at h,
+    rename h ul_lt_xl,
+    have ul_lt_ihls : u.length < (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).length, sorry,
+    have ul_lt_ihrs : u.length < (u ++ ((wrap_grule₂ g₁.nt r₂).input_string.fst ++ ([symbol.nonterminal (wrap_grule₂ g₁.nt r₂).input_string.snd.fst] ++ ((wrap_grule₂ g₁.nt r₂).input_string.snd.snd ++ v)))).length, sorry,
+    have ulth := corresponding_strings_nth_le ul_lt_ihls ul_lt_ihrs ih_concat,
+    rw list.nth_le_append ul_lt_ihls at ulth,
+    swap, {
+      rw list.length_map,
+      exact ul_lt_xl,
+    },
+    rw list.nth_le_append_right at ulth,
+    swap, {
+      refl,
+    },
+    rw list.nth_le_map at ulth,
+    swap, {
+      exact ul_lt_xl,
+    },
+    unfold wrap_grule₂ at ulth,
+    dsimp at ulth,
+
+    by_cases (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.first).length > u.length - u.length,
+    {
+      rw list.nth_le_append _ h at ulth,
+      rw list.nth_le_map at ulth,
+      swap, {
+        rw list.length_map at h,
+        exact h,
+      },
+      exact corresponding_symbols_never₁ ulth,
+    },
+    push_neg at h,
+    rw list.nth_le_append_right h at ulth,
     sorry,
   },
   have naturally : v.length ≤ y.length, -- could be `<` easily
