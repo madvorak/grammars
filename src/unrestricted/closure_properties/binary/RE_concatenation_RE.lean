@@ -1190,7 +1190,7 @@ begin
         repeat { rw list.length_append },
         rw list.length_singleton,
         clear_except,
-        omega,
+        linarith,
       },
       have equal_total_len := corresponding_strings_length ih_concat,
 
@@ -1597,7 +1597,7 @@ begin
             u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)) =
             (u.length + (r₁.input_string.first.length + 1)) + r₁.input_string.third.length,
           {
-            omega,
+            linarith,
           },
           rw sum_rearrange,
           rw list.drop_take,
@@ -1606,7 +1606,7 @@ begin
             1 + (r₁.input_string.first.length + u.length) =
             u.length + (r₁.input_string.first.length + 1),
           {
-            omega,
+            linarith,
           },
           rw small_sum_rearr,
         },
@@ -1917,19 +1917,41 @@ begin
   clear wrap_r₂_eq_r,
   simp [wrap_grule₁, prod.first, prod.secon, prod.third] at *,
   rw ← list.singleton_append at bef,
+  rw bef at ih_concat,
 
   let b' := list.drop x.length u ++ list.map (wrap_symbol₂ g₁.nt) r₂.output_string ++ v,
   use list.filter_map unwrap_symbol₂ b',
 
+  have total_len := corresponding_strings_length ih_concat,
+  repeat { rw list.length_append at total_len },
+  repeat { rw list.length_map at total_len },
+
   have matched_right : u.length ≥ x.length,
   {
-    rw bef at ih_concat,
-    clear_except ih_concat,
+    clear_except ih_concat total_len,
     by_contradiction,
     push_neg at h,
     rename h ul_lt_xl,
-    have ul_lt_ihls : u.length < (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).length, sorry,
-    have ul_lt_ihrs : u.length < (u ++ ((wrap_grule₂ g₁.nt r₂).input_string.fst ++ ([symbol.nonterminal (wrap_grule₂ g₁.nt r₂).input_string.snd.fst] ++ ((wrap_grule₂ g₁.nt r₂).input_string.snd.snd ++ v)))).length, sorry,
+    have ul_lt_ihls : u.length < (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).length,
+    {
+      rw list.length_append,
+      rw list.length_map,
+      rw list.length_map,
+      exact nat.lt_add_right _ _ _ ul_lt_xl,
+    },
+    have ul_lt_ihrs :
+      u.length <
+      (u
+        ++ ((wrap_grule₂ g₁.nt r₂).input_string.fst
+        ++ ([symbol.nonterminal (wrap_grule₂ g₁.nt r₂).input_string.snd.fst]
+        ++ ((wrap_grule₂ g₁.nt r₂).input_string.snd.snd ++ v)))
+      ).length,
+    {
+      repeat { rw list.length_append },
+      rw list.length_singleton,
+      clear_except,
+      linarith,
+    },
     have ulth := corresponding_strings_nth_le ul_lt_ihls ul_lt_ihrs ih_concat,
     rw list.nth_le_append ul_lt_ihls at ulth,
     swap, {
@@ -1963,11 +1985,7 @@ begin
   },
   have naturally : v.length ≤ y.length, -- could be `<` easily
   {
-    rw bef at ih_concat,
-    have total_len := corresponding_strings_length ih_concat,
     clear_except matched_right total_len,
-    repeat { rw list.length_append at total_len },
-    repeat { rw list.length_map at total_len },
     linarith,
   },
 
@@ -1998,7 +2016,6 @@ begin
     },
   },
   rw aft,
-  rw bef at ih_concat,
   rw list.filter_map_append_append,
   rw list.map_append_append,
   rw list.append_assoc,
