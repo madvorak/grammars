@@ -1399,7 +1399,7 @@ begin
             rw list.take_left,
           },
         },
-        clear_except bef_side_x x_equiv critical,
+        clear_except x_equiv critical,
 
         have ul_le_xl : u.length ≤ x.length,
         {
@@ -1981,7 +1981,15 @@ begin
     },
     push_neg at h,
     rw list.nth_le_append_right h at ulth,
-    sorry,
+    have matched_central_nt :
+      corresponding_symbols
+        (wrap_symbol₁ g₂.nt (x.nth_le u.length ul_lt_xl))
+        (wrap_symbol₂ g₁.nt (symbol.nonterminal r₂.input_string.secon)),
+    {
+      clear_except ulth,
+      finish,
+    },
+    exact corresponding_symbols_never₁ matched_central_nt,
   },
   have naturally : v.length ≤ y.length, -- could be `<` easily
   {
@@ -2006,6 +2014,18 @@ begin
       use list.filter_map unwrap_symbol₂ v,
       split,
       {
+        have y_equiv : -- TODO unfold `wrap_grule₂` first?
+          corresponding_strings
+            (list.map (wrap_symbol₂ g₁.nt) y)
+            (list.drop x.length (u
+              ++ ((wrap_grule₂ g₁.nt r₂).input_string.fst
+              ++ ([symbol.nonterminal (wrap_grule₂ g₁.nt r₂).input_string.snd.fst]
+              ++ ((wrap_grule₂ g₁.nt r₂).input_string.snd.snd
+              ++ v))))), -- TODO would it be convenient to bracket exactly oppositly?
+        {
+          sorry,
+        },
+        clear_except y_equiv matched_right, -- TODO keep `naturally` instead?
         sorry,
       },
       {
