@@ -2022,17 +2022,18 @@ begin
         },
         clear_except corres_y total_len, -- TODO keep `matched_right` or `naturally` maybe?
         repeat { rw list.append_assoc },
-        rw ← list.take_append_drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y,
+
         obtain ⟨seg1, rest1⟩ :=
           corresponding_strings_split
             (list.drop (list.map (wrap_symbol₁ g₂.nt) x).length u).length
             corres_y,
+        clear corres_y,
         rw list.take_left at seg1,
         rw list.drop_left at rest1,
+        rw ← list.take_append_drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y,
         apply congr_arg2,
         {
           clear_except seg1 total_len,
-          symmetry,
           rw ← list.map_take at seg1,
           have fmu1 := filter_map_unwrap_of_corresponding_strings₂ seg1,
           rw list.length_map at fmu1,
@@ -2043,7 +2044,28 @@ begin
           clear_except total_len,
           omega,
         },
+        clear seg1,
+
         rw list.length_map at rest1,
+        obtain ⟨seg2, rest2⟩ :=
+          corresponding_strings_split
+            (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length
+            rest1,
+        clear rest1,
+        rw list.take_left at seg2,
+        rw list.drop_left at rest2,
+        rw ← list.take_append_drop (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length
+          (list.drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y),
+        apply congr_arg2,
+        {
+          clear_except seg2 total_len,
+          rw ← list.map_drop at seg2,
+          rw ← list.map_take at seg2,
+          have fmu2 := filter_map_unwrap_of_corresponding_strings₂ seg2,
+          rw list.length_map at fmu2 ⊢,
+          sorry,
+        },
+        clear seg2,
         sorry,
       },
       {
