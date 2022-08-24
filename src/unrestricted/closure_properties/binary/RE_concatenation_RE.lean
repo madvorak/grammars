@@ -1967,7 +1967,6 @@ begin
     swap, {
       exact ul_lt_xl,
     },
-    dsimp at ulth,
 
     by_cases (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length > u.length - u.length,
     {
@@ -2021,7 +2020,7 @@ begin
           rw list.length_map,
           exact matched_right,
         },
-        clear_except corres_y, -- TODO keep `matched_right` or `naturally` maybe?
+        clear_except corres_y total_len, -- TODO keep `matched_right` or `naturally` maybe?
         repeat { rw list.append_assoc },
         rw ← list.take_append_drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y,
         obtain ⟨seg1, foo⟩ :=
@@ -2032,12 +2031,31 @@ begin
         rw list.drop_left at foo,
         apply congr_arg2,
         {
-          clear_except seg1,
+          clear_except seg1 total_len,
           symmetry,
-          apply filter_map_unwrap_of_corresponding_strings₂,
-          rw list.length_map at seg1,
           rw ← list.map_take at seg1,
-          sorry,
+          have fmu1 := filter_map_unwrap_of_corresponding_strings₂ seg1,
+          rw list.length_map at fmu1,
+          rw fmu1,
+          rw list.length_drop,
+          rw list.length_take,
+          rw min_eq_left,
+          clear_except total_len,
+          rw add_comm at total_len,
+          have claim1 :
+            y.length =
+            u.length + (r₂.input_string.fst.length + ([symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))].length + (r₂.input_string.snd.snd.length + v.length))) - x.length,
+          finish,
+          clear_except claim1,
+          have nat_triv : ∀ yl ul rl xl : ℕ, yl = ul + rl - xl → ul - xl ≤ yl, omega,
+          apply nat_triv y.length u.length (r₂.input_string.fst.length + ([symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))].length + (r₂.input_string.snd.snd.length + v.length))) x.length,
+          exact claim1,
+          exact T,
+          exact T,
+          exact T,
+          exact T,
+          exact T,
+          exact T,
         },
         rw list.length_map at foo,
         sorry,
