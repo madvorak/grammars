@@ -1915,7 +1915,7 @@ begin
   rcases rin with ⟨r₂, rin₂, wrap_r₂_eq_r⟩,
   rw ← wrap_r₂_eq_r at *,
   clear wrap_r₂_eq_r,
-  simp [wrap_grule₁, prod.first, prod.secon, prod.third] at *,
+  simp [wrap_grule₂, prod.first, prod.secon, prod.third] at *,
   rw ← list.singleton_append at bef,
   rw bef at ih_concat,
 
@@ -1942,9 +1942,10 @@ begin
     have ul_lt_ihrs :
       u.length <
       (u
-        ++ ((wrap_grule₂ g₁.nt r₂).input_string.fst
-        ++ ([symbol.nonterminal (wrap_grule₂ g₁.nt r₂).input_string.snd.fst]
-        ++ ((wrap_grule₂ g₁.nt r₂).input_string.snd.snd ++ v)))
+        ++ (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst
+        ++ ([symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))]
+        ++ (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.snd.snd
+        ++ v)))
       ).length,
     {
       repeat { rw list.length_append },
@@ -1966,10 +1967,9 @@ begin
     swap, {
       exact ul_lt_xl,
     },
-    unfold wrap_grule₂ at ulth,
     dsimp at ulth,
 
-    by_cases (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.first).length > u.length - u.length,
+    by_cases (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length > u.length - u.length,
     {
       rw list.nth_le_append _ h at ulth,
       rw list.nth_le_map at ulth,
@@ -2014,18 +2014,32 @@ begin
       use list.filter_map unwrap_symbol₂ v,
       split,
       {
-        have y_equiv : -- TODO unfold `wrap_grule₂` first?
-          corresponding_strings
-            (list.map (wrap_symbol₂ g₁.nt) y)
-            (list.drop x.length (u
-              ++ ((wrap_grule₂ g₁.nt r₂).input_string.fst
-              ++ ([symbol.nonterminal (wrap_grule₂ g₁.nt r₂).input_string.snd.fst]
-              ++ ((wrap_grule₂ g₁.nt r₂).input_string.snd.snd
-              ++ v))))), -- TODO would it be convenient to bracket exactly oppositly?
+        have corres_y := corresponding_strings_drop (list.map (wrap_symbol₁ g₂.nt) x).length ih_concat,
+        rw list.drop_left at corres_y,
+        rw list.drop_append_of_le_length at corres_y,
+        swap, {
+          rw list.length_map,
+          exact matched_right,
+        },
+        clear_except corres_y, -- TODO keep `matched_right` or `naturally` maybe?
+        repeat { rw list.append_assoc },
+        rw ← list.take_append_drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y,
+        obtain ⟨seg1, foo⟩ :=
+          corresponding_strings_split
+            (list.drop (list.map (wrap_symbol₁ g₂.nt) x).length u).length
+            corres_y,
+        rw list.take_left at seg1,
+        rw list.drop_left at foo,
+        apply congr_arg2,
         {
+          clear_except seg1,
+          symmetry,
+          apply filter_map_unwrap_of_corresponding_strings₂,
+          rw list.length_map at seg1,
+          rw ← list.map_take at seg1,
           sorry,
         },
-        clear_except y_equiv matched_right, -- TODO keep `naturally` instead?
+        rw list.length_map at foo,
         sorry,
       },
       {
