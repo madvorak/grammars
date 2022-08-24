@@ -2023,12 +2023,12 @@ begin
         clear_except corres_y total_len, -- TODO keep `matched_right` or `naturally` maybe?
         repeat { rw list.append_assoc },
         rw ← list.take_append_drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y,
-        obtain ⟨seg1, foo⟩ :=
+        obtain ⟨seg1, rest1⟩ :=
           corresponding_strings_split
             (list.drop (list.map (wrap_symbol₁ g₂.nt) x).length u).length
             corres_y,
         rw list.take_left at seg1,
-        rw list.drop_left at foo,
+        rw list.drop_left at rest1,
         apply congr_arg2,
         {
           clear_except seg1 total_len,
@@ -2039,25 +2039,11 @@ begin
           rw fmu1,
           rw list.length_drop,
           rw list.length_take,
-          rw min_eq_left,
+          rw min_eq_left, -- the goal is `u.length - x.length ≤ y.length` here
           clear_except total_len,
-          rw add_comm at total_len,
-          have claim1 :
-            y.length =
-            u.length + (r₂.input_string.fst.length + ([symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))].length + (r₂.input_string.snd.snd.length + v.length))) - x.length,
-          finish,
-          clear_except claim1,
-          have nat_triv : ∀ yl ul rl xl : ℕ, yl = ul + rl - xl → ul - xl ≤ yl, omega,
-          apply nat_triv y.length u.length (r₂.input_string.fst.length + ([symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))].length + (r₂.input_string.snd.snd.length + v.length))) x.length,
-          exact claim1,
-          exact T,
-          exact T,
-          exact T,
-          exact T,
-          exact T,
-          exact T,
+          omega,
         },
-        rw list.length_map at foo,
+        rw list.length_map at rest1,
         sorry,
       },
       {
