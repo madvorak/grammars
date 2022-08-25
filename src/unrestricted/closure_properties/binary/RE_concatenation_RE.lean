@@ -1990,11 +1990,6 @@ begin
     },
     exact corresponding_symbols_never₁ matched_central_nt,
   },
-  have naturally : v.length ≤ y.length, -- could be `<` easily
-  {
-    clear_except matched_right total_len,
-    linarith,
-  },
 
   split,
   {
@@ -2020,7 +2015,7 @@ begin
           rw list.length_map,
           exact matched_right,
         },
-        clear_except corres_y total_len, -- TODO keep `matched_right` or `naturally` maybe?
+        clear_except corres_y total_len,
         repeat { rw list.append_assoc },
 
         obtain ⟨seg1, rest1⟩ :=
@@ -2038,8 +2033,7 @@ begin
           clear_except total_len,
           omega,
         },
-        have tuxy :
-          list.take (list.take (u.length - x.length) y).length y = list.take (u.length - x.length) y,
+        have tuxy : list.take (list.take (u.length - x.length) y).length y = list.take (u.length - x.length) y,
         {
           rw list.length_take,
           rw min_uxy,
@@ -2064,7 +2058,7 @@ begin
           rw list.length_drop,
           exact tuxy,
         },
-        clear seg1 fmu1 tuxy,
+        clear seg1 fmu1 tuxy min_uxy,
 
         rw list.length_map at rest1,
         obtain ⟨seg2, rest2⟩ :=
@@ -2094,20 +2088,30 @@ begin
         rw list.length_map at rest2,
         rw list.drop_drop at rest2 ⊢,
         obtain ⟨seg3, rest3⟩ :=
-          corresponding_strings_split
-            1 /-[symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))].length-/
-            rest2,
+          corresponding_strings_split 1 rest2,
         clear rest2,
-        rw list.take_left' at seg3,
-        rw list.drop_left' at rest3,
+        rw list.take_left' (list.length_singleton _) at seg3,
+        rw list.drop_left' (list.length_singleton _) at rest3,
+        rw list.length_map,
+        rw fml,
         rw ← list.take_append_drop
-          [symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))].length
-          (list.drop (
-            (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length +
-              (list.filter_map unwrap_symbol₂ (list.drop x.length u)
-            ).length) y),
+          1
+          (list.drop (r₂.input_string.fst.length + (list.drop x.length u).length) y),
         apply congr_arg2,
-        sorry, sorry, sorry, sorry, sorry, sorry, sorry,
+        {
+          rw ← list.map_drop at seg3,
+          rw ← list.map_take at seg3,
+          have fmu3 := filter_map_unwrap_of_corresponding_strings₂ seg3,
+          exact fmu3.symm,
+        },
+        clear seg3,
+
+        rw list.drop_drop at rest3 ⊢,
+        rw ← list.map_drop at rest3,
+        rw ← filter_map_unwrap_of_corresponding_strings₂ rest3,
+        rw list.filter_map_append,
+        rw unwrap_wrap₂_string,
+        refl,
       },
       {
         rw list.filter_map_append_append,
@@ -2138,11 +2142,11 @@ begin
     have rtr := corresponding_strings_reverse tak,
     have nec : v.reverse.length ≤ (list.map (wrap_symbol₂ g₁.nt) y).reverse.length,
     {
-      clear_except naturally,
+      clear_except matched_right total_len,
       rw list.length_reverse,
       rw list.length_reverse,
       rw list.length_map,
-      exact naturally,
+      linarith,
     },
     clear_except rtr nec,
 
