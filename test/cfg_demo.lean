@@ -443,7 +443,7 @@ begin
             refl,
           },
           have u_eq : u = list.repeat a i ++ list.repeat b j,
-          {            
+          {
             cases @trichotomous ℕ (<) _ u.length (i + j) with hlt rest,
             {
               exfalso,

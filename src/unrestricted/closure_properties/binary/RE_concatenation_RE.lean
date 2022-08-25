@@ -2031,20 +2031,40 @@ begin
         rw list.take_left at seg1,
         rw list.drop_left at rest1,
         rw ← list.take_append_drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y,
-        apply congr_arg2,
+        rw ← list.map_take at seg1,
+        have min_uxy : min (u.length - x.length) y.length = u.length - x.length,
         {
-          clear_except seg1 total_len,
-          rw ← list.map_take at seg1,
-          have fmu1 := filter_map_unwrap_of_corresponding_strings₂ seg1,
-          rw list.length_map at fmu1,
-          rw fmu1,
-          rw list.length_drop,
-          rw list.length_take,
-          rw min_eq_left, -- the goal is `u.length - x.length ≤ y.length` here
+          rw min_eq_left,
           clear_except total_len,
           omega,
         },
-        clear seg1,
+        have tuxy :
+          list.take (list.take (u.length - x.length) y).length y = list.take (u.length - x.length) y,
+        {
+          rw list.length_take,
+          rw min_uxy,
+        },
+        have fmu1 := filter_map_unwrap_of_corresponding_strings₂ seg1,
+        rw list.length_map at fmu1,
+        have fml :
+          (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length =
+          (list.drop x.length u).length,
+        {
+          rw congr_arg list.length fmu1,
+          rw list.length_take at tuxy,
+          rw list.length_drop,
+          rw min_uxy at tuxy,
+          rw congr_arg list.length tuxy,
+          rw list.length_take,
+          exact min_uxy,
+        },
+        apply congr_arg2,
+        {
+          rw fmu1,
+          rw list.length_drop,
+          exact tuxy,
+        },
+        clear seg1 fmu1 tuxy,
 
         rw list.length_map at rest1,
         obtain ⟨seg2, rest2⟩ :=
@@ -2054,19 +2074,40 @@ begin
         clear rest1,
         rw list.take_left at seg2,
         rw list.drop_left at rest2,
-        rw ← list.take_append_drop (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length
+        rw ← list.take_append_drop
+          (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length
           (list.drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y),
         apply congr_arg2,
         {
-          clear_except seg2 total_len,
+          clear_except seg2 fml,
           rw ← list.map_drop at seg2,
           rw ← list.map_take at seg2,
           have fmu2 := filter_map_unwrap_of_corresponding_strings₂ seg2,
-          rw list.length_map at fmu2 ⊢,
-          sorry,
+          rw list.length_map at fmu2,
+          rw list.length_map,
+          rw unwrap_wrap₂_string at fmu2,
+          rw fml,
+          exact fmu2.symm,
         },
         clear seg2,
-        sorry,
+
+        rw list.length_map at rest2,
+        rw list.drop_drop at rest2 ⊢,
+        obtain ⟨seg3, rest3⟩ :=
+          corresponding_strings_split
+            1 /-[symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))].length-/
+            rest2,
+        clear rest2,
+        rw list.take_left' at seg3,
+        rw list.drop_left' at rest3,
+        rw ← list.take_append_drop
+          [symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))].length
+          (list.drop (
+            (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length +
+              (list.filter_map unwrap_symbol₂ (list.drop x.length u)
+            ).length) y),
+        apply congr_arg2,
+        sorry, sorry, sorry, sorry, sorry, sorry, sorry,
       },
       {
         rw list.filter_map_append_append,
