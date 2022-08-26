@@ -2205,11 +2205,11 @@ begin
 end
 
 private lemma big_induction {g₁ g₂ : grammar T} {w : list (nst T g₁.nt g₂.nt)}
-  (ass :
-    grammar_derives (big_grammar g₁ g₂)
-      [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
-       symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
-      w) :
+    (ass :
+      grammar_derives (big_grammar g₁ g₂)
+        [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
+        symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
+        w) :
   ∃ x : list (symbol T g₁.nt),
   ∃ y : list (symbol T g₂.nt),
     and

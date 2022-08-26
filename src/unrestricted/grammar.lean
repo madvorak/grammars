@@ -66,23 +66,23 @@ relation.refl_trans_gen.single
 
 /-- The relation `grammar_derives` is transitive. -/
 lemma grammar_deri_of_deri_deri {u v w : list (symbol T g.nt)}
-  (huv : grammar_derives g u v) (hvw : grammar_derives g v w) :
-    grammar_derives g u w :=
+    (huv : grammar_derives g u v) (hvw : grammar_derives g v w) :
+  grammar_derives g u w :=
 relation.refl_trans_gen.trans huv hvw
 
 lemma grammar_deri_of_deri_tran {u v w : list (symbol T g.nt)}
-  (huv : grammar_derives g u v) (hvw : grammar_transforms g v w) :
-    grammar_derives g u w :=
+    (huv : grammar_derives g u v) (hvw : grammar_transforms g v w) :
+  grammar_derives g u w :=
 grammar_deri_of_deri_deri huv (grammar_deri_of_tran hvw)
 
 lemma grammar_deri_of_tran_deri {u v w : list (symbol T g.nt)}
-  (huv : grammar_transforms g u v) (hvw : grammar_derives g v w) :
-    grammar_derives g u w :=
+    (huv : grammar_transforms g u v) (hvw : grammar_derives g v w) :
+  grammar_derives g u w :=
 grammar_deri_of_deri_deri (grammar_deri_of_tran huv) hvw
 
-lemma grammar_tran_or_id_of_deri {u w : list (symbol T g.nt)}
-  (ass : grammar_derives g u w) :  or  (u = w)
-    (∃ v : list (symbol T g.nt), (grammar_transforms g u v) ∧ (grammar_derives g v w)) :=
+lemma grammar_tran_or_id_of_deri {u w : list (symbol T g.nt)} (ass : grammar_derives g u w) :
+  (u = w) ∨
+  (∃ v : list (symbol T g.nt), (grammar_transforms g u v) ∧ (grammar_derives g v w)) :=
 relation.refl_trans_gen.cases_head ass
 
 

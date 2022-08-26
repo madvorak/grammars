@@ -23,7 +23,7 @@ variables {T : Type}
 def CS_transforms (g : CS_grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :=
 ∃ r : csrule T g.nt, r ∈ g.rules  ∧  ∃ u v : list (symbol T g.nt), and
   (w₁ = u ++ r.context_left ++ [symbol.nonterminal r.input_nonterminal] ++ r.context_right ++ v)
-  (w₂ = u ++ r.context_left ++                     r.output_string      ++ r.context_right ++ v)
+  (w₂ = u ++ r.context_left ++ r.output_string ++ r.context_right ++ v)
 
 /-- Any number of steps of context-sensitive transformation; reflexive+transitive closure of `CS_transforms`. -/
 def CS_derives (g : CS_grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
@@ -54,23 +54,23 @@ relation.refl_trans_gen.single
 
 /-- The relation `CS_derives` is transitive. -/
 lemma CS_deri_of_deri_deri {u v w : list (symbol T g.nt)}
-  (huv : CS_derives g u v) (hvw : CS_derives g v w) :
-    CS_derives g u w :=
+    (huv : CS_derives g u v) (hvw : CS_derives g v w) :
+  CS_derives g u w :=
 relation.refl_trans_gen.trans huv hvw
 
 lemma CS_deri_of_deri_tran {u v w : list (symbol T g.nt)}
-  (huv : CS_derives g u v) (hvw : CS_transforms g v w) :
-    CS_derives g u w :=
+    (huv : CS_derives g u v) (hvw : CS_transforms g v w) :
+  CS_derives g u w :=
 CS_deri_of_deri_deri huv (CS_deri_of_tran hvw)
 
 lemma CS_deri_of_tran_deri {u v w : list (symbol T g.nt)}
-  (huv : CS_transforms g u v) (hvw : CS_derives g v w) :
-    CS_derives g u w :=
+    (huv : CS_transforms g u v) (hvw : CS_derives g v w) :
+  CS_derives g u w :=
 CS_deri_of_deri_deri (CS_deri_of_tran huv) hvw
 
-lemma CS_tran_or_id_of_deri {u w : list (symbol T g.nt)}
-  (ass : CS_derives g u w) :  or  (u = w)
-    (∃ v : list (symbol T g.nt), (CS_transforms g u v) ∧ (CS_derives g v w)) :=
+lemma CS_tran_or_id_of_deri {u w : list (symbol T g.nt)} (ass : CS_derives g u w) :
+  (u = w) ∨
+  (∃ v : list (symbol T g.nt), (CS_transforms g u v) ∧ (CS_derives g v w)) :=
 relation.refl_trans_gen.cases_head ass
 
 end csg_utilities

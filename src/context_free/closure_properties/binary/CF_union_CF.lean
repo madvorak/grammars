@@ -412,10 +412,10 @@ meta def good_singleton : tactic unit := `[
   unfold good_letter
 ]
 
-private lemma in_language_left_case_of_union
-    (w : list T)
+private lemma in_language_left_case_of_union {w : list T}
     (hypo : CF_derives (union_grammar g₁ g₂)
-      [symbol.nonterminal (some (sum.inl g₁.initial))] (list.map symbol.terminal w)) :
+      [symbol.nonterminal (some (sum.inl g₁.initial))]
+      (list.map symbol.terminal w)) :
   w ∈ CF_language g₁ :=
 begin
   unfold CF_language,
@@ -461,9 +461,10 @@ begin
   })).left,
 end
 
-private lemma in_language_right_case_of_union (w : list T)
-  (hypo : CF_derives (union_grammar g₁ g₂)
-    [symbol.nonterminal (some (sum.inr g₂.initial))] (list.map symbol.terminal w)) :
+private lemma in_language_right_case_of_union {w : list T}
+    (hypo : CF_derives (union_grammar g₁ g₂)
+      [symbol.nonterminal (some (sum.inr g₂.initial))]
+      (list.map symbol.terminal w)) :
   w ∈ CF_language g₂ :=
 begin
   unfold CF_language,
@@ -594,7 +595,7 @@ begin
     rw u_nil at deri_tail,
     rw v_nil at deri_tail,
     simp at deri_tail,
-    exact in_language_left_case_of_union w deri_tail,
+    exact in_language_left_case_of_union deri_tail,
   },
   cases r_rest with g₂S r_imposs,
   {
@@ -604,7 +605,7 @@ begin
     rw u_nil at deri_tail,
     rw v_nil at deri_tail,
     simp at deri_tail,
-    exact in_language_right_case_of_union w deri_tail,
+    exact in_language_right_case_of_union deri_tail,
   },
   exact in_language_impossible_case_of_union w
     rule u v u_nil v_nil h_bef r_imposs,
