@@ -2,22 +2,22 @@ equiv_segment_1 :
     corresponding_strings (list.take u.length (list.map (wrap_symbol₁ g₂.nt) x)) u
 equiv_segment_2 :
     corresponding_strings
-        (list.drop u.length (list.take (u.length + r₁.input_string.first.length)
+        (list.drop u.length (list.take (u.length + r₁.input_L.length)
             (list.map (wrap_symbol₁ g₂.nt) x)))
-        (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first)
+        (list.map (wrap_symbol₁ g₂.nt) r₁.input_L)
 equiv_segment_3 :
     corresponding_strings
-        (list.drop (u.length + r₁.input_string.first.length)
-            (list.take (u.length + (r₁.input_string.first.length + 1)) (list.map (wrap_symbol₁ g₂.nt) x)))
-        [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
+        (list.drop (u.length + r₁.input_L.length)
+            (list.take (u.length + (r₁.input_L.length + 1)) (list.map (wrap_symbol₁ g₂.nt) x)))
+        [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
 equiv_segment_4 :
     corresponding_strings
-        (list.drop (u.length + (r₁.input_string.first.length + 1))
-            (list.take (u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)))
+        (list.drop (u.length + (r₁.input_L.length + 1))
+            (list.take (u.length + (r₁.input_L.length + (r₁.input_R.length + 1)))
                 (list.map (wrap_symbol₁ g₂.nt) x)))
-        (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third)
+        (list.map (wrap_symbol₁ g₂.nt) r₁.input_R)
 equiv_segment_5 :
     corresponding_strings
-        (list.drop (u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)))
+        (list.drop (u.length + (r₁.input_L.length + (r₁.input_R.length + 1)))
             (list.map (wrap_symbol₁ g₂.nt) x))
         (list.take (x.length - u.length - m) v)

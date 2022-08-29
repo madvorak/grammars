@@ -6,20 +6,8 @@ variables {T : Type}
 
 section auxiliary
 
-private def reversal_gis {N : Type} (x : list (symbol T N) × N × list (symbol T N)) :
-  list (symbol T N) × N × list (symbol T N) :=
-(x.third.reverse, x.secon, x.first.reverse)
-
-private lemma dual_of_reversal_gis {N : Type} (x : list (symbol T N) × N × list (symbol T N)) :
-  reversal_gis (reversal_gis x) = x :=
-begin
-  rcases x with ⟨x₁, x₂, x₃⟩,
-  unfold reversal_gis,
-  simp [prod.first, prod.secon, prod.third],
-end
-
 private def reversal_grule {N : Type} (r : grule T N) : grule T N :=
-⟨reversal_gis r.input_string, r.output_string.reverse⟩
+⟨r.input_R.reverse, r.input_N, r.input_L.reverse, r.output_string.reverse⟩
 
 private lemma dual_of_reversal_grule {N : Type} (r : grule T N) :
   reversal_grule (reversal_grule r) = r :=
@@ -27,8 +15,7 @@ begin
   cases r,
   unfold reversal_grule,
   dsimp,
-  rw dual_of_reversal_gis,
-  simp,
+  simp [list.reverse_reverse],
 end
 
 private lemma reversal_grule_reversal_grule {N : Type} :
@@ -76,26 +63,22 @@ begin
   use x.reverse,
   split,
   {
-    have rid₁ : r₀.input_string.first = r.input_string.third.reverse,
+    have rid₁ : r₀.input_L = r.input_R.reverse,
     {
       rw ← r_from_r₀,
       unfold reversal_grule,
-      unfold reversal_gis,
-      dsimp [prod.third],
       rw list.reverse_reverse,
     },
-    have rid₂ : [symbol.nonterminal r₀.input_string.secon] = [symbol.nonterminal r.input_string.secon].reverse,
+    have rid₂ : [symbol.nonterminal r₀.input_N] = [symbol.nonterminal r.input_N].reverse,
     {
       rw ← r_from_r₀,
       rw list.reverse_singleton,
       refl,
     },
-    have rid₃ : r₀.input_string.third = r.input_string.first.reverse,
+    have rid₃ : r₀.input_R = r.input_L.reverse,
     {
       rw ← r_from_r₀,
       unfold reversal_grule,
-      unfold reversal_gis,
-      dsimp [prod.first],
       rw list.reverse_reverse,
     },
     rw [
@@ -111,7 +94,6 @@ begin
     {
       rw ← r_from_r₀,
       unfold reversal_grule,
-      unfold reversal_gis,
       rw list.reverse_reverse,
     },
     rw snd_from_r,

@@ -5,8 +5,8 @@ variables {T : Type}
 
 private def union_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
-  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩ :: (
-  ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩ :: (
+  ⟨ [], none, [], [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩ :: (
+  ⟨ [], none, [], [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩ :: (
   (list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules) ++
   (list.map (lift_rule_ (some ∘ sum.inr)) g₂.rules)
 )))
@@ -286,19 +286,19 @@ begin
   },
   rw [uv_nil.1, list.nil_append, uv_nil.2, list.append_nil] at bef aft,
 
-  have same_nt : (union_grammar g₁ g₂).initial = rul.input_string.secon,
+  have same_nt : (union_grammar g₁ g₂).initial = rul.input_N,
   {
     clear_except bef,
-    have elemeq : [symbol.nonterminal (union_grammar g₁ g₂).initial] = [symbol.nonterminal rul.input_string.secon],
+    have elemeq : [symbol.nonterminal (union_grammar g₁ g₂).initial] = [symbol.nonterminal rul.input_N],
     {
       have bef_len := congr_arg list.length bef,
       rw [list.length_append_append, list.length_singleton, list.length_singleton] at bef_len,
-      have rl_first : rul.input_string.first.length = 0,
+      have rl_first : rul.input_L.length = 0,
       {
         clear_except bef_len,
         linarith,
       },
-      have rl_third : rul.input_string.third.length = 0,
+      have rl_third : rul.input_R.length = 0,
       {
         clear_except bef_len,
         linarith,
@@ -372,7 +372,7 @@ begin
 
   {
     have inb := congr_arg
-      (λ z, symbol.nonterminal (lift_rule_ (option.some ∘ sum.inl) ror).input_string.secon ∈ z)
+      (λ z, symbol.nonterminal (lift_rule_ (option.some ∘ sum.inl) ror).input_N ∈ z)
       bef,
     apply false_of_true_eq_false,
     convert inb.symm,
@@ -383,13 +383,12 @@ begin
     rw symbol.nonterminal.inj_eq,
     change false = (_ = option.none),
     unfold lift_rule_,
-    dsimp [prod.secon],
     clear_except,
     norm_num,
   },
   {
     have inb := congr_arg
-      (λ z, symbol.nonterminal (lift_rule_ (option.some ∘ sum.inr) ror).input_string.secon ∈ z)
+      (λ z, symbol.nonterminal (lift_rule_ (option.some ∘ sum.inr) ror).input_N ∈ z)
       bef,
     apply false_of_true_eq_false,
     convert inb.symm,
@@ -400,7 +399,6 @@ begin
     rw symbol.nonterminal.inj_eq,
     change false = (_ = option.none),
     unfold lift_rule_,
-    dsimp [prod.secon],
     clear_except,
     norm_num,
   },
@@ -415,7 +413,7 @@ begin
   unfold grammar_generates at ass ⊢,
   apply grammar_deri_of_tran_deri,
   {
-    use ⟨ ([], none, []), [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩,
+    use ⟨ [], none, [], [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩,
     split,
     {
       apply list.mem_cons_self,
@@ -448,7 +446,7 @@ begin
   unfold grammar_generates at ass ⊢,
   apply grammar_deri_of_tran_deri,
   {
-    use ⟨ ([], none, []), [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩,
+    use ⟨ [], none, [], [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩,
     split,
     {
       apply list.mem_cons_of_mem,

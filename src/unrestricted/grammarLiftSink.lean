@@ -20,9 +20,11 @@ def sink_string_ (sink_N : N → option N₀) : list (symbol T N) → list (symb
 list.filter_map (sink_symbol_ sink_N)
 
 def lift_rule_ (lift_N : N₀ → N) : grule T N₀ → grule T N :=
-λ r : grule T N₀,
-  ⟨(lift_string_ lift_N r.input_string.first, lift_N r.input_string.secon, lift_string_ lift_N r.input_string.third),
-    lift_string_ lift_N r.output_string⟩
+λ r : grule T N₀, grule.mk
+  (lift_string_ lift_N r.input_L)
+  (lift_N r.input_N)
+  (lift_string_ lift_N r.input_R)
+  (lift_string_ lift_N r.output_string)
 
 end functions_lift_sink
 
@@ -43,7 +45,7 @@ structure lifted_grammar_ (T : Type) :=
     lift_rule_ lift_nt r ∈ g.rules
 )
 (preimage_of_rules : ∀ r : grule T g.nt,
-  (r ∈ g.rules ∧ ∃ n₀ : g₀.nt, lift_nt n₀ = r.input_string.secon) →
+  (r ∈ g.rules ∧ ∃ n₀ : g₀.nt, lift_nt n₀ = r.input_N) →
     (∃ r₀ ∈ g₀.rules, lift_rule_ lift_nt r₀ = r)
 )
 
@@ -148,19 +150,19 @@ begin
       exact rule_in,
     },
     rw bef at ok_input,
-    have good_matched_nonterminal : good_letter_ (symbol.nonterminal rule.input_string.secon),
+    have good_matched_nonterminal : good_letter_ (symbol.nonterminal rule.input_N),
     {
-      apply ok_input (symbol.nonterminal rule.input_string.secon),
+      apply ok_input (symbol.nonterminal rule.input_N),
       apply list.mem_append_left,
       apply list.mem_append_left,
       apply list.mem_append_right,
       rw list.mem_singleton,
     },
-    change ∃ n₀ : lg.g₀.nt, lg.sink_nt rule.input_string.secon = some n₀ at good_matched_nonterminal,
+    change ∃ n₀ : lg.g₀.nt, lg.sink_nt rule.input_N = some n₀ at good_matched_nonterminal,
     cases good_matched_nonterminal with n₀ hn₀,
     use n₀,
     have almost := congr_arg (option.map lg.lift_nt) hn₀,
-    rw lifted_grammar_inverse lg rule.input_string.secon ⟨n₀, hn₀⟩ at almost,
+    rw lifted_grammar_inverse lg rule.input_N ⟨n₀, hn₀⟩ at almost,
     simp at almost,
     apply option.some_injective,
     exact almost.symm,
@@ -240,23 +242,21 @@ begin
     clear_except correct_inverse,
     {
       unfold lift_string_,
-      unfold prod.first,
       rw list.filter_map_map,
       rw correct_inverse,
       rw list.filter_map_some,
     },
     {
       change
-        [symbol.nonterminal pre_rule.input_string.secon] =
+        [symbol.nonterminal pre_rule.input_N] =
         list.filter_map (sink_symbol_ lg.sink_nt)
-          (list.map (lift_symbol_ lg.lift_nt) [symbol.nonterminal pre_rule.input_string.secon]),
+          (list.map (lift_symbol_ lg.lift_nt) [symbol.nonterminal pre_rule.input_N]),
       rw list.filter_map_map,
       rw correct_inverse,
       rw list.filter_map_some,
     },
     {
       unfold lift_string_,
-      unfold prod.third,
       rw list.filter_map_map,
       rw correct_inverse,
       rw list.filter_map_some,

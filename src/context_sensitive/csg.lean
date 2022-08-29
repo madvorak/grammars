@@ -83,7 +83,7 @@ variables {T : Type}
 def grammar_of_csg (g : CS_grammar T) : grammar T :=
 grammar.mk g.nt g.initial (list.map 
   (λ r : csrule T g.nt, grule.mk
-    (r.context_left, r.input_nonterminal, r.context_right)
+    r.context_left r.input_nonterminal r.context_right
     (r.context_left ++ r.output_string ++ r.context_right)
   ) g.rules)
 
@@ -117,7 +117,7 @@ begin
       dsimp,
       rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       use grule.mk
-        (r.context_left, r.input_nonterminal, r.context_right)
+        r.context_left r.input_nonterminal r.context_right
         (r.context_left ++ r.output_string ++ r.context_right),
       split,
       {

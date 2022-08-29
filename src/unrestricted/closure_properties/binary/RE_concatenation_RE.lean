@@ -138,31 +138,31 @@ private def wrap_symbol₂ {N₂ : Type} (N₁ : Type) : symbol T N₂ → nst T
 | (symbol.nonterminal n) := symbol.nonterminal (sum.inl (some (sum.inr n)))
 
 private def wrap_grule₁ {N₁ : Type} (N₂ : Type) (r : grule T N₁) : grule T (nnn N₁ N₂) :=
-grule.mk (
-    list.map (wrap_symbol₁ N₂) r.input_string.first,
-    sum.inl (some (sum.inl r.input_string.secon)),
-    list.map (wrap_symbol₁ N₂) r.input_string.third)
+grule.mk
+  (list.map (wrap_symbol₁ N₂) r.input_L)
+  (sum.inl (some (sum.inl r.input_N)))
+  (list.map (wrap_symbol₁ N₂) r.input_R)
   (list.map (wrap_symbol₁ N₂) r.output_string)
 
 private def wrap_grule₂ {N₂ : Type} (N₁ : Type) (r : grule T N₂) : grule T (nnn N₁ N₂) :=
-grule.mk (
-    list.map (wrap_symbol₂ N₁) r.input_string.first,
-    sum.inl (some (sum.inr r.input_string.secon)),
-    list.map (wrap_symbol₂ N₁) r.input_string.third)
+grule.mk
+  (list.map (wrap_symbol₂ N₁) r.input_L)
+  (sum.inl (some (sum.inr r.input_N)))
+  (list.map (wrap_symbol₂ N₁) r.input_R)
   (list.map (wrap_symbol₂ N₁) r.output_string)
 
 private def rules_for_terminals₁ (N₂ : Type) (g : grammar T) : list (grule T (nnn g.nt N₂)) :=
-list.map (λ t, grule.mk ([], sum.inr (sum.inl t), []) [symbol.terminal t]) (all_used_terminals g)
+list.map (λ t, grule.mk [] (sum.inr (sum.inl t)) [] [symbol.terminal t]) (all_used_terminals g)
 
 private def rules_for_terminals₂ (N₁ : Type) (g : grammar T) : list (grule T (nnn N₁ g.nt)) :=
-list.map (λ t, grule.mk ([], sum.inr (sum.inr t), []) [symbol.terminal t]) (all_used_terminals g)
+list.map (λ t, grule.mk [] (sum.inr (sum.inr t)) [] [symbol.terminal t]) (all_used_terminals g)
 
 -- the grammar for concatenation of `g₁` and `g₂` languages
 private def big_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk
   (nnn g₁.nt g₂.nt)
   (sum.inl none)
-  ((grule.mk ([], sum.inl none, []) [
+  ((grule.mk [] (sum.inl none) [] [
     symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
     symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
   ) :: (
@@ -242,7 +242,7 @@ end
 
 private lemma substitute_terminals {g₁ g₂ : grammar T} {side : T → T ⊕ T} {w : list T}
     (rule_for_each_terminal : ∀ t ∈ w,
-      (grule.mk ([], sum.inr (side t), []) [symbol.terminal t]) ∈
+      (grule.mk [] (sum.inr (side t)) [] [symbol.terminal t]) ∈
         (rules_for_terminals₁ g₂.nt g₁ ++ rules_for_terminals₂ g₁.nt g₂)) :
   grammar_derives (big_grammar g₁ g₂)
     (list.map (symbol.nonterminal ∘ sum.inr ∘ side) w)
@@ -261,7 +261,7 @@ begin
       ([(symbol.nonterminal ∘ sum.inr ∘ side) d] ++ list.map (symbol.nonterminal ∘ sum.inr ∘ side) l)
       ([symbol.terminal d] ++ list.map (symbol.nonterminal ∘ sum.inr ∘ side) l),
   {
-    use grule.mk ([], sum.inr (side d), []) [symbol.terminal d],
+    use grule.mk [] (sum.inr (side d)) [] [symbol.terminal d],
     split,
     {
       change _ ∈ list.cons _ _,
@@ -1133,7 +1133,7 @@ section very_complicated
 private lemma induction_step_for_lifted_rule_from_g₁ {g₁ g₂ : grammar T} {a b u v : list (nst T g₁.nt g₂.nt)}
     {x : list (symbol T g₁.nt)} {y: list (symbol T g₂.nt)} {r : grule T (@nnn T g₁.nt g₂.nt)}
     (rin : r ∈ list.map (wrap_grule₁ g₂.nt) g₁.rules)
-    (bef : a = u ++ r.input_string.first ++ [symbol.nonterminal r.input_string.secon] ++ r.input_string.third ++ v)
+    (bef : a = u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R ++ v)
     (aft : b = u ++ r.output_string ++ v)
     (ih_x : grammar_derives g₁ [symbol.nonterminal g₁.initial] x)
     (ih_y : grammar_derives g₂ [symbol.nonterminal g₂.initial] y)
@@ -1153,24 +1153,24 @@ begin
   rcases rin with ⟨r₁, rin₁, wrap_r₁_eq_r⟩,
   rw ← wrap_r₁_eq_r at *,
   clear wrap_r₁_eq_r,
-  simp [wrap_grule₁, prod.first, prod.secon, prod.third] at *,
+  simp [wrap_grule₁] at *,
   rw ← list.singleton_append at bef,
 
-  let m := (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length,
+  let m := (list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length + 1 +
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length,
   let b' := u ++ list.map (wrap_symbol₁ g₂.nt) r₁.output_string ++ list.take (x.length - u.length - m) v,
   use list.filter_map unwrap_symbol₁ b',
 
   have critical :
-    (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-      (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length ≤
+    (list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length + 1 +
+      (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length ≤
     x.length - u.length,
   {
     clear_except ih_concat bef,
     have as_positive :
       u.length + (
-          (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-          (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+          (list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length + 1 +
+          (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length
         ) ≤
       x.length,
     {
@@ -1182,9 +1182,9 @@ begin
 
       have len_pos :
         (u ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R
         ).length > 0,
       {
         repeat { rw list.length_append },
@@ -1196,28 +1196,28 @@ begin
 
       have inequality_m1 :
         (u ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R
         ).length - 1 <
         (u ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R
         ).length,
       {
         exact buffer.lt_aux_2 len_pos,
       },
       have inequality_cat :
         (u ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R
         ).length - 1 <
         (u ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd ++ v
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R ++ v
         ).length,
       {
         rw list.length_append _ v,
@@ -1226,9 +1226,9 @@ begin
       },
       have inequality_map :
         (u ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R
         ).length - 1 <
         ((list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y)).length,
       {
@@ -1237,9 +1237,9 @@ begin
       },
       have inequality_map_opp :
         (u ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R
         ).length - 1 ≥
         (list.map (wrap_symbol₁ g₂.nt) x).length,
       {
@@ -1265,11 +1265,11 @@ begin
         rw tsub_lt_iff_left inequality_map_opp,
         exact inequality_map,
       },
-      by_cases (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd).length ≥ 1,
+      by_cases (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length ≥ 1,
       {
         rw list.nth_le_append_right at clash,
         swap, {
-          rw list.length_append _ (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd),
+          rw list.length_append _ (list.map (wrap_symbol₁ g₂.nt) r₁.input_R),
           have trivi_ineq : ∀ m k : ℕ, k ≥ 1 → m ≤ m + k - 1,
           {
             clear_except,
@@ -1288,23 +1288,23 @@ begin
             clear_except,
             omega,
           },
-          convert easy_ineq (u.length + r₁.input_string.fst.length + 1) _ h,
+          convert easy_ineq (u.length + r₁.input_L.length + 1) _ h,
         },
         exact corresponding_symbols_never₂ clash,
       },
       {
         push_neg at h,
-        have ris_third_is_nil : list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd = [],
+        have ris_third_is_nil : list.map (wrap_symbol₁ g₂.nt) r₁.input_R = [],
         {
           rw ← list.length_eq_zero,
           rw ← nat.lt_one_iff,
           exact h,
         },
         have inequality_m0 :
-          (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-            [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]).length - 1 <
-          (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-            [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]).length,
+          (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+            [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]).length - 1 <
+          (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+            [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]).length,
         {
           rw ris_third_is_nil at inequality_m1,
           rw list.append_nil at inequality_m1,
@@ -1313,27 +1313,27 @@ begin
         have I_cannot_believe_I_had_to_write_it_explicitly :
           list.nth_le
             (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_R
             )
             (
               (u ++
-                list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-                list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+                list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+                list.map (wrap_symbol₁ g₂.nt) r₁.input_R
               ).length - 1
             )
             inequality_m1 =
           list.nth_le
             (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
             )
             (
               (u ++
-                list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))]
+                list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
               ).length - 1
             )
             inequality_m0,
@@ -1350,7 +1350,7 @@ begin
         },
         rw list.nth_le_singleton at clash,
         change
-          corresponding_symbols _ (wrap_symbol₁ g₂.nt (symbol.nonterminal r₁.input_string.snd.fst)) at clash,
+          corresponding_symbols _ (wrap_symbol₁ g₂.nt (symbol.nonterminal r₁.input_N)) at clash,
         exact corresponding_symbols_never₂ clash,
       },
     },
@@ -1375,9 +1375,9 @@ begin
           corresponding_strings
             (list.map (wrap_symbol₁ g₂.nt) x)
             (list.take x.length (u
-              ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
-              ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
-              ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third
+              ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L
+              ++ [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
+              ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_R
               ++ v)),
         {
           rw bef at ih_concat,
@@ -1387,7 +1387,7 @@ begin
           rw list.append_assoc u,
           rw list.append_assoc u,
           rw list.append_assoc u,
-          rw list.append_assoc (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
+          rw list.append_assoc (list.map (wrap_symbol₁ g₂.nt) r₁.input_L),
 
           convert corresponding_strings_take x.length ih_concat,
           {
@@ -1419,30 +1419,30 @@ begin
         repeat { rw list.append_assoc },
 
         have chunk2 :
-          list.take (x.length - u.length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first) =
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first,
+          list.take (x.length - u.length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_L) =
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_L,
         {
           apply list.take_all_of_le,
           clear_except critical,
           omega,
         },
         have chunk3 :
-          list.take (x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length)
-            [@symbol.nonterminal T (nnn g₁.nt g₂.nt) (sum.inl (some (sum.inl r₁.input_string.secon)))] =
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))],
+          list.take (x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length)
+            [@symbol.nonterminal T (nnn g₁.nt g₂.nt) (sum.inl (some (sum.inl r₁.input_N)))] =
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))],
         {
           apply list.take_all_of_le,
           clear_except critical,
-          change 1 ≤ x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length,
+          change 1 ≤ x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length,
           rw list.length_append,
           have weakened :
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 ≤
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length + 1 ≤
             x.length - u.length,
           {
             omega,
           },
           have goal_as_le_sub_sub :
-            1 ≤ (x.length - u.length) - (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length,
+            1 ≤ (x.length - u.length) - (list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length,
           {
             omega,
           },
@@ -1451,24 +1451,24 @@ begin
         },
         have chunk4 :
           list.take (x.length - (
-              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
-            ).length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third) =
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third,
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
+            ).length) (list.map (wrap_symbol₁ g₂.nt) r₁.input_R) =
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R,
         {
           apply list.take_all_of_le,
           clear_except critical,
           rw list.length_append_append,
           change
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length ≤
-            x.length - (u.length + (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1),
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length ≤
+            x.length - (u.length + (list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length + 1),
           omega,
         },
         have chunk5 :
           list.take (x.length - (
-              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length
             ) v =
           list.take (x.length - u.length - m) v,
         {
@@ -1491,9 +1491,9 @@ begin
 
         obtain ⟨foo, equiv_segment_5⟩ :=
           corresponding_strings_split (
-              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+              list.map (wrap_symbol₁ g₂.nt) r₁.input_R
             ).length x_equiv,
         clear x_equiv,
         rw list.drop_left at equiv_segment_5,
@@ -1501,8 +1501,8 @@ begin
 
         obtain ⟨bar, equiv_segment_4⟩ :=
           corresponding_strings_split (
-              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.secon)))]
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
             ).length foo,
         clear foo,
         rw list.drop_left at equiv_segment_4,
@@ -1511,7 +1511,7 @@ begin
 
         obtain ⟨baz, equiv_segment_3⟩ :=
           corresponding_strings_split (
-              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first
+              u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L
             ).length bar,
         clear bar,
         rw list.drop_left at equiv_segment_3,
@@ -1543,8 +1543,8 @@ begin
 
         have segment_2_eqi :
           corresponding_strings
-            (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.first.length (list.drop u.length x)))
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first),
+            (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_L.length (list.drop u.length x)))
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_L),
         {
           convert equiv_segment_2,
           rw list.map_take,
@@ -1553,7 +1553,7 @@ begin
         },
         have segment_2_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_2_eqi).symm,
         rw unwrap_wrap₁_string at segment_2_equ,
-        rw ← list.take_append_drop r₁.input_string.first.length (list.drop u.length x),
+        rw ← list.take_append_drop r₁.input_L.length (list.drop u.length x),
         apply congr_arg2,
         {
           exact segment_2_equ,
@@ -1563,8 +1563,8 @@ begin
 
         have segment_3_eqi :
           corresponding_strings
-            (list.map (wrap_symbol₁ g₂.nt) (list.take 1 (list.drop (r₁.input_string.first.length + u.length) x)))
-            (list.map (wrap_symbol₁ g₂.nt) [symbol.nonterminal r₁.input_string.secon]),
+            (list.map (wrap_symbol₁ g₂.nt) (list.take 1 (list.drop (r₁.input_L.length + u.length) x)))
+            (list.map (wrap_symbol₁ g₂.nt) [symbol.nonterminal r₁.input_N]),
         {
           convert equiv_segment_3,
           rw list.map_take,
@@ -1575,7 +1575,7 @@ begin
         },
         have segment_3_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_3_eqi).symm,
         rw unwrap_wrap₁_string at segment_3_equ,
-        rw ← list.take_append_drop 1 (list.drop (r₁.input_string.first.length + u.length) x),
+        rw ← list.take_append_drop 1 (list.drop (r₁.input_L.length + u.length) x),
         apply congr_arg2,
         {
           exact segment_3_equ,
@@ -1585,17 +1585,17 @@ begin
 
         have segment_4_eqi :
           corresponding_strings
-            (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_string.third.length
-              (list.drop (1 + (r₁.input_string.first.length + u.length)) x)))
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third),
+            (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_R.length
+              (list.drop (1 + (r₁.input_L.length + u.length)) x)))
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_R),
         {
           convert equiv_segment_4,
           rw list.map_take,
           rw list.map_drop,
 
           have sum_rearrange :
-            u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)) =
-            (u.length + (r₁.input_string.first.length + 1)) + r₁.input_string.third.length,
+            u.length + (r₁.input_L.length + (r₁.input_R.length + 1)) =
+            (u.length + (r₁.input_L.length + 1)) + r₁.input_R.length,
           {
             linarith,
           },
@@ -1603,8 +1603,8 @@ begin
           rw list.drop_take,
 
           have small_sum_rearr :
-            1 + (r₁.input_string.first.length + u.length) =
-            u.length + (r₁.input_string.first.length + 1),
+            1 + (r₁.input_L.length + u.length) =
+            u.length + (r₁.input_L.length + 1),
           {
             linarith,
           },
@@ -1612,8 +1612,8 @@ begin
         },
         have segment_4_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_4_eqi).symm,
         rw unwrap_wrap₁_string at segment_4_equ,
-        rw ← list.take_append_drop r₁.input_string.third.length
-          (list.drop (1 + (r₁.input_string.first.length + u.length)) x),
+        rw ← list.take_append_drop r₁.input_R.length
+          (list.drop (1 + (r₁.input_L.length + u.length)) x),
         apply congr_arg2,
         {
           exact segment_4_equ,
@@ -1627,15 +1627,15 @@ begin
 
         have sum_of_min_lengths :
           min u.length x.length +
-            (min r₁.input_string.first.length (x.length - u.length) +
-            (min 1 (x.length - (r₁.input_string.first.length + u.length)) +
-            (min r₁.input_string.third.length (x.length - (1 + (r₁.input_string.first.length + u.length))) +
-            (x.length - (r₁.input_string.third.length + (1 + (r₁.input_string.first.length + u.length))))))) =
+            (min r₁.input_L.length (x.length - u.length) +
+            (min 1 (x.length - (r₁.input_L.length + u.length)) +
+            (min r₁.input_R.length (x.length - (1 + (r₁.input_L.length + u.length))) +
+            (x.length - (r₁.input_R.length + (1 + (r₁.input_L.length + u.length))))))) =
           x.length,
         {
           have add_mirror :
-            r₁.input_string.third.length + 1 + r₁.input_string.first.length =
-            r₁.input_string.first.length + 1 + r₁.input_string.third.length,
+            r₁.input_R.length + 1 + r₁.input_L.length =
+            r₁.input_L.length + 1 + r₁.input_R.length,
           {
             ring,
           },
@@ -1646,22 +1646,22 @@ begin
             apply min_eq_left,
             exact ul_le_xl,
           },
-          have min2 : min r₁.input_string.first.length (x.length - u.length) = r₁.input_string.first.length,
+          have min2 : min r₁.input_L.length (x.length - u.length) = r₁.input_L.length,
           {
             clear_except critical,
             apply min_eq_left,
             apply le_trans _ critical,
             apply le_add_self,
           },
-          have min3 : min 1 (x.length - (r₁.input_string.first.length + u.length)) = 1,
+          have min3 : min 1 (x.length - (r₁.input_L.length + u.length)) = 1,
           {
             clear_except critical,
             apply min_eq_left,
             omega,
           },
           have min4 :
-            min r₁.input_string.third.length (x.length - (1 + (r₁.input_string.first.length + u.length))) =
-            r₁.input_string.third.length,
+            min r₁.input_R.length (x.length - (1 + (r₁.input_L.length + u.length))) =
+            r₁.input_R.length,
           {
             clear_except critical,
             apply min_eq_left,
@@ -1672,8 +1672,8 @@ begin
           clear_except critical add_mirror,
           repeat { rw ← add_assoc },
           have sum_eq_sum :
-            u.length + r₁.input_string.first.length + 1 + r₁.input_string.third.length =
-            r₁.input_string.third.length + 1 + r₁.input_string.first.length + u.length,
+            u.length + r₁.input_L.length + 1 + r₁.input_R.length =
+            r₁.input_R.length + 1 + r₁.input_L.length + u.length,
           {
             rw add_mirror,
             rw add_assoc,
@@ -1688,8 +1688,8 @@ begin
         clear_except equiv_segment_5,
 
         have another_rearranging :
-          r₁.input_string.third.length + (1 + (r₁.input_string.first.length + u.length)) =
-          u.length + (r₁.input_string.first.length + (r₁.input_string.third.length + 1)),
+          r₁.input_R.length + (1 + (r₁.input_L.length + u.length)) =
+          u.length + (r₁.input_L.length + (r₁.input_R.length + 1)),
         {
           ring,
         },
@@ -1771,14 +1771,13 @@ begin
     rw list.take_append_eq_append_take,
     rw list.drop_append_eq_append_drop,
     have rul_inp_len :
-      (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.fst ++
-          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_string.snd.fst)))] ++
-          list.map (wrap_symbol₁ g₂.nt) r₁.input_string.snd.snd
+      (list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
+          [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
+          list.map (wrap_symbol₁ g₂.nt) r₁.input_R
         ).length = m,
     {
       rw list.length_append_append,
       rw list.length_singleton,
-      refl,
     },
     have u_is_shorter : min x.length u.length = u.length,
     {
@@ -1821,8 +1820,8 @@ begin
   {
     change
       y.length + (x.length - u.length - (
-        (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.first).length + 1 +
-        (list.map (wrap_symbol₁ g₂.nt) r₁.input_string.third).length
+        (list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length + 1 +
+        (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length
       )) =
       v.length,
     have len_concat := corresponding_strings_length ih_concat,
@@ -1831,7 +1830,6 @@ begin
     rw list.length_map at len_concat,
     rw list.length_map at len_concat,
     rw list.length_singleton at len_concat,
-    rw [prod.first, prod.third],
     rw ← nat.add_sub_assoc,
     swap,
     {
@@ -1895,7 +1893,7 @@ end
 private lemma induction_step_for_lifted_rule_from_g₂ {g₁ g₂ : grammar T} {a b u v : list (nst T g₁.nt g₂.nt)}
     {x : list (symbol T g₁.nt)} {y: list (symbol T g₂.nt)} {r : grule T (@nnn T g₁.nt g₂.nt)}
     (rin : r ∈ list.map (wrap_grule₂ g₁.nt) g₂.rules)
-    (bef : a = u ++ r.input_string.first ++ [symbol.nonterminal r.input_string.secon] ++ r.input_string.third ++ v)
+    (bef : a = u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R ++ v)
     (aft : b = u ++ r.output_string ++ v)
     (ih_x : grammar_derives g₁ [symbol.nonterminal g₁.initial] x)
     (ih_y : grammar_derives g₂ [symbol.nonterminal g₂.initial] y)
@@ -1915,7 +1913,7 @@ begin
   rcases rin with ⟨r₂, rin₂, wrap_r₂_eq_r⟩,
   rw ← wrap_r₂_eq_r at *,
   clear wrap_r₂_eq_r,
-  simp [wrap_grule₂, prod.first, prod.secon, prod.third] at *,
+  simp [wrap_grule₂] at *,
   rw ← list.singleton_append at bef,
   rw bef at ih_concat,
 
@@ -1942,9 +1940,9 @@ begin
     have ul_lt_ihrs :
       u.length <
       (u
-        ++ (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst
-        ++ ([symbol.nonterminal (sum.inl (some (sum.inr r₂.input_string.snd.fst)))]
-        ++ (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.snd.snd
+        ++ (list.map (wrap_symbol₂ g₁.nt) r₂.input_L
+        ++ ([symbol.nonterminal (sum.inl (some (sum.inr r₂.input_N)))]
+        ++ (list.map (wrap_symbol₂ g₁.nt) r₂.input_R
         ++ v)))
       ).length,
     {
@@ -1968,7 +1966,7 @@ begin
       exact ul_lt_xl,
     },
 
-    by_cases (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length > u.length - u.length,
+    by_cases (list.map (wrap_symbol₂ g₁.nt) r₂.input_L).length > u.length - u.length,
     {
       rw list.nth_le_append _ h at ulth,
       rw list.nth_le_map at ulth,
@@ -1983,7 +1981,7 @@ begin
     have matched_central_nt :
       corresponding_symbols
         (wrap_symbol₁ g₂.nt (x.nth_le u.length ul_lt_xl))
-        (wrap_symbol₂ g₁.nt (symbol.nonterminal r₂.input_string.secon)),
+        (wrap_symbol₂ g₁.nt (symbol.nonterminal r₂.input_N)),
     {
       clear_except ulth,
       finish,
@@ -2063,13 +2061,13 @@ begin
         rw list.length_map at rest1,
         obtain ⟨seg2, rest2⟩ :=
           corresponding_strings_split
-            (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length
+            (list.map (wrap_symbol₂ g₁.nt) r₂.input_L).length
             rest1,
         clear rest1,
         rw list.take_left at seg2,
         rw list.drop_left at rest2,
         rw ← list.take_append_drop
-          (list.map (wrap_symbol₂ g₁.nt) r₂.input_string.fst).length
+          (list.map (wrap_symbol₂ g₁.nt) r₂.input_L).length
           (list.drop (list.filter_map unwrap_symbol₂ (list.drop x.length u)).length y),
         apply congr_arg2,
         {
@@ -2096,7 +2094,7 @@ begin
         rw fml,
         rw ← list.take_append_drop
           1
-          (list.drop (r₂.input_string.fst.length + (list.drop x.length u).length) y),
+          (list.drop (r₂.input_L.length + (list.drop x.length u).length) y),
         apply congr_arg2,
         {
           rw ← list.map_drop at seg3,
@@ -2111,7 +2109,6 @@ begin
         rw ← filter_map_unwrap_of_corresponding_strings₂ rest3,
         rw list.filter_map_append,
         rw unwrap_wrap₂_string,
-        refl,
       },
       {
         rw list.filter_map_append_append,
@@ -2256,7 +2253,7 @@ begin
     exfalso,
     rw rin at bef,
     clear_except ih_concat bef,
-    simp only [prod.first, prod.secon, prod.third, list.append_nil] at bef,
+    simp only [list.append_nil] at bef,
     rw bef at ih_concat,
     have same_lengths := corresponding_strings_length ih_concat,
     clear bef,
@@ -2372,7 +2369,6 @@ begin
       rcases rin with ⟨t, -, eq_r⟩,
       rw ← eq_r at *,
       clear eq_r,
-      dsimp [prod.first, prod.secon, prod.third] at *,
       rw list.append_nil at ih_concat,
       rw list.append_nil at ih_concat,
 
@@ -2492,7 +2488,6 @@ begin
       rcases rin with ⟨t, -, eq_r⟩,
       rw ← eq_r at *,
       clear eq_r,
-      dsimp [prod.first, prod.secon, prod.third] at *,
       rw list.append_nil at ih_concat,
       rw list.append_nil at ih_concat,
 
@@ -2657,7 +2652,7 @@ begin
     dsimp at bef_len,
     have u_nil : u = [], swap,
     have v_nil : v = [], swap,
-    have rif_nil : r.input_string.first = [], swap,
+    have rif_nil : r.input_L = [], swap,
     any_goals {
       clear_except bef_len,
       rw ← list.length_eq_zero,
@@ -2675,7 +2670,7 @@ begin
       exact aft,
     },
     exfalso,
-    have nt_match : symbol.nonterminal (big_grammar g₁ g₂).initial = symbol.nonterminal r.input_string.secon,
+    have nt_match : symbol.nonterminal (big_grammar g₁ g₂).initial = symbol.nonterminal r.input_N,
     {
       have bef_fst := congr_fun (congr_arg list.nth bef) 0,
       rw [u_nil, rif_nil] at bef_fst,
@@ -2695,9 +2690,8 @@ begin
         rcases rin with ⟨r₀, hr₀g₁, wrap_eq_r⟩,
         rw ← wrap_eq_r at nt_match,
         unfold wrap_grule₁ at nt_match,
-        dsimp [prod.secon] at nt_match,
         have inl_match := symbol.nonterminal.inj nt_match,
-        change sum.inl none = sum.inl (some (sum.inl r₀.input_string.secon)) at inl_match,
+        change sum.inl none = sum.inl (some (sum.inl r₀.input_N)) at inl_match,
         have none_eq_some := sum.inl.inj inl_match,
         clear_except none_eq_some,
         tauto,
@@ -2707,9 +2701,8 @@ begin
         rcases rin with ⟨r₀, hr₀g₂, wrap_eq_r⟩,
         rw ← wrap_eq_r at nt_match,
         unfold wrap_grule₂ at nt_match,
-        dsimp [prod.secon] at nt_match,
         have inl_match := symbol.nonterminal.inj nt_match,
-        change sum.inl none = sum.inl (some (sum.inr r₀.input_string.secon)) at inl_match,
+        change sum.inl none = sum.inl (some (sum.inr r₀.input_N)) at inl_match,
         have none_eq_some := sum.inl.inj inl_match,
         clear_except none_eq_some,
         tauto,
@@ -2722,7 +2715,6 @@ begin
         rw list.mem_map at rin,
         rcases rin with ⟨t, htg₁, tt_eq_r⟩,
         rw ← tt_eq_r at nt_match,
-        dsimp [prod.secon] at nt_match,
         have inl_eq_inr := symbol.nonterminal.inj nt_match,
         change sum.inl none = sum.inr (sum.inl t) at inl_eq_inr,
         clear_except inl_eq_inr,
@@ -2733,7 +2725,6 @@ begin
         rw list.mem_map at rin,
         rcases rin with ⟨t, htg₂, tt_eq_r⟩,
         rw ← tt_eq_r at nt_match,
-        dsimp [prod.secon] at nt_match,
         have inl_eq_inr := symbol.nonterminal.inj nt_match,
         change sum.inl none = sum.inr (sum.inr t) at inl_eq_inr,
         clear_except inl_eq_inr,

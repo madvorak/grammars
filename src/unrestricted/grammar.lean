@@ -14,7 +14,9 @@ section grammar_definitions
 
 /-- Transformation rule for a grammar without any restrictions. -/
 structure grule (τ : Type) (ν : Type) :=
-(input_string : list (symbol τ ν) × ν × list (symbol τ ν))
+(input_L : list (symbol τ ν))
+(input_N : ν)
+(input_R : list (symbol τ ν))
 (output_string : list (symbol τ ν))
 
 /-- Grammar (general) that generates words over the alphabet `termi` (a type of terminals). -/
@@ -31,7 +33,7 @@ def grammar_transforms (g : grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop
 ∃ r : grule T g.nt,
   r ∈ g.rules ∧
   ∃ u v : list (symbol T g.nt), and
-    (w₁ = u ++ r.input_string.first ++ [symbol.nonterminal r.input_string.secon] ++ r.input_string.third ++ v)
+    (w₁ = u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R ++ v)
     (w₂ = u ++ r.output_string ++ v)
 
 /-- Any number of steps of grammatical transformation; reflexive+transitive closure of `grammar_transforms`. -/

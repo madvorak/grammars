@@ -14,8 +14,9 @@ variables {T : Type}
 
 /-- One step of context-free transformation. -/
 def CF_transforms (g : CF_grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :=
-∃ r ∈ g.rules, ∃ u v : list (symbol T g.nt),
-  w₁ = u ++ [symbol.nonterminal (prod.fst r)] ++ v  ∧  w₂ = u ++ (prod.snd r) ++ v
+∃ r : g.nt × list (symbol T g.nt), r ∈ g.rules ∧ ∃ u v : list (symbol T g.nt), and
+  (w₁ = u ++ [symbol.nonterminal r.fst] ++ v)
+  (w₂ = u ++ r.snd ++ v)
 
 /-- Any number of steps of context-free transformation; reflexive+transitive closure of `CF_transforms`. -/
 def CF_derives (g : CF_grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
@@ -160,7 +161,7 @@ CS_grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
 
 def grammar_of_cfg (g : CF_grammar T) : grammar T :=
 grammar.mk g.nt g.initial (list.map (λ r : g.nt × (list (symbol T g.nt)),
-  grule.mk ([], r.fst, []) r.snd) g.rules)
+  grule.mk [] r.fst [] r.snd) g.rules)
 
 lemma grammar_of_cfg_well_defined (g : CF_grammar T) :
   grammar_of_csg (csg_of_cfg g) = grammar_of_cfg g :=
