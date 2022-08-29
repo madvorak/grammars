@@ -12,14 +12,11 @@ import unrestricted.closure_properties.binary.RE_union_RE
 
 section contextfree
 
-#check        CF_of_reverse_CF
-#print axioms CF_of_reverse_CF
+#check        CF_of_CF_u_CF
+#print axioms CF_of_CF_u_CF
 
 #check        CF_of_CF_c_CF
 #print axioms CF_of_CF_c_CF
-
-#check        CF_of_CF_u_CF
-#print axioms CF_of_CF_u_CF
 
 #check        nnyCF_of_CF_i_CF
 #print axioms nnyCF_of_CF_i_CF
@@ -27,13 +24,16 @@ section contextfree
 #check        nnyCF_of_complement_CF
 #print axioms nnyCF_of_complement_CF
 
+#check        CF_of_reverse_CF
+#print axioms CF_of_reverse_CF
+
 end contextfree
 
 
 section unrestricted
 
-#check        RE_of_reverse_RE
-#print axioms RE_of_reverse_RE
+#check        RE_of_RE_u_RE
+#print axioms RE_of_RE_u_RE
 
 #check        RE_of_RE_c_RE
 #print axioms RE_of_RE_c_RE
@@ -41,7 +41,7 @@ section unrestricted
 #check        RE_of_star_RE
 #print axioms RE_of_star_RE
 
-#check        RE_of_RE_u_RE
-#print axioms RE_of_RE_u_RE
+#check        RE_of_reverse_RE
+#print axioms RE_of_reverse_RE
 
 end unrestricted

@@ -5,31 +5,6 @@ section list_technicalities
 
 variables {α : Type}
 
-lemma two_singletons_of_doubleton {a b : α} : [a, b] = [a] ++ [b] :=
-begin
-  refl,
-end
-
-lemma append_singleton_of_cons {a : α} {l : list α} : a :: l = [a] ++ l :=
-begin
-  refl,
-end
-
-
-lemma list_take_one_eq_singleton {l : list α} (nonempty : 0 < l.length):
-  list.take 1 l = [l.nth_le 0 nonempty] :=
-begin
-  cases l with d x,
-  {
-    exfalso,
-    unfold list.length at nonempty,
-    exact false_of_ne (ne_of_lt nonempty),
-  },
-  {
-    refl,
-  },
-end
-
 lemma list_take_one_drop {l : list α} {i : ℕ} (hil : i < l.length) :
   list.take 1 (list.drop i l) = [l.nth_le i hil] :=
 begin
@@ -44,12 +19,22 @@ begin
     {
       exact min_eq_left (le_of_lt hil),
     },
-    norm_num,
-    simp only [smaller_i, tsub_self],
-    apply list_take_one_eq_singleton,
+    simp only [list.length_take, smaller_i, nat.sub_self],
+    have underscore : 0 < (list.drop i l).length,
+    {
+      finish,
+    },
+    cases (list.drop i l) with d x,
+    {
+      exfalso,
+      exact false_of_ne (ne_of_lt underscore),
+    },
+    {
+      refl,
+    },
   },
   {
-    norm_num,
+    apply list.length_take_le,
   },
 end
 
@@ -85,8 +70,8 @@ lemma list_forall₂_nth_le {β : Type} {R : α → β → Prop} :
     ∀ {i : ℕ}, ∀ i_lt_len_x : i < x.length, ∀ i_lt_len_y : i < y.length,
       R (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y)
 | []       []       := by { intros hyp i hx, exfalso, apply nat.not_lt_zero, exact hx, }
-| []       (a₂::l₂) := by { intro hyp, cases hyp, }
-| (a₁::l₁) []       := by { intro hyp, cases hyp, }
+| []       (a₂::l₂) := by { intro hyp, exfalso, cases hyp, }
+| (a₁::l₁) []       := by { intro hyp, exfalso, cases hyp, }
 | (a₁::l₁) (a₂::l₂) :=
 begin
   intros ass i i_lt_len_x i_lt_len_y,
@@ -254,8 +239,8 @@ begin
   },
   rw list.map,
   rw list.map,
-  rw append_singleton_of_cons,
-  rw append_singleton_of_cons,
+  rw ← list.singleton_append,
+  rw ← list.singleton_append,
   have step_head :
     grammar_transforms (big_grammar g₁ g₂)
       ([(symbol.nonterminal ∘ sum.inr ∘ side) d] ++ list.map (symbol.nonterminal ∘ sum.inr ∘ side) l)
@@ -304,7 +289,7 @@ begin
     (list.map symbol.terminal u ++ [symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]) _,
   {
     clear_except hu,
-    rw two_singletons_of_doubleton,
+    rw ← list.singleton_append,
     apply grammar_derives_with_postfix,
     apply @grammar_deri_of_deri_deri _ _ _ (list.map (
         (@symbol.nonterminal T (big_grammar g₁ g₂).nt) ∘ sum.inr ∘ sum.inl
@@ -1157,7 +1142,7 @@ begin
   rw ← list.singleton_append at bef,
 
   let m := (list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length + 1 +
-            (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length,
+           (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length,
   let b' := u ++ list.map (wrap_symbol₁ g₂.nt) r₁.output_string ++ list.take (x.length - u.length - m) v,
   use list.filter_map unwrap_symbol₁ b',
 
@@ -2229,7 +2214,7 @@ begin
       rw list.map_singleton,
       unfold wrap_symbol₁,
       unfold wrap_symbol₂,
-      rw ← two_singletons_of_doubleton,
+      rw list.singleton_append,
       unfold corresponding_strings,
       rw list.forall₂_cons,
       split,

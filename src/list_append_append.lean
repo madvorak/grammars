@@ -1,11 +1,9 @@
 import tactic
 
-variables {α β γ : Type*}
-
 
 namespace list
 
-variables {x y z : list α}
+variables {α β γ : Type*} {x y z : list α}
 
 lemma map_append_append {f : α → β} :
   list.map f (x ++ y ++ z) = list.map f x ++ list.map f y ++ list.map f z :=
@@ -28,12 +26,3 @@ lemma forall_mem_append_append {p : α → Prop} :
 by rw [list.forall_mem_append, list.forall_mem_append, and_assoc]
 
 end list
-
-
-namespace prod
-
-def first (t : α × β × γ) : α := t.fst
-def secon (t : α × β × γ) : β := t.snd.fst
-def third (t : α × β × γ) : γ := t.snd.snd
-
-end prod
