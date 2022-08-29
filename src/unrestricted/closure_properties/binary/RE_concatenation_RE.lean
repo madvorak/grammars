@@ -3,7 +3,48 @@ import unrestricted.grammar
 
 section list_technicalities
 
-variables {α : Type}
+variables {α β : Type}
+
+lemma list_forall₂_nth_le {R : α → β → Prop} :
+  ∀ {x : list α}, ∀ {y : list β}, list.forall₂ R x y →
+    ∀ {i : ℕ}, ∀ i_lt_len_x : i < x.length, ∀ i_lt_len_y : i < y.length,
+      R (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y)
+| []       []       := by { intros hyp i hx, exfalso, apply nat.not_lt_zero, exact hx, }
+| []       (a₂::l₂) := by { intro hyp, exfalso, cases hyp, }
+| (a₁::l₁) []       := by { intro hyp, exfalso, cases hyp, }
+| (a₁::l₁) (a₂::l₂) :=
+begin
+  intros ass i i_lt_len_x i_lt_len_y,
+  rw list.forall₂_cons at ass,
+  cases i,
+  {
+    unfold list.nth_le,
+    exact ass.1,
+  },
+  unfold list.nth_le,
+  apply list_forall₂_nth_le,
+  exact ass.2,
+end
+
+lemma list_filter_map_eq_of_map_eq_map_some {f : α → option β} :
+  ∀ {x : list α}, ∀ {y : list β},
+    list.map f x = list.map option.some y →
+      list.filter_map f x = y
+| []       []       := λ _, rfl
+| []       (a₂::l₂) := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp.symm, }
+| (a₁::l₁) []       := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp, }
+| (a₁::l₁) (a₂::l₂) :=
+begin
+  intro ass,
+  repeat { rw list.map at ass },
+  rw list.cons.inj_eq at ass,
+  rw list.filter_map_cons_some,
+  swap, exact ass.1,
+  congr,
+  apply list_filter_map_eq_of_map_eq_map_some,
+  exact ass.2,
+end
+
 
 lemma list_take_one_drop {l : list α} {i : ℕ} (hil : i < l.length) :
   list.take 1 (list.drop i l) = [l.nth_le i hil] :=
@@ -43,47 +84,6 @@ lemma list_drop_take_succ {l : list α} {i : ℕ} (hil : i < l.length) :
 begin
   rw list.drop_take,
   apply list_take_one_drop,
-end
-
-
-lemma list_filter_map_eq_of_map_eq_map_some {β : Type} {f : α → option β} :
-  ∀ {x : list α}, ∀ {y : list β},
-    list.map f x = list.map option.some y →
-      list.filter_map f x = y
-| []       []       := λ _, rfl
-| []       (a₂::l₂) := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp.symm, }
-| (a₁::l₁) []       := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp, }
-| (a₁::l₁) (a₂::l₂) :=
-begin
-  intro ass,
-  repeat { rw list.map at ass },
-  rw list.cons.inj_eq at ass,
-  rw list.filter_map_cons_some,
-  swap, exact ass.1,
-  congr,
-  apply list_filter_map_eq_of_map_eq_map_some,
-  exact ass.2,
-end
-
-lemma list_forall₂_nth_le {β : Type} {R : α → β → Prop} :
-  ∀ {x : list α}, ∀ {y : list β}, list.forall₂ R x y →
-    ∀ {i : ℕ}, ∀ i_lt_len_x : i < x.length, ∀ i_lt_len_y : i < y.length,
-      R (x.nth_le i i_lt_len_x) (y.nth_le i i_lt_len_y)
-| []       []       := by { intros hyp i hx, exfalso, apply nat.not_lt_zero, exact hx, }
-| []       (a₂::l₂) := by { intro hyp, exfalso, cases hyp, }
-| (a₁::l₁) []       := by { intro hyp, exfalso, cases hyp, }
-| (a₁::l₁) (a₂::l₂) :=
-begin
-  intros ass i i_lt_len_x i_lt_len_y,
-  rw list.forall₂_cons at ass,
-  cases i,
-  {
-    unfold list.nth_le,
-    exact ass.1,
-  },
-  unfold list.nth_le,
-  apply list_forall₂_nth_le,
-  exact ass.2,
 end
 
 end list_technicalities
