@@ -1384,7 +1384,7 @@ begin
     have b_in_equ := congr_arg (λ lis, b_ ∈ lis) equ,
     clear equ,
     simp only [list.mem_append, eq_iff_iff, list.mem_repeat] at b_in_equ,
-    have neq_ba_here := neq_ba,
+    have := neq_ba,
     tauto,
   },
   have m₁pos : m₁ > 0,
