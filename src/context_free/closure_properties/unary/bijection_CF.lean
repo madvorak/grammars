@@ -63,7 +63,7 @@ begin
       split,
       {
         change (r.fst, lsT₁_of_lsT₂ π r.snd) ∈ g.rules,
-        simp at r_in,
+        rw [list.mem_map, prod.exists] at r_in,
         rcases r_in with ⟨a, b, ab_in, ab_eq⟩,
         have a_eq : a = r.fst :=
           (congr_arg prod.fst ab_eq).congr_right.mp rfl,
@@ -87,11 +87,10 @@ begin
           -- nonterminal = nonterminal
           refl,
         },
-        -- (sT₁_of_sT₂ π ∘ sT₂_of_sT₁ π) terminal = terminal
-        simp,
-        unfold sT₂_of_sT₁,
-        unfold sT₁_of_sT₂,
-        rw equiv.left_inv,
+        {
+          -- (sT₁_of_sT₂ π ∘ sT₂_of_sT₁ π) terminal = terminal
+          simp [sT₂_of_sT₁, sT₁_of_sT₂, equiv.left_inv],
+        }
       },
       use x₁,
       use y₁,
@@ -152,7 +151,7 @@ begin
       use r₂,
       split,
       {
-        simp,
+        rw [list.mem_map, prod.exists],
         use r.fst,
         use r.snd,
         split,

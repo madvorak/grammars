@@ -533,7 +533,7 @@ begin
   {
     rcases first_step with ⟨first_rule, first_rule_in, p, q, bef, aft⟩,
     have len_bef := congr_arg list.length bef,
-    simp at len_bef,
+    rw [list.length_singleton, list.length_append, list.length_append, list.length_singleton] at len_bef,
     have p_nil : p = [],
     {
       have p0 : p.length = 0,
@@ -595,8 +595,8 @@ begin
           exact list.mem_map_of_mem prod.fst first_rule_in,
         },
         rw initial at rfst,
-        simp at rfst,
-        exact rfst,
+        convert rfst,
+        simp,
       },
       {
         delta rule_of_rule₂ at first_rule_in,
@@ -610,8 +610,8 @@ begin
           exact list.mem_map_of_mem prod.fst first_rule_in,
         },
         rw initial at rfst,
-        simp at rfst,
-        exact rfst,
+        convert rfst,
+        simp,
       },
     },
     rw [p_nil, q_nil, only_rule] at aft,
@@ -1078,14 +1078,17 @@ begin
           {
             refl,
           },
-          unfold lsTN_of_lsTN₁,
-          rw list.length_map,
-          rw list.length_map,
-          rw len_u',
-          simp,
-          rw trivi_min,
-          unfold lsTN_of_lsTN₁,
-          rw list.length_map,
+          rw [
+            lsTN_of_lsTN₁,
+            list.length_map,
+            list.length_map,
+            len_u',
+            list.length_take,
+            nat.add_sub_cancel_left,
+            trivi_min,
+            lsTN_of_lsTN₁,
+            list.length_map
+          ],
         },
         rw express_u'_as_crd,
 

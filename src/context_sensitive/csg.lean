@@ -166,7 +166,7 @@ begin
       delta grammar_of_csg at hyp,
       dsimp at hyp,
       rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
-      simp at rin,
+      rw list.mem_map at rin,
       rcases rin with ⟨new_rule, new_rule_in, new_rule_def⟩,
       use new_rule,
       split,

@@ -77,7 +77,6 @@ begin
 
   apply CF_deri_of_tran,
   {
-    simp,
     use (R_, []),
     split,
     {

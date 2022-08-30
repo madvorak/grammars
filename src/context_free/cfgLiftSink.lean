@@ -143,7 +143,7 @@ begin
     use n₀,
     have almost := congr_arg (option.map lg.lift_nt) hn₀,
     rw lifted_grammar_inverse lg rule.fst ⟨n₀, hn₀⟩ at almost,
-    simp at almost,
+    rw option.map_some' at almost,
     apply option.some_injective,
     exact almost.symm,
   }) with ⟨pre_rule, pre_in, preimage⟩,

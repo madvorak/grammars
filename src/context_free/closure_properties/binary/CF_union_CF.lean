@@ -314,7 +314,7 @@ begin
     {
       ext1,
       unfold lsTN_of_lsTN₁,
-      simp,
+      rw [list.nth_map, list.map_map, list.nth_map],
       apply congr_arg,
       refl,
     },
@@ -381,7 +381,7 @@ begin
     {
       ext1,
       unfold lsTN_of_lsTN₂,
-      simp,
+      rw [list.nth_map, list.map_map, list.nth_map],
       apply congr_arg,
       refl,
     },
@@ -517,8 +517,7 @@ private lemma both_empty
   u = []  ∧  v = [] :=
 begin
   have len := congr_arg list.length bef,
-  rw list.length_append at len,
-  simp at len,
+  rw [list.length_singleton, list.length_append, list.length_append, list.length_singleton] at len,
   split,
   {
     by_contradiction,
@@ -577,7 +576,8 @@ begin
   {
     exfalso,
     have zeroth := congr_arg (λ p, list.nth p 0) impossible,
-    simp at zeroth,
+    unfold list.nth at zeroth,
+    rw list.nth_map at zeroth,
     cases (w.nth 0);
     finish,
   },
@@ -591,20 +591,18 @@ begin
   {
     left,
     rw g₁S at *,
-    simp at *,
     rw u_nil at deri_tail,
     rw v_nil at deri_tail,
-    simp at deri_tail,
+    rw list.nil_append at deri_tail,
     exact in_language_left_case_of_union deri_tail,
   },
   cases r_rest with g₂S r_imposs,
   {
     right,
     rw g₂S at *,
-    simp at *,
     rw u_nil at deri_tail,
     rw v_nil at deri_tail,
-    simp at deri_tail,
+    rw list.nil_append at deri_tail,
     exact in_language_right_case_of_union deri_tail,
   },
   exact in_language_impossible_case_of_union w

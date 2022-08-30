@@ -422,7 +422,7 @@ begin
     split;
     refl,
   },
-  simp,
+  dsimp,
   have lifted := lift_deri_ lg₁ ass,
   swap, {
     exact g₂,
@@ -456,7 +456,7 @@ begin
     split;
     refl,
   },
-  simp,
+  dsimp,
   have lifted := lift_deri_ lg₂ ass,
   swap, {
     exact g₁,

@@ -75,9 +75,7 @@ begin
   },
 end
 
-private lemma reversed_word_in_original_language
-    {g : CF_grammar T}
-    {w : list T}
+private lemma reversed_word_in_original_language {g : CF_grammar T} {w : list T}
     (hyp : w ∈ CF_language (reversal_grammar g)) :
   w.reverse ∈ CF_language g :=
 begin

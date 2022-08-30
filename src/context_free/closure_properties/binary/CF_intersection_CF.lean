@@ -20,8 +20,7 @@ begin
   change count_in (a :: list.repeat a n) a = n.succ,
   unfold count_in,
   unfold list.map,
-  simp,
-  exact nat.one_add n,
+  simp [nat.one_add],
 end
 
 lemma count_in_repeat_neq {a : α} {b : α} (hyp : a ≠ b) (n : ℕ) :
@@ -92,14 +91,7 @@ begin
   },
   unfold count_in,
   rw list.map_cons,
-  simp,
-  rw list.mem_cons_eq at hyp,
-  push_neg at hyp,
-  split,
-  {
-    exact hyp.left.symm,
-  },
-  exact ih hyp.right,
+  finish,
 end
 
 end reusable_defs_and_lemmata
@@ -715,7 +707,6 @@ begin
       },
       rw bef at ih,
       rw both_rule_rewrite_S at ih,
-      dsimp at ih,
       have p_len : p.length = k,
       {
         by_contradiction contra,
@@ -1349,11 +1340,10 @@ begin
     },
     clear h,
     rw n₂zero at equ,
-    simp at equ,
+    simp only [list.repeat, list.nil_append] at equ,
     have a_in_equ := congr_arg (λ lis, a_ ∈ lis) equ,
     clear equ,
-    simp at a_in_equ,
-    repeat { rw list.mem_repeat at a_in_equ },
+    simp only [list.mem_append, eq_iff_iff, list.mem_repeat, or_assoc] at a_in_equ,
     have rs_false : (m₂ ≠ 0 ∧ a_ = b_ ∨ m₂ ≠ 0 ∧ a_ = c_) = false,
     {
       apply eq_false_intro,
@@ -1390,21 +1380,11 @@ begin
     },
     clear h,
     rw m₂zero at equ,
-    simp at equ,
+    simp only [list.repeat, list.append_nil] at equ,
     have b_in_equ := congr_arg (λ lis, b_ ∈ lis) equ,
     clear equ,
-    simp at b_in_equ,
-    have b_yes : b_ ∈ list.repeat b_ n₁,
-    {
-      rw list.mem_repeat,
-      exact and.intro (ne_of_lt n₁pos).symm rfl,
-    },
-    have b_no : b_ ∉ list.repeat a_ n₂,
-    {
-      rw list.mem_repeat,
-      by_contradiction,
-      exact neq_ba h.right,
-    },
+    simp only [list.mem_append, eq_iff_iff, list.mem_repeat] at b_in_equ,
+    have neq_ba_here := neq_ba,
     tauto,
   },
   have m₁pos : m₁ > 0,
@@ -1418,11 +1398,10 @@ begin
     },
     clear h,
     rw m₁zero at equ,
-    simp at equ,
+    simp only [list.repeat, list.append_nil] at equ,
     have c_in_equ := congr_arg (λ lis, c_ ∈ lis) equ,
     clear equ,
-    simp at c_in_equ,
-    repeat { rw list.mem_repeat at c_in_equ },
+    simp only [list.mem_append, eq_iff_iff, list.mem_repeat, or_assoc] at c_in_equ,
     have ls_false : (n₁ ≠ 0 ∧ c_ = a_ ∨ n₁ ≠ 0 ∧ c_ = b_) = false,
     {
       apply eq_false_intro,

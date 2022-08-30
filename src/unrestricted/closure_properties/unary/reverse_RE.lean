@@ -102,9 +102,7 @@ begin
   },
 end
 
-private lemma reversed_word_in_original_language
-    {g : grammar T}
-    {w : list T}
+private lemma reversed_word_in_original_language {g : grammar T} {w : list T}
     (hyp : w ∈ grammar_language (reversal_grammar g)) :
   w.reverse ∈ grammar_language g :=
 begin
