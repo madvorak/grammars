@@ -72,7 +72,7 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
     {
       exact r₁_in,
     },
-    rw ← r₁_convert_r,
+    rw ←r₁_convert_r,
     simp only [
       lift_rule, rule_of_rule₁, lift_string, lsTN_of_lsTN₁,
       prod.mk.inj_iff, eq_self_iff_true, true_and
@@ -83,7 +83,7 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
     exfalso,
     rw list.mem_map at r_in,
     rcases r_in with ⟨r₂, r₂_in, r₂_convert_r⟩,
-    rw ← r₂_convert_r at r_ntype,
+    rw ←r₂_convert_r at r_ntype,
     unfold rule_of_rule₂ at r_ntype,
     dsimp at r_ntype,
     cases r_ntype with n₁ contr,
@@ -158,7 +158,7 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
     exfalso,
     rw list.mem_map at r_in,
     rcases r_in with ⟨r₁, r₁_in, r₁_convert_r⟩,
-    rw ← r₁_convert_r at r_ntype,
+    rw ←r₁_convert_r at r_ntype,
     unfold rule_of_rule₁ at r_ntype,
     dsimp at r_ntype,
     cases r_ntype with n₂ contr,
@@ -173,7 +173,7 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
     {
       exact r₂_in,
     },
-    rw ← r₂_convert_r,
+    rw ←r₂_convert_r,
     simp only [
       lift_rule, rule_of_rule₂, lift_string, lsTN_of_lsTN₂,
       prod.mk.inj_iff, eq_self_iff_true, true_and
@@ -318,7 +318,7 @@ begin
     },
     have hunltw : u.length + n < w.length,
     {
-      rw ← total_len,
+      rw ←total_len,
       exact hunltuv,
     },
     have hlen₁ : u.length + n < (list.map sTN_of_sTN₁ u ++ list.map sTN_of_sTN₂ v).length,
@@ -390,7 +390,7 @@ begin
     push_neg at h,
     rw list.nth_eq_none_iff,
     rw list.length_map,
-    rw ← total_len,
+    rw ←total_len,
     apply add_le_add_left h,
   },
   refl,
@@ -440,7 +440,7 @@ begin
       ext1,
       apply self_of_sTN₁,
     },
-    rw ← equal_functions,
+    rw ←equal_functions,
     apply congr_fun,
     apply congr_arg,
     ext1,
@@ -464,7 +464,7 @@ begin
       ext1,
       apply self_of_sTN₂,
     },
-    rw ← equal_functions,
+    rw ←equal_functions,
     apply congr_fun,
     apply congr_arg,
     ext1,
@@ -657,7 +657,7 @@ begin
     cases orig_in,
     {
       exfalso,
-      rw ← ih_concat at bef,
+      rw ←ih_concat at bef,
       rw orig_in at bef,
       clear_except bef,
       dsimp at bef,
@@ -734,7 +734,7 @@ begin
       rw aft,
       rw bef at ih_concat,
       clear bef aft a b,
-      rw ← r₁_conv at ih_concat ⊢,
+      rw ←r₁_conv at ih_concat ⊢,
       clear r₁_conv orig_rule,
       have part_for_u := congr_arg (list.take (@lsTN_of_lsTN₁ T g₁ g₂ u).length) ih_concat,
       have part_for_v := congr_arg (list.drop (@lsTN_of_lsTN₁ T g₁ g₂ u).length) ih_concat,
@@ -818,7 +818,7 @@ begin
               ))
               (lsTN₁_of_lsTN (c ++ (rule_of_rule₁ r₁).snd ++ list.take ((lsTN_of_lsTN₁ u).length - (c.length + 1)) d)),
           {
-            rw ← part_for_u,
+            rw ←part_for_u,
             rw self_of_lsTN₁,
           },
           use r₁,
@@ -921,16 +921,16 @@ begin
           rw list.length_map,
           clear_except part_for_u,
           unfold lsTN_of_lsTN₁ at part_for_u,
-          have lens := congr_arg list.length part_for_u,
-          rw list.length_map at lens,
-          rw list.length_take at lens,
-          rw list.length_append at lens,
-          rw list.length_append at lens,
-          rw list.length_singleton at lens,
+          have lengs := congr_arg list.length part_for_u,
+          rw list.length_map at lengs,
+          rw list.length_take at lengs,
+          rw list.length_append at lengs,
+          rw list.length_append at lengs,
+          rw list.length_singleton at lengs,
           have uleng_le : u.length ≤ c.length + 1 + d.length,
           {
-            rw ← min_eq_left_iff,
-            exact lens.symm,
+            rw ←min_eq_left_iff,
+            exact lengs.symm,
           },
           clear_except uleng_le,
           omega,
@@ -955,7 +955,7 @@ begin
             rw taken_c_from_u,
           },
           unfold lsTN_of_lsTN₁,
-          rw ← list.map_take,
+          rw ←list.map_take,
           change list.map sTN_of_sTN₁ (lsTN₁_of_lsTN (lsTN_of_lsTN₁ (list.take c.length u))) = _,
           rw self_of_lsTN₁,
           rw list.map_take,
@@ -986,14 +986,14 @@ begin
           },
           rw translate_counts at taken_d_from_dropped_u,
           rw list.drop_left at taken_d_from_dropped_u,
-          rw ← translate_counts at taken_d_from_dropped_u,
+          rw ←translate_counts at taken_d_from_dropped_u,
           change
             list.map sTN_of_sTN₁ (
               list.filter_map sTN₁_of_sTN (list.take ((@lsTN_of_lsTN₁ T g₁ g₂ u).length - (c.length + 1)) d)
             ) = _,
-          rw ← taken_d_from_dropped_u,
+          rw ←taken_d_from_dropped_u,
           change list.map sTN_of_sTN₁ (lsTN₁_of_lsTN (list.drop (c.length + 1) (list.map sTN_of_sTN₁ u))) = _,
-          rw ← list.map_drop,
+          rw ←list.map_drop,
           change list.map sTN_of_sTN₁ (lsTN₁_of_lsTN (lsTN_of_lsTN₁ (list.drop (c.length + 1) u))) = _,
           rw self_of_lsTN₁,
           rw list.map_drop,
@@ -1135,7 +1135,7 @@ begin
           change _ = list.drop (list.map sTN_of_sTN₁ u').length (c ++ (rule_of_rule₁ r₁).snd ++ d),
           rw list.length_map,
           rw len_u',
-          rw ← list.length_append,
+          rw ←list.length_append,
           rw list.drop_append,
           rw list.length_take,
           rw trivi_min,
@@ -1152,7 +1152,7 @@ begin
       rw aft,
       rw bef at ih_concat,
       clear bef aft a b,
-      rw ← r₂_conv at ih_concat ⊢,
+      rw ←r₂_conv at ih_concat ⊢,
       clear r₂_conv orig_rule,
       have part_for_u := congr_arg (list.take (@lsTN_of_lsTN₁ T g₁ g₂ u).length) ih_concat,
       have part_for_v := congr_arg (list.drop (@lsTN_of_lsTN₁ T g₁ g₂ u).length) ih_concat,
@@ -1192,7 +1192,9 @@ begin
         have yes_in : symbol.nonterminal (rule_of_rule₂ r₂).fst ∈ lsTN_of_lsTN₁ u,
         {
           have ih_backwards := congr_arg list.reverse ih_concat,
-          repeat { rw list.reverse_append at ih_backwards },
+          repeat {
+            rw list.reverse_append at ih_backwards,
+          },
           have ldth := congr_fun (congr_arg list.nth ih_backwards) d.length,
           have dlengthth :
             (d.reverse ++ ([symbol.nonterminal (rule_of_rule₂ r₂).fst].reverse ++ c.reverse)).nth d.length =
@@ -1207,7 +1209,7 @@ begin
             refl,
           },
           rw dlengthth at ldth,
-          rw ← list.length_reverse at contra,
+          rw ←list.length_reverse at contra,
           rw list.nth_append_right contra at ldth,
           have rrr := list.nth_mem ldth,
           rw list.mem_reverse at rrr,
@@ -1217,7 +1219,9 @@ begin
         exact not_in yes_in,
       },
       have total_length := congr_arg list.length ih_concat,
-      repeat { rw list.length_append at total_length },
+      repeat {
+        rw list.length_append at total_length,
+      },
       rw list.length_singleton at total_length,
       have hlen_uc : (@lsTN_of_lsTN₁ T g₁ g₂ u).length ≤ c.length,
       {
@@ -1267,7 +1271,7 @@ begin
               ))
               (lsTN₂_of_lsTN (list.drop (lsTN_of_lsTN₁ u).length c ++ (rule_of_rule₂ r₂).snd ++ d)),
           {
-            rw ← part_for_v,
+            rw ←part_for_v,
             rw self_of_lsTN₂,
           },
           use r₂,
@@ -1290,7 +1294,7 @@ begin
             unfold lsTN₂_of_lsTN,
             rw list.append_assoc,
             rw list.drop_append_of_le_length hlen_uc_orig,
-            rw ← list.append_assoc,
+            rw ←list.append_assoc,
             rw list.filter_map_append_append,
             rw eq_c',
             refl,
@@ -1334,24 +1338,24 @@ begin
           rw list.map_append_append,
           rw list.append_assoc c,
           rw list.drop_append_of_le_length hlen_uc,
-          rw ← list.append_assoc,
+          rw ←list.append_assoc,
 
           apply congr_arg2, apply congr_arg2,
           {
             have aux_plus_minus : (lsTN_of_lsTN₁ u).length + (c.length - (lsTN_of_lsTN₁ u).length) = c.length,
             {
-              rw ← nat.add_sub_assoc hlen_uc,
+              rw ←nat.add_sub_assoc hlen_uc,
               rw nat.add_sub_cancel_left,
             },
             have taken_c_from_v := congr_arg (list.take (c.length - (@lsTN_of_lsTN₁ T g₁ g₂ u).length)) part_for_v,
-            rw ← list.drop_take at taken_c_from_v,
+            rw ←list.drop_take at taken_c_from_v,
             rw list.append_assoc at taken_c_from_v,
             rw list.take_append_of_le_length (le_of_eq aux_plus_minus) at taken_c_from_v,
             rw aux_plus_minus at taken_c_from_v,
             rw list.take_length at taken_c_from_v,
-            rw ← taken_c_from_v,
+            rw ←taken_c_from_v,
             unfold lsTN_of_lsTN₂,
-            rw ← list.map_take,
+            rw ←list.map_take,
             change
               lsTN_of_lsTN₂ (lsTN₂_of_lsTN (lsTN_of_lsTN₂ (list.take (c.length - (lsTN_of_lsTN₁ u).length) v))) =
               lsTN_of_lsTN₂ (list.take (c.length - (lsTN_of_lsTN₁ u).length) v),
@@ -1387,9 +1391,9 @@ begin
             },
             rw dropped_exactly_length at taken_d_from_v,
             rw list.drop_left at taken_d_from_v,
-            rw ← taken_d_from_v,
+            rw ←taken_d_from_v,
             unfold lsTN_of_lsTN₂,
-            rw ← list.map_drop,
+            rw ←list.map_drop,
             change
               lsTN_of_lsTN₂ (lsTN₂_of_lsTN (lsTN_of_lsTN₂ (
                 list.drop ((list.map sTN_of_sTN₂ v).length - d.length) v))) =
@@ -1456,7 +1460,9 @@ begin
       rw list.map_drop,
       have hwlen := congr_arg list.length hw,
       rw list.length_append at hwlen,
-      repeat { rw list.length_map at hwlen },
+      repeat {
+        rw list.length_map at hwlen,
+      },
       exact v_eq_drop_map_w u v w hwlen (congr_arg (list.drop u.length) hw),
     },
     cases v_from_terminals with vₜ hvt,
@@ -1469,7 +1475,9 @@ begin
   rw list.filter_map_append at huvw,
   unfold lsTN_of_lsTN₁ at huvw,
   unfold lsTN_of_lsTN₂ at huvw,
-  repeat { rw list.filter_map_map at huvw },
+  repeat {
+    rw list.filter_map_map at huvw,
+  },
   have disappear_sTN_of_sTN₁ : @oT_of_sTN₃ T (combined_grammar g₁ g₂) ∘ sTN_of_sTN₁ = oT_of_sTN₃,
   {
     ext1,
@@ -1530,7 +1538,7 @@ begin
     split;
     refl,
   },
-  rw ← hw,
+  rw ←hw,
   rw list.map_append,
   apply @CF_deri_of_deri_deri T
     (combined_grammar g₁ g₂) _
@@ -1607,15 +1615,15 @@ begin
   {
     -- prove `L₁ * L₂ ⊇ ` here
     intros w hyp,
-    rw ← h₁,
-    rw ← h₂,
+    rw ←h₁,
+    rw ←h₂,
     exact in_concatenated_of_in_combined hyp,
   },
   {
     -- prove `L₁ * L₂ ⊆ ` here
     intros w hyp,
-    rw ← h₁ at hyp,
-    rw ← h₂ at hyp,
+    rw ←h₁ at hyp,
+    rw ←h₂ at hyp,
     exact in_combined_of_in_concatenated hyp,
   },
 end

@@ -44,7 +44,9 @@ begin
   unfold big_grammar,
   dsimp,
   congr,
-  repeat { rw list.map_append },
+  repeat {
+    rw list.map_append,
+  },
   apply congr_arg2,
   {
     apply congr_arg2;
@@ -82,14 +84,14 @@ begin
   apply set.eq_of_subset_of_subset,
   {
     intros w hyp,
-    rw ← h₁,
-    rw ← h₂,
+    rw ←h₁,
+    rw ←h₂,
     exact in_concatenated_of_in_big hyp,
   },
   {
     intros w hyp,
-    rw ← h₁ at hyp,
-    rw ← h₂ at hyp,
+    rw ←h₁ at hyp,
+    rw ←h₂ at hyp,
     exact in_big_of_in_concatenated hyp,
   },
 end
@@ -145,7 +147,9 @@ begin
   unfold big_grammar,
   dsimp,
   congr,
-  repeat { rw list.map_append },
+  repeat {
+    rw list.map_append,
+  },
   apply congr_arg2,
   {
     apply congr_arg2;
@@ -194,14 +198,14 @@ begin
   apply set.eq_of_subset_of_subset,
   {
     intros w hyp,
-    rw ← h₁,
-    rw ← h₂,
+    rw ←h₁,
+    rw ←h₂,
     exact in_concatenated_of_in_big hyp,
   },
   {
     intros w hyp,
-    rw ← h₁ at hyp,
-    rw ← h₂ at hyp,
+    rw ←h₁ at hyp,
+    rw ←h₂ at hyp,
     exact in_big_of_in_concatenated hyp,
   },
 end

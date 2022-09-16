@@ -284,7 +284,9 @@ begin
         finish,
       },
       rw [cl_empty, cr_empty] at *,
-      repeat { rw list.append_nil at * },
+      repeat {
+        rw list.append_nil at *,
+      },
       split;
       dsimp;
       assumption,
@@ -296,7 +298,7 @@ end
 lemma CF_language_eq_grammar_language (g : CF_grammar T) :
   CF_language g = grammar_language (grammar_of_cfg g) :=
 begin
-  rw ← grammar_of_cfg_well_defined,
+  rw ←grammar_of_cfg_well_defined,
   rw CF_language_eq_CS_language,
   rw CS_language_eq_grammar_language,
 end
@@ -306,7 +308,7 @@ theorem CF_subclass_CS (L : language T) :
 begin
   rintro ⟨g, h⟩,
   use csg_of_cfg g,
-  rw ← h,
+  rw ←h,
   rw CF_language_eq_CS_language,
 end
 

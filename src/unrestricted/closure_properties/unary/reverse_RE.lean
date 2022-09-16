@@ -65,26 +65,26 @@ begin
   {
     have rid₁ : r₀.input_L = r.input_R.reverse,
     {
-      rw ← r_from_r₀,
+      rw ←r_from_r₀,
       unfold reversal_grule,
       rw list.reverse_reverse,
     },
     have rid₂ : [symbol.nonterminal r₀.input_N] = [symbol.nonterminal r.input_N].reverse,
     {
-      rw ← r_from_r₀,
+      rw ←r_from_r₀,
       rw list.reverse_singleton,
       refl,
     },
     have rid₃ : r₀.input_R = r.input_L.reverse,
     {
-      rw ← r_from_r₀,
+      rw ←r_from_r₀,
       unfold reversal_grule,
       rw list.reverse_reverse,
     },
     rw [
       rid₁, rid₂, rid₃,
-      ← list.reverse_append_append, ← list.reverse_append_append,
-      ← list.append_assoc, ← list.append_assoc
+      ←list.reverse_append_append, ←list.reverse_append_append,
+      ←list.append_assoc, ←list.append_assoc
     ],
     congr,
     exact bef,
@@ -92,12 +92,12 @@ begin
   {
     have snd_from_r : r₀.output_string = r.output_string.reverse,
     {
-      rw ← r_from_r₀,
+      rw ←r_from_r₀,
       unfold reversal_grule,
       rw list.reverse_reverse,
     },
     rw snd_from_r,
-    rw ← list.reverse_append_append,
+    rw ←list.reverse_append_append,
     exact congr_arg list.reverse aft,
   },
 end
@@ -108,7 +108,7 @@ private lemma reversed_word_in_original_language {g : grammar T} {w : list T}
 begin
   unfold grammar_language at *,
   have almost_done := derives_reversed g (list.map symbol.terminal w) hyp,
-  rw ← list.map_reverse at almost_done,
+  rw ←list.map_reverse at almost_done,
   exact almost_done,
 end
 
@@ -120,7 +120,7 @@ theorem RE_of_reverse_RE (L : language T) :
   is_RE L  →  is_RE (reverse_lang L)  :=
 begin
   rintro ⟨g, hgL⟩,
-  rw ← hgL,
+  rw ←hgL,
 
   use reversal_grammar g,
   unfold reverse_lang,

@@ -133,14 +133,13 @@ begin
       },
       use u,
       use w,
-      repeat { rw list.append_nil at * },
       split,
       {
         exact bef,
       },
       dsimp,
-      rw ← list.append_assoc,
-      rw ← list.append_assoc,
+      rw ←list.append_assoc,
+      rw ←list.append_assoc,
       exact aft,
     },
     exact indu (list.map symbol.terminal w),
@@ -177,14 +176,14 @@ begin
       use w,
       split,
       {
-        rw ← new_rule_def at bef,
+        rw ←new_rule_def at bef,
         exact bef,
       },
       {
-        rw ← new_rule_def at aft,
+        rw ←new_rule_def at aft,
         dsimp at aft,
-        rw ← list.append_assoc at aft,
-        rw ← list.append_assoc at aft,
+        rw ←list.append_assoc at aft,
+        rw ←list.append_assoc at aft,
         exact aft,
       },
     },
@@ -197,7 +196,7 @@ theorem CS_subclass_Enumerable (L : language T) :
 begin
   rintro ⟨g, h⟩,
   use grammar_of_csg g,
-  rw ← h,
+  rw ←h,
   rw CS_language_eq_grammar_language,
 end
 

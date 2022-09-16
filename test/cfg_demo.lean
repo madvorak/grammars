@@ -147,7 +147,7 @@ begin
             have u_must : u = list.repeat a i,
             {
               dsimp at *,
-              rw ← S at *,
+              rw ←S at *,
               have indexS: (u ++ [S] ++ v).nth u.length = some S,
               {
                 rw list.append_assoc,
@@ -159,11 +159,11 @@ begin
               {
                 exfalso,
                 rw the_case at indexS,
-                rw ← (list.nth_take hlt) at indexS,
+                rw ←list.nth_take hlt at indexS,
                 rw list.take_append_of_le_length (le_of_eq (list.length_repeat a i).symm) at indexS,
                 rw list.take_repeat at indexS,
                 rw min_self at indexS,
-                rw ← list.length_repeat a i at hlt,
+                rw ←list.length_repeat a i at hlt,
                 have please : (list.repeat a i).nth_le u.length hlt = S,
                 {
                   rw list.nth_le_nth hlt at indexS,
@@ -183,10 +183,10 @@ begin
                   rw list.length_append at thelength,
                   rw list.append_assoc,
                   change u.length < (list.repeat a i ++ S :: list.repeat c i).length,
-                  rw ← thelength,
+                  rw ←thelength,
                   rw list.length_append,
                   dsimp,
-                  rw ← add_assoc,
+                  rw ←add_assoc,
                   apply lt_of_lt_of_le,
                   {
                     exact lt_add_one u.length,
@@ -194,7 +194,7 @@ begin
                   exact le_self_add,
                 },
                 change (list.repeat a i ++ ([S] ++ list.repeat c i)).nth u.length = some S at indexS,
-                rw ← list.append_assoc at indexS,
+                rw ←list.append_assoc at indexS,
                 rw list.nth_le_nth rightend at indexS,
                 injection indexS with continue,
                 have mala : (list.repeat a i ++ [S]).length ≤ u.length,
@@ -202,7 +202,7 @@ begin
                   rw list.length_append,
                   dsimp,
                   rw list.length_repeat a i,
-                  rw ← nat.succ_le_iff at hgt,
+                  rw ←nat.succ_le_iff at hgt,
                   apply hgt,
                 },
                 rw list.nth_le_append_right mala at continue,
@@ -218,7 +218,7 @@ begin
               rw u_must at the_case,
               rw list.append_assoc at the_case,
               rw list.append_right_inj (list.repeat a i) at the_case,
-              rw ← S at the_case,
+              rw ←S at the_case,
               rw list.append_right_inj [S] at the_case,
               exact the_case,
             },
@@ -230,7 +230,7 @@ begin
           rw add_comm,
           rw list.repeat_add,
           change z = list.repeat a i ++ [a] ++ [S] ++ ([c] ++ list.repeat c i),
-          rw ← list.append_assoc,
+          rw ←list.append_assoc,
           rw list.append_assoc (list.repeat a i) [a],
           rw list.append_assoc (list.repeat a i) ([a] ++ [S]),
           convert almost,
@@ -257,7 +257,7 @@ begin
               exfalso,
               rw hyp_bef at the_case,
               rw rule_in at *,
-              rw ← (list.nth_take hlt) at indexS,
+              rw ←list.nth_take hlt at indexS,
               simp at the_case,
               change u ++ ([S] ++ v) = list.repeat a i ++ ([S] ++ list.repeat c i) at the_case,
               rw list.append_assoc at indexS,
@@ -265,7 +265,7 @@ begin
               rw list.take_append_of_le_length (le_of_eq (list.length_repeat a i).symm) at indexS,
               rw list.take_repeat at indexS,
               rw min_self at indexS,
-              rw ← list.length_repeat a i at hlt,
+              rw ←list.length_repeat a i at hlt,
               have please : (list.repeat a i).nth_le u.length hlt = S,
               {
                 rw list.nth_le_nth hlt at indexS,
@@ -289,10 +289,10 @@ begin
                 rw list.length_append at thelength,
                 rw list.append_assoc,
                 change u.length < (list.repeat a i ++ S :: list.repeat c i).length,
-                rw ← thelength,
+                rw ←thelength,
                 rw list.length_append,
                 dsimp,
-                rw ← add_assoc,
+                rw ←add_assoc,
                 apply lt_of_lt_of_le,
                 {
                   exact lt_add_one u.length,
@@ -300,7 +300,7 @@ begin
                 exact le_self_add,
               },
               change (list.repeat a i ++ ([S] ++ list.repeat c i)).nth u.length = some S at indexS,
-              rw ← list.append_assoc at indexS,
+              rw ←list.append_assoc at indexS,
               rw list.nth_le_nth rightend at indexS,
               injection indexS with continue,
               have mala : (list.repeat a i ++ [S]).length ≤ u.length,
@@ -308,7 +308,7 @@ begin
                 rw list.length_append,
                 dsimp,
                 rw list.length_repeat a i,
-                rw ← nat.succ_le_iff at hgt,
+                rw ←nat.succ_le_iff at hgt,
                 apply hgt,
               },
               rw list.nth_le_append_right mala at continue,
@@ -347,7 +347,7 @@ begin
           cases case₁ with i the_case,
           rw the_case at hyp_bef,
           have contra := congr_arg (λ lis, R ∈ lis) hyp_bef,
-          rw ← R at contra,
+          rw ←R at contra,
           simp at contra,
           cases contra,
           {
@@ -389,7 +389,7 @@ begin
           cases foo with j y_eq,
           rw y_eq at hyp_bef,
           have contra := congr_arg (λ lis, S ∈ lis) hyp_bef,
-          rw ← S at contra,
+          rw ←S at contra,
           simp at contra,
           cases contra,
           {
@@ -446,7 +446,7 @@ begin
             cases @trichotomous ℕ (<) _ u.length (i + j) with hlt rest,
             {
               exfalso,
-              rw ← (list.nth_take hlt) at indexR,
+              rw ←list.nth_take hlt at indexR,
               have h_len : u.length < (list.repeat a i ++ list.repeat b j).length,
               {
                 rw list.length_append,
@@ -457,9 +457,9 @@ begin
               have propos : (list.repeat a i ++ list.repeat b j).nth_le u.length h_len = R,
               {
                 change list.repeat a i ++ (list.repeat b j ++ R :: list.repeat c (i + j)) = u ++ ([R] ++ v) at hyp_bef,
-                rw ← list.append_assoc u [R] v at hyp_bef,
-                rw ← hyp_bef at indexR,
-                rw ← list.append_assoc at indexR,
+                rw ←list.append_assoc u [R] v at hyp_bef,
+                rw ←hyp_bef at indexR,
+                rw ←list.append_assoc at indexR,
                 have take_beg : list.take (i + j) (list.repeat a i ++ list.repeat b j ++ R :: list.repeat c (i + j)) = (list.repeat a i ++ list.repeat b j),
                 {
                   have len_ij : (list.repeat a i ++ list.repeat b j).length = i + j,
@@ -513,12 +513,16 @@ begin
               exfalso,
               have yes_Rc : R ∈ list.repeat c (i + j),
               {
-                change list.repeat a i ++ (list.repeat b j ++ R :: list.repeat c (i + j)) = u ++ ([R] ++ v) at hyp_bef,
-                rw ← list.append_assoc u [R] v at hyp_bef,
-                rw ← hyp_bef at indexR,
-                rw ← list.append_assoc at indexR,
-                change (list.repeat a i ++ list.repeat b j ++ ([R] ++ list.repeat c (i + j))).nth u.length = some R at indexR,
-                rw ← list.append_assoc at indexR,
+                change
+                  list.repeat a i ++ (list.repeat b j ++ R :: list.repeat c (i + j)) = u ++ ([R] ++ v)
+                  at hyp_bef,
+                rw ←list.append_assoc u [R] v at hyp_bef,
+                rw ←hyp_bef at indexR,
+                rw ←list.append_assoc at indexR,
+                change
+                  (list.repeat a i ++ list.repeat b j ++ ([R] ++ list.repeat c (i + j))).nth u.length = some R
+                  at indexR,
+                rw ←list.append_assoc at indexR,
                 rw list.nth_append_right at indexR,
                 {
                   simp at indexR,
@@ -528,7 +532,9 @@ begin
                     have lengths_sum : u.length ≤ i + j + i + j,
                     {
                       let lengs := congr_arg list.length hyp_bef,
-                      repeat { rw list.length_append at lengs },
+                      repeat {
+                        rw list.length_append at lengs,
+                      },
                       rw list.length_repeat at lengs,
                       rw list.length_repeat at lengs,
                       simp at lengs,
@@ -559,7 +565,7 @@ begin
               },
               exact not_Rc yes_Rc,
             },
-            rw ← list.append_assoc at hyp_bef,
+            rw ←list.append_assoc at hyp_bef,
             have lenlen : (list.repeat a i ++ list.repeat b j).length = u.length,
             {
               rw list.length_append,
@@ -573,7 +579,7 @@ begin
           have v_eq : v = list.repeat c (i + j),
           {
             rw u_eq at hyp_bef,
-            rw ← list.append_assoc at hyp_bef,
+            rw ←list.append_assoc at hyp_bef,
             rw list.append_right_inj (list.repeat a i ++ list.repeat b j) at hyp_bef,
             symmetry,
             exact list.tail_eq_of_cons_eq hyp_bef,
@@ -595,7 +601,7 @@ begin
           },
           have cpp : list.repeat c (i + (j + 1)) = [c] ++ list.repeat c (i + j),
           {
-            rw ← add_assoc,
+            rw ←add_assoc,
             rw add_comm,
             rw list.repeat_add c 1 (i + j),
             refl,
@@ -686,11 +692,11 @@ begin
     use m,
     unfold anbmcnm,
     unfold a b c at keyprop,
-    rw ← list.map_repeat symbol.terminal a_ n at keyprop,
-    rw ← list.map_repeat symbol.terminal b_ m at keyprop,
-    rw ← list.map_repeat symbol.terminal c_ (n + m) at keyprop,
-    rw ← list.map_append at keyprop,
-    rw ← list.map_append at keyprop,
+    rw ←list.map_repeat symbol.terminal a_ n at keyprop,
+    rw ←list.map_repeat symbol.terminal b_ m at keyprop,
+    rw ←list.map_repeat symbol.terminal c_ (n + m) at keyprop,
+    rw ←list.map_append at keyprop,
+    rw ←list.map_append at keyprop,
 
     ext1 k,
     have kprop := congr_fun (congr_arg list.nth keyprop) k,
@@ -808,7 +814,7 @@ begin
         finish,
       },
       change CF_derives gramatika (list.repeat a n ++ ([R] ++ list.repeat c n)) (list.repeat a n ++ list.repeat b m ++ [R] ++ list.repeat c (n + m)),
-      rw ← list.append_assoc,
+      rw ←list.append_assoc,
       have cnm : list.repeat c (n + m) = list.repeat c m ++ list.repeat c n,
       {
         rw add_comm,

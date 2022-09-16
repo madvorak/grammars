@@ -152,7 +152,7 @@ begin
         by_contradiction contra,
         have yes_a : _a ∈ v ++ y,
         {
-          rw ← contra,
+          rw ←contra,
           apply list.nth_le_mem,
         },
         exact no_a yes_a,
@@ -165,12 +165,12 @@ begin
     cases first_letter_b_or_c with first_letter_b first_letter_c,
     {
       left,
-      rw ← first_letter_b,
+      rw ←first_letter_b,
       apply list.nth_le_mem,
     },
     {
       right,
-      rw ← first_letter_c,
+      rw ←first_letter_c,
       apply list.nth_le_mem,
     },
   },
@@ -182,7 +182,9 @@ begin
   {
     unfold list_n_times,
     simp [- list.append_assoc],
-    repeat { rw count_in_append },
+    repeat {
+      rw count_in_append,
+    },
     have rearrange :
       count_in u _a + (count_in v _a + count_in v _a) + count_in x _a + (count_in y _a + count_in y _a) + count_in z _a =
       (count_in u _a + count_in v _a + count_in x _a + count_in y _a + count_in z _a) + (count_in v _a + count_in y _a),
@@ -202,7 +204,9 @@ begin
       exact count_in_zero_of_notin no_a.right,
     },
     rw rearrange,
-    repeat { rw ← count_in_append },
+    repeat {
+      rw ←count_in_append,
+    },
     rw counted_a,
     rw count_in_append,
     rw zero_in_v,
@@ -215,7 +219,9 @@ begin
     {
       unfold list_n_times,
       simp [- list.append_assoc],
-      repeat { rw count_in_append },
+      repeat {
+        rw count_in_append,
+      },
       have big_equality :
         count_in u _b + (count_in v _b + count_in v _b) + count_in x _b + (count_in y _b + count_in y _b) + count_in z _b =
         (count_in u _b + count_in v _b + count_in x _b + count_in y _b + count_in z _b) + (count_in v _b + count_in y _b),
@@ -223,7 +229,9 @@ begin
         ring,
       },
       rw big_equality,
-      repeat { rw ← count_in_append },
+      repeat {
+        rw ←count_in_append,
+      },
       rw counted_b,
       have at_least_one_b : count_in (v ++ y) _b > 0,
       {
@@ -240,7 +248,9 @@ begin
     {
       unfold list_n_times,
       simp [- list.append_assoc],
-      repeat { rw count_in_append },
+      repeat {
+        rw count_in_append,
+      },
       have big_equality :
         count_in u _c + (count_in v _c + count_in v _c) + count_in x _c + (count_in y _c + count_in y _c) + count_in z _c =
         (count_in u _c + count_in v _c + count_in x _c + count_in y _c + count_in z _c) + (count_in v _c + count_in y _c),
@@ -248,7 +258,9 @@ begin
         ring,
       },
       rw big_equality,
-      repeat { rw ← count_in_append },
+      repeat {
+        rw ←count_in_append,
+      },
       rw counted_c,
       have at_least_one_c : count_in (v ++ y) _c > 0,
       {
@@ -293,14 +305,18 @@ begin
       have total_length_exactly : u.length + (v ++ x ++ y).length + z.length = 3 * n + 3,
       {
         have total_length := congr_arg list.length concatenating,
-        repeat { rw list.length_append at total_length },
-        repeat { rw list.length_repeat at total_length },
+        repeat {
+          rw list.length_append at total_length,
+        },
+        repeat {
+          rw list.length_repeat at total_length,
+        },
         ring_nf at total_length,
-        rw ← add_assoc x.length at total_length,
-        rw ← add_assoc v.length at total_length,
-        rw ← add_assoc v.length at total_length,
-        rw ← add_assoc u.length at total_length,
-        rw ← list.length_append_append at total_length,
+        rw ←add_assoc x.length at total_length,
+        rw ←add_assoc v.length at total_length,
+        rw ←add_assoc v.length at total_length,
+        rw ←add_assoc u.length at total_length,
+        rw ←list.length_append_append at total_length,
         exact total_length.symm,
       },
 
@@ -333,7 +349,9 @@ begin
             exact a_in_yz,
           },
         },
-        repeat { rw list.append_assoc at concatenating },
+        repeat {
+          rw list.append_assoc at concatenating,
+        },
         rcases list.nth_le_of_mem relaxed_a with ⟨nₐ, hnₐ, h_nthₐ⟩,
         obtain ⟨h_nth_a_pr, h_nth_a⟩ : ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
         {
@@ -346,7 +364,7 @@ begin
           rw list.length_append,
           linarith,
         },
-        rw ← list.nth_le_append_right le_add_self lt_len at h_nth_a,
+        rw ←list.nth_le_append_right le_add_self lt_len at h_nth_a,
 
         have orig_nth_le_eq_a :
           ∃ proofoo,
@@ -376,15 +394,15 @@ begin
           })
           (by {
             rw concatenating,
-            rw ← list.append_assoc x,
-            rw ← list.append_assoc v,
-            rw ← list.append_assoc v,
+            rw ←list.append_assoc x,
+            rw ←list.append_assoc v,
+            rw ←list.append_assoc v,
             exact lt_len,
           }) at rrr_nth_le_eq_a,
         
         have a_in_rb_rc : a_ ∈ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1)),
         {
-          rw ← rrr_nth_le_eq_a,
+          rw ←rrr_nth_le_eq_a,
           apply list.nth_le_mem,
         },
         rw list.mem_append at a_in_rb_rc,
@@ -425,7 +443,9 @@ begin
             },
           },
 
-          repeat { rw list.append_assoc at concatenating },
+          repeat {
+            rw list.append_assoc at concatenating,
+          },
           rcases list.nth_le_of_mem relaxed_c with ⟨m, hm, mth_is_c⟩,
 
           have m_big : m ≥ 2 * n + 2,
@@ -436,14 +456,16 @@ begin
                   m proofoo =
                 c_,
             {
-              repeat { rw ← list.append_assoc at concatenating },
+              repeat {
+                rw ←list.append_assoc at concatenating,
+              },
               rw concatenating,
               have m_small : m < (u ++ v ++ x ++ y ++ z).length,
               {
                 rw list.length_append,
                 linarith,
               },
-              rw ← @list.nth_le_append _ _ z m m_small at mth_is_c,
+              rw ←@list.nth_le_append _ _ z m m_small at mth_is_c,
               use m_small,
               exact mth_is_c,
             },
@@ -464,7 +486,7 @@ begin
             {
               have c_in_ra_rb : c_ ∈ (list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)),
               {
-                rw ← mth_is_c,
+                rw ←mth_is_c,
                 apply list.nth_le_mem,
               },
               rw list.mem_append at c_in_ra_rb,
@@ -483,9 +505,9 @@ begin
           linarith,
         },
 
-        rw ← list.length_append at total_length_exactly,
-        rw ← list.append_assoc at total_length_exactly,
-        rw ← list.append_assoc at total_length_exactly,
+        rw ←list.length_append at total_length_exactly,
+        rw ←list.append_assoc at total_length_exactly,
+        rw ←list.append_assoc at total_length_exactly,
         linarith,
       },
 
@@ -500,14 +522,18 @@ begin
     intros w w_in,
     cases w_in with w_n w_prop,
     rw w_prop,
-    repeat { rw count_in_append },
+    repeat {
+      rw count_in_append,
+    },
     rw count_in_repeat_neq neq_ab,
     rw count_in_repeat_neq neq_ba,
     rw count_in_repeat_neq neq_ca,
     rw count_in_repeat_neq neq_cb,
     rw count_in_repeat_eq a_,
     rw count_in_repeat_eq b_,
-    repeat { rw add_zero },
+    repeat {
+      rw add_zero,
+    },
     rw zero_add,
   },
   have counts_ac : ∀ w ∈ lang_eq_eq, count_in w a_ = count_in w c_,
@@ -515,20 +541,24 @@ begin
     intros w w_in,
     cases w_in with w_n w_prop,
     rw w_prop,
-    repeat { rw count_in_append },
+    repeat {
+      rw count_in_append,
+    },
     rw count_in_repeat_neq neq_ac,
     rw count_in_repeat_neq neq_ca,
     rw count_in_repeat_neq neq_ba,
     rw count_in_repeat_neq neq_bc,
     rw count_in_repeat_eq a_,
     rw count_in_repeat_eq c_,
-    repeat { rw add_zero },
+    repeat {
+      rw add_zero,
+    },
     rw zero_add,
   },
   have counts_bc : ∀ w ∈ lang_eq_eq, count_in w b_ = count_in w c_,
   {
     intros w w_in,
-    rw ← counts_ab w w_in,
+    rw ←counts_ab w w_in,
     exact counts_ac w w_in,
   },
   have counts_ba : ∀ w ∈ lang_eq_eq, count_in w b_ = count_in w a_,
@@ -556,8 +586,10 @@ begin
       count_in (list.repeat c_ (n+1)) s + count_in (v ++ y) s,
   {
     intro s,
-    rw ← concatenating,
-    repeat { rw count_in_append },
+    rw ←concatenating,
+    repeat {
+      rw count_in_append,
+    },
   },
   have counted_a : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) a_ = n + 1 + count_in (v ++ y) a_,
   {
@@ -771,7 +803,7 @@ begin
               {
                 exact nat.succ_le_iff.mp ihlen',
               },
-              rw ← tsub_lt_iff_left plength_big at ihlen'',
+              rw ←tsub_lt_iff_left plength_big at ihlen'',
               exact ihlen'',
             },
             rw list.nth_le_nth len_within_list,
@@ -903,7 +935,7 @@ begin
     intros w ass,
     cases ass with n hw,
     change CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w),
-    rw [hw, list.map_append, list.map_repeat, list.map_repeat, ← a, ← b],
+    rw [hw, list.map_append, list.map_repeat, list.map_repeat, ←a, ←b],
     clear hw,
     induction n with n ih,
     {
@@ -996,9 +1028,7 @@ begin
       rintro ⟨u, v, ⟨n, hu⟩, ⟨m, hv⟩, h⟩,
       use n,
       use m,
-      rw ← h,
-      rw ← hu,
-      rw ← hv,
+      rw [←h, ←hu, ←hv],
     },
   },
   rw concatenated,
@@ -1086,17 +1116,14 @@ begin
         use n,
       split,
         use m,
-      rw ← list.append_assoc,
+      rw ←list.append_assoc,
       exact hnm.symm,
     },
     {
       rintro ⟨u, v, ⟨n, hu⟩, ⟨m, hv⟩, h⟩,
       use n,
       use m,
-      rw ← h,
-      rw list.append_assoc,
-      rw ← hu,
-      rw ← hv,
+      rw [list.append_assoc, ←h, ←hu, ←hv],
     },
   },
   rw concatenated,
@@ -1138,7 +1165,7 @@ begin
 
   have n₁_le_len₁ : (n₁ - 1) < (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).length,
   {
-    rw ← list.append_assoc,
+    rw ←list.append_assoc,
     rw list.length_append,
     rw list.length_append,
     rw list.length_repeat,
@@ -1148,9 +1175,9 @@ begin
   },
   have n₁_le_len₂ : (n₁ - 1) < (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).length,
   {
-    rw ← list.append_assoc,
+    rw ←list.append_assoc,
     have equ_len := congr_arg list.length equ,
-    rw ← equ_len,
+    rw ←equ_len,
     rw list.append_assoc,
     exact n₁_le_len₁,
   },
@@ -1183,7 +1210,7 @@ begin
     by_contradiction,
     have a_in_bc : a_ ∈ (list.repeat b_ m₂ ++ list.repeat c_ m₂),
     {
-      rw ← h,
+      rw ←h,
       apply list.nth_le_mem,
     },
     rw list.mem_append at a_in_bc,
@@ -1198,7 +1225,7 @@ begin
     },
   },
   rw n₁th₁ at n₁th,
-  rw ← n₁th at n₁th₂,
+  rw ←n₁th at n₁th₂,
   exact false_of_ne n₁th₂,
 end
 
@@ -1216,7 +1243,7 @@ begin
 
   have n₂_le_len₂ : (n₂ - 1) < (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).length,
   {
-    rw ← list.append_assoc,
+    rw ←list.append_assoc,
     rw list.length_append,
     rw list.length_append,
     rw list.length_repeat,
@@ -1226,7 +1253,7 @@ begin
   },
   have n₂_le_len₁ : (n₂ - 1) < (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).length,
   {
-    rw ← list.append_assoc,
+    rw ←list.append_assoc,
     have equ_len := congr_arg list.length equ,
     rw equ_len,
     rw list.append_assoc,
@@ -1261,7 +1288,7 @@ begin
     by_contradiction,
     have a_in_bc : a_ ∈ (list.repeat b_ n₁ ++ list.repeat c_ m₁),
     {
-      rw ← h,
+      rw ←h,
       apply list.nth_le_mem,
     },
     rw list.mem_append at a_in_bc,
@@ -1358,8 +1385,8 @@ begin
         exact neq_ac,
       },
     },
-    rw ← rs_false,
-    rw ← a_in_equ,
+    rw ←rs_false,
+    rw ←a_in_equ,
     left,
     split,
     {
@@ -1441,20 +1468,28 @@ begin
   {
     have rev := congr_arg list.reverse equ,
     clear equ,
-    repeat { rw list.reverse_append at rev },
-    repeat { rw list.reverse_repeat at rev },
-    rw ← list.append_assoc at rev,
-    rw ← list.append_assoc at rev,
+    repeat {
+      rw list.reverse_append at rev,
+    },
+    repeat {
+      rw list.reverse_repeat at rev,
+    },
+    rw ←list.append_assoc at rev,
+    rw ←list.append_assoc at rev,
     exact doubled_le_singled m₂ n₂ m₁ n₁ m₂pos c_ b_ a_ neq_cb neq_ca rev.symm,
   },
   have m_le : m₁ ≤ m₂,
   {
     have rev := congr_arg list.reverse equ,
     clear equ,
-    repeat { rw list.reverse_append at rev },
-    repeat { rw list.reverse_repeat at rev },
-    rw ← list.append_assoc at rev,
-    rw ← list.append_assoc at rev,
+    repeat {
+      rw list.reverse_append at rev,
+    },
+    repeat {
+      rw list.reverse_repeat at rev,
+    },
+    rw ←list.append_assoc at rev,
+    rw ←list.append_assoc at rev,
     exact doubled_ge_singled m₂ n₂ m₁ n₁ m₁pos c_ b_ a_ neq_cb neq_ca rev.symm,
   },
   have eqn : n₁ = n₂ :=
@@ -1462,20 +1497,24 @@ begin
   have eqm : m₁ = m₂ :=
     le_antisymm m_le m_ge,
 
-  have sum_lens : n₁ + n₁ + m₁ = n₂ + m₂ + m₂,
+  have sum_lengs : n₁ + n₁ + m₁ = n₂ + m₂ + m₂,
   {
-    have lens := congr_arg list.length equ,
-    repeat { rw list.length_append at lens }, 
-    repeat { rw list.length_repeat at lens }, 
-    exact lens,
+    have lengs := congr_arg list.length equ,
+    repeat {
+      rw list.length_append at lengs,
+    },
+    repeat {
+      rw list.length_repeat at lengs,
+    },
+    exact lengs,
   },
   have eq₂ : n₂ = m₂,
   {
-    rw eqn at sum_lens,
-    rw eqm at sum_lens,
-    rw add_left_inj at sum_lens,
-    rw add_right_inj at sum_lens,
-    exact sum_lens,
+    rw eqn at sum_lengs,
+    rw eqm at sum_lengs,
+    rw add_left_inj at sum_lengs,
+    rw add_right_inj at sum_lengs,
+    exact sum_lengs,
   },
   rw eq₂ at h₂,
   use m₂,

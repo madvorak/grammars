@@ -173,7 +173,7 @@ begin
     rw bef at ok_input,
     rw aft,
     unfold good_string_ at ok_input ⊢,
-    rw ← preimage,
+    rw ←preimage,
     clear_except ok_input,
     rw list.forall_mem_append_append at ok_input ⊢,
     rw list.forall_mem_append_append at ok_input,
@@ -196,7 +196,7 @@ begin
     unfold lift_string_ at a_in_ros,
     rw list.mem_map at a_in_ros,
     rcases a_in_ros with ⟨s, trash, a_from_s⟩,
-    rw ← a_from_s,
+    rw ←a_from_s,
     cases s,
     {
       exfalso,
@@ -236,7 +236,7 @@ begin
     rw list.filter_map_append_append at sink_bef,
     rw list.filter_map_append_append at sink_bef,
     convert sink_bef;
-    rw ← preimage;
+    rw ←preimage;
     unfold lift_rule_;
     dsimp;
     clear_except correct_inverse,
@@ -267,7 +267,7 @@ begin
     unfold sink_string_ at *,
     rw list.filter_map_append_append at sink_aft,
     convert sink_aft,
-    rw ← preimage,
+    rw ←preimage,
     clear_except correct_inverse,
     unfold lift_rule_,
     dsimp,

@@ -113,7 +113,7 @@ begin
     rcases step_init with ⟨rul, rin, pre, pos, bef, aft⟩,
     have rule : rul = ((0 : fin 1), []),
     {
-      rw ← list.mem_singleton,
+      rw ←list.mem_singleton,
       exact rin,
     },
     have empty_surrounding : pre = [] ∧ pos = [],
@@ -164,7 +164,7 @@ begin
     have impossible_lengths := congr_arg list.length h,
     rw list.length at impossible_lengths,
     rw list.length_map at impossible_lengths,
-    rw ← impossible_lengths at w_not_nil,
+    rw ←impossible_lengths at w_not_nil,
     exact nat.lt_asymm w_not_nil w_not_nil,
   },
   {
@@ -213,7 +213,8 @@ begin
         {
           rw list.length_repeat,
         },
-        apply contr ∘ list.ext_le same_len,
+        apply contr,
+        apply list.ext_le same_len,
         push_neg at isnt,
         intros n n_small_left n_small_right,
         specialize isnt n n_small_left,
@@ -251,7 +252,9 @@ begin
         rcases orig with ⟨rul, rin, p, q, bef, aft⟩,
         rw aft,
         rw bef at ih,
-        repeat { rw list.mem_append at * },
+        repeat {
+          rw list.mem_append at *,
+        },
         push_neg,
         push_neg at ih,
         split, swap,
@@ -325,8 +328,8 @@ begin
       change
         symbol.terminal a :: (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]) =
         list.repeat (symbol.terminal a) n ++ ([symbol.terminal a] ++ [symbol.nonterminal 0]),
-      rw ← list.append_assoc,
-      rw ← list.cons_append,
+      rw ←list.append_assoc,
+      rw ←list.cons_append,
       apply congr_arg2, swap,
       {
         refl,

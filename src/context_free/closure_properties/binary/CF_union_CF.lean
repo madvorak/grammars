@@ -75,7 +75,7 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
     {
       exact r₁_in,
     },
-    rw ← r₁_convert_r,
+    rw ←r₁_convert_r,
     simp only [
       lift_rule, rule_of_rule₁, lift_string, lsTN_of_lsTN₁,
       prod.mk.inj_iff, eq_self_iff_true, true_and
@@ -86,7 +86,7 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
     exfalso,
     rw list.mem_map at r_in,
     rcases r_in with ⟨r₂, r₂_in, r₂_convert_r⟩,
-    rw ← r₂_convert_r at r_ntype,
+    rw ←r₂_convert_r at r_ntype,
     unfold rule_of_rule₂ at r_ntype,
     dsimp at r_ntype,
     cases r_ntype with n₁ contr,
@@ -168,7 +168,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
     exfalso,
     rw list.mem_map at r_in,
     rcases r_in with ⟨r₁, r₁_in, r₁_convert_r⟩,
-    rw ← r₁_convert_r at r_ntype,
+    rw ←r₁_convert_r at r_ntype,
     unfold rule_of_rule₁ at r_ntype,
     dsimp at r_ntype,
     cases r_ntype with n₂ contr,
@@ -183,7 +183,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
     {
       exact r₂_in,
     },
-    rw ← r₂_convert_r,
+    rw ←r₂_convert_r,
     simp only [
       lift_rule, rule_of_rule₂, lift_string, lsTN_of_lsTN₂,
       prod.mk.inj_iff, eq_self_iff_true, true_and
@@ -521,7 +521,7 @@ begin
   split,
   {
     by_contradiction,
-    rw ← list.length_eq_zero at h,
+    rw ←list.length_eq_zero at h,
     exact nat.not_succ_le_self 1 (by calc
       1 = (u.length + 1) + v.length : len
     ... = u.length + (1 + v.length) : add_assoc (list.length u) 1 (list.length v)
@@ -532,7 +532,7 @@ begin
   },
   {
     by_contradiction,
-    rw ← list.length_eq_zero at h,
+    rw ←list.length_eq_zero at h,
     exact nat.not_succ_le_self 1 (by calc
       1 = (u.length + 1) + v.length : len
     ... ≥ (u.length + 1) + 1        : add_le_add (le_of_eq rfl) (nat.one_le_iff_ne_zero.mpr h)
@@ -625,8 +625,8 @@ begin
     -- prove `L₁ + L₂ ⊇ `
     intros w hyp,
     rw language.mem_add,
-    rw ← h₁,
-    rw ← h₂,
+    rw ←h₁,
+    rw ←h₂,
     exact in_language_of_in_union w hyp,
   },
   {
@@ -634,11 +634,11 @@ begin
     intros w hyp,
     cases hyp with case₁ case₂,
     {
-      rw ← h₁ at case₁,
+      rw ←h₁ at case₁,
       exact in_union_of_in_first w case₁,
     },
     {
-      rw ← h₂ at case₂,
+      rw ←h₂ at case₂,
       exact in_union_of_in_second w case₂,
     },
   }

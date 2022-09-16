@@ -54,11 +54,11 @@ begin
   use x.reverse,
   split,
   {
-    rw ← list.reverse_singleton,
-    rw ← list.reverse_append_append,
+    rw ←list.reverse_singleton,
+    rw ←list.reverse_append_append,
     have fst_from_r : r₀.fst = r.fst,
     {
-      rw ← r_from_r₀,
+      rw ←r_from_r₀,
     },
     rw fst_from_r,
     exact congr_arg list.reverse bef,
@@ -66,11 +66,11 @@ begin
   {
     have snd_from_r : r₀.snd = r.snd.reverse,
     {
-      rw ← r_from_r₀,
+      rw ←r_from_r₀,
       rw list.reverse_reverse,
     },
     rw snd_from_r,
-    rw ← list.reverse_append_append,
+    rw ←list.reverse_append_append,
     exact congr_arg list.reverse aft,
   },
 end
@@ -95,7 +95,7 @@ theorem CF_of_reverse_CF (L : language T) :
   is_CF L  →  is_CF (reverse_lang L)  :=
 begin
   rintro ⟨g, hgL⟩,
-  rw ← hgL,
+  rw ←hgL,
 
   use reversal_grammar g,
   unfold reverse_lang,

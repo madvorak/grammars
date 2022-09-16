@@ -119,7 +119,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
     exfalso,
     rw list.mem_map at rin,
     rcases rin with ⟨r₂, r₂_in, r₂_lift⟩,
-    rw ← r₂_lift at rnt,
+    rw ←r₂_lift at rnt,
     unfold lift_rule_ at rnt,
     dsimp at rnt,
     have rnti := option.some.inj rnt,
@@ -211,7 +211,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
     exfalso,
     rw list.mem_map at rin,
     rcases rin with ⟨r₁, r₁_in, r₁_lift⟩,
-    rw ← r₁_lift at rnt,
+    rw ←r₁_lift at rnt,
     unfold lift_rule_ at rnt,
     dsimp at rnt,
     have rnti := option.some.inj rnt,
@@ -264,7 +264,9 @@ begin
     have bef_len := congr_arg list.length bef,
     clear_except bef_len,
     rw list.length_singleton at bef_len,
-    repeat { rw list.length_append at bef_len },
+    repeat {
+      rw list.length_append at bef_len
+    },
     rw list.length_singleton at bef_len,
     split,
     {
@@ -272,7 +274,7 @@ begin
       {
         linarith,
       },
-      rw ← list.length_eq_zero,
+      rw ←list.length_eq_zero,
       exact u_len_0,
     },
     {
@@ -280,7 +282,7 @@ begin
       {
         linarith,
       },
-      rw ← list.length_eq_zero,
+      rw ←list.length_eq_zero,
       exact v_len_0,
     },
   },
@@ -330,7 +332,7 @@ begin
     unfold sink_string_,
     rw list.filter_map_map,
     convert_to list.map symbol.terminal w = list.filter_map (option.some ∘ symbol.terminal) w,
-    rw ← list.filter_map_map,
+    rw ←list.filter_map_map,
     rw list.filter_map_some,
   },
   cases rin,
@@ -353,7 +355,7 @@ begin
     unfold sink_string_,
     rw list.filter_map_map,
     convert_to list.map symbol.terminal w = list.filter_map (option.some ∘ symbol.terminal) w,
-    rw ← list.filter_map_map,
+    rw ←list.filter_map_map,
     rw list.filter_map_some,
   },
   exfalso,
@@ -367,7 +369,7 @@ begin
   cases rin;
   rw list.mem_map at rin;
   rcases rin with ⟨ror, rri, rli⟩;
-  rw ← rli at bef;
+  rw ←rli at bef;
   clear_except bef,
 
   {
@@ -488,19 +490,19 @@ begin
   {
     intros w ass,
     rw language.mem_add,
-    rw ← h₁,
-    rw ← h₂,
+    rw ←h₁,
+    rw ←h₂,
     exact in_L₁_or_L₂_of_in_union ass,
   },
   {
     intros w ass,
     cases ass with case₁ case₂,
     {
-      rw ← h₁ at case₁,
+      rw ←h₁ at case₁,
       exact in_union_of_in_L₁ case₁,
     },
     {
-      rw ← h₂ at case₂,
+      rw ←h₂ at case₂,
       exact in_union_of_in_L₂ case₂,
     },
   },
