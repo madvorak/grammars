@@ -78,6 +78,9 @@ set_of (frammar_generates g)
 def is_RE (L : language T) : Prop :=
 ∃ g : grammar T, grammar_language g = L
 
+def is_fRE (L : language T) : Prop :=
+∃ g : frammar T, frammar_language g = L
+
 end grammar_definitions
 
 
@@ -96,19 +99,41 @@ frule.mk
   })
   r.output_string
 
-def grule_of_frule {N : Type} (r : frule T N) : grule T N :=
-let index := /-list.index_of r.marked_nt r.input_string-/ 42
-in grule.mk -- TODO
+def grule_of_frule {N : Type} (r : frule T N) /-[decidable_eq (symbol T N)]-/ : grule T N :=
+let index := 42 -- list.index_of (symbol.nonterminal r.marked_nt) r.input_string
+--let foo := list.nth_le_of_mem r.contains_nt
+in grule.mk
   (list.take index r.input_string)
   r.marked_nt
   (list.drop (index + 1) r.input_string)
   r.output_string
+
+lemma frule_of_grule_of_frule {N : Type} (r : frule T N) :
+  frule_of_grule (grule_of_frule r) = r :=
+sorry
+
+lemma grule_of_frule_of_grule {N : Type} (r : grule T N) :
+  grule_of_frule (frule_of_grule r) = r :=
+sorry
 
 def frammar_of_grammar (g : grammar T) : frammar T :=
 frammar.mk g.nt g.initial (list.map frule_of_grule g.rules)
 
 def grammar_of_frammar (g : frammar T) : grammar T :=
 grammar.mk g.nt g.initial (list.map grule_of_frule g.rules)
+
+lemma frammar_of_grammar_of_frammar (g : frammar T) :
+  frammar_of_grammar (grammar_of_frammar g) = g :=
+begin
+  cases g,
+  unfold frammar_of_grammar,
+  congr,
+  change list.map frule_of_grule (list.map grule_of_frule g_rules) = g_rules,
+  rw list.map_map,
+  apply list.map_id',
+  intro r,
+  apply frule_of_grule_of_frule,
+end
 
 lemma frammar_transforms_of_grammar_transforms (g : grammar T) (w₁ w₂ : list (symbol T g.nt)) :
   grammar_transforms g w₁ w₂  ↔  frammar_transforms (frammar_of_grammar g) w₁ w₂  :=
@@ -144,7 +169,32 @@ begin
   {
     rintro ⟨r, rin, u, v, bef, aft⟩,
     use grule_of_frule r,
-    sorry,
+    change r ∈ list.map _ _ at rin,
+    rw list.mem_map at rin,
+    rcases rin with ⟨r₀, rin₀, r_of_r₀⟩,
+    rw ←r_of_r₀ at *,
+    clear r_of_r₀,
+    rw grule_of_frule_of_grule,
+    split,
+    {
+      exact rin₀,
+    },
+    use u,
+    use v,
+    split,
+    {
+      repeat {
+        rw list.append_assoc,
+      },
+      rw ←list.append_assoc [symbol.nonterminal r₀.input_N] _ _,
+      rw ←list.append_assoc r₀.input_L _ _,
+      rw ←list.append_assoc r₀.input_L _ _,
+      rw ←list.append_assoc,
+      exact bef,
+    },
+    {
+      exact aft,
+    },
   },
 end
 
@@ -167,6 +217,58 @@ lemma frammar_derives_of_grammar_derives (g : grammar T) (v w : list (symbol T g
   grammar_derives g v w  ↔  frammar_derives (frammar_of_grammar g) v w  :=
 begin
   rw frammar_derives_of_grammar_derives' g,
+end
+
+lemma frammar_generates_of_grammar_generates' (g : grammar T) :
+  grammar_generates g = frammar_generates (frammar_of_grammar g) :=
+begin
+  ext w,
+  unfold grammar_generates,
+  unfold frammar_generates,
+  rw frammar_derives_of_grammar_derives',
+  refl,
+end
+
+lemma frammar_generates_of_grammar_generates (g : grammar T) (w : list T) :
+  grammar_generates g w  ↔  frammar_generates (frammar_of_grammar g) w  :=
+begin
+  rw frammar_generates_of_grammar_generates',
+end
+
+lemma frammar_language_of_grammar_language (g : grammar T) :
+  grammar_language g = frammar_language (frammar_of_grammar g) :=
+begin
+  unfold grammar_language,
+  unfold frammar_language,
+  rw frammar_generates_of_grammar_generates',
+end
+
+lemma is_fRE_of_is_RE (L : language T) :
+  is_RE L  ↔  is_fRE L  :=
+begin
+  unfold is_RE,
+  unfold is_fRE,
+  split,
+  {
+    rintro ⟨g, gL⟩,
+    use frammar_of_grammar g,
+    rw ←frammar_language_of_grammar_language,
+    exact gL,
+  },
+  {
+    rintro ⟨g, gL⟩,
+    use grammar_of_frammar g,
+    rw frammar_language_of_grammar_language,
+    rw frammar_of_grammar_of_frammar,
+    exact gL,
+  },
+end
+
+lemma is_fRE_of_is_RE' :
+  is_RE = @is_fRE T :=
+begin
+  ext L,
+  exact is_fRE_of_is_RE L,
 end
 
 end grammar_frammar
