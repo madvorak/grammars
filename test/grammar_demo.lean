@@ -81,69 +81,54 @@ private def R_BR   : pravidlo := grule.mk  [] R_ [] [B, R]
 private def XB_BXC : pravidlo := grule.mk [X] B_ [] [B, X, C]
 private def XC_CX  : pravidlo := grule.mk [X] C_ [] [C, X]
 private def CB_BC  : pravidlo := grule.mk [C] B_ [] [B, C]
-private def XR_X   : pravidlo := grule.mk [X] R_ [] [X]
+private def XR_R   : pravidlo := grule.mk [X] R_ [] [R]
 private def LB_bL  : pravidlo := grule.mk [L] B_ [] [b, L]
 private def L_K    : pravidlo := grule.mk  [] L_ [] [K]
 private def KC_cK  : pravidlo := grule.mk [K] C_ [] [c, K]
 private def KR_end : pravidlo := grule.mk [K] R_ [] []
 
 private def gr_mul : grammar abeceda :=
-grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, XB_BXC, XC_CX, CB_BC, XR_X, LB_bL, L_K, KC_cK, KR_end]
+grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, XB_BXC, XC_CX, CB_BC, XR_R, LB_bL, L_K, KC_cK, KR_end]
 
 
+private meta def in_list_try : tactic unit := `[
+  tactic.try `[apply list.mem_cons_self],
+  tactic.try `[apply list.mem_cons_of_mem]
+]
+
+private meta def grammar_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
+  apply grammar_deri_of_tran_deri,
+  tactic.use [rule],
+  split,
+  {
+    tactic.repeat in_list_try,
+  },
+  tactic.use [pref, post],
+  split;
+  refl
+]
+
+-- example 0 * 0 = 0
 example : grammar_generates gr_mul [] :=
 begin
-  unfold grammar_generates,
+  grammar_step ``(S_LR) ``([]) ``([]),
+  grammar_step ``(L_K) ``([]) ``([R]),
+  grammar_step ``(KR_end) ``([]) ``([]),
+  apply grammar_deri_self,
+end
 
-  apply grammar_deri_of_tran_deri,
-  {
-    use S_LR,
-    split,
-    {
-      apply list.mem_cons_self,
-    },
-    use [[], []],
-    split;
-    refl,
-  },
-  rw [list.nil_append, list.append_nil],
-
-  apply grammar_deri_of_tran_deri,
-  {
-    use L_K,
-    split,
-    {
-      repeat {
-        try {
-          apply list.mem_cons_self,
-        },
-        try {
-          apply list.mem_cons_of_mem,
-        },
-      },
-    },
-    use [[], [R]],
-    split;
-    refl,
-  },
-  rw list.nil_append,
-
-  apply grammar_deri_of_tran,
-  {
-    use KR_end,
-    split,
-    {
-      repeat {
-        try {
-          apply list.mem_cons_self,
-        },
-        try {
-          apply list.mem_cons_of_mem,
-        },
-      },
-    },
-    use [[], []],
-    split;
-    refl,
-  },
+-- example 1 * 1 = 1
+example : grammar_generates gr_mul [a_, b_, c_] :=
+begin
+  grammar_step ``(S_LR) ``([]) ``([]),
+  grammar_step ``(L_aLX) ``([]) ``([R]),
+  grammar_step ``(R_BR) ``([a, L, X]) ``([]),
+  grammar_step ``(XB_BXC) ``([a, L]) ``([R]),
+  grammar_step ``(XC_CX) ``([a, L, B]) ``([R]),
+  grammar_step ``(XR_R) ``([a, L, B, C]) ``([]),
+  grammar_step ``(LB_bL) ``([a]) ``([C, R]),
+  grammar_step ``(L_K) ``([a, b]) ``([C, R]),
+  grammar_step ``(KC_cK) ``([a, b]) ``([R]),
+  grammar_step ``(KR_end) ``([a, b, c]) ``([]),
+  apply grammar_deri_self,
 end
