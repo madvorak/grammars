@@ -54,7 +54,7 @@ L → aLX
           aaLXXR
 R → BR
           aaLXXBBBR
-XB → BXC
+XB → BCX
 XC → CX
 CB → BC
           aaLBBBCCCCCCXXR
@@ -72,13 +72,13 @@ KR → ∅
 0 * 0 = 0 goes S → LR → KR → ∅
 3 * 0 = 0 goes S → LR → aLXR → aaLXXR → aaaLXXXR → aaaLXXR → aaaLXR → aaaLR → aaaKR → aaa
 0 * 2 = 0 goes S → LR → LBR → LBBR → bLBR → bbLR → bbKR → bb
-1 * 1 = 1 goes S → LR → aLXR → aLXBR → aLBXCR → aLBCXR → aLBCR → abLCR → abKCR → abcKR → abc
+1 * 1 = 1 goes S → LR → aLXR → aLXBR → aLBCXR → aLBCR → abLCR → abKCR → abcKR → abc
 -/
 
 private def S_LR   : pravidlo := grule.mk  [] S_ [] [L, R]
 private def L_aLX  : pravidlo := grule.mk  [] L_ [] [a, L, X]
 private def R_BR   : pravidlo := grule.mk  [] R_ [] [B, R]
-private def XB_BXC : pravidlo := grule.mk [X] B_ [] [B, X, C]
+private def XB_BCX : pravidlo := grule.mk [X] B_ [] [B, C, X]
 private def XC_CX  : pravidlo := grule.mk [X] C_ [] [C, X]
 private def CB_BC  : pravidlo := grule.mk [C] B_ [] [B, C]
 private def XR_R   : pravidlo := grule.mk [X] R_ [] [R]
@@ -88,7 +88,7 @@ private def KC_cK  : pravidlo := grule.mk [K] C_ [] [c, K]
 private def KR_end : pravidlo := grule.mk [K] R_ [] []
 
 private def gr_mul : grammar abeceda :=
-grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, XB_BXC, XC_CX, CB_BC, XR_R, LB_bL, L_K, KC_cK, KR_end]
+grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, XB_BCX, XC_CX, CB_BC, XR_R, LB_bL, L_K, KC_cK, KR_end]
 
 
 private meta def in_list_try : tactic unit := `[
@@ -123,8 +123,7 @@ begin
   grammar_step ``(S_LR) ``([]) ``([]),
   grammar_step ``(L_aLX) ``([]) ``([R]),
   grammar_step ``(R_BR) ``([a, L, X]) ``([]),
-  grammar_step ``(XB_BXC) ``([a, L]) ``([R]),
-  grammar_step ``(XC_CX) ``([a, L, B]) ``([R]),
+  grammar_step ``(XB_BCX) ``([a, L]) ``([R]),
   grammar_step ``(XR_R) ``([a, L, B, C]) ``([]),
   grammar_step ``(LB_bL) ``([a]) ``([C, R]),
   grammar_step ``(L_K) ``([a, b]) ``([C, R]),
@@ -139,14 +138,12 @@ begin
   grammar_step ``(S_LR) ``([]) ``([]),
   grammar_step ``(L_aLX) ``([]) ``([R]),
   grammar_step ``(R_BR) ``([a, L, X]) ``([]),
-  grammar_step ``(L_aLX) ``([a]) ``([X, B, R]), -- aaLXXBR
-  grammar_step ``(XB_BXC) ``([a, a, L, X]) ``([R]), -- aaLXBXCR
-  grammar_step ``(XC_CX) ``([a, a, L, X, B]) ``([R]), -- aaLXBCXR
-  grammar_step ``(XR_R) ``([a, a, L, X, B, C]) ``([]), -- aaLXBCR
-  grammar_step ``(XB_BXC) ``([a, a, L]) ``([C, R]), -- aaLBXCCR
-  grammar_step ``(XC_CX) ``([a, a, L, B]) ``([C, R]), -- aaLBCXCR
-  grammar_step ``(XC_CX) ``([a, a, L, B, C]) ``([R]), -- aaLBCCXR
-  grammar_step ``(XR_R) ``([a, a, L, B, C, C]) ``([]), -- aaLBCCR
+  grammar_step ``(L_aLX) ``([a]) ``([X, B, R]),
+  grammar_step ``(XB_BCX) ``([a, a, L, X]) ``([R]),
+  grammar_step ``(XR_R) ``([a, a, L, X, B, C]) ``([]),
+  grammar_step ``(XB_BCX) ``([a, a, L]) ``([C, R]),
+  grammar_step ``(XC_CX) ``([a, a, L, B, C]) ``([R]),
+  grammar_step ``(XR_R) ``([a, a, L, B, C, C]) ``([]),
   grammar_step ``(LB_bL) ``([a, a]) ``([C, C, R]),
   grammar_step ``(L_K) ``([a, a, b]) ``([C, C, R]),
   grammar_step ``(KC_cK) ``([a, a, b]) ``([C, R]),
