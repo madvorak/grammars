@@ -151,3 +151,43 @@ begin
   grammar_step ``(KR_end) ``([a, a, b, c, c]) ``([]),
   apply grammar_deri_self,
 end
+
+-- example 2 * 3 = 6
+example : grammar_generates gr_mul [a_, a_, b_, b_, b_, c_, c_, c_, c_, c_, c_] :=
+begin
+  grammar_step ``(S_LR) ``([]) ``([]),
+  grammar_step ``(L_aLX) ``([]) ``([R]),
+  grammar_step ``(L_aLX) ``([a]) ``([X, R]),
+  grammar_step ``(R_BR) ``([a, a, L, X, X]) ``([]),
+  grammar_step ``(R_BR) ``([a, a, L, X, X, B]) ``([]),
+  grammar_step ``(R_BR) ``([a, a, L, X, X, B, B]) ``([]), -- aaLXXBBBR
+  grammar_step ``(XB_BCX) ``([a, a, L, X]) ``([B, B, R]),
+  grammar_step ``(XB_BCX) ``([a, a, L, X, B, C]) ``([B, R]),
+  grammar_step ``(XB_BCX) ``([a, a, L, X, B, C, B, C]) ``([R]),
+  grammar_step ``(CB_BC) ``([a, a, L, X, B]) ``([C, B, C, X, R]),
+  grammar_step ``(CB_BC) ``([a, a, L, X, B, B, C]) ``([C, X, R]),
+  grammar_step ``(CB_BC) ``([a, a, L, X, B, B]) ``([C, C, X, R]), -- aaLXBBBCCCXR
+  grammar_step ``(XB_BCX) ``([a, a, L]) ``([B, B, C, C, C, X, R]),
+  grammar_step ``(XB_BCX) ``([a, a, L, B, C]) ``([B, C, C, C, X, R]),
+  grammar_step ``(XB_BCX) ``([a, a, L, B, C, B, C]) ``([C, C, C, X, R]),
+  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C]) ``([C, C, X, R]),
+  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C, C]) ``([C, X, R]),
+  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C, C, C]) ``([X, R]),
+  grammar_step ``(CB_BC) ``([a, a, L, B]) ``([C, B, C, C, C, C, X, X, R]),
+  grammar_step ``(CB_BC) ``([a, a, L, B, B, C]) ``([C, C, C, C, X, X, R]),
+  grammar_step ``(CB_BC) ``([a, a, L, B, B]) ``([C, C, C, C, C, X, X, R]), -- aaLBBB.C^6.XXR
+  grammar_step ``(LB_bL) ``([a, a]) ``([B, B, C, C, C, C, C, C, X, X, R]),
+  grammar_step ``(LB_bL) ``([a, a, b]) ``([B, C, C, C, C, C, C, X, X, R]),
+  grammar_step ``(LB_bL) ``([a, a, b, b]) ``([C, C, C, C, C, C, X, X, R]),
+  grammar_step ``(L_K) ``([a, a, b, b, b]) ``([C, C, C, C, C, C, X, X, R]), --aabbbK.C^6.XXR
+  grammar_step ``(KC_cK) ``([a, a, b, b, b]) ``([C, C, C, C, C, X, X, R]),
+  grammar_step ``(KC_cK) ``([a, a, b, b, b, c]) ``([C, C, C, C, X, X, R]),
+  grammar_step ``(KC_cK) ``([a, a, b, b, b, c, c]) ``([C, C, C, X, X, R]),
+  grammar_step ``(KC_cK) ``([a, a, b, b, b, c, c, c]) ``([C, C, X, X, R]),
+  grammar_step ``(KC_cK) ``([a, a, b, b, b, c, c, c, c]) ``([C, X, X, R]),
+  grammar_step ``(KC_cK) ``([a, a, b, b, b, c, c, c, c, c]) ``([X, X, R]),
+  grammar_step ``(XR_R) ``([a, a, b, b, b, c, c, c, c, c, c, K, X]) ``([]),
+  grammar_step ``(XR_R) ``([a, a, b, b, b, c, c, c, c, c, c, K]) ``([]),
+  grammar_step ``(KR_end) ``([a, a, b, b, b, c, c, c, c, c, c]) ``([]),
+  apply grammar_deri_self,
+end
