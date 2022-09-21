@@ -217,7 +217,7 @@ begin
 end
 
 
-/-- generate `a^4 . b^4 . c^4` by the grammar above -/
+/-- generate ` a^4 . b^4 . c^4 ` by the grammar above -/
 example : [Te.a_, Te.a_, Te.a_, Te.a_,
            Te.b_, Te.b_, Te.b_, Te.b_,
            Te.c_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=
