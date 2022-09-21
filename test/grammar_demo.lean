@@ -6,30 +6,29 @@ Grammar for unary multiplication
 example   2 * 3 = 6
 
           S
-S → LRE
-          LRE
+S → LR
+          LR
 L → aLX
-          aaLXXRE
+          aaLXXR
 R → BR
-          aaLXXBBBRE
-R → ∅
-          aaLXXBBBE
+          aaLXXBBBR
 XB → BXC
 XC → CX
 CB → BC
-          aaLBBBCCCCCCXXXE
-XE → E
-          aaLBBBCCCCCCE
+          aaLBBBCCCCCCXXR
+XR → R
+          aaLBBBCCCCCCR
 LB → bL
-          aabbbLCCCCCCE
+          aabbbLCCCCCCR
 L → K
-          aabbbKCCCCCCE
+          aabbbKCCCCCCR
 KC → cK
-          aabbbccccccKE
-KE → ∅
+          aabbbccccccKR
+KR → ∅
           aabbbcccccc
 
-0 * 0 = 0 goes S → LRE → LE → KE → ∅
-2 * 0 = 0 goes S → LRE → aLXRE → aaLXXRE → aaLXXE → aaLXE → aaLE → aaKE → aa
-0 * 2 = 0 goes S → LRE → LBRE → LBBRE → LBBEE → bLBE → bbLE → bbKE → bb
+0 * 0 = 0 goes S → LR → KR → ∅
+3 * 0 = 0 goes S → LR → aLXR → aaLXXR → aaaLXXXR → aaaLXXR → aaaLXR → aaaLR → aaaKR → aaa
+0 * 2 = 0 goes S → LR → LBR → LBBR → bLBR → bbLR → bbKR → bb
+1 * 1 = 1 goes S → LR → aLXR → aLXBR → aLBXCR → aLBCXR → aLBCR → abLCR → abKCR → abcKR → abc
 -/
