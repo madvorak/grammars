@@ -73,6 +73,15 @@ KR → ∅
 3 * 0 = 0 goes S → LR → aLXR → aaLXXR → aaaLXXXR → aaaLXXR → aaaLXR → aaaLR → aaaKR → aaa
 0 * 2 = 0 goes S → LR → LBR → LBBR → bLBR → bbLR → bbKR → bb
 1 * 1 = 1 goes S → LR → aLXR → aLXBR → aLBCXR → aLBCR → abLCR → abKCR → abcKR → abc
+
+TODO fix.
+This grammar generates a superset of the desired language.
+L → aLX
+LB → bL
+These two rules cannot share the same nonterminal L.
+R → BR
+XR → R
+These two rules cannot share the same nonterminal R.
 -/
 
 private def S_LR   : pravidlo := grule.mk  [] S_ [] [L, R]
