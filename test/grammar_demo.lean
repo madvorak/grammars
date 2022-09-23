@@ -12,6 +12,8 @@ inductive vnitrni
 | _R : vnitrni
 | _X : vnitrni
 | _B : vnitrni
+| _M : vnitrni
+| _E : vnitrni
 | _C : vnitrni
 | _K : vnitrni
 
@@ -24,6 +26,8 @@ private def L_ := vnitrni._L
 private def R_ := vnitrni._R
 private def X_ := vnitrni._X
 private def B_ := vnitrni._B
+private def M_ := vnitrni._M
+private def E_ := vnitrni._E
 private def C_ := vnitrni._C
 private def K_ := vnitrni._K
 
@@ -39,6 +43,8 @@ private def L : znak := symbol.nonterminal L_
 private def R : znak := symbol.nonterminal R_
 private def X : znak := symbol.nonterminal X_
 private def B : znak := symbol.nonterminal B_
+private def M : znak := symbol.nonterminal M_
+private def E : znak := symbol.nonterminal E_
 private def C : znak := symbol.nonterminal C_
 private def K : znak := symbol.nonterminal K_
 
@@ -54,50 +60,42 @@ L → aLX
           aaLXXR
 R → BR
           aaLXXBBBR
+L → M
+          aaMXXBBBR
+R → E
+          aaMXXBBBE
 XB → BCX
 XC → CX
 CB → BC
-          aaLBBBCCCCCCXXR
-XR → R
-          aaLBBBCCCCCCR
-LB → bL
-          aabbbLCCCCCCR
-L → K
-          aabbbKCCCCCCR
+          aaMBBBCCCCCCXXE
+XE → E
+          aaMBBBCCCCCCE
+MB → bM
+          aabbbMCCCCCCE
+M → K
+          aabbbKCCCCCCE
 KC → cK
-          aabbbccccccKR
-KR → ∅
+          aabbbccccccKE
+KE → ∅
           aabbbcccccc
-
-0 * 0 = 0 goes S → LR → KR → ∅
-3 * 0 = 0 goes S → LR → aLXR → aaLXXR → aaaLXXXR → aaaLXXR → aaaLXR → aaaLR → aaaKR → aaa
-0 * 2 = 0 goes S → LR → LBR → LBBR → bLBR → bbLR → bbKR → bb
-1 * 1 = 1 goes S → LR → aLXR → aLXBR → aLBCXR → aLBCR → abLCR → abKCR → abcKR → abc
-
-TODO fix.
-This grammar generates a superset of the desired language.
-L → aLX
-LB → bL
-These two rules cannot share the same nonterminal L.
-R → BR
-XR → R
-These two rules cannot share the same nonterminal R.
 -/
 
 private def S_LR   : pravidlo := grule.mk  [] S_ [] [L, R]
 private def L_aLX  : pravidlo := grule.mk  [] L_ [] [a, L, X]
 private def R_BR   : pravidlo := grule.mk  [] R_ [] [B, R]
+private def L_M    : pravidlo := grule.mk  [] L_ [] [M]
+private def R_E    : pravidlo := grule.mk  [] R_ [] [E]
 private def XB_BCX : pravidlo := grule.mk [X] B_ [] [B, C, X]
 private def XC_CX  : pravidlo := grule.mk [X] C_ [] [C, X]
 private def CB_BC  : pravidlo := grule.mk [C] B_ [] [B, C]
-private def XR_R   : pravidlo := grule.mk [X] R_ [] [R]      -- shortens the word
-private def LB_bL  : pravidlo := grule.mk [L] B_ [] [b, L]
-private def L_K    : pravidlo := grule.mk  [] L_ [] [K]
+private def XE_E   : pravidlo := grule.mk [X] E_ [] [E]      -- shortens the word
+private def MB_bM  : pravidlo := grule.mk [M] B_ [] [b, M]
+private def M_K    : pravidlo := grule.mk  [] M_ [] [K]
 private def KC_cK  : pravidlo := grule.mk [K] C_ [] [c, K]
-private def KR_nil : pravidlo := grule.mk [K] R_ [] []       -- shortens the word
+private def KE_nil : pravidlo := grule.mk [K] E_ [] []       -- shortens the word
 
 private def gr_mul : grammar abeceda :=
-grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, XB_BCX, XC_CX, CB_BC, XR_R, LB_bL, L_K, KC_cK, KR_nil]
+grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, L_M, R_E, XB_BCX, XC_CX, CB_BC, XE_E, MB_bM, M_K, KC_cK, KE_nil]
 
 
 meta def find_in_explicit_list : tactic unit := `[
@@ -123,8 +121,10 @@ private meta def grammar_step (rule : pexpr) (pref post : pexpr) : tactic unit :
 example : grammar_generates gr_mul [] :=
 begin
   grammar_step ``(S_LR) ``([]) ``([]),
-  grammar_step ``(L_K) ``([]) ``([R]),
-  grammar_step ``(KR_nil) ``([]) ``([]),
+  grammar_step ``(L_M) ``([]) ``([R]),
+  grammar_step ``(R_E) ``([M]) ``([]),
+  grammar_step ``(M_K) ``([]) ``([E]),
+  grammar_step ``(KE_nil) ``([]) ``([]),
   apply grammar_deri_self,
 end
 
@@ -134,12 +134,14 @@ begin
   grammar_step ``(S_LR) ``([]) ``([]),
   grammar_step ``(L_aLX) ``([]) ``([R]),
   grammar_step ``(R_BR) ``([a, L, X]) ``([]),
-  grammar_step ``(XB_BCX) ``([a, L]) ``([R]),
-  grammar_step ``(XR_R) ``([a, L, B, C]) ``([]),
-  grammar_step ``(LB_bL) ``([a]) ``([C, R]),
-  grammar_step ``(L_K) ``([a, b]) ``([C, R]),
-  grammar_step ``(KC_cK) ``([a, b]) ``([R]),
-  grammar_step ``(KR_nil) ``([a, b, c]) ``([]),
+  grammar_step ``(L_M) ``([a]) ``([X, B, R]),
+  grammar_step ``(R_E) ``([a, M, X, B]) ``([]),
+  grammar_step ``(XB_BCX) ``([a, M]) ``([E]),
+  grammar_step ``(XE_E) ``([a, M, B, C]) ``([]),
+  grammar_step ``(MB_bM) ``([a]) ``([C, E]),
+  grammar_step ``(M_K) ``([a, b]) ``([C, E]),
+  grammar_step ``(KC_cK) ``([a, b]) ``([E]),
+  grammar_step ``(KE_nil) ``([a, b, c]) ``([]),
   apply grammar_deri_self,
 end
 
@@ -150,56 +152,18 @@ begin
   grammar_step ``(L_aLX) ``([]) ``([R]),
   grammar_step ``(R_BR) ``([a, L, X]) ``([]),
   grammar_step ``(L_aLX) ``([a]) ``([X, B, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, X]) ``([R]),
-  grammar_step ``(XR_R) ``([a, a, L, X, B, C]) ``([]),
-  grammar_step ``(XB_BCX) ``([a, a, L]) ``([C, R]),
-  grammar_step ``(XC_CX) ``([a, a, L, B, C]) ``([R]),
-  grammar_step ``(XR_R) ``([a, a, L, B, C, C]) ``([]),
-  grammar_step ``(LB_bL) ``([a, a]) ``([C, C, R]),
-  grammar_step ``(L_K) ``([a, a, b]) ``([C, C, R]),
-  grammar_step ``(KC_cK) ``([a, a, b]) ``([C, R]),
-  grammar_step ``(KC_cK) ``([a, a, b, c]) ``([R]),
-  grammar_step ``(KR_nil) ``([a, a, b, c, c]) ``([]),
-  apply grammar_deri_self,
-end
-
--- example 2 * 3 = 6
-example : grammar_generates gr_mul [a_, a_, b_, b_, b_, c_, c_, c_, c_, c_, c_] :=
-begin
-  grammar_step ``(S_LR) ``([]) ``([]),
-  grammar_step ``(L_aLX) ``([]) ``([R]),
-  grammar_step ``(L_aLX) ``([a]) ``([X, R]),
-  grammar_step ``(R_BR) ``([a, a, L, X, X]) ``([]),
-  grammar_step ``(R_BR) ``([a, a, L, X, X, B]) ``([]),
-  grammar_step ``(R_BR) ``([a, a, L, X, X, B, B]) ``([]), -- aaLXXBBBR
-  grammar_step ``(XB_BCX) ``([a, a, L, X]) ``([B, B, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, X, B, C]) ``([B, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, X, B, C, B, C]) ``([R]),
-  grammar_step ``(CB_BC) ``([a, a, L, X, B]) ``([C, B, C, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, X, B, B, C]) ``([C, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, X, B, B]) ``([C, C, X, R]), -- aaLXBBBCCCXR
-  grammar_step ``(XB_BCX) ``([a, a, L]) ``([B, B, C, C, C, X, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, B, C]) ``([B, C, C, C, X, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, B, C, B, C]) ``([C, C, C, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C]) ``([C, C, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C, C]) ``([C, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C, C, C]) ``([X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, B]) ``([C, B, C, C, C, C, X, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, B, B, C]) ``([C, C, C, C, X, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, B, B]) ``([C, C, C, C, C, X, X, R]), -- aaLBBB.C^6.XXR
-  grammar_step ``(LB_bL) ``([a, a]) ``([B, B, C, C, C, C, C, C, X, X, R]),
-  grammar_step ``(LB_bL) ``([a, a, b]) ``([B, C, C, C, C, C, C, X, X, R]),
-  grammar_step ``(LB_bL) ``([a, a, b, b]) ``([C, C, C, C, C, C, X, X, R]),
-  grammar_step ``(L_K) ``([a, a, b, b, b]) ``([C, C, C, C, C, C, X, X, R]), --aabbbK.C^6.XXR
-  grammar_step ``(KC_cK) ``([a, a, b, b, b]) ``([C, C, C, C, C, X, X, R]),
-  grammar_step ``(KC_cK) ``([a, a, b, b, b, c]) ``([C, C, C, C, X, X, R]),
-  grammar_step ``(KC_cK) ``([a, a, b, b, b, c, c]) ``([C, C, C, X, X, R]),
-  grammar_step ``(KC_cK) ``([a, a, b, b, b, c, c, c]) ``([C, C, X, X, R]),
-  grammar_step ``(KC_cK) ``([a, a, b, b, b, c, c, c, c]) ``([C, X, X, R]),
-  grammar_step ``(KC_cK) ``([a, a, b, b, b, c, c, c, c, c]) ``([X, X, R]),
-  grammar_step ``(XR_R) ``([a, a, b, b, b, c, c, c, c, c, c, K, X]) ``([]),
-  grammar_step ``(XR_R) ``([a, a, b, b, b, c, c, c, c, c, c, K]) ``([]),
-  grammar_step ``(KR_nil) ``([a, a, b, b, b, c, c, c, c, c, c]) ``([]),
+  grammar_step ``(L_M) ``([a, a]) ``([X, X, B, R]),
+  grammar_step ``(R_E) ``([a, a, M, X, X, B]) ``([]),
+  grammar_step ``(XB_BCX) ``([a, a, M, X]) ``([E]),
+  grammar_step ``(XE_E) ``([a, a, M, X, B, C]) ``([]),
+  grammar_step ``(XB_BCX) ``([a, a, M]) ``([C, E]),
+  grammar_step ``(XC_CX) ``([a, a, M, B, C]) ``([E]),
+  grammar_step ``(XE_E) ``([a, a, M, B, C, C]) ``([]),
+  grammar_step ``(MB_bM) ``([a, a]) ``([C, C, E]),
+  grammar_step ``(M_K) ``([a, a, b]) ``([C, C, E]),
+  grammar_step ``(KC_cK) ``([a, a, b]) ``([C, E]),
+  grammar_step ``(KC_cK) ``([a, a, b, c]) ``([E]),
+  grammar_step ``(KE_nil) ``([a, a, b, c, c]) ``([]),
   apply grammar_deri_self,
 end
 
@@ -209,74 +173,76 @@ begin
   grammar_step ``(S_LR) ``([]) ``([]),
   grammar_step ``(L_aLX) ``([]) ``([R]),
   grammar_step ``(L_aLX) ``([a]) ``([X, R]),
-  grammar_step ``(R_BR) ``([a, a, L, X, X]) ``([]),
-  grammar_step ``(R_BR) ``([a, a, L, X, X, B]) ``([]),
-  grammar_step ``(R_BR) ``([a, a, L, X, X, B, B]) ``([]),
-  grammar_step ``(XB_BCX) ``([a, a, L, X]) ``([B, B, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, X, B, C]) ``([B, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, X, B, C, B, C]) ``([R]),
-  grammar_step ``(CB_BC) ``([a, a, L, X, B]) ``([C, B, C, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, X, B, B, C]) ``([C, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, X, B, B]) ``([C, C, X, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L]) ``([B, B, C, C, C, X, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, B, C]) ``([B, C, C, C, X, R]),
-  grammar_step ``(XB_BCX) ``([a, a, L, B, C, B, C]) ``([C, C, C, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C]) ``([C, C, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C, C]) ``([C, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, L, B, C, B, C, B, C, C, C]) ``([X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, B]) ``([C, B, C, C, C, C, X, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, B, B, C]) ``([C, C, C, C, X, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, L, B, B]) ``([C, C, C, C, C, X, X, R]), -- aaLBBB.C^6.XXR
-  grammar_step ``(L_aLX) ``([a, a]) ``([B, B, B, C, C, C, C, C, C, X, X, R]),
-  grammar_step ``(XB_BCX) ``([a, a, a, L]) ``([B, B, C, C, C, C, C, C, X, X, R]),
-  grammar_step ``(XB_BCX) ``([a, a, a, L, B, C]) ``([B, C, C, C, C, C, C, X, X, R]),
-  grammar_step ``(XB_BCX) ``([a, a, a, L, B, C, B, C]) ``([C, C, C, C, C, C, X, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, a, L, B, C, B, C, B, C]) ``([C, C, C, C, C, X, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, a, L, B, C, B, C, B, C, C]) ``([C, C, C, C, X, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, a, L, B, C, B, C, B, C, C, C]) ``([C, C, C, X, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, a, L, B, C, B, C, B, C, C, C, C]) ``([C, C, X, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, a, L, B, C, B, C, B, C, C, C, C, C]) ``([C, X, X, R]),
-  grammar_step ``(XC_CX) ``([a, a, a, L, B, C, B, C, B, C, C, C, C, C, C]) ``([X, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, a, L, B]) ``([C, B, C, C, C, C, C, C, C, X, X, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, a, L, B, B, C]) ``([C, C, C, C, C, C, C, X, X, X, R]),
-  grammar_step ``(CB_BC) ``([a, a, a, L, B, B]) ``([C, C, C, C, C, C, C, C, X, X, X, R]),
-  -- a^3.L.B^3.C^9.X^3.R
+  grammar_step ``(L_aLX) ``([a, a]) ``([X, X, R]),
+  grammar_step ``(R_BR) ``([a, a, a, L, X, X, X]) ``([]),
+  grammar_step ``(R_BR) ``([a, a, a, L, X, X, X, B]) ``([]),
+  grammar_step ``(R_BR) ``([a, a, a, L, X, X, X, B, B]) ``([]),
+  grammar_step ``(L_M) ``([a, a, a]) ``([X, X, X, B, B, B, R]),
+  grammar_step ``(R_E) ``([a, a, a, M, X, X, X, B, B, B]) ``([]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M, X, X]) ``([B, B, E]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M, X, X, B, C]) ``([B, E]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M, X, X, B, C, B, C]) ``([E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, X, X, B]) ``([C, B, C, X, E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, X, X, B, B, C]) ``([C, X, E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, X, X, B, B]) ``([C, C, X, E]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M, X]) ``([B, B, C, C, C, X, E]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M, X, B, C]) ``([B, C, C, C, X, E]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M, X, B, C, B, C]) ``([C, C, C, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, X, B, C, B, C, B, C]) ``([C, C, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, X, B, C, B, C, B, C, C]) ``([C, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, X, B, C, B, C, B, C, C, C]) ``([X, E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, X, B]) ``([C, B, C, C, C, C, X, X, E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, X, B, B, C]) ``([C, C, C, C, X, X, E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, X, B, B]) ``([C, C, C, C, C, X, X, E]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M]) ``([B, B, C, C, C, C, C, C, X, X, E]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M, B, C]) ``([B, C, C, C, C, C, C, X, X, E]),
+  grammar_step ``(XB_BCX) ``([a, a, a, M, B, C, B, C]) ``([C, C, C, C, C, C, X, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, B, C, B, C, B, C]) ``([C, C, C, C, C, X, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, B, C, B, C, B, C, C]) ``([C, C, C, C, X, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, B, C, B, C, B, C, C, C]) ``([C, C, C, X, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, B, C, B, C, B, C, C, C, C]) ``([C, C, X, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, B, C, B, C, B, C, C, C, C, C]) ``([C, X, X, E]),
+  grammar_step ``(XC_CX) ``([a, a, a, M, B, C, B, C, B, C, C, C, C, C, C]) ``([X, X, E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, B]) ``([C, B, C, C, C, C, C, C, C, X, X, X, E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, B, B, C]) ``([C, C, C, C, C, C, C, X, X, X, E]),
+  grammar_step ``(CB_BC) ``([a, a, a, M, B, B]) ``([C, C, C, C, C, C, C, C, X, X, X, E]),
+  -- a^3.M.B^3.C^9.X^3.E
   apply grammar_deri_of_deri_deri,
   {
     change
       grammar_derives gr_mul
-        ([a, a, a, L, B, B, B, C, C, C, C, C, C, C, C, C] ++ [X, X, X, R])
-        ([a, a, a, L, B, B, B, C, C, C, C, C, C, C, C, C] ++ [R]),
+        ([a, a, a, M, B, B, B, C, C, C, C, C, C, C, C, C] ++ [X, X, X, E])
+        ([a, a, a, M, B, B, B, C, C, C, C, C, C, C, C, C] ++ [E]),
     apply grammar_derives_with_prefix,
-    grammar_step ``(XR_R) ``([X, X]) ``([]),
-    grammar_step ``(XR_R) ``([X]) ``([]),
-    grammar_step ``(XR_R) ``([]) ``([]),
+    grammar_step ``(XE_E) ``([X, X]) ``([]),
+    grammar_step ``(XE_E) ``([X]) ``([]),
+    grammar_step ``(XE_E) ``([]) ``([]),
     apply grammar_deri_self,
   },
   change
     grammar_derives gr_mul
-      ([a, a, a] ++ [L, B, B, B, C, C, C, C, C, C, C, C, C, R])
+      ([a, a, a] ++ [M, B, B, B, C, C, C, C, C, C, C, C, C, E])
       ([a, a, a] ++ [b, b, b, c, c, c, c, c, c, c, c, c]),
   apply grammar_derives_with_prefix,
-  grammar_step ``(LB_bL) ``([]) ``([B, B, C, C, C, C, C, C, C, C, C, R]),
-  grammar_step ``(LB_bL) ``([b]) ``([B, C, C, C, C, C, C, C, C, C, R]),
-  grammar_step ``(LB_bL) ``([b, b]) ``([C, C, C, C, C, C, C, C, C, R]),
+  grammar_step ``(MB_bM) ``([]) ``([B, B, C, C, C, C, C, C, C, C, C, E]),
+  grammar_step ``(MB_bM) ``([b]) ``([B, C, C, C, C, C, C, C, C, C, E]),
+  grammar_step ``(MB_bM) ``([b, b]) ``([C, C, C, C, C, C, C, C, C, E]),
   change
     grammar_derives gr_mul
-      ([b, b, b] ++ [L, C, C, C, C, C, C, C, C, C, R])
+      ([b, b, b] ++ [M, C, C, C, C, C, C, C, C, C, E])
       ([b, b, b] ++ [c, c, c, c, c, c, c, c, c]),
   apply grammar_derives_with_prefix,
-  grammar_step ``(L_K) ``([]) ``([C, C, C, C, C, C, C, C, C, R]),
-  grammar_step ``(KC_cK) ``([]) ``([C, C, C, C, C, C, C, C, R]),
-  grammar_step ``(KC_cK) ``([c]) ``([C, C, C, C, C, C, C, R]),
-  grammar_step ``(KC_cK) ``([c, c]) ``([C, C, C, C, C, C, R]),
-  grammar_step ``(KC_cK) ``([c, c, c]) ``([C, C, C, C, C, R]),
-  grammar_step ``(KC_cK) ``([c, c, c, c]) ``([C, C, C, C, R]),
-  grammar_step ``(KC_cK) ``([c, c, c, c, c]) ``([C, C, C, R]),
-  grammar_step ``(KC_cK) ``([c, c, c, c, c, c]) ``([C, C, R]),
-  grammar_step ``(KC_cK) ``([c, c, c, c, c, c, c]) ``([C, R]),
-  grammar_step ``(KC_cK) ``([c, c, c, c, c, c, c, c]) ``([R]),
-  grammar_step ``(KR_nil) ``([c, c, c, c, c, c, c, c, c]) ``([]),
+  grammar_step ``(M_K) ``([]) ``([C, C, C, C, C, C, C, C, C, E]),
+  grammar_step ``(KC_cK) ``([]) ``([C, C, C, C, C, C, C, C, E]),
+  grammar_step ``(KC_cK) ``([c]) ``([C, C, C, C, C, C, C, E]),
+  grammar_step ``(KC_cK) ``([c, c]) ``([C, C, C, C, C, C, E]),
+  grammar_step ``(KC_cK) ``([c, c, c]) ``([C, C, C, C, C, E]),
+  grammar_step ``(KC_cK) ``([c, c, c, c]) ``([C, C, C, C, E]),
+  grammar_step ``(KC_cK) ``([c, c, c, c, c]) ``([C, C, C, E]),
+  grammar_step ``(KC_cK) ``([c, c, c, c, c, c]) ``([C, C, E]),
+  grammar_step ``(KC_cK) ``([c, c, c, c, c, c, c]) ``([C, E]),
+  grammar_step ``(KC_cK) ``([c, c, c, c, c, c, c, c]) ``([E]),
+  grammar_step ``(KE_nil) ``([c, c, c, c, c, c, c, c, c]) ``([]),
   apply grammar_deri_self,
 end
 
@@ -351,66 +317,58 @@ end
 
 private lemma steps_quadratic (m n : ℕ) :
   grammar_derives gr_mul
-    (list.repeat a m ++ [L] ++ list.repeat X m ++ list.repeat B n ++ [R])
-    (list.repeat a m ++ [L] ++ list.repeat B n ++ list.repeat C (m * n) ++
-      list.repeat X m ++ [R]) :=
+    (list.repeat a m ++ [M] ++ list.repeat X m ++ list.repeat B n ++ [E])
+    (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++
+      list.repeat X m ++ [E]) :=
 begin
   sorry
 end
 
-private lemma steps_XR_R (m n : ℕ) :
+private lemma steps_XE_E (m n : ℕ) :
   grammar_derives gr_mul
-    (list.repeat a m ++ [L] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X m ++ [R])
-    (list.repeat a m ++ [L] ++ list.repeat B n ++ list.repeat C (m * n) ++ [R]) :=
+    (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X m ++ [E])
+    (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ [E]) :=
 begin
   sorry
 end
 
-/-
-private lemma steps_LB_bL (m n n' : ℕ) (le_n : n' ≤ n) :
+private lemma steps_MB_bM (m n : ℕ) :
   grammar_derives gr_mul
-    (list.repeat a m ++ [L] ++ list.repeat B n ++ list.repeat C (m * n) ++ [R])
-    (list.repeat a m ++ list.repeat b n' ++ [L] ++ list.repeat B (n - n') ++
-      list.repeat C (m * n) ++ [R]) :=
-begin
-  sorry
-end-/
-
-private lemma steps_LB_bL (m n : ℕ) :
-  grammar_derives gr_mul
-    (list.repeat a m ++ [L] ++ list.repeat B n ++ list.repeat C (m * n) ++ [R])
-    (list.repeat a m ++ list.repeat b n ++ [L] ++ list.repeat C (m * n) ++ [R]) :=
+    (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ [E])
+    (list.repeat a m ++ list.repeat b n ++ [M] ++ list.repeat C (m * n) ++ [E]) :=
 begin
   sorry
 end
 
 private lemma steps_KC_cK (m n : ℕ) :
   grammar_derives gr_mul
-    (list.repeat a m ++ list.repeat b n ++ [K] ++ list.repeat C (m * n) ++ [R])
-    (list.repeat a m ++ list.repeat b n ++ list.repeat c (m * n) ++ [K] ++ [R]) :=
+    (list.repeat a m ++ list.repeat b n ++ [K] ++ list.repeat C (m * n) ++ [E])
+    (list.repeat a m ++ list.repeat b n ++ list.repeat c (m * n) ++ [K] ++ [E]) :=
 begin
   sorry
 end
 
 
--- example 2 * 3 = 6 reproved using new lemmata
-example : grammar_generates gr_mul [a_, a_, b_, b_, b_, c_, c_, c_, c_, c_, c_] :=
+-- example 3 * 3 = 9 reproved using new lemmata
+example : grammar_generates gr_mul [a_, a_, a_, b_, b_, b_, c_, c_, c_, c_, c_, c_, c_, c_, c_] :=
 begin
   grammar_step ``(S_LR) ``([]) ``([]),
-  apply grammar_deri_of_deri_deri (steps_L_aLX 2),
-  apply grammar_deri_of_deri_deri (steps_R_BR 2 3),
-  apply grammar_deri_of_deri_deri (steps_quadratic 2 3),
-  apply grammar_deri_of_deri_deri (steps_XR_R 2 3),
-  apply grammar_deri_of_deri_deri (steps_LB_bL 2 3),
-  grammar_step ``(L_K) ``([a, a, b, b, b]) ``([C, C, C, C, C, C, R]),
-  apply grammar_deri_of_deri_deri (steps_KC_cK 2 3),
+  apply grammar_deri_of_deri_deri (steps_L_aLX 3),
+  apply grammar_deri_of_deri_deri (steps_R_BR 3 3),
+  grammar_step ``(L_M) ``([a, a, a]) ``([X, X, X, B, B, B, R]),
+  grammar_step ``(R_E) ``([a, a, a, M, X, X, X, B, B, B]) ``([]),
+  apply grammar_deri_of_deri_deri (steps_quadratic 3 3),
+  apply grammar_deri_of_deri_deri (steps_XE_E 3 3),
+  apply grammar_deri_of_deri_deri (steps_MB_bM 3 3),
+  grammar_step ``(M_K) ``([a, a, a, b, b, b]) ``([C, C, C, C, C, C, C, C, C, E]),
+  apply grammar_deri_of_deri_deri (steps_KC_cK 3 3),
   apply grammar_deri_of_tran,
-  use KR_nil,
+  use KE_nil,
   split,
   {
     find_in_explicit_list,
   },
-  use [[a, a, b, b, b, c, c, c, c, c, c], []],
+  use [[a, a, a, b, b, b, c, c, c, c, c, c, c, c, c], []],
   split;
   refl,
 end
@@ -421,13 +379,15 @@ begin
   grammar_step ``(S_LR) ``([]) ``([]),
   apply grammar_deri_of_deri_deri (steps_L_aLX 19),
   apply grammar_deri_of_deri_deri (steps_R_BR 19 21),
+  grammar_step ``(L_M) ``(list.repeat a 19) ``(list.repeat X 19 ++ list.repeat B 21 ++ [R]),
+  grammar_step ``(R_E) ``(list.repeat a 19 ++ [M] ++ list.repeat X 19 ++ list.repeat B 21) ``([]),
   apply grammar_deri_of_deri_deri (steps_quadratic 19 21),
-  apply grammar_deri_of_deri_deri (steps_XR_R 19 21),
-  apply grammar_deri_of_deri_deri (steps_LB_bL 19 21),
-  grammar_step ``(L_K) ``((list.repeat a 19 ++ list.repeat b 21)) ``(list.repeat C 399 ++ [R]),
+  apply grammar_deri_of_deri_deri (steps_XE_E 19 21),
+  apply grammar_deri_of_deri_deri (steps_MB_bM 19 21),
+  grammar_step ``(M_K) ``((list.repeat a 19 ++ list.repeat b 21)) ``(list.repeat C 399 ++ [E]),
   apply grammar_deri_of_deri_deri (steps_KC_cK 19 21),
   apply grammar_deri_of_tran,
-  use KR_nil,
+  use KE_nil,
   split,
   {
     find_in_explicit_list,
@@ -444,17 +404,43 @@ begin
   grammar_step ``(S_LR) ``([]) ``([]),
   apply grammar_deri_of_deri_deri (steps_L_aLX m),
   apply grammar_deri_of_deri_deri (steps_R_BR m n),
-  apply grammar_deri_of_deri_deri (steps_quadratic m n),
-  apply grammar_deri_of_deri_deri (steps_XR_R m n),
-  apply grammar_deri_of_deri_deri (steps_LB_bL m n),
   apply grammar_deri_of_tran_deri,
   {
-    use L_K,
+    use L_M,
     split,
     {
       find_in_explicit_list,
     },
-    use [list.repeat a m ++ list.repeat b n, list.repeat C (m * n) ++ [R]],
+    use [list.repeat a m, list.repeat X m ++ list.repeat B n ++ [R]],
+    split;
+    finish,
+  },
+  apply grammar_deri_of_tran_deri,
+  {
+    use R_E,
+    split,
+    {
+      find_in_explicit_list,
+    },
+    use [list.repeat a m ++ [M] ++ list.repeat X m ++ list.repeat B n, []],
+    split;
+    finish,
+  },
+  rw ←list.singleton_append,
+  repeat {
+    rw ←list.append_assoc,
+  },
+  apply grammar_deri_of_deri_deri (steps_quadratic m n),
+  apply grammar_deri_of_deri_deri (steps_XE_E m n),
+  apply grammar_deri_of_deri_deri (steps_MB_bM m n),
+  apply grammar_deri_of_tran_deri,
+  {
+    use M_K,
+    split,
+    {
+      find_in_explicit_list,
+    },
+    use [list.repeat a m ++ list.repeat b n, list.repeat C (m * n) ++ [E]],
     split;
     finish,
   },
@@ -463,12 +449,12 @@ begin
   },
   apply grammar_deri_of_deri_deri (steps_KC_cK m n),
   apply grammar_deri_of_tran,
-  use KR_nil,
+  use KE_nil,
   split,
   {
     find_in_explicit_list,
   },
-  unfold KR_nil,
+  unfold KE_nil,
   use [(list.repeat a m ++ list.repeat b n ++ list.repeat c (m * n)), []],
   split,
   {
