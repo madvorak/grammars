@@ -32,7 +32,6 @@ private def C_ := vnitrni._C
 private def K_ := vnitrni._K
 
 private def znak : Type := symbol abeceda vnitrni
-private def pravidlo : Type := grule abeceda vnitrni
 
 private def a : znak := symbol.terminal a_
 private def b : znak := symbol.terminal b_
@@ -79,6 +78,8 @@ KC → cK
 KE → ∅
           aabbbcccccc
 -/
+
+private def pravidlo : Type := grule abeceda vnitrni
 
 private def S_LR   : pravidlo := grule.mk  [] S_ [] [L, R]
 private def L_aLX  : pravidlo := grule.mk  [] L_ [] [a, L, X]
@@ -247,28 +248,6 @@ begin
 end
 
 
-lemma list_repeat_zero {α : Type*} (s : α) :
-  list.repeat s 0 = [] :=
-begin
-  refl,
-end
-
-lemma list_repeat_succ_eq_singleton_append {α : Type*} (s : α) (n : ℕ) :
-  list.repeat s n.succ = [s] ++ list.repeat s n :=
-begin
-  -- almost the same as `list.repeat_succ` which is a `rfl` lemma
-  refl,
-end
-
-lemma list_repeat_succ_eq_append_singleton {α : Type*} (s : α) (n : ℕ) :
-  list.repeat s n.succ = list.repeat s n ++ [s] :=
-begin
-  change list.repeat s (n + 1) = list.repeat s n ++ [s],
-  rw list.repeat_add,
-  refl,
-end
-
-
 private lemma steps_L_aLX (m : ℕ) :
   grammar_derives gr_mul [L, R] (list.repeat a m ++ [L] ++ list.repeat X m ++ [R]) :=
 begin
@@ -282,14 +261,14 @@ begin
   {
     find_in_explicit_list,
   },
-  use [list.repeat a k , list.repeat X k ++ [R]],
+  use [list.repeat a k, list.repeat X k ++ [R]],
   split,
   {
     simp [L, L_aLX, list.append_nil, list.append_assoc],
   },
   {
-    rw list_repeat_succ_eq_append_singleton a,
-    rw list_repeat_succ_eq_singleton_append X,
+    rw list.repeat_succ_eq_append_singleton a,
+    rw list.repeat_succ_eq_singleton_append X,
     simp [L, L_aLX, list.append_assoc],
   },
 end
@@ -316,7 +295,7 @@ begin
     simp [R, R_BR, list.append_nil],
   },
   {
-    rw list_repeat_succ_eq_append_singleton B,
+    rw list.repeat_succ_eq_append_singleton B,
     simp [R, R_BR, list.append_nil, list.append_assoc],
   },
 end
@@ -327,7 +306,76 @@ private lemma steps_quadratic (m n : ℕ) :
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++
       list.repeat X m ++ [E]) :=
 begin
-  sorry
+  apply grammar_derives_with_postfix,
+  repeat {
+    rw list.append_assoc (list.repeat a m ++ [M]),
+  },
+  apply grammar_derives_with_prefix,
+
+  have parametrized : ∀ q : ℕ,
+    grammar_derives gr_mul
+      (list.repeat X m ++ list.repeat B n)
+      (list.repeat X (m - q) ++ list.repeat B n ++ list.repeat C (q * n) ++ list.repeat X q),
+  {
+    intro,
+    induction q with k ih,
+    {
+      rw [nat.sub_zero, zero_mul, list.repeat_zero, list.repeat_zero, list.append_nil, list.append_nil],
+      apply grammar_deri_self,
+    },
+    apply grammar_deri_of_deri_deri ih,
+    have hardest_part :
+      grammar_derives gr_mul
+        (list.repeat X (m - k) ++ list.repeat B n ++ list.repeat C (k * n) ++ list.repeat X k)
+        (list.repeat X (m - k.succ) ++ list.repeat B n ++ [X] ++ list.repeat C (k.succ * n) ++ list.repeat X k),
+    {
+      sorry,
+    },
+    apply grammar_deri_of_deri_deri hardest_part,
+    rw list.append_assoc,
+    rw list.append_assoc,
+    rw list.append_assoc (list.repeat X (m - k.succ) ++ list.repeat B n),
+    apply grammar_derives_with_prefix,
+    have another_par : ∀ r p : ℕ,
+      grammar_derives gr_mul
+        ([X] ++ (list.repeat C r ++ list.repeat X k))
+        (list.repeat C p ++ [X] ++ list.repeat C (r - p) ++ list.repeat X k),
+    {
+      intros,
+      induction p with t ih,
+      {
+        rw [list.repeat_zero, list.nil_append, nat.sub_zero],
+        apply grammar_deri_self,
+      },
+      apply grammar_deri_of_deri_tran ih,
+      use XC_CX,
+      split,
+      {
+        find_in_explicit_list,
+      },
+      use [list.repeat C t, list.repeat C (r - t.succ) ++ list.repeat X k],
+      split,
+      {
+        sorry,
+      },
+      {
+        rw list.repeat_succ_eq_append_singleton,
+        rw list.append_assoc _ [C] [X],
+        rw ←list.append_assoc (list.repeat C t ++ XC_CX.output_string),
+        refl,
+      },
+    },
+    specialize another_par (k.succ * n) (k.succ * n),
+    rwa [
+      nat.sub_self,
+      list.repeat_zero,
+      list.append_nil,
+      list.append_assoc,
+      ←list.repeat_succ_eq_singleton_append
+    ] at another_par,
+  },
+  convert parametrized m,
+  rw [nat.sub_self, list.repeat_zero, list.nil_append],
 end
 
 private lemma steps_XE_E (m n : ℕ) :
@@ -335,12 +383,42 @@ private lemma steps_XE_E (m n : ℕ) :
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X m ++ [E])
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ [E]) :=
 begin
-  induction m with k ih,
+  have backwards : ∀ q : ℕ,
+    grammar_derives gr_mul
+      (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X m ++ [E])
+      (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X (m - q) ++ [E]),
   {
-    rw [list_repeat_zero X, list.append_nil],
-    apply grammar_deri_self,
+    intro,
+    induction q with k ih,
+    {
+      apply grammar_deri_self,
+    },
+    apply grammar_deri_of_deri_tran ih,
+    use XE_E,
+    split,
+    {
+      find_in_explicit_list,
+    },
+    use [list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X (m - k.succ), []],
+    split,
+    {
+      have detach_X : list.repeat X (m - k) = list.repeat X (m - k.succ) ++ [X],
+      {
+        have k_lt_m : k < m, sorry, -- TODO
+        have sub_suc_suc : m - k = (m - k.succ).succ, omega,
+        rw sub_suc_suc,
+        apply list.repeat_succ_eq_append_singleton,
+      },
+      rw detach_X,
+      finish,
+    },
+    {
+      rw list.append_nil,
+      refl,
+    },
   },
-  sorry
+  have almost := backwards m,
+  rwa [nat.sub_self, list.repeat_zero, list.append_nil] at almost,
 end
 
 private lemma steps_MB_bM (m n : ℕ) :

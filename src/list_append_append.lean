@@ -25,4 +25,27 @@ lemma forall_mem_append_append {p : α → Prop} :
   (∀ a ∈ x ++ y ++ z, p a)  ↔  (∀ a ∈ x, p a) ∧ (∀ a ∈ y, p a) ∧ (∀ a ∈ z, p a)  :=
 by rw [list.forall_mem_append, list.forall_mem_append, and_assoc]
 
+-- TODO move the following elsewhere
+
+lemma repeat_zero (s : α) :
+  list.repeat s 0 = [] :=
+begin
+  refl,
+end
+
+lemma repeat_succ_eq_singleton_append (s : α) (n : ℕ) :
+  list.repeat s n.succ = [s] ++ list.repeat s n :=
+begin
+  -- almost the same as `list.repeat_succ` which is a `rfl` lemma
+  refl,
+end
+
+lemma repeat_succ_eq_append_singleton (s : α) (n : ℕ) :
+  list.repeat s n.succ = list.repeat s n ++ [s] :=
+begin
+  change list.repeat s (n + 1) = list.repeat s n ++ [s],
+  rw list.repeat_add,
+  refl,
+end
+
 end list
