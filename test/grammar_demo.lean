@@ -247,10 +247,16 @@ begin
 end
 
 
+lemma list_repeat_zero {α : Type*} (s : α) :
+  list.repeat s 0 = [] :=
+begin
+  refl,
+end
+
 lemma list_repeat_succ_eq_singleton_append {α : Type*} (s : α) (n : ℕ) :
   list.repeat s n.succ = [s] ++ list.repeat s n :=
 begin
-  -- almost the name as `list.repeat_succ` which is a `rfl` lemma
+  -- almost the same as `list.repeat_succ` which is a `rfl` lemma
   refl,
 end
 
@@ -329,6 +335,11 @@ private lemma steps_XE_E (m n : ℕ) :
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X m ++ [E])
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ [E]) :=
 begin
+  induction m with k ih,
+  {
+    rw [list_repeat_zero X, list.append_nil],
+    apply grammar_deri_self,
+  },
   sorry
 end
 
@@ -348,8 +359,7 @@ begin
   sorry
 end
 
-
--- example 3 * 3 = 9 reproved using new lemmata
+-- example 3 * 3 = 9 reproved using the new lemmata
 example : grammar_generates gr_mul [a_, a_, a_, b_, b_, b_, c_, c_, c_, c_, c_, c_, c_, c_, c_] :=
 begin
   grammar_step ``(S_LR) ``([]) ``([]),
@@ -373,26 +383,26 @@ begin
   refl,
 end
 
--- example 19 * 21 = 399
-example : grammar_generates gr_mul (list.repeat a_ 19 ++ list.repeat b_ 21 ++ list.repeat c_ 399) :=
+-- example 7 * 11 = 77
+example : grammar_generates gr_mul (list.repeat a_ 7 ++ list.repeat b_ 11 ++ list.repeat c_ 77) :=
 begin
   grammar_step ``(S_LR) ``([]) ``([]),
-  apply grammar_deri_of_deri_deri (steps_L_aLX 19),
-  apply grammar_deri_of_deri_deri (steps_R_BR 19 21),
-  grammar_step ``(L_M) ``(list.repeat a 19) ``(list.repeat X 19 ++ list.repeat B 21 ++ [R]),
-  grammar_step ``(R_E) ``(list.repeat a 19 ++ [M] ++ list.repeat X 19 ++ list.repeat B 21) ``([]),
-  apply grammar_deri_of_deri_deri (steps_quadratic 19 21),
-  apply grammar_deri_of_deri_deri (steps_XE_E 19 21),
-  apply grammar_deri_of_deri_deri (steps_MB_bM 19 21),
-  grammar_step ``(M_K) ``((list.repeat a 19 ++ list.repeat b 21)) ``(list.repeat C 399 ++ [E]),
-  apply grammar_deri_of_deri_deri (steps_KC_cK 19 21),
+  apply grammar_deri_of_deri_deri (steps_L_aLX 7),
+  apply grammar_deri_of_deri_deri (steps_R_BR 7 11),
+  grammar_step ``(L_M) ``(list.repeat a 7) ``(list.repeat X 7 ++ list.repeat B 11 ++ [R]),
+  grammar_step ``(R_E) ``(list.repeat a 7 ++ [M] ++ list.repeat X 7 ++ list.repeat B 11) ``([]),
+  apply grammar_deri_of_deri_deri (steps_quadratic 7 11),
+  apply grammar_deri_of_deri_deri (steps_XE_E 7 11),
+  apply grammar_deri_of_deri_deri (steps_MB_bM 7 11),
+  grammar_step ``(M_K) ``((list.repeat a 7 ++ list.repeat b 11)) ``(list.repeat C 77 ++ [E]),
+  apply grammar_deri_of_deri_deri (steps_KC_cK 7 11),
   apply grammar_deri_of_tran,
   use KE_nil,
   split,
   {
     find_in_explicit_list,
   },
-  use [(list.repeat a 19 ++ list.repeat b 21 ++ list.repeat c 399), []],
+  use [(list.repeat a 7 ++ list.repeat b 11 ++ list.repeat c 77), []],
   split;
   refl,
 end
@@ -471,4 +481,21 @@ begin
   rw list.append_nil,
   rw list.append_nil,
   refl,
+end
+
+-- example 3 * 3 = 9 reproved using the new theorem
+example : grammar_generates gr_mul [a_, a_, a_, b_, b_, b_, c_, c_, c_, c_, c_, c_, c_, c_, c_] :=
+begin
+  exact multiplication_complete 3 3,
+end
+
+-- example 1001 * 587 = 587587
+example : grammar_generates gr_mul (list.repeat a_ 1001 ++ list.repeat b_ 587 ++ list.repeat c_ 587587) :=
+begin
+  have pe : 587587 = 1001 * 587,
+  {
+    norm_num,
+  },
+  rw pe,
+  apply multiplication_complete,
 end
