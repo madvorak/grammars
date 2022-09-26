@@ -34,7 +34,7 @@ begin
     use (S_, [a, S, c]),
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[], []],
     simp,
@@ -45,7 +45,7 @@ begin
     use (S_, [a, S, c]),
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[a], [c]],
     rw S,
@@ -57,7 +57,7 @@ begin
     use (S_, [R]),
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[a, a], [c, c]],
     simp,
@@ -68,7 +68,7 @@ begin
     use (R_, [b, R, c]),
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[a, a], [c, c]],
     rw R,
@@ -80,7 +80,7 @@ begin
     use (R_, []),
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[a, a, b], [c, c, c]],
     repeat { try {split}, try {refl} },
@@ -746,7 +746,7 @@ begin
       use (S_, [a, S, c]),
       split,
       {
-        apply list.mem_cons_self,
+        in_list_explicit,
       },
       use (list.repeat a n'),
       use (list.repeat c n'),
@@ -770,9 +770,7 @@ begin
       use (R_, [b, R, c]),
       split,
       {
-        apply list.mem_cons_of_mem,
-        apply list.mem_cons_of_mem,
-        apply list.mem_cons_self,
+        in_list_explicit,
       },
       use (list.repeat b m'),
       use (list.repeat c m'),
@@ -792,13 +790,12 @@ begin
         ((list.repeat a n) ++ [S] ++ (list.repeat c n))
         ((list.repeat a n) ++ [R] ++ (list.repeat c n)),
       {
-        apply CF_derives_with_prefix_and_postfix,
+        apply CF_deri_with_prefix_and_postfix,
         apply CF_deri_of_tran,
         use (S_, [R]),
         split,
         {
-          apply list.mem_cons_of_mem,
-          apply list.mem_cons_self,
+          in_list_explicit,
         },
         use [[], []],
         split;
@@ -827,16 +824,13 @@ begin
         simp only [list.append_assoc],
       },
       rw rebra,
-      apply CF_derives_with_prefix_and_postfix,
+      apply CF_deri_with_prefix_and_postfix,
       exact epoch_b m,
     },
     use (R_, []),
     split,
     {
-      apply list.mem_cons_of_mem,
-      apply list.mem_cons_of_mem,
-      apply list.mem_cons_of_mem,
-      apply list.mem_cons_self,
+      in_list_explicit,
     },
     use (list.repeat a n ++ list.repeat b m),
     use list.repeat c (n + m),

@@ -1549,7 +1549,7 @@ begin
         (combined_grammar g₁ g₂)
         ([symbol.nonterminal (some (sum.inl g₁.initial))] ++ [symbol.nonterminal (some (sum.inr g₂.initial))])
         (list.map symbol.terminal u ++ [symbol.nonterminal (some (sum.inr g₂.initial))]),
-    apply CF_derives_with_postfix,
+    apply CF_deri_with_postfix,
 
     change CF_derives g₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal u) at hu,
     let gg₁ := g₁g g₁ g₂,
@@ -1575,7 +1575,7 @@ begin
     exact lift_deri gg₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal u) hu,
   },
   {
-    apply CF_derives_with_prefix,
+    apply CF_deri_with_prefix,
 
     change CF_derives g₂ [symbol.nonterminal g₂.initial] (list.map symbol.terminal v) at hv,
     let gg₂ := g₂g g₁ g₂,

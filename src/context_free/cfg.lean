@@ -81,7 +81,7 @@ lemma CF_tran_or_id_of_deri {u w : list (symbol T g.nt)} (ass : CF_derives g u w
 relation.refl_trans_gen.cases_head ass
 
 
-lemma CF_derives_with_prefix
+lemma CF_deri_with_prefix
     {w₁ w₂ : list (symbol T g.nt)}
     (pᵣ : list (symbol T g.nt))
     (ass : CF_derives g w₁ w₂) :
@@ -109,7 +109,7 @@ begin
   simp only [list.append_assoc],
 end
 
-lemma CF_derives_with_postfix
+lemma CF_deri_with_postfix
     {w₁ w₂ : list (symbol T g.nt)}
     (pₒ : list (symbol T g.nt))
     (ass : CF_derives g w₁ w₂) :
@@ -137,14 +137,14 @@ begin
   simp only [list.append_assoc],
 end
 
-lemma CF_derives_with_prefix_and_postfix
+lemma CF_deri_with_prefix_and_postfix
     {w₁ w₂ : list (symbol T g.nt)}
     (pᵣ pₒ : list (symbol T g.nt))
     (ass : CF_derives g w₁ w₂) :
   CF_derives g (pᵣ ++ w₁ ++ pₒ) (pᵣ ++ w₂ ++ pₒ) :=
 begin
-  apply CF_derives_with_postfix,
-  apply CF_derives_with_prefix,
+  apply CF_deri_with_postfix,
+  apply CF_deri_with_prefix,
   exact ass,
 end
 
@@ -303,7 +303,7 @@ begin
   rw CS_language_eq_grammar_language,
 end
 
-theorem CF_subclass_CS (L : language T) :
+theorem CF_subclass_CS {L : language T} :
   is_CF L → is_CS L :=
 begin
   rintro ⟨g, h⟩,
@@ -311,5 +311,9 @@ begin
   rw ←h,
   rw CF_language_eq_CS_language,
 end
+
+theorem CF_subclass_RE {L : language T} :
+  is_CF L → is_RE L :=
+CS_subclass_RE ∘ CF_subclass_CS
 
 end cfg_conversion

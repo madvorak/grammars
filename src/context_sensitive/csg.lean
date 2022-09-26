@@ -191,7 +191,7 @@ begin
   },
 end
 
-theorem CS_subclass_Enumerable (L : language T) :
+theorem CS_subclass_RE {L : language T} :
   is_CS L → is_RE L :=
 begin
   rintro ⟨g, h⟩,

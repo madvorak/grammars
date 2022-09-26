@@ -99,19 +99,14 @@ private def gr_mul : grammar abeceda :=
 grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, L_M, R_E, XB_BCX, XC_CX, CB_BC, XE_E, MB_bM, M_K, KC_cK, KE_nil]
 
 
-meta def find_in_explicit_list : tactic unit := `[
-  tactic.repeat `[
-    tactic.try `[apply list.mem_cons_self],
-    tactic.try `[apply list.mem_cons_of_mem]
-  ]
-]
+
 
 private meta def grammar_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
   apply grammar_deri_of_tran_deri,
   tactic.use [rule],
   split,
   {
-    find_in_explicit_list,
+    in_list_explicit,
   },
   tactic.use [pref, post],
   split;
@@ -214,7 +209,7 @@ begin
       grammar_derives gr_mul
         ([a, a, a, M, B, B, B, C, C, C, C, C, C, C, C, C] ++ [X, X, X, E])
         ([a, a, a, M, B, B, B, C, C, C, C, C, C, C, C, C] ++ [E]),
-    apply grammar_derives_with_prefix,
+    apply grammar_deri_with_prefix,
     grammar_step ``(XE_E) ``([X, X]) ``([]),
     grammar_step ``(XE_E) ``([X]) ``([]),
     grammar_step ``(XE_E) ``([]) ``([]),
@@ -224,7 +219,7 @@ begin
     grammar_derives gr_mul
       ([a, a, a] ++ [M, B, B, B, C, C, C, C, C, C, C, C, C, E])
       ([a, a, a] ++ [b, b, b, c, c, c, c, c, c, c, c, c]),
-  apply grammar_derives_with_prefix,
+  apply grammar_deri_with_prefix,
   grammar_step ``(MB_bM) ``([]) ``([B, B, C, C, C, C, C, C, C, C, C, E]),
   grammar_step ``(MB_bM) ``([b]) ``([B, C, C, C, C, C, C, C, C, C, E]),
   grammar_step ``(MB_bM) ``([b, b]) ``([C, C, C, C, C, C, C, C, C, E]),
@@ -232,7 +227,7 @@ begin
     grammar_derives gr_mul
       ([b, b, b] ++ [M, C, C, C, C, C, C, C, C, C, E])
       ([b, b, b] ++ [c, c, c, c, c, c, c, c, c]),
-  apply grammar_derives_with_prefix,
+  apply grammar_deri_with_prefix,
   grammar_step ``(M_K) ``([]) ``([C, C, C, C, C, C, C, C, C, E]),
   grammar_step ``(KC_cK) ``([]) ``([C, C, C, C, C, C, C, C, E]),
   grammar_step ``(KC_cK) ``([c]) ``([C, C, C, C, C, C, C, E]),
@@ -259,7 +254,7 @@ begin
   use L_aLX,
   split,
   {
-    find_in_explicit_list,
+    in_list_explicit,
   },
   use [list.repeat a k, list.repeat X k ++ [R]],
   split,
@@ -287,7 +282,7 @@ begin
   use R_BR,
   split,
   {
-    find_in_explicit_list,
+    in_list_explicit,
   },
   use [list.repeat a m ++ [L] ++ list.repeat X m ++ list.repeat B k, []],
   split,
@@ -306,11 +301,11 @@ private lemma steps_quadratic (m n : ℕ) :
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++
       list.repeat X m ++ [E]) :=
 begin
-  apply grammar_derives_with_postfix,
+  apply grammar_deri_with_postfix,
   repeat {
     rw list.append_assoc (list.repeat a m ++ [M]),
   },
-  apply grammar_derives_with_prefix,
+  apply grammar_deri_with_prefix,
 
   have parametrized : ∀ q : ℕ,
     grammar_derives gr_mul
@@ -335,7 +330,7 @@ begin
     rw list.append_assoc,
     rw list.append_assoc,
     rw list.append_assoc (list.repeat X (m - k.succ) ++ list.repeat B n),
-    apply grammar_derives_with_prefix,
+    apply grammar_deri_with_prefix,
     have another_par : ∀ r p : ℕ,
       grammar_derives gr_mul
         ([X] ++ (list.repeat C r ++ list.repeat X k))
@@ -351,7 +346,7 @@ begin
       use XC_CX,
       split,
       {
-        find_in_explicit_list,
+        in_list_explicit,
       },
       use [list.repeat C t, list.repeat C (r - t.succ) ++ list.repeat X k],
       split,
@@ -397,7 +392,7 @@ begin
     use XE_E,
     split,
     {
-      find_in_explicit_list,
+      in_list_explicit,
     },
     use [list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X (m - k.succ), []],
     split,
@@ -454,7 +449,7 @@ begin
   use KE_nil,
   split,
   {
-    find_in_explicit_list,
+    in_list_explicit,
   },
   use [[a, a, a, b, b, b, c, c, c, c, c, c, c, c, c], []],
   split;
@@ -478,7 +473,7 @@ begin
   use KE_nil,
   split,
   {
-    find_in_explicit_list,
+    in_list_explicit,
   },
   use [(list.repeat a 7 ++ list.repeat b 11 ++ list.repeat c 77), []],
   split;
@@ -497,7 +492,7 @@ begin
     use L_M,
     split,
     {
-      find_in_explicit_list,
+      in_list_explicit,
     },
     use [list.repeat a m, list.repeat X m ++ list.repeat B n ++ [R]],
     split;
@@ -508,7 +503,7 @@ begin
     use R_E,
     split,
     {
-      find_in_explicit_list,
+      in_list_explicit,
     },
     use [list.repeat a m ++ [M] ++ list.repeat X m ++ list.repeat B n, []],
     split;
@@ -526,7 +521,7 @@ begin
     use M_K,
     split,
     {
-      find_in_explicit_list,
+      in_list_explicit,
     },
     use [list.repeat a m ++ list.repeat b n, list.repeat C (m * n) ++ [E]],
     split;
@@ -540,7 +535,7 @@ begin
   use KE_nil,
   split,
   {
-    find_in_explicit_list,
+    in_list_explicit,
   },
   unfold KE_nil,
   use [(list.repeat a m ++ list.repeat b n ++ list.repeat c (m * n)), []],

@@ -261,7 +261,7 @@ begin
     refl,
   },
   apply grammar_deri_of_tran_deri step_head,
-  apply grammar_derives_with_prefix,
+  apply grammar_deri_with_prefix,
   apply ih,
   {
     intros t tin,
@@ -291,7 +291,7 @@ begin
   {
     clear_except hu,
     rw ←list.singleton_append,
-    apply grammar_derives_with_postfix,
+    apply grammar_deri_with_postfix,
     apply @grammar_deri_of_deri_deri _ _ _ (list.map (
         (@symbol.nonterminal T (big_grammar g₁ g₂).nt) ∘ sum.inr ∘ sum.inl
       ) u) _,
@@ -418,7 +418,7 @@ begin
   },
   {
     clear_except hv,
-    apply grammar_derives_with_prefix,
+    apply grammar_deri_with_prefix,
     apply @grammar_deri_of_deri_deri _ _ _ (list.map (
         (@symbol.nonterminal T (big_grammar g₁ g₂).nt) ∘ sum.inr ∘ sum.inr
       ) v) _,

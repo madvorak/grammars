@@ -991,7 +991,7 @@ begin
       CF_derives g
         ([a] ++ [S] ++ [b])
         ([a] ++ list.map symbol.terminal (list.repeat a_ n ++ list.repeat b_ n) ++ [b]),
-    apply CF_derives_with_prefix_and_postfix,
+    apply CF_deri_with_prefix_and_postfix,
     convert ih,
     rw [list.map_append, list.map_repeat, list.map_repeat, a, b],
   },

@@ -1,6 +1,5 @@
 import computability.language
 
-
 variables {T : Type}
 
 def reverse_lang (L : language T) : language T :=

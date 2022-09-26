@@ -66,7 +66,7 @@ begin
     use r₂,
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[], []],
     split;
@@ -78,7 +78,7 @@ begin
     use r₅,
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[a], []],
     split;
@@ -90,7 +90,7 @@ begin
     use r₅',
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[a], []],
     split;
@@ -102,7 +102,7 @@ begin
     use r₅'',
     split,
     {
-      finish,
+      in_list_explicit,
     },
     use [[a], []],
     split;
@@ -114,9 +114,10 @@ end
 private meta def CS_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
   apply CS_deri_of_tran_deri,
   tactic.use [rule],
-  simp only [list.mem_cons_iff, eq_self_iff_true, true_or, or_true],
   split,
-  exact trivial,
+  {
+    in_list_explicit,
+  },
   tactic.use [pref, post],
   split;
   refl

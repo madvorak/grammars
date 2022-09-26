@@ -1,6 +1,6 @@
 import logic.relation
 import computability.language
-import list_append_append
+import list_utils
 
 
 /-- Fundamental datatype; basically `τ ⊕ ν` (something like "Either tau nyy")
@@ -88,7 +88,7 @@ lemma grammar_tran_or_id_of_deri {u w : list (symbol T g.nt)} (ass : grammar_der
 relation.refl_trans_gen.cases_head ass
 
 
-lemma grammar_derives_with_prefix
+lemma grammar_deri_with_prefix
     {w₁ w₂ : list (symbol T g.nt)}
     (pᵣ : list (symbol T g.nt))
     (ass : grammar_derives g w₁ w₂) :
@@ -116,7 +116,7 @@ begin
   simp only [list.append_assoc],
 end
 
-lemma grammar_derives_with_postfix
+lemma grammar_deri_with_postfix
     {w₁ w₂ : list (symbol T g.nt)}
     (pₒ : list (symbol T g.nt))
     (ass : grammar_derives g w₁ w₂) :
@@ -144,14 +144,14 @@ begin
   simp only [list.append_assoc],
 end
 
-lemma grammar_derives_with_prefix_and_postfix
+lemma grammar_deri_with_prefix_and_postfix
     {w₁ w₂ : list (symbol T g.nt)}
     (pᵣ pₒ : list (symbol T g.nt))
     (ass : grammar_derives g w₁ w₂) :
   grammar_derives g (pᵣ ++ w₁ ++ pₒ) (pᵣ ++ w₂ ++ pₒ) :=
 begin
-  apply grammar_derives_with_postfix,
-  apply grammar_derives_with_prefix,
+  apply grammar_deri_with_postfix,
+  apply grammar_deri_with_prefix,
   exact ass,
 end
 
