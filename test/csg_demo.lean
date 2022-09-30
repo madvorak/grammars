@@ -64,10 +64,7 @@ begin
   apply CS_deri_of_tran_deri,
   {
     use r₂,
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[], []],
     split;
     refl,
@@ -76,10 +73,7 @@ begin
   apply CS_deri_of_tran_deri,
   {
     use r₅,
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[a], []],
     split;
     refl,
@@ -88,10 +82,7 @@ begin
   apply CS_deri_of_tran_deri,
   {
     use r₅',
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[a], []],
     split;
     refl,
@@ -100,10 +91,7 @@ begin
   apply CS_deri_of_tran,
   {
     use r₅'',
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[a], []],
     split;
     refl,
@@ -114,10 +102,7 @@ end
 private meta def CS_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
   apply CS_deri_of_tran_deri,
   tactic.use [rule],
-  split,
-  {
-    in_list_explicit,
-  },
+  split_ile,
   tactic.use [pref, post],
   split;
   refl

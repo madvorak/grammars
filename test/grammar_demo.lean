@@ -103,10 +103,7 @@ grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, L_M, R_E, XB_BCX, XC_CX, CB_BC, XE_E, 
 private meta def grammar_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
   apply grammar_deri_of_tran_deri,
   tactic.use [rule],
-  split,
-  {
-    in_list_explicit,
-  },
+  split_ile,
   tactic.use [pref, post],
   split;
   refl
@@ -256,10 +253,7 @@ begin
   },
   apply grammar_deri_of_deri_tran ih,
   use L_aLX,
-  split,
-  {
-    in_list_explicit,
-  },
+  split_ile,
   use [list.repeat a k, list.repeat X k ++ [R]],
   split,
   {
@@ -284,10 +278,7 @@ begin
   },
   apply grammar_deri_of_deri_tran ih,
   use R_BR,
-  split,
-  {
-    in_list_explicit,
-  },
+  split_ile,
   use [list.repeat a m ++ [L] ++ list.repeat X m ++ list.repeat B k, []],
   split,
   {
@@ -350,10 +341,7 @@ begin
       },
       apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le ass)),
       use XC_CX,
-      split,
-      {
-        in_list_explicit,
-      },
+      split_ile,
       use [list.repeat C t, list.repeat C (r - t.succ) ++ list.repeat X k],
       split,
       {
@@ -418,10 +406,7 @@ begin
     },
     apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le ass)),
     use XE_E,
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X (m - k.succ), []],
     split,
     {
@@ -466,10 +451,7 @@ begin
     },
     apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le ass)),
     use MB_bM,
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [list.repeat b q, list.repeat B (n - q.succ)],
     split,
     {
@@ -527,10 +509,7 @@ begin
     apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le ass)),
     clear ih,
     use KC_cK,
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [list.repeat c r, list.repeat C (q - r.succ)],
     split,
     {
@@ -581,10 +560,7 @@ begin
   apply grammar_deri_of_deri_deri (steps_KC_cK 3 3),
   apply grammar_deri_of_tran,
   use KE_nil,
-  split,
-  {
-    in_list_explicit,
-  },
+  split_ile,
   use [[a, a, a, b, b, b, c, c, c, c, c, c, c, c, c], []],
   split;
   refl,
@@ -605,10 +581,7 @@ begin
   apply grammar_deri_of_deri_deri (steps_KC_cK 7 11),
   apply grammar_deri_of_tran,
   use KE_nil,
-  split,
-  {
-    in_list_explicit,
-  },
+  split_ile,
   use [(list.repeat a 7 ++ list.repeat b 11 ++ list.repeat c 77), []],
   split;
   refl,
@@ -624,10 +597,7 @@ begin
   apply grammar_deri_of_tran_deri,
   {
     use L_M,
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [list.repeat a m, list.repeat X m ++ list.repeat B n ++ [R]],
     split;
     finish,
@@ -635,10 +605,7 @@ begin
   apply grammar_deri_of_tran_deri,
   {
     use R_E,
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [list.repeat a m ++ [M] ++ list.repeat X m ++ list.repeat B n, []],
     split;
     finish,
@@ -653,10 +620,7 @@ begin
   apply grammar_deri_of_tran_deri,
   {
     use M_K,
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [list.repeat a m ++ list.repeat b n, list.repeat C (m * n) ++ [E]],
     split;
     finish,
@@ -667,10 +631,7 @@ begin
   apply grammar_deri_of_deri_deri (steps_KC_cK m n),
   apply grammar_deri_of_tran,
   use KE_nil,
-  split,
-  {
-    in_list_explicit,
-  },
+  split_ile,
   unfold KE_nil,
   use [(list.repeat a m ++ list.repeat b n ++ list.repeat c (m * n)), []],
   split,

@@ -942,11 +942,7 @@ begin
       convert_to CF_derives g [symbol.nonterminal g.initial] [],
       apply CF_deri_of_tran,
       use (S_, ([] : list (symbol (fin 3) (fin 1)))),
-      split,
-      {
-        apply list.mem_cons_of_mem,
-        apply list.mem_cons_self,
-      },
+      split_ile,
       use [[], []],
       split;
       refl,
@@ -978,10 +974,7 @@ begin
     apply CF_deri_of_tran_deri,
     {
       use (S_, [a, S, b]),
-      split,
-      {
-        apply list.mem_cons_self,
-      },
+      split_ile,
       use [[], []],
       split;
       refl,
@@ -1019,9 +1012,13 @@ begin
         use list.repeat a_ n ++ list.repeat b_ n,
         use list.repeat c_ m,
       split,
+      {
         use n,
+      },
       split,
+      {
         use m,
+      },
       exact hnm.symm,
     },
     {
@@ -1113,9 +1110,13 @@ begin
         use list.repeat a_ n,
         use list.repeat b_ m ++ list.repeat c_ m,
       split,
+      {
         use n,
+      },
       split,
+      {
         use m,
+      },
       rw ←list.append_assoc,
       exact hnm.symm,
     },

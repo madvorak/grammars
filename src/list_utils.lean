@@ -7,6 +7,13 @@ meta def in_list_explicit : tactic unit := `[
   ]
 ]
 
+meta def split_ile : tactic unit := `[
+  split,
+  {
+    in_list_explicit,
+  }
+]
+
 namespace list
 
 variables {α β : Type*} {x y z : list α}

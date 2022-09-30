@@ -32,10 +32,7 @@ begin
   apply CF_deri_of_tran_deri,
   {
     use (S_, [a, S, c]),
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[], []],
     simp,
   },
@@ -43,10 +40,7 @@ begin
   apply CF_deri_of_tran_deri,
   {
     use (S_, [a, S, c]),
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[a], [c]],
     rw S,
     simp,
@@ -55,10 +49,7 @@ begin
   apply CF_deri_of_tran_deri,
   {
     use (S_, [R]),
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[a, a], [c, c]],
     simp,
   },
@@ -66,10 +57,7 @@ begin
   apply CF_deri_of_tran_deri,
   {
     use (R_, [b, R, c]),
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[a, a], [c, c]],
     rw R,
     simp,
@@ -78,10 +66,7 @@ begin
   apply CF_deri_of_tran,
   {
     use (R_, []),
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use [[a, a, b], [c, c, c]],
     repeat { try {split}, try {refl} },
   },
@@ -460,7 +445,9 @@ begin
                 rw ←list.append_assoc u [R] v at hyp_bef,
                 rw ←hyp_bef at indexR,
                 rw ←list.append_assoc at indexR,
-                have take_beg : list.take (i + j) (list.repeat a i ++ list.repeat b j ++ R :: list.repeat c (i + j)) = (list.repeat a i ++ list.repeat b j),
+                have take_beg :
+                  list.take (i + j) (list.repeat a i ++ list.repeat b j ++ R :: list.repeat c (i + j)) =
+                  (list.repeat a i ++ list.repeat b j),
                 {
                   have len_ij : (list.repeat a i ++ list.repeat b j).length = i + j,
                   {
@@ -729,11 +716,8 @@ begin
   },
   {
     -- prove `x ∈ CF_language gramatika ← x ∈ language_abc` here
-    intro h,
-    cases h with n hy,
-    cases hy with m hyp,
+    rintro ⟨n, m, hyp⟩,
     rw hyp,
-
     have epoch_a : ∀ i : ℕ, CF_derives gramatika [S] ((list.repeat a i) ++ [S] ++ (list.repeat c i)),
     {
       intro i,
@@ -744,21 +728,24 @@ begin
       apply CF_deri_of_deri_tran ih,
 
       use (S_, [a, S, c]),
-      split,
-      {
-        in_list_explicit,
-      },
-      use (list.repeat a n'),
-      use (list.repeat c n'),
+      split_ile,
+      use [list.repeat a n', list.repeat c n'],
       split,
       {
         refl,
       },
-      simp,
-      change list.repeat a (n' + 1) ++ S :: c :: list.repeat c n' = list.repeat a n' ++ a :: S :: c :: list.repeat c n',
-      simp [list.repeat_add, list.append_assoc],
+      rw [
+        list.repeat_succ_eq_append_singleton a,
+        list.repeat_succ_eq_singleton_append c,
+        list.append_assoc,
+        list.append_assoc,
+        ←list.append_assoc [S],
+        ←list.append_assoc [a],
+        ←list.append_assoc (list.repeat a n')
+      ],
+      refl,
     },
-    have epoch_b : ∀ i : ℕ, CF_derives gramatika [R] ((list.repeat b i) ++ [R] ++ (list.repeat c i)),
+    have epoch_b : ∀ j : ℕ, CF_derives gramatika [R] ((list.repeat b j) ++ [R] ++ (list.repeat c j)),
     {
       intro j,
       induction j with m' jh,
@@ -768,23 +755,31 @@ begin
       apply CF_deri_of_deri_tran jh,
 
       use (R_, [b, R, c]),
-      split,
-      {
-        in_list_explicit,
-      },
-      use (list.repeat b m'),
-      use (list.repeat c m'),
+      split_ile,
+      use [list.repeat b m', list.repeat c m'],
       split,
       {
         refl,
       },
-      simp,
-      change list.repeat b (m' + 1) ++ R :: c :: list.repeat c m' = list.repeat b m' ++ b :: R :: c :: list.repeat c m',
-      simp [list.repeat_add, list.append_assoc],
+      rw [
+        list.repeat_succ_eq_append_singleton b,
+        list.repeat_succ_eq_singleton_append c,
+        list.append_assoc,
+        list.append_assoc,
+        ←list.append_assoc [R],
+        ←list.append_assoc [b],
+        ←list.append_assoc (list.repeat b m')
+      ],
+      refl,
     },
-
-    fconstructor,
-      exact (list.repeat a n) ++ (list.repeat b m) ++ [R] ++ (list.repeat c (n+m)),
+    unfold CF_language,
+    rw set.mem_set_of_eq,
+    unfold CF_generates,
+    unfold CF_generates_str,
+    have obtain_sum :
+      CF_derives gramatika
+        [symbol.nonterminal gramatika.initial]
+        ((list.repeat a n) ++ (list.repeat b m) ++ [R] ++ (list.repeat c (n + m))),
     {
       have middle_step : CF_derives gramatika
         ((list.repeat a n) ++ [S] ++ (list.repeat c n))
@@ -793,10 +788,7 @@ begin
         apply CF_deri_with_prefix_and_postfix,
         apply CF_deri_of_tran,
         use (S_, [R]),
-        split,
-        {
-          in_list_explicit,
-        },
+        split_ile,
         use [[], []],
         split;
         refl,
@@ -810,7 +802,10 @@ begin
       {
         finish,
       },
-      change CF_derives gramatika (list.repeat a n ++ ([R] ++ list.repeat c n)) (list.repeat a n ++ list.repeat b m ++ [R] ++ list.repeat c (n + m)),
+      change
+        CF_derives gramatika
+          (list.repeat a n ++ ([R] ++ list.repeat c n))
+          (list.repeat a n ++ list.repeat b m ++ [R] ++ list.repeat c (n + m)),
       rw ←list.append_assoc,
       have cnm : list.repeat c (n + m) = list.repeat c m ++ list.repeat c n,
       {
@@ -827,20 +822,21 @@ begin
       apply CF_deri_with_prefix_and_postfix,
       exact epoch_b m,
     },
+    apply CF_deri_of_deri_tran obtain_sum,
     use (R_, []),
-    split,
-    {
-      in_list_explicit,
-    },
+    split_ile,
     use (list.repeat a n ++ list.repeat b m),
     use list.repeat c (n + m),
     split,
     {
       refl,
     },
-    simp,
     unfold anbmcnm,
-    simp,
+    rw list.map_append_append,
+    rw list.append_nil,
+    repeat {
+      rw list.map_repeat,
+    },
     refl,
   },
 end
