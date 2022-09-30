@@ -100,7 +100,6 @@ grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, L_M, R_E, XB_BCX, XC_CX, CB_BC, XE_E, 
 
 
 
-
 private meta def grammar_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
   apply grammar_deri_of_tran_deri,
   tactic.use [rule],
@@ -243,6 +242,11 @@ begin
 end
 
 
+private lemma sub_suc_suc {m n : ℕ} (n_lt_m : n < m) : m - n = (m - n.succ).succ :=
+begin
+  omega,
+end
+
 private lemma steps_L_aLX (m : ℕ) :
   grammar_derives gr_mul [L, R] (list.repeat a m ++ [L] ++ list.repeat X m ++ [R]) :=
 begin
@@ -319,6 +323,7 @@ begin
       apply grammar_deri_self,
     },
     apply grammar_deri_of_deri_deri ih,
+
     have hardest_part :
       grammar_derives gr_mul
         (list.repeat X (m - k) ++ list.repeat B n ++ list.repeat C (k * n) ++ list.repeat X k)
@@ -331,18 +336,18 @@ begin
     rw list.append_assoc,
     rw list.append_assoc (list.repeat X (m - k.succ) ++ list.repeat B n),
     apply grammar_deri_with_prefix,
-    have another_par : ∀ r p : ℕ,
+    have another_par : ∀ r p : ℕ, p ≤ r →
       grammar_derives gr_mul
         ([X] ++ (list.repeat C r ++ list.repeat X k))
         (list.repeat C p ++ [X] ++ list.repeat C (r - p) ++ list.repeat X k),
     {
-      intros,
+      intros r p ass,
       induction p with t ih,
       {
         rw [list.repeat_zero, list.nil_append, nat.sub_zero],
         apply grammar_deri_self,
       },
-      apply grammar_deri_of_deri_tran ih,
+      apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le ass)),
       use XC_CX,
       split,
       {
@@ -351,7 +356,29 @@ begin
       use [list.repeat C t, list.repeat C (r - t.succ) ++ list.repeat X k],
       split,
       {
-        sorry,
+        repeat {
+          rw list.append_assoc,
+        },
+        apply congr_arg2,
+        {
+          refl,
+        },
+        repeat {
+          rw ←list.append_assoc,
+        },
+        apply congr_arg2,
+        swap, {
+          refl,
+        },
+        change [X] ++ list.repeat C (r - t) = [X, C] ++ list.repeat C (r - t.succ),
+        have t_lt_r : t < r,
+        {
+          rwa nat.succ_le_iff at ass,
+        },
+        rw sub_suc_suc t_lt_r,
+        rw list.repeat_succ_eq_singleton_append,
+        rw ←list.append_assoc,
+        refl,
       },
       {
         rw list.repeat_succ_eq_append_singleton,
@@ -360,7 +387,7 @@ begin
         refl,
       },
     },
-    specialize another_par (k.succ * n) (k.succ * n),
+    specialize another_par (k.succ * n) (k.succ * n) (by refl),
     rwa [
       nat.sub_self,
       list.repeat_zero,
@@ -378,17 +405,17 @@ private lemma steps_XE_E (m n : ℕ) :
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X m ++ [E])
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ [E]) :=
 begin
-  have backwards : ∀ q : ℕ,
+  have backwards : ∀ q : ℕ, q ≤ m →
     grammar_derives gr_mul
       (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X m ++ [E])
       (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ list.repeat X (m - q) ++ [E]),
   {
-    intro,
+    intros q ass,
     induction q with k ih,
     {
       apply grammar_deri_self,
     },
-    apply grammar_deri_of_deri_tran ih,
+    apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le ass)),
     use XE_E,
     split,
     {
@@ -399,9 +426,11 @@ begin
     {
       have detach_X : list.repeat X (m - k) = list.repeat X (m - k.succ) ++ [X],
       {
-        have k_lt_m : k < m, sorry, -- TODO
-        have sub_suc_suc : m - k = (m - k.succ).succ, omega,
-        rw sub_suc_suc,
+        have k_lt_m : k < m,
+        {
+          rwa nat.succ_le_iff at ass,
+        },
+        rw sub_suc_suc k_lt_m,
         apply list.repeat_succ_eq_append_singleton,
       },
       rw detach_X,
@@ -412,7 +441,7 @@ begin
       refl,
     },
   },
-  have almost := backwards m,
+  have almost := backwards m (by refl),
   rwa [nat.sub_self, list.repeat_zero, list.append_nil] at almost,
 end
 
