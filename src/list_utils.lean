@@ -39,16 +39,11 @@ section list_repeat
 
 lemma repeat_zero (s : α) :
   list.repeat s 0 = [] :=
-begin
-  refl,
-end
+rfl
 
 lemma repeat_succ_eq_singleton_append (s : α) (n : ℕ) :
   list.repeat s n.succ = [s] ++ list.repeat s n :=
-begin
-  -- almost the same as `list.repeat_succ` which is a `rfl` lemma
-  refl,
-end
+rfl
 
 lemma repeat_succ_eq_append_singleton (s : α) (n : ℕ) :
   list.repeat s n.succ = list.repeat s n ++ [s] :=

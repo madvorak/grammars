@@ -329,13 +329,14 @@ begin
         (list.repeat X (m - k) ++ list.repeat B n ++ list.repeat C (k * n) ++ list.repeat X k)
         (list.repeat X (m - k.succ) ++ list.repeat B n ++ [X] ++ list.repeat C (k.succ * n) ++ list.repeat X k),
     {
-      sorry,
+      sorry, -- probably need to assume `k ≤ m`
     },
     apply grammar_deri_of_deri_deri hardest_part,
     rw list.append_assoc,
     rw list.append_assoc,
     rw list.append_assoc (list.repeat X (m - k.succ) ++ list.repeat B n),
     apply grammar_deri_with_prefix,
+
     have another_par : ∀ r p : ℕ, p ≤ r →
       grammar_derives gr_mul
         ([X] ++ (list.repeat C r ++ list.repeat X k))
@@ -450,7 +451,58 @@ private lemma steps_MB_bM (m n : ℕ) :
     (list.repeat a m ++ [M] ++ list.repeat B n ++ list.repeat C (m * n) ++ [E])
     (list.repeat a m ++ list.repeat b n ++ [M] ++ list.repeat C (m * n) ++ [E]) :=
 begin
-  sorry
+  apply grammar_deri_with_postfix,
+  apply grammar_deri_with_postfix,
+  rw list.append_assoc,
+  rw list.append_assoc,
+  apply grammar_deri_with_prefix,
+  have bees : ∀ k : ℕ, k ≤ n →
+    grammar_derives gr_mul ([M] ++ list.repeat B n) (list.repeat b k ++ [M] ++ list.repeat B (n - k)),
+  {
+    intros k ass,
+    induction k with q ih,
+    {
+      apply grammar_deri_self,
+    },
+    apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le ass)),
+    use MB_bM,
+    split,
+    {
+      in_list_explicit,
+    },
+    use [list.repeat b q, list.repeat B (n - q.succ)],
+    split,
+    {
+      have q_lt_n : q < n,
+      {
+        rwa nat.succ_le_iff at ass,
+      },
+      rw sub_suc_suc q_lt_n,
+      rw list.repeat_succ_eq_singleton_append,
+      repeat {
+        rw list.append_assoc,
+      },
+      apply congr_arg2,
+      {
+        refl,
+      },
+      repeat {
+        rw ←list.append_assoc,
+      },
+      refl,
+    },
+    {
+      rw list.repeat_succ_eq_append_singleton b,
+      apply congr_arg2,
+      swap, {
+        refl,
+      },
+      rw list.append_assoc,
+      refl,
+    },
+  },
+  have almost := bees n (by refl),
+  rwa [nat.sub_self, list.repeat_zero, list.append_nil] at almost,
 end
 
 private lemma steps_KC_cK (m n : ℕ) :
@@ -458,7 +510,60 @@ private lemma steps_KC_cK (m n : ℕ) :
     (list.repeat a m ++ list.repeat b n ++ [K] ++ list.repeat C (m * n) ++ [E])
     (list.repeat a m ++ list.repeat b n ++ list.repeat c (m * n) ++ [K] ++ [E]) :=
 begin
-  sorry
+  apply grammar_deri_with_postfix,
+  repeat {
+    rw list.append_assoc,
+  },
+  apply grammar_deri_with_prefix,
+  apply grammar_deri_with_prefix,
+  have terminating : ∀ p q : ℕ, p ≤ q →
+    grammar_derives gr_mul ([K] ++ list.repeat C q) (list.repeat c p ++ [K] ++ list.repeat C (q - p)),
+  {
+    intros p q ass,
+    induction p with r ih,
+    {
+      apply grammar_deri_self,
+    },
+    apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le ass)),
+    clear ih,
+    use KC_cK,
+    split,
+    {
+      in_list_explicit,
+    },
+    use [list.repeat c r, list.repeat C (q - r.succ)],
+    split,
+    {
+      have r_lt_q : r < q,
+      {
+        rwa nat.succ_le_iff at ass,
+      },
+      rw sub_suc_suc r_lt_q,
+      rw list.repeat_succ_eq_singleton_append,
+      repeat {
+        rw list.append_assoc,
+      },
+      apply congr_arg2,
+      {
+        refl,
+      },
+      repeat {
+        rw ←list.append_assoc,
+      },
+      refl,
+    },
+    {
+      rw list.repeat_succ_eq_append_singleton c,
+      apply congr_arg2,
+      swap, {
+        refl,
+      },
+      rw list.append_assoc,
+      refl,
+    },
+  },
+  have almost := terminating (m * n) (m * n) (by refl),
+  rwa [nat.sub_self, list.repeat_zero, list.append_nil] at almost,
 end
 
 -- example 3 * 3 = 9 reproved using the new lemmata
