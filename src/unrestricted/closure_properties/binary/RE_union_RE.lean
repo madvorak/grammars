@@ -425,11 +425,11 @@ begin
     refl,
   },
   dsimp,
-  have lifted := lift_deri_ lg₁ ass,
-  swap, {
-    exact g₂,
-  },
-  change grammar_derives lg₁.g (lift_string_ lg₁.lift_nt [symbol.nonterminal g₁.initial]) (list.map symbol.terminal w),
+  have lifted := lift_deri_ (@lg₁ _ _ g₂) ass,
+  change
+    grammar_derives lg₁.g
+      (lift_string_ lg₁.lift_nt [symbol.nonterminal g₁.initial])
+      (list.map symbol.terminal w),
   have equiv_out : (lift_string_ lg₁.lift_nt (list.map symbol.terminal w)) = (list.map symbol.terminal w),
   {
     unfold lift_string_,
@@ -459,11 +459,11 @@ begin
     refl,
   },
   dsimp,
-  have lifted := lift_deri_ lg₂ ass,
-  swap, {
-    exact g₁,
-  },
-  change grammar_derives lg₂.g (lift_string_ lg₂.lift_nt [symbol.nonterminal g₂.initial]) (list.map symbol.terminal w),
+  have lifted := lift_deri_ (@lg₂ _ g₁ _) ass,
+  change
+    grammar_derives lg₂.g
+      (lift_string_ lg₂.lift_nt [symbol.nonterminal g₂.initial])
+      (list.map symbol.terminal w),
   have equiv_out : (lift_string_ lg₂.lift_nt (list.map symbol.terminal w)) = (list.map symbol.terminal w),
   {
     unfold lift_string_,

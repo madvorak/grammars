@@ -52,14 +52,14 @@ private def r₅'': csrule Te Nt := csrule.mk [] Nt.Z_ [c] [b]
 private def r₆ : csrule Te Nt := csrule.mk [c] Nt.C_ [] [c]
 
 
-private def gramatika : CS_grammar Te :=
+private def my_grammar : CS_grammar Te :=
 CS_grammar.mk Nt Nt.S_ [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]
 
 
 /-- generate `abc` by the grammar above -/
-example : [Te.a_, Te.b_, Te.c_] ∈ CS_language gramatika :=
+example : [Te.a_, Te.b_, Te.c_] ∈ CS_language my_grammar :=
 begin
-  unfold gramatika,
+  unfold my_grammar,
 
   apply CS_deri_of_tran_deri,
   {
@@ -109,9 +109,9 @@ private meta def CS_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
 ]
 
 /-- generate `aabbcc` by the grammar above -/
-example : [Te.a_, Te.a_, Te.b_, Te.b_, Te.c_, Te.c_] ∈ CS_language gramatika :=
+example : [Te.a_, Te.a_, Te.b_, Te.b_, Te.c_, Te.c_] ∈ CS_language my_grammar :=
 begin
-  unfold gramatika,
+  unfold my_grammar,
   -- S
 
   CS_step ``(r₁) ``([]) ``([]),
@@ -155,13 +155,8 @@ private meta def combined_steps_r₄ (pre pos : pexpr) : tactic unit := `[
 ]
 
 /-- generate `aaabbbccc` by the grammar above -/
-example : [Te.a_, Te.a_, Te.a_, Te.b_, Te.b_, Te.b_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=
+example : [Te.a_, Te.a_, Te.a_, Te.b_, Te.b_, Te.b_, Te.c_, Te.c_, Te.c_] ∈ CS_language my_grammar :=
 begin
-  change
-    CS_derives
-      {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
-      [symbol.nonterminal Nt.S_]
-      [a, a, a, b, b, b, c, c, c],
   -- S
 
   CS_step ``(r₁) ``([]) ``([]),
@@ -206,13 +201,9 @@ end
 /-- generate ` a^4 . b^4 . c^4 ` by the grammar above -/
 example : [Te.a_, Te.a_, Te.a_, Te.a_,
            Te.b_, Te.b_, Te.b_, Te.b_,
-           Te.c_, Te.c_, Te.c_, Te.c_] ∈ CS_language gramatika :=
+           Te.c_, Te.c_, Te.c_, Te.c_]
+    ∈ CS_language my_grammar :=
 begin
-  change
-    CS_derives
-      {nt := Nt, initial := Nt.S_, rules := [r₁, r₂, r₃, r₃', r₃'', r₄, r₄', r₄'', r₅, r₅', r₅'', r₆]}
-      [symbol.nonterminal Nt.S_]
-      [a, a, a, a, b, b, b, b, c, c, c, c],
 
   -- .S.
   CS_step ``(r₁) ``([]) ``([]),

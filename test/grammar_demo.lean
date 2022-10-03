@@ -1,51 +1,51 @@
 import unrestricted.grammar
 
 
-inductive abeceda
-| _a : abeceda
-| _b : abeceda
-| _c : abeceda
+inductive alphabet
+| _a : alphabet
+| _b : alphabet
+| _c : alphabet
 
-inductive vnitrni
-| _S : vnitrni
-| _L : vnitrni
-| _R : vnitrni
-| _X : vnitrni
-| _B : vnitrni
-| _M : vnitrni
-| _E : vnitrni
-| _C : vnitrni
-| _K : vnitrni
+inductive inner
+| _S : inner
+| _L : inner
+| _R : inner
+| _X : inner
+| _B : inner
+| _M : inner
+| _E : inner
+| _C : inner
+| _K : inner
 
-private def a_ := abeceda._a
-private def b_ := abeceda._b
-private def c_ := abeceda._c
+private def a_ := alphabet._a
+private def b_ := alphabet._b
+private def c_ := alphabet._c
 
-private def S_ := vnitrni._S
-private def L_ := vnitrni._L
-private def R_ := vnitrni._R
-private def X_ := vnitrni._X
-private def B_ := vnitrni._B
-private def M_ := vnitrni._M
-private def E_ := vnitrni._E
-private def C_ := vnitrni._C
-private def K_ := vnitrni._K
+private def S_ := inner._S
+private def L_ := inner._L
+private def R_ := inner._R
+private def X_ := inner._X
+private def B_ := inner._B
+private def M_ := inner._M
+private def E_ := inner._E
+private def C_ := inner._C
+private def K_ := inner._K
 
-private def znak : Type := symbol abeceda vnitrni
+private def my_char : Type := symbol alphabet inner
 
-private def a : znak := symbol.terminal a_
-private def b : znak := symbol.terminal b_
-private def c : znak := symbol.terminal c_
+private def a : my_char := symbol.terminal a_
+private def b : my_char := symbol.terminal b_
+private def c : my_char := symbol.terminal c_
 
-private def S : znak := symbol.nonterminal S_
-private def L : znak := symbol.nonterminal L_
-private def R : znak := symbol.nonterminal R_
-private def X : znak := symbol.nonterminal X_
-private def B : znak := symbol.nonterminal B_
-private def M : znak := symbol.nonterminal M_
-private def E : znak := symbol.nonterminal E_
-private def C : znak := symbol.nonterminal C_
-private def K : znak := symbol.nonterminal K_
+private def S : my_char := symbol.nonterminal S_
+private def L : my_char := symbol.nonterminal L_
+private def R : my_char := symbol.nonterminal R_
+private def X : my_char := symbol.nonterminal X_
+private def B : my_char := symbol.nonterminal B_
+private def M : my_char := symbol.nonterminal M_
+private def E : my_char := symbol.nonterminal E_
+private def C : my_char := symbol.nonterminal C_
+private def K : my_char := symbol.nonterminal K_
 
 /-
 Grammar for unary multiplication
@@ -79,24 +79,24 @@ KE → ∅
           aabbbcccccc
 -/
 
-private def pravidlo : Type := grule abeceda vnitrni
+private def my_rule : Type := grule alphabet inner
 
-private def S_LR   : pravidlo := grule.mk  [] S_ [] [L, R]
-private def L_aLX  : pravidlo := grule.mk  [] L_ [] [a, L, X]
-private def R_BR   : pravidlo := grule.mk  [] R_ [] [B, R]
-private def L_M    : pravidlo := grule.mk  [] L_ [] [M]
-private def R_E    : pravidlo := grule.mk  [] R_ [] [E]
-private def XB_BCX : pravidlo := grule.mk [X] B_ [] [B, C, X]
-private def CB_BC  : pravidlo := grule.mk [C] B_ [] [B, C]
-private def XC_CX  : pravidlo := grule.mk [X] C_ [] [C, X]
-private def XE_E   : pravidlo := grule.mk [X] E_ [] [E]      -- shortens the word
-private def MB_bM  : pravidlo := grule.mk [M] B_ [] [b, M]
-private def M_K    : pravidlo := grule.mk  [] M_ [] [K]
-private def KC_cK  : pravidlo := grule.mk [K] C_ [] [c, K]
-private def KE_nil : pravidlo := grule.mk [K] E_ [] []       -- shortens the word
+private def S_LR   : my_rule := grule.mk  [] S_ [] [L, R]
+private def L_aLX  : my_rule := grule.mk  [] L_ [] [a, L, X]
+private def R_BR   : my_rule := grule.mk  [] R_ [] [B, R]
+private def L_M    : my_rule := grule.mk  [] L_ [] [M]
+private def R_E    : my_rule := grule.mk  [] R_ [] [E]
+private def XB_BCX : my_rule := grule.mk [X] B_ [] [B, C, X]
+private def CB_BC  : my_rule := grule.mk [C] B_ [] [B, C]
+private def XC_CX  : my_rule := grule.mk [X] C_ [] [C, X]
+private def XE_E   : my_rule := grule.mk [X] E_ [] [E]      -- shortens the word
+private def MB_bM  : my_rule := grule.mk [M] B_ [] [b, M]
+private def M_K    : my_rule := grule.mk  [] M_ [] [K]
+private def KC_cK  : my_rule := grule.mk [K] C_ [] [c, K]
+private def KE_nil : my_rule := grule.mk [K] E_ [] []       -- shortens the word
 
-private def gr_mul : grammar abeceda :=
-grammar.mk vnitrni S_ [S_LR, L_aLX, R_BR, L_M, R_E, XB_BCX, CB_BC, XC_CX, XE_E, MB_bM, M_K, KC_cK, KE_nil]
+private def gr_mul : grammar alphabet :=
+grammar.mk inner S_ [S_LR, L_aLX, R_BR, L_M, R_E, XB_BCX, CB_BC, XC_CX, XE_E, MB_bM, M_K, KC_cK, KE_nil]
 
 
 private meta def grammar_step (rule : pexpr) (pref post : pexpr) : tactic unit := `[
@@ -336,8 +336,8 @@ begin
           rw list.join,
           rw list.append_nil,
           rw ←list.repeat_succ_eq_append_singleton,
-          rw ←sub_suc_suc,
-          swap, {
+          rw ←sub_suc_suc, swap,
+          {
             rwa nat.succ_le_iff at q_le_m,
           },
           apply grammar_deri_self,
@@ -372,8 +372,8 @@ begin
           refl,
         },
         {
-          apply congr_arg2,
-          swap, {
+          apply congr_arg2, swap,
+          {
             refl,
           },
           unfold list.n_times,
@@ -463,8 +463,8 @@ begin
           use [list.repeat C (z - y.succ), list.repeat C y],
           split,
           {
-            apply congr_arg2,
-            swap, {
+            apply congr_arg2, swap,
+            {
               refl,
             },
             have y_lt_z : y < z,
@@ -481,8 +481,8 @@ begin
           {
             rw list.repeat_succ_eq_singleton_append C,
             rw ←list.append_assoc,
-            apply congr_arg2,
-            swap, {
+            apply congr_arg2, swap,
+            {
               refl,
             },
             rw list.append_assoc,
@@ -542,8 +542,8 @@ begin
         rw sub_suc_suc f_lt_e,
         rw list.repeat_succ_eq_singleton_append C,
         rw ←list.append_assoc,
-        apply congr_arg2,
-        swap, {
+        apply congr_arg2, swap,
+        {
           refl,
         },
         repeat {
@@ -553,8 +553,8 @@ begin
       },
       {
         rw list.repeat_succ_eq_append_singleton C,
-        apply congr_arg2,
-        swap, {
+        apply congr_arg2, swap,
+        {
           refl,
         },
         rw list.append_assoc,
@@ -655,8 +655,8 @@ begin
     },
     {
       rw list.repeat_succ_eq_append_singleton b,
-      apply congr_arg2,
-      swap, {
+      apply congr_arg2, swap,
+      {
         refl,
       },
       rw list.append_assoc,
@@ -714,8 +714,8 @@ begin
     },
     {
       rw list.repeat_succ_eq_append_singleton c,
-      apply congr_arg2,
-      swap, {
+      apply congr_arg2, swap,
+      {
         refl,
       },
       rw list.append_assoc,

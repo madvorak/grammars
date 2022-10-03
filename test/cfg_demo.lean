@@ -17,7 +17,7 @@ private def S : symbol (fin 3) (fin 2) := symbol.nonterminal S_
 private def R_ : fin 2 := 1
 private def R : symbol (fin 3) (fin 2) := symbol.nonterminal R_
 
-private def gramatika : CF_grammar (fin 3) :=
+private def gr_add : CF_grammar (fin 3) :=
 CF_grammar.mk (fin 2) S_ [
   (S_, [a, S, c]),
   (S_, [R]),
@@ -25,9 +25,9 @@ CF_grammar.mk (fin 2) S_ [
   (R_, [])
 ]
 
-example : CF_generates gramatika [a_, a_, b_, c_, c_, c_] :=
+example : CF_generates gr_add [a_, a_, b_, c_, c_, c_] :=
 begin
-  unfold gramatika,
+  unfold gr_add,
 
   apply CF_deri_of_tran_deri,
   {
@@ -76,28 +76,28 @@ end
 private def anbmcnm (n m : ℕ) : list (fin 3) :=
 list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ (n + m)
 
-private def language_abc : language (fin 3) :=
+private def language_add : language (fin 3) :=
 λ x, ∃ n m : ℕ, x = anbmcnm n m
 
-example : [a_, a_, b_, c_, c_, c_] ∈ language_abc :=
+example : [a_, a_, b_, c_, c_, c_] ∈ language_add :=
 begin
   use 2,
   use 1,
   refl,
 end
 
-example : CF_language gramatika = language_abc :=
+example : CF_language gr_add = language_add :=
 begin
   ext,
 
   split,
   {
-    -- prove `x ∈ CF_language gramatika → x ∈ language_abc` here
+    -- prove `x ∈ CF_language gr_add → x ∈ language_add` here
     intro ass,
-    change CF_derives gramatika [S] (list.map symbol.terminal x) at ass,
+    change CF_derives gr_add [S] (list.map symbol.terminal x) at ass,
 
-    have possib : ∀ w : list (symbol (fin 3) gramatika.nt),
-      CF_derives gramatika [S] w →
+    have possib : ∀ w : list (symbol (fin 3) gr_add.nt),
+      CF_derives gr_add [S] w →
         (∃ i : ℕ, w = list.repeat a i ++ [S] ++ list.repeat c i) ∨
         (∃ i j : ℕ, w = list.repeat a i ++ list.repeat b j ++ [R] ++ list.repeat c (i + j)) ∨
         (∃ i j : ℕ, w = list.repeat a i ++ list.repeat b j ++ list.repeat c (i + j)),
@@ -715,10 +715,10 @@ begin
     },
   },
   {
-    -- prove `x ∈ CF_language gramatika ← x ∈ language_abc` here
+    -- prove `x ∈ CF_language gr_add ← x ∈ language_add` here
     rintro ⟨n, m, hyp⟩,
     rw hyp,
-    have epoch_a : ∀ i : ℕ, CF_derives gramatika [S] ((list.repeat a i) ++ [S] ++ (list.repeat c i)),
+    have epoch_a : ∀ i : ℕ, CF_derives gr_add [S] ((list.repeat a i) ++ [S] ++ (list.repeat c i)),
     {
       intro i,
       induction i with n' ih,
@@ -745,7 +745,7 @@ begin
       ],
       refl,
     },
-    have epoch_b : ∀ j : ℕ, CF_derives gramatika [R] ((list.repeat b j) ++ [R] ++ (list.repeat c j)),
+    have epoch_b : ∀ j : ℕ, CF_derives gr_add [R] ((list.repeat b j) ++ [R] ++ (list.repeat c j)),
     {
       intro j,
       induction j with m' jh,
@@ -777,11 +777,11 @@ begin
     unfold CF_generates,
     unfold CF_generates_str,
     have obtain_sum :
-      CF_derives gramatika
-        [symbol.nonterminal gramatika.initial]
+      CF_derives gr_add
+        [symbol.nonterminal gr_add.initial]
         ((list.repeat a n) ++ (list.repeat b m) ++ [R] ++ (list.repeat c (n + m))),
     {
-      have middle_step : CF_derives gramatika
+      have middle_step : CF_derives gr_add
         ((list.repeat a n) ++ [S] ++ (list.repeat c n))
         ((list.repeat a n) ++ [R] ++ (list.repeat c n)),
       {
@@ -803,7 +803,7 @@ begin
         finish,
       },
       change
-        CF_derives gramatika
+        CF_derives gr_add
           (list.repeat a n ++ ([R] ++ list.repeat c n))
           (list.repeat a n ++ list.repeat b m ++ [R] ++ list.repeat c (n + m)),
       rw ←list.append_assoc,

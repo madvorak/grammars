@@ -39,8 +39,7 @@ begin
   rw list.map at ass,
   rw list.map at ass,
   rw list.cons.inj_eq at ass,
-  rw list.filter_map_cons_some,
-  swap, exact ass.1,
+  rw list.filter_map_cons_some _ _ _ ass.1,
   congr,
   apply list_filter_map_eq_of_map_eq_map_some,
   exact ass.2,
@@ -179,9 +178,11 @@ begin
 end
 
 private lemma grammar_generates_only_legit_terminals
-    {g : grammar T} {w : list (symbol T g.nt)}
+    {g : grammar T}
+    {w : list (symbol T g.nt)}
     (ass : grammar_derives g [symbol.nonterminal g.initial] w)
-    {s : symbol T g.nt} (symbol_derived : s ∈ w) :
+    {s : symbol T g.nt}
+    (symbol_derived : s ∈ w) :
   (∃ r : grule T g.nt, r ∈ g.rules ∧ s ∈ r.output_string) ∨
   (s = symbol.nonterminal g.initial) :=
 begin
@@ -226,7 +227,10 @@ begin
   },
 end
 
-private lemma substitute_terminals {g₁ g₂ : grammar T} {side : T → T ⊕ T} {w : list T}
+private lemma substitute_terminals
+    {g₁ g₂ : grammar T}
+    {side : T → T ⊕ T}
+    {w : list T}
     (rule_for_each_terminal : ∀ t ∈ w,
       (grule.mk [] (sum.inr (side t)) [] [symbol.terminal t]) ∈
         (rules_for_terminals₁ g₂.nt g₁ ++ rules_for_terminals₂ g₁.nt g₂)) :
@@ -923,8 +927,7 @@ begin
     },
   },
   cases d,
-    cases d,
-    swap,
+    cases d, swap,
       cases d,
       {
         have unwrap_first_nlsl :
@@ -1040,10 +1043,9 @@ begin
     },
   },
   cases d,
-    cases d,
-    swap,
-      cases d,
-      swap, {
+    cases d, swap,
+      cases d, swap,
+      {
         have unwrap_first_nlsr :
           list.filter_map unwrap_symbol₂ (symbol.nonterminal (sum.inl (some (sum.inr d))) :: l) =
           symbol.nonterminal d :: list.filter_map unwrap_symbol₂ l,
@@ -1063,8 +1065,8 @@ begin
         },
       },
   swap 3,
-    cases d,
-    swap, {
+    cases d, swap,
+    {
       have unwrap_first_nrr :
         list.filter_map unwrap_symbol₂ (symbol.nonterminal (sum.inr (sum.inr d)) :: l) =
         symbol.terminal d :: list.filter_map unwrap_symbol₂ l,
@@ -1116,8 +1118,12 @@ end unwrapping_nst
 
 section very_complicated
 
-private lemma induction_step_for_lifted_rule_from_g₁ {g₁ g₂ : grammar T} {a b u v : list (nst T g₁.nt g₂.nt)}
-    {x : list (symbol T g₁.nt)} {y: list (symbol T g₂.nt)} {r : grule T (@nnn T g₁.nt g₂.nt)}
+private lemma induction_step_for_lifted_rule_from_g₁
+    {g₁ g₂ : grammar T}
+    {a b u v : list (nst T g₁.nt g₂.nt)}
+    {x : list (symbol T g₁.nt)}
+    {y : list (symbol T g₂.nt)}
+    {r : grule T (@nnn T g₁.nt g₂.nt)}
     (rin : r ∈ list.map (wrap_grule₁ g₂.nt) g₁.rules)
     (bef : a = u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R ++ v)
     (aft : b = u ++ r.output_string ++ v)
@@ -1252,8 +1258,8 @@ begin
       rw list.nth_le_append inequality_cat inequality_m1 at clash,
       rw list.nth_le_append_right inequality_map_opp inequality_map at clash,
 
-      rw list.nth_le_map at clash,
-      swap, {
+      rw list.nth_le_map at clash, swap,
+      {
         have inequality_map := inequality_map,
         rw list.length_append _ (list.map (wrap_symbol₂ g₁.nt) y) at inequality_map,
         rw list.length_map _ y at inequality_map,
@@ -1262,8 +1268,8 @@ begin
       },
       by_cases (list.map (wrap_symbol₁ g₂.nt) r₁.input_R).length ≥ 1,
       {
-        rw list.nth_le_append_right at clash,
-        swap, {
+        rw list.nth_le_append_right at clash, swap,
+        {
           rw list.length_append _ (list.map (wrap_symbol₁ g₂.nt) r₁.input_R),
           have trivi_ineq : ∀ m k : ℕ, k ≥ 1 → m ≤ m + k - 1,
           {
@@ -1272,8 +1278,8 @@ begin
           },
           convert trivi_ineq (u ++ _ ++ [_]).length _ h,
         },
-        rw list.nth_le_map at clash,
-        swap, {
+        rw list.nth_le_map at clash, swap,
+        {
           rw list.length_map at h,
           repeat {
             rw list.length_append,
@@ -1340,8 +1346,8 @@ begin
           simp [ris_third_is_nil],
         },
         rw I_cannot_believe_I_had_to_write_it_explicitly at clash,
-        rw list.nth_le_append_right at clash,
-        swap, {
+        rw list.nth_le_append_right at clash, swap,
+        {
           apply le_of_eq,
           rw list.length_append _ [_],
           rw list.length_singleton,
@@ -1478,8 +1484,8 @@ begin
           repeat {
             rw list.length_append,
           },
-          apply congr_arg2,
-          swap, {
+          apply congr_arg2, swap,
+          {
             refl,
           },
           have rearrange_sum_of_four : ∀ a b c d : ℕ, a + b + c + d = a + (b + c + d),
@@ -1798,8 +1804,8 @@ begin
       clear_except critical,
       omega,
     },
-    rw list.drop_eq_nil_of_le,
-    swap, {
+    rw list.drop_eq_nil_of_le, swap,
+    {
       rw list.length_take,
       rw rul_inp_len,
       rw list.length_take,
@@ -1848,13 +1854,11 @@ begin
     rw list.length_map at len_concat,
     rw list.length_map at len_concat,
     rw list.length_singleton at len_concat,
-    rw ←nat.add_sub_assoc,
-    swap,
+    rw ←nat.add_sub_assoc, swap,
     {
       exact critical,
     },
-    rw ←nat.add_sub_assoc,
-    swap,
+    rw ←nat.add_sub_assoc, swap,
     {
       clear_except critical,
       omega,
@@ -1889,29 +1893,33 @@ begin
     exact yl_lt_vl,
   },
   clear_except the_part yl_lt_vl,
-  rw list.take_append_of_le_length at the_part,
-  swap, {
+  rw list.take_append_of_le_length at the_part, swap,
+  {
     rw list.length_reverse,
     rw list.length_map,
   },
   repeat {
     rw list.append_assoc at the_part,
   },
-  rw list.take_append_of_le_length at the_part,
-  swap, {
+  rw list.take_append_of_le_length at the_part, swap,
+  {
     rw list.length_reverse,
     exact yl_lt_vl,
   },
-  rw list.take_all_of_le at the_part,
-  swap, {
+  rw list.take_all_of_le at the_part, swap,
+  {
     rw list.length_reverse,
     rw list.length_map,
   },
   exact the_part,
 end
 
-private lemma induction_step_for_lifted_rule_from_g₂ {g₁ g₂ : grammar T} {a b u v : list (nst T g₁.nt g₂.nt)}
-    {x : list (symbol T g₁.nt)} {y: list (symbol T g₂.nt)} {r : grule T (@nnn T g₁.nt g₂.nt)}
+private lemma induction_step_for_lifted_rule_from_g₂
+    {g₁ g₂ : grammar T}
+    {a b u v : list (nst T g₁.nt g₂.nt)}
+    {x : list (symbol T g₁.nt)}
+    {y : list (symbol T g₂.nt)}
+    {r : grule T (@nnn T g₁.nt g₂.nt)}
     (rin : r ∈ list.map (wrap_grule₂ g₁.nt) g₂.rules)
     (bef : a = u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R ++ v)
     (aft : b = u ++ r.output_string ++ v)
@@ -1978,25 +1986,25 @@ begin
       linarith,
     },
     have ulth := corresponding_strings_nth_le ul_lt_ihls ul_lt_ihrs ih_concat,
-    rw list.nth_le_append ul_lt_ihls at ulth,
-    swap, {
+    rw list.nth_le_append ul_lt_ihls at ulth, swap,
+    {
       rw list.length_map,
       exact ul_lt_xl,
     },
-    rw list.nth_le_append_right at ulth,
-    swap, {
+    rw list.nth_le_append_right at ulth, swap,
+    {
       refl,
     },
-    rw list.nth_le_map at ulth,
-    swap, {
+    rw list.nth_le_map at ulth, swap,
+    {
       exact ul_lt_xl,
     },
 
     by_cases (list.map (wrap_symbol₂ g₁.nt) r₂.input_L).length > u.length - u.length,
     {
       rw list.nth_le_append _ h at ulth,
-      rw list.nth_le_map at ulth,
-      swap, {
+      rw list.nth_le_map at ulth, swap,
+      {
         rw list.length_map at h,
         exact h,
       },
@@ -2034,8 +2042,8 @@ begin
       {
         have corres_y := corresponding_strings_drop (list.map (wrap_symbol₁ g₂.nt) x).length ih_concat,
         rw list.drop_left at corres_y,
-        rw list.drop_append_of_le_length at corres_y,
-        swap, {
+        rw list.drop_append_of_le_length at corres_y, swap,
+        {
           rw list.length_map,
           exact matched_right,
         },
@@ -2151,8 +2159,8 @@ begin
   rw list.append_assoc,
   rw ←list.append_assoc (list.map (wrap_symbol₁ g₂.nt) x),
 
-  apply corresponding_strings_append,
-  swap, {
+  apply corresponding_strings_append, swap,
+  {
     rw unwrap_wrap₂_string,
     apply corresponding_strings_append,
     {
@@ -2180,8 +2188,8 @@ begin
     rw list.reverse_reverse at rtr,
     rw list.reverse_append at rtr,
     rw list.take_append_of_le_length nec at rtr,
-    rw list.reverse_take at rtr,
-    swap, {
+    rw list.reverse_take at rtr, swap,
+    {
       rw list.length_reverse (list.map (wrap_symbol₂ g₁.nt) y) at nec,
       exact nec,
     },
@@ -2211,8 +2219,8 @@ begin
     {
       rw ←nat.add_sub_assoc matched_right,
       rw add_comm,
-      rw nat.add_sub_assoc,
-      swap, {
+      rw nat.add_sub_assoc, swap,
+      {
         refl,
       },
       rw nat.sub_self,
@@ -2222,8 +2230,8 @@ begin
     clear_except tdc,
 
     rw list.drop_take at tdc,
-    rw list.drop_left' at tdc,
-    swap, {
+    rw list.drop_left' at tdc, swap,
+    {
       apply list.length_map,
     },
     rw ←list.map_take at tdc,
@@ -2231,7 +2239,9 @@ begin
   },
 end
 
-private lemma big_induction {g₁ g₂ : grammar T} {w : list (nst T g₁.nt g₂.nt)}
+private lemma big_induction
+    {g₁ g₂ : grammar T}
+    {w : list (nst T g₁.nt g₂.nt)}
     (ass :
       grammar_derives (big_grammar g₁ g₂)
         [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
@@ -2455,8 +2465,8 @@ begin
         rw list.take_append_drop,
       },
       rw xy_split_nt,
-      apply corresponding_strings_append,
-      swap, {
+      apply corresponding_strings_append, swap,
+      {
         rw list.drop_drop,
         have part_for_v := corresponding_strings_drop (1 + u.length) ih_concat,
         convert part_for_v,
@@ -2490,8 +2500,8 @@ begin
         cases s,
         {
           exfalso,
-          cases s,
-            swap, cases s,
+          cases s, swap,
+            cases s,
           all_goals {
             unfold corresponding_symbols at middle_nt_elem,
             exact middle_nt_elem,
@@ -2530,8 +2540,8 @@ begin
       },
       rw xy_split_v,
       have part_for_v := corresponding_strings_drop (u.length + 1) ih_concat,
-      apply corresponding_strings_append,
-      swap, {
+      apply corresponding_strings_append, swap,
+      {
         convert part_for_v,
         have rewr_len : u.length + 1 = (u ++ [symbol.nonterminal (sum.inr (sum.inr t))]).length,
         {
@@ -2615,8 +2625,8 @@ begin
         cases s,
         {
           exfalso,
-          cases s,
-            swap, cases s,
+          cases s, swap,
+            cases s,
           all_goals {
             unfold corresponding_symbols at middle_nt_elem,
             exact middle_nt_elem,
@@ -2849,16 +2859,16 @@ begin
       apply corresponding_strings_nth_le,
       exact concat_xy,
     },
-    rw list.nth_le_map at equivalent_ith,
-    swap, {
+    rw list.nth_le_map at equivalent_ith, swap,
+    {
       exact i_lt_len_w,
     },
-    rw list.nth_le_append at equivalent_ith,
-    swap, {
+    rw list.nth_le_append at equivalent_ith, swap,
+    {
       exact i_lt_len_lwx,
     },
-    rw list.nth_le_map at equivalent_ith,
-    swap, {
+    rw list.nth_le_map at equivalent_ith, swap,
+    {
       exact i_lt_len_x,
     },
     clear_except equivalent_ith,
@@ -2939,9 +2949,6 @@ begin
         rw list.length_map,
         exact nat.le.intro xylen,
       },
-      swap, {
-        exact T,
-      },
       convert corresponding_strings_drop (list.map (wrap_symbol₁ g₂.nt) x).length concat_xy,
       {
         rw list.drop_left,
@@ -2949,6 +2956,7 @@ begin
       {
         rw list.take_append_drop,
       },
+      exact T,
     },
     clear concat_xy,
     symmetry,
@@ -3004,11 +3012,12 @@ begin
       },
       rw list.nth_le_map _ _ i_lt_len_y at eqiv_symb,
       rw list.nth_le_drop' at *,
-      rw list.nth_le_map at *,
-      swap, {
+      rw list.nth_le_map, swap,
+      {
         exact xli_lt_len_w,
       },
-      swap, {
+      rw list.nth_le_map at eqiv_symb, swap,
+      {
         rw list.length_map,
         exact xli_lt_len_w,
       },
