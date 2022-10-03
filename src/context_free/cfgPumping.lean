@@ -1,12 +1,5 @@
 import context_free.cfg
 
-
-def list_n_times {α : Type} (l : list α) (n : ℕ) : list α :=
-(list.repeat l n).join
-
-infix ` ^ ` : 100 := list_n_times
-
-
 /-- Pumping lemma for context-free languages is not really an anxiom; its proof is missing. -/
 axiom CF_pumping {T : Type} {L : language T} (cf : is_CF L) :
   ∃ n : ℕ, ∀ w ∈ L, list.length w ≥ n → (

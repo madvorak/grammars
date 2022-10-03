@@ -180,7 +180,7 @@ begin
   cases pumping with n' pump',
   have count_a : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _a = n + 1,
   {
-    unfold list_n_times,
+    unfold list.n_times,
     simp [- list.append_assoc],
     repeat {
       rw count_in_append,
@@ -217,7 +217,7 @@ begin
   {
     have count_b : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _b > n + 1,
     {
-      unfold list_n_times,
+      unfold list.n_times,
       simp [- list.append_assoc],
       repeat {
         rw count_in_append,
@@ -246,7 +246,7 @@ begin
   {
     have count_c : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _c > n + 1,
     {
-      unfold list_n_times,
+      unfold list.n_times,
       simp [- list.append_assoc],
       repeat {
         rw count_in_append,

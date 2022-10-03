@@ -60,6 +60,11 @@ begin
   refl,
 end
 
+def n_times (l : list α) (n : ℕ) : list α :=
+(list.repeat l n).join
+
+infix ` ^ ` : 100 := n_times
+
 end list_repeat
 
 end list
