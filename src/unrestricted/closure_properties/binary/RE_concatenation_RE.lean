@@ -2,7 +2,6 @@ import unrestricted.grammar
 
 
 section list_technicalities
-
 variables {α β : Type}
 
 lemma list_forall₂_nth_le {R : α → β → Prop} :
