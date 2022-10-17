@@ -109,7 +109,7 @@ protected def nnn (N₁ N₂ : Type) : Type :=
 option (N₁ ⊕ N₂) ⊕ (T ⊕ T)
 
 -- new symbol type
-private def nst (T : Type) (N₁ N₂ : Type) : Type :=
+private def nst (T N₁ N₂ : Type) : Type :=
 symbol T (@nnn T N₁ N₂)
 
 
