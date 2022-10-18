@@ -35,37 +35,37 @@ list.map (λ t,  -- `Rt → tR`
     grule.mk [] (sum.inr 2) [symbol.terminal t] [symbol.terminal t, R]
   ) (all_used_terminals g)
 
-
 -- based on `/informal/KleeneStar.pdf`
 private def star_grammar (g : grammar T) : grammar T :=
 grammar.mk (nn g.nt) (sum.inr 0) (
-  (grule.mk  -- `Z → ZS#`
-    [] (sum.inr 0) [] [Z, S, H]) ::
-  (grule.mk  -- `Z → R#`
-    [] (sum.inr 0) [] [R, H]) ::
-  (grule.mk  -- `R# → R`
-    [] (sum.inr 2) [H] [R]) ::
-  (grule.mk  -- `R# → ∅`
-    [] (sum.inr 0) [] []) ::
+  (grule.mk [] (sum.inr 0) [] [Z, S, H]) ::
+  (grule.mk [] (sum.inr 0) [] [R, H]) ::
+  (grule.mk [] (sum.inr 2) [H] [R]) ::
+  (grule.mk [] (sum.inr 0) [] []) ::
   list.map wrap_gr g.rules ++
   rules_that_scan_terminals g
 )
 
 
-private lemma lemma2 {g : grammar T} {w : list (ns T g.nt)}
-    (ass : grammar_derives (star_grammar g) [Z] w) :
+private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
+    (ass : grammar_derives (star_grammar g) [Z] α) :
   (∃ x : list (list (ns T g.nt)),
     (∀ xᵢ ∈ x, ∃ yᵢ : list (symbol T g.nt),
       grammar_derives g [symbol.nonterminal g.initial] yᵢ ∧ xᵢ = list.map wrap_sym yᵢ) ∧
-    (w = Z :: list.join (list.map (++ [H]) x))) ∨
+    (α = [Z] ++ list.join (list.map (++ [H]) x))) ∨
   (∃ x : list (list (ns T g.nt)),
     (∀ xᵢ ∈ x, ∃ yᵢ : list (symbol T g.nt),
       grammar_derives g [symbol.nonterminal g.initial] yᵢ ∧ xᵢ = list.map wrap_sym yᵢ) ∧
-    (w = R :: H :: list.join (list.map (++ [H]) x))) ∨
-  (∃ w₁ : list (ns T g.nt), sorry) ∨
-  (∃ u : list T, u ∈ language.star (grammar_language g) ∧ w = list.map symbol.terminal u) ∨
-  (∃ w₀ : list (ns T g.nt), w = w₀ ++ [R]) ∨
-  (∃ w₀ : list (ns T g.nt), w = w₀ ++ [H] ∧ Z ∉ w ∧ R ∉ w) :=
+    (α = [R, H] ++ list.join (list.map (++ [H]) x))) ∨
+  (∃ w : list (list T), ∃ β : list T, ∃ γ : list (symbol T g.nt), ∃ x : list (list (ns T g.nt)),
+    (∀ wᵢ ∈ w, grammar_generates g wᵢ) ∧
+    (grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal β ++ γ)) ∧
+    (∀ xᵢ ∈ x, ∃ yᵢ : list (symbol T g.nt),
+      grammar_derives g [symbol.nonterminal g.initial] yᵢ ∧ xᵢ = list.map wrap_sym yᵢ) ∧
+    (α = (list.map symbol.terminal (list.join w)) ++ [R, H] ++ list.join (list.map (++ [H]) x))) ∨
+  (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α = list.map symbol.terminal u) ∨
+  (∃ σ : list (ns T g.nt), α = σ ++ [R]) ∨
+  (∃ ω : list (ns T g.nt), α = ω ++ [H] ∧ Z ∉ α ∧ R ∉ α) :=
 begin
   induction ass with a b trash orig ih,
   {
@@ -127,7 +127,50 @@ end
 theorem RE_of_star_RE (L : language T) :
   is_RE L  →  is_RE L.star  :=
 begin
-  rintro ⟨g₀, hg₀⟩,
-  use star_grammar g₀,
-  sorry,
+  rintro ⟨g, hg⟩,
+  use star_grammar g,
+
+  apply set.eq_of_subset_of_subset,
+  {
+    -- prove `L₁ * L₂ ⊇` here
+    intros w hyp,
+    unfold grammar_language at hyp,
+    rw set.mem_set_of_eq at hyp,
+    have result := star_induction hyp,
+    cases result,
+    {
+      exfalso,
+      sorry,
+    },
+    cases result,
+    {
+      exfalso,
+      sorry,
+    },
+    cases result,
+    {
+      exfalso,
+      sorry,
+    },
+    cases result,
+    {
+      rcases result with ⟨u, win, map_eq_map⟩,
+      have fuj : function.injective (@symbol.terminal T (star_grammar g).nt), sorry,
+      rw ←list.map_injective_iff at fuj,
+      have w_eq_u : w = u, exact fuj map_eq_map,
+      rwa [w_eq_u, ←hg],
+    },
+    cases result,
+    {
+      exfalso,
+      sorry,
+    },
+    {
+      exfalso,
+      sorry,
+    },
+  },
+  {
+    sorry,
+  },
 end
