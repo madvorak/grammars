@@ -143,16 +143,15 @@ list.map (λ t, grule.mk [] (sum.inr (sum.inr t)) [] [symbol.terminal t]) (all_u
 
 -- the grammar for concatenation of `g₁` and `g₂` languages
 protected def big_grammar (g₁ g₂ : grammar T) : grammar T :=
-grammar.mk
-  (nnn g₁.nt g₂.nt)
-  (sum.inl none)
-  ((grule.mk [] (sum.inl none) [] [
+grammar.mk (nnn g₁.nt g₂.nt) (sum.inl none) (
+  (grule.mk [] (sum.inl none) [] [
     symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
     symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
   ) :: (
     (list.map (wrap_grule₁ g₂.nt) g₁.rules ++ list.map (wrap_grule₂ g₁.nt) g₂.rules) ++
     (rules_for_terminals₁ g₂.nt g₁ ++ rules_for_terminals₂ g₁.nt g₂)
-  ))
+  )
+)
 
 end the_construction
 
