@@ -49,23 +49,21 @@ grammar.mk (nn g.nt) (sum.inr 0) (
 
 private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
     (ass : grammar_derives (star_grammar g) [Z] α) :
-  (∃ x : list (list (ns T g.nt)),
-    (∀ xᵢ ∈ x, ∃ yᵢ : list (symbol T g.nt),
-      grammar_derives g [symbol.nonterminal g.initial] yᵢ ∧ xᵢ = list.map wrap_sym yᵢ) ∧
-    (α = [Z] ++ list.join (list.map (++ [H]) x))) ∨
-  (∃ x : list (list (ns T g.nt)),
-    (∀ xᵢ ∈ x, ∃ yᵢ : list (symbol T g.nt),
-      grammar_derives g [symbol.nonterminal g.initial] yᵢ ∧ xᵢ = list.map wrap_sym yᵢ) ∧
-    (α = [R, H] ++ list.join (list.map (++ [H]) x))) ∨
-  (∃ w : list (list T), ∃ β : list T, ∃ γ : list (symbol T g.nt), ∃ x : list (list (ns T g.nt)),
+  (∃ x : list (list (symbol T g.nt)),
+    (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
+    (α = [Z] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
+  (∃ x : list (list (symbol T g.nt)),
+    (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
+    (α = [R, H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
+  (∃ w : list (list T), ∃ β : list T, ∃ γ : list (symbol T g.nt), ∃ x : list (list (symbol T g.nt)),
     (∀ wᵢ ∈ w, grammar_generates g wᵢ) ∧
     (grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal β ++ γ)) ∧
-    (∀ xᵢ ∈ x, ∃ yᵢ : list (symbol T g.nt),
-      grammar_derives g [symbol.nonterminal g.initial] yᵢ ∧ xᵢ = list.map wrap_sym yᵢ) ∧
-    (α = (list.map symbol.terminal (list.join w)) ++ [R, H] ++ list.join (list.map (++ [H]) x))) ∨
+    (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
+    (α = (list.map symbol.terminal (list.join w)) ++ [R, H] ++
+      list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α = list.map symbol.terminal u) ∨
-  (∃ σ : list (ns T g.nt), α = σ ++ [R]) ∨
-  (∃ ω : list (ns T g.nt), α = ω ++ [H] ∧ Z ∉ α ∧ R ∉ α) :=
+  (∃ σ : list (symbol T g.nt), α = list.map wrap_sym σ ++ [R]) ∨
+  (∃ ω : list (symbol T g.nt), α = list.map wrap_sym ω ++ [H] ∧ Z ∉ α ∧ R ∉ α) :=
 begin
   induction ass with a b trash orig ih,
   {
@@ -85,29 +83,25 @@ begin
       rw rin at *,
       clear rin,
       dsimp at *,
-      use ([S] :: x),
+      use ([symbol.nonterminal g.initial] :: x),
       split,
       {
         intros xᵢ xin,
         cases xin,
         {
-          use [[symbol.nonterminal g.initial]],
-          split,
-          {
-            apply grammar_deri_self,
-          },
           rw xin,
-          refl,
+          apply grammar_deri_self,
         },
-        change xᵢ ∈ x at xin,
-        exact valid xᵢ xin,
+        {
+          exact valid xᵢ xin,
+        },
       },
       have u_nil : u = [],
       {
         -- follows from `bef`
         sorry,
       },
-      have v_rest : v = list.join (list.map (++ [H]) x),
+      have v_rest : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
       {
         -- follows from `bef`
         sorry,
@@ -155,10 +149,11 @@ begin
     cases result,
     {
       rcases result with ⟨u, win, map_eq_map⟩,
-      have fuj : function.injective (@symbol.terminal T (star_grammar g).nt), sorry,
+      have fuj : function.injective symbol.terminal, sorry,
       rw ←list.map_injective_iff at fuj,
       have w_eq_u : w = u, exact fuj map_eq_map,
-      rwa [w_eq_u, ←hg],
+      rw [w_eq_u, ←hg],
+      exact win,
     },
     cases result,
     {
