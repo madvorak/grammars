@@ -88,30 +88,18 @@ end
 end list_technicalities
 
 
-variables {T : Type}
-
-section grammar_terminals
-
-def as_terminal {N : Type} : symbol T N → option T
-| (symbol.terminal t)    := some t
-| (symbol.nonterminal _) := none
-
-def all_used_terminals (g : grammar T) : list T :=
-list.filter_map as_terminal (list.join (list.map grule.output_string g.rules))
-
-end grammar_terminals
-
-
-section the_construction
-
 -- new nonterminal type
-protected def nnn (N₁ N₂ : Type) : Type :=
+protected def nnn (T N₁ N₂ : Type) : Type :=
 option (N₁ ⊕ N₂) ⊕ (T ⊕ T)
 
 -- new symbol type
 private def nst (T N₁ N₂ : Type) : Type :=
-symbol T (@nnn T N₁ N₂)
+symbol T (nnn T N₁ N₂)
 
+variables {T : Type}
+
+
+section the_construction
 
 protected def wrap_symbol₁ {N₁ : Type} (N₂ : Type) : symbol T N₁ → nst T N₁ N₂
 | (symbol.terminal t)    := symbol.nonterminal (sum.inr (sum.inl t))
@@ -121,29 +109,29 @@ protected def wrap_symbol₂ {N₂ : Type} (N₁ : Type) : symbol T N₂ → nst
 | (symbol.terminal t)    := symbol.nonterminal (sum.inr (sum.inr t))
 | (symbol.nonterminal n) := symbol.nonterminal (sum.inl (some (sum.inr n)))
 
-private def wrap_grule₁ {N₁ : Type} (N₂ : Type) (r : grule T N₁) : grule T (nnn N₁ N₂) :=
+private def wrap_grule₁ {N₁ : Type} (N₂ : Type) (r : grule T N₁) : grule T (nnn T N₁ N₂) :=
 grule.mk
   (list.map (wrap_symbol₁ N₂) r.input_L)
   (sum.inl (some (sum.inl r.input_N)))
   (list.map (wrap_symbol₁ N₂) r.input_R)
   (list.map (wrap_symbol₁ N₂) r.output_string)
 
-private def wrap_grule₂ {N₂ : Type} (N₁ : Type) (r : grule T N₂) : grule T (nnn N₁ N₂) :=
+private def wrap_grule₂ {N₂ : Type} (N₁ : Type) (r : grule T N₂) : grule T (nnn T N₁ N₂) :=
 grule.mk
   (list.map (wrap_symbol₂ N₁) r.input_L)
   (sum.inl (some (sum.inr r.input_N)))
   (list.map (wrap_symbol₂ N₁) r.input_R)
   (list.map (wrap_symbol₂ N₁) r.output_string)
 
-protected def rules_for_terminals₁ (N₂ : Type) (g : grammar T) : list (grule T (nnn g.nt N₂)) :=
+protected def rules_for_terminals₁ (N₂ : Type) (g : grammar T) : list (grule T (nnn T g.nt N₂)) :=
 list.map (λ t, grule.mk [] (sum.inr (sum.inl t)) [] [symbol.terminal t]) (all_used_terminals g)
 
-protected def rules_for_terminals₂ (N₁ : Type) (g : grammar T) : list (grule T (nnn N₁ g.nt)) :=
+protected def rules_for_terminals₂ (N₁ : Type) (g : grammar T) : list (grule T (nnn T N₁ g.nt)) :=
 list.map (λ t, grule.mk [] (sum.inr (sum.inr t)) [] [symbol.terminal t]) (all_used_terminals g)
 
 -- the grammar for concatenation of `g₁` and `g₂` languages
 protected def big_grammar (g₁ g₂ : grammar T) : grammar T :=
-grammar.mk (nnn g₁.nt g₂.nt) (sum.inl none) (
+grammar.mk (nnn T g₁.nt g₂.nt) (sum.inl none) (
   (grule.mk [] (sum.inl none) [] [
     symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
     symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
@@ -1121,7 +1109,7 @@ private lemma induction_step_for_lifted_rule_from_g₁
     {a b u v : list (nst T g₁.nt g₂.nt)}
     {x : list (symbol T g₁.nt)}
     {y : list (symbol T g₂.nt)}
-    {r : grule T (@nnn T g₁.nt g₂.nt)}
+    {r : grule T (nnn T g₁.nt g₂.nt)}
     (rin : r ∈ list.map (wrap_grule₁ g₂.nt) g₁.rules)
     (bef : a = u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R ++ v)
     (aft : b = u ++ r.output_string ++ v)
@@ -1435,7 +1423,7 @@ begin
         },
         have chunk3 :
           list.take (x.length - (u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L).length)
-            [@symbol.nonterminal T (nnn g₁.nt g₂.nt) (sum.inl (some (sum.inl r₁.input_N)))] =
+            [@symbol.nonterminal T (nnn T g₁.nt g₂.nt) (sum.inl (some (sum.inl r₁.input_N)))] =
           [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))],
         {
           apply list.take_all_of_le,
@@ -1917,7 +1905,7 @@ private lemma induction_step_for_lifted_rule_from_g₂
     {a b u v : list (nst T g₁.nt g₂.nt)}
     {x : list (symbol T g₁.nt)}
     {y : list (symbol T g₂.nt)}
-    {r : grule T (@nnn T g₁.nt g₂.nt)}
+    {r : grule T (nnn T g₁.nt g₂.nt)}
     (rin : r ∈ list.map (wrap_grule₂ g₁.nt) g₂.rules)
     (bef : a = u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R ++ v)
     (aft : b = u ++ r.output_string ++ v)

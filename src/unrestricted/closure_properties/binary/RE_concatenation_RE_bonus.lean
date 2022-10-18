@@ -7,24 +7,24 @@ variables {T : Type}
 section bonus_CF
 
 private def wrap_CF_rule₁ {N₁ : Type} (N₂ : Type) (r : (N₁ × list (symbol T N₁))) :
-  ((@nnn T N₁ N₂) × list (symbol T (@nnn T N₁ N₂))) :=
+  ((nnn T N₁ N₂) × list (symbol T (nnn T N₁ N₂))) :=
 ((sum.inl (some (sum.inl r.fst))), (list.map (wrap_symbol₁ N₂) r.snd))
 
 private def wrap_CF_rule₂ {N₂ : Type} (N₁ : Type) (r : (N₂ × list (symbol T N₂))) :
-  ((@nnn T N₁ N₂) × list (symbol T (@nnn T N₁ N₂))) :=
+  ((nnn T N₁ N₂) × list (symbol T (nnn T N₁ N₂))) :=
 ((sum.inl (some (sum.inr r.fst))), (list.map (wrap_symbol₂ N₁) r.snd))
 
 private def CF_rules_for_terminals₁ (N₂ : Type) (g : CF_grammar T) :
-  list ((@nnn T g.nt N₂) × list (symbol T (@nnn T g.nt N₂))) :=
+  list ((nnn T g.nt N₂) × list (symbol T (nnn T g.nt N₂))) :=
 list.map (λ t, ((sum.inr (sum.inl t)), [symbol.terminal t])) (all_used_terminals (grammar_of_cfg g))
 
 private def CF_rules_for_terminals₂ (N₁ : Type) (g : CF_grammar T) :
-  list ((@nnn T N₁ g.nt) × list (symbol T (@nnn T N₁ g.nt))) :=
+  list ((nnn T N₁ g.nt) × list (symbol T (nnn T N₁ g.nt))) :=
 list.map (λ t, ((sum.inr (sum.inr t)), [symbol.terminal t])) (all_used_terminals (grammar_of_cfg g))
 
 private def big_CF_grammar (g₁ g₂ : CF_grammar T) : CF_grammar T :=
 CF_grammar.mk
-  (nnn g₁.nt g₂.nt)
+  (nnn T g₁.nt g₂.nt)
   (sum.inl none)
   (((sum.inl none), [
     symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
@@ -102,7 +102,7 @@ end bonus_CF
 section bonus_CS
 
 private def wrap_CS_rule₁ {N₁ : Type} (N₂ : Type) (r : csrule T N₁) :
-  csrule T (@nnn T N₁ N₂) :=
+  csrule T (nnn T N₁ N₂) :=
 csrule.mk
   (list.map (wrap_symbol₁ N₂) r.context_left)
   (sum.inl (some (sum.inl r.input_nonterminal)))
@@ -110,7 +110,7 @@ csrule.mk
   (list.map (wrap_symbol₁ N₂) r.output_string)
 
 private def wrap_CS_rule₂ {N₂ : Type} (N₁ : Type) (r : csrule T N₂) :
-  csrule T (@nnn T N₁ N₂) :=
+  csrule T (nnn T N₁ N₂) :=
 csrule.mk
   (list.map (wrap_symbol₂ N₁) r.context_left)
   (sum.inl (some (sum.inr r.input_nonterminal)))
@@ -118,16 +118,16 @@ csrule.mk
   (list.map (wrap_symbol₂ N₁) r.output_string)
 
 private def CS_rules_for_terminals₁ (N₂ : Type) (g : CS_grammar T) :
-  list (csrule T (@nnn T g.nt N₂)) :=
+  list (csrule T (nnn T g.nt N₂)) :=
 list.map (λ t, csrule.mk [] (sum.inr (sum.inl t)) [] [symbol.terminal t]) (all_used_terminals (grammar_of_csg g))
 
 private def CS_rules_for_terminals₂ (N₁ : Type) (g : CS_grammar T) :
-  list (csrule T (@nnn T N₁ g.nt)) :=
+  list (csrule T (nnn T N₁ g.nt)) :=
 list.map (λ t, csrule.mk [] (sum.inr (sum.inr t)) [] [symbol.terminal t]) (all_used_terminals (grammar_of_csg g))
 
 private def big_CS_grammar (g₁ g₂ : CS_grammar T) : CS_grammar T :=
 CS_grammar.mk
-  (nnn g₁.nt g₂.nt)
+  (nnn T g₁.nt g₂.nt)
   (sum.inl none)
   ((csrule.mk [] (sum.inl none) [] [
     symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),

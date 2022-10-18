@@ -1,4 +1,4 @@
-import unrestricted.closure_properties.binary.RE_concatenation_RE
+import unrestricted.grammar
 
 
 -- new nonterminal type
@@ -38,10 +38,10 @@ list.map (λ t,  -- `Rt → tR`
 -- based on `/informal/KleeneStar.pdf`
 private def star_grammar (g : grammar T) : grammar T :=
 grammar.mk (nn g.nt) (sum.inr 0) (
-  (grule.mk [] (sum.inr 0) [] [Z, S, H]) ::
-  (grule.mk [] (sum.inr 0) [] [R, H]) ::
-  (grule.mk [] (sum.inr 2) [H] [R]) ::
-  (grule.mk [] (sum.inr 0) [] []) ::
+  grule.mk [] (sum.inr 0) [] [Z, S, H] ::
+  grule.mk [] (sum.inr 0) [] [R, H] ::
+  grule.mk [] (sum.inr 2) [H] [R] ::
+  grule.mk [] (sum.inr 0) [] [] ::
   list.map wrap_gr g.rules ++
   rules_that_scan_terminals g
 )
@@ -149,9 +149,15 @@ begin
     cases result,
     {
       rcases result with ⟨u, win, map_eq_map⟩,
-      have fuj : function.injective symbol.terminal, sorry,
-      rw ←list.map_injective_iff at fuj,
-      have w_eq_u : w = u, exact fuj map_eq_map,
+      have w_eq_u : w = u,
+      {
+        have st_inj : function.injective (@symbol.terminal T (star_grammar g).nt),
+        {
+          apply symbol.terminal.inj,
+        },
+        rw ←list.map_injective_iff at st_inj,
+        exact st_inj map_eq_map,
+      },
       rw [w_eq_u, ←hg],
       exact win,
     },

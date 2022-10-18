@@ -155,4 +155,12 @@ begin
   exact ass,
 end
 
+
+def as_terminal {N : Type} : symbol T N → option T
+| (symbol.terminal t)    := some t
+| (symbol.nonterminal _) := none
+
+def all_used_terminals (g : grammar T) : list T :=
+list.filter_map as_terminal (list.join (list.map grule.output_string g.rules))
+
 end grammar_utilities
