@@ -15,7 +15,7 @@ variables {T : Type}
 section specific_symbols
 
 private def Z {N : Type} : ns T N := symbol.nonterminal (sum.inr 0)
-private def H {N : Type} : ns T N := symbol.nonterminal (sum.inr 1) -- originally denoted `#`
+private def H {N : Type} : ns T N := symbol.nonterminal (sum.inr 1) -- originally denoted by `#`
 private def R {N : Type} : ns T N := symbol.nonterminal (sum.inr 2)
 
 private def S {g : grammar T} : ns T g.nt := symbol.nonterminal (sum.inl g.initial)
@@ -31,17 +31,16 @@ private lemma R_neq_Z {N : Type} : R ≠ @Z T N :=
 begin
   intro ass,
   have imposs := sum.inr.inj (symbol.nonterminal.inj ass),
-  injections_and_clear, -- TODO it is just `2 ≠ 0` please simplify
-  tauto,
+  have : (2 : fin 3) ≠ (0 : fin 3), dec_trivial,
+  exact this imposs,
 end
 
 private lemma R_neq_H {N : Type} : R ≠ @H T N :=
 begin
   intro ass,
   have imposs := sum.inr.inj (symbol.nonterminal.inj ass),
-  injections_and_clear, -- TODO it is just `2 ≠ 1` please simplify
-  injections_and_clear,
-  tauto,
+  have : (2 : fin 3) ≠ (1 : fin 3), dec_trivial,
+  exact this imposs,
 end
 
 end specific_symbols
@@ -61,8 +60,8 @@ grule.mk
   (list.map wrap_sym r.output_string)
 
 private def rules_that_scan_terminals (g : grammar T) : list (grule T (nn g.nt)) :=
-list.map (λ t,  -- `Rt → tR`
-    grule.mk [] (sum.inr 2) [symbol.terminal t] [symbol.terminal t, R]
+list.map (λ t, grule.mk
+    [] (sum.inr 2) [symbol.terminal t] [symbol.terminal t, R]
   ) (all_used_terminals g)
 
 -- based on `/informal/KleeneStar.pdf`
@@ -405,20 +404,56 @@ begin
     unfold grammar_language at hyp,
     rw set.mem_set_of_eq at hyp,
     have result := star_induction hyp,
+    clear hyp,
     cases result,
     {
       exfalso,
-      sorry,
+      rcases result with ⟨x, -, contr⟩,
+      cases w with d l,
+      {
+        tauto,
+      },
+      rw list.map_cons at contr,
+      have terminal_eq_Z : symbol.terminal d = Z,
+      {
+        exact list.head_eq_of_cons_eq contr,
+      },
+      clear_except terminal_eq_Z,
+      tauto,
     },
+    -- copypaste (IV) begins
     cases result,
     {
       exfalso,
-      sorry,
+      rcases result with ⟨x, -, contr⟩,
+      cases w with d l,
+      {
+        tauto,
+      },
+      rw list.map_cons at contr,
+      have terminal_eq_R : symbol.terminal d = R,
+      {
+        exact list.head_eq_of_cons_eq contr,
+      },
+      clear_except terminal_eq_R,
+      tauto,
     },
+    -- copypaste (IV) ends
     cases result,
     {
       exfalso,
-      sorry,
+      rcases result with ⟨y, -, -, x, -, -, -, contr⟩,
+      have output_contains_R : R ∈ list.map symbol.terminal w,
+      {
+        rw contr,
+        apply list.mem_append_left,
+        apply list.mem_append_right,
+        apply list.mem_cons_self,
+      },
+      rw list.mem_map at output_contains_R,
+      rcases output_contains_R with ⟨t, -, terminal_eq_R⟩,
+      clear_except terminal_eq_R,
+      tauto,
     },
     cases result,
     {
@@ -438,11 +473,55 @@ begin
     cases result,
     {
       exfalso,
-      sorry,
+      cases result with σ contr,
+      have last_symbols := congr_fun (congr_arg list.nth (congr_arg list.reverse contr)) 0,
+      rw [
+        ←list.map_reverse,
+        list.reverse_append,
+        list.reverse_singleton,
+        list.singleton_append,
+        list.nth,
+        list.nth_map
+      ] at last_symbols,
+      cases w.reverse.nth 0,
+      {
+        rw option.map_none' at last_symbols,
+        clear_except last_symbols, -- `none = some R`
+        tauto,
+      },
+      {
+        rw option.map_some' at last_symbols,
+        have terminal_eq_R := option.some.inj last_symbols,
+        clear_except terminal_eq_R,
+        tauto,
+      },
     },
     {
       exfalso,
-      sorry,
+      rcases result with ⟨ω, contr, -⟩,
+      -- copypaste (V) begins
+      have last_symbols := congr_fun (congr_arg list.nth (congr_arg list.reverse contr)) 0,
+      rw [
+        ←list.map_reverse,
+        list.reverse_append,
+        list.reverse_singleton,
+        list.singleton_append,
+        list.nth,
+        list.nth_map
+      ] at last_symbols,
+      cases w.reverse.nth 0,
+      {
+        rw option.map_none' at last_symbols,
+        clear_except last_symbols, -- `none = some H`
+        tauto,
+      },
+      {
+        rw option.map_some' at last_symbols,
+        have terminal_eq_H := option.some.inj last_symbols,
+        clear_except terminal_eq_H,
+        tauto,
+      },
+      -- copypaste (V) ends
     },
   },
   {
