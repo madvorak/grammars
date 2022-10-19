@@ -27,6 +27,23 @@ begin
   exact fin.zero_ne_one imposs,
 end
 
+private lemma R_neq_Z {N : Type} : R ≠ @Z T N :=
+begin
+  intro ass,
+  have imposs := sum.inr.inj (symbol.nonterminal.inj ass),
+  injections_and_clear, -- TODO it is just `2 ≠ 0` please simplify
+  tauto,
+end
+
+private lemma R_neq_H {N : Type} : R ≠ @H T N :=
+begin
+  intro ass,
+  have imposs := sum.inr.inj (symbol.nonterminal.inj ass),
+  injections_and_clear, -- TODO it is just `2 ≠ 1` please simplify
+  injections_and_clear,
+  tauto,
+end
+
 end specific_symbols
 
 
@@ -54,7 +71,7 @@ grammar.mk (nn g.nt) (sum.inr 0) (
   grule.mk [] (sum.inr 0) [] [Z, S, H] ::
   grule.mk [] (sum.inr 0) [] [R, H] ::
   grule.mk [] (sum.inr 2) [H] [R] ::
-  grule.mk [] (sum.inr 0) [] [] ::
+  grule.mk [] (sum.inr 2) [H] [] ::
   list.map wrap_gr g.rules ++
   rules_that_scan_terminals g
 )
@@ -76,6 +93,23 @@ begin
   clear_except inl_eq_inr,
   tauto,
 end
+
+-- copypaste (III) begins
+private lemma wrap_never_outputs_R {N : Type} (a : symbol T N) :
+  wrap_sym a ≠ R :=
+begin
+  unfold R,
+  cases a;
+  unfold wrap_sym,
+  {
+    tauto,
+  },
+  intro contr,
+  have inl_eq_inr := symbol.nonterminal.inj contr,
+  clear_except inl_eq_inr,
+  tauto,
+end
+-- copypaste (III) ends
 
 private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
     (ass : grammar_derives (star_grammar g) [Z] α) :
@@ -104,6 +138,37 @@ begin
   cases ih,
   {
     rcases ih with ⟨x, valid, cat⟩,
+    have no_R_in_a : R ∉ a,
+    {
+      intro contr,
+      rw cat at contr,
+      clear_except contr,
+      rw list.mem_append at contr,
+      cases contr,
+      {
+        rw list.mem_singleton at contr,
+        exact R_neq_Z contr,
+      },
+      rw list.mem_join at contr,
+      rw list.map_map at contr,
+      rcases contr with ⟨l, lin, Ril⟩,
+      rw list.mem_map at lin,
+      rcases lin with ⟨y, -, eq_l⟩,
+      change (list.map wrap_sym y ++ [H]) = l at eq_l,
+      rw ←eq_l at Ril,
+      rw list.mem_append at Ril,
+      cases Ril,
+      {
+        rw list.mem_map at Ril,
+        rcases Ril with ⟨s, -, imposs⟩,
+        exact wrap_never_outputs_R s imposs,
+      },
+      {
+        rw list.mem_singleton at Ril,
+        clear_except Ril,
+        exact R_neq_H Ril,
+      },
+    },
     rw cat at *,
     clear cat,
     rcases orig with ⟨r, rin, u, v, bef, aft⟩,
@@ -131,6 +196,7 @@ begin
       {
         clear_except bef,
         have Z_not_in_tail : Z ∉ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join,
+        -- TODO extract this prop?
         {
           intro Zin,
           clear_except Zin,
@@ -145,8 +211,8 @@ begin
           cases Zil,
           {
             rw list.mem_map at Zil,
-            rcases Zil with ⟨a, -, imposs⟩,
-            exact wrap_never_outputs_Z a imposs,
+            rcases Zil with ⟨s, -, imposs⟩,
+            exact wrap_never_outputs_Z s imposs,
           },
           {
             rw list.mem_singleton at Zil,
@@ -191,6 +257,135 @@ begin
       rw [list.nil_append, list.map_cons],
       refl,
     },
+    cases rin,
+    {
+      right, left,
+      rw rin at *,
+      clear rin,
+      dsimp at *,
+      rw [list.append_nil, list.append_nil] at bef,
+      use x,
+      split,
+      {
+        exact valid,
+      },
+      -- copypaste (I) begins
+      have u_nil : u = [],
+      {
+        clear_except bef,
+        have Z_not_in_tail : Z ∉ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join,
+        {
+          intro Zin,
+          clear_except Zin,
+          rw list.map_map at Zin,
+          rw list.mem_join at Zin,
+          rcases Zin with ⟨l, lin, Zil⟩,
+          rw list.mem_map at lin,
+          rcases lin with ⟨z, -, eq_l⟩,
+          change (list.map wrap_sym z ++ [H]) = l at eq_l,
+          rw ←eq_l at Zil,
+          rw list.mem_append at Zil,
+          cases Zil,
+          {
+            rw list.mem_map at Zil,
+            rcases Zil with ⟨s, -, imposs⟩,
+            exact wrap_never_outputs_Z s imposs,
+          },
+          {
+            rw list.mem_singleton at Zil,
+            clear_except Zil,
+            exact Z_neq_H Zil,
+          },
+        },
+        rw ←list.length_eq_zero,
+        by_contradiction,
+        have ul_pos : 0 < u.length,
+        {
+          rwa pos_iff_ne_zero,
+        },
+        clear h,
+        have bef_tail := congr_arg list.tail bef,
+        cases u with d l,
+        {
+          clear_except ul_pos,
+          rw list.length at ul_pos,
+          exact nat.lt_asymm ul_pos ul_pos,
+        },
+        {
+          dsimp at bef_tail,
+          have Z_in_tail : Z ∈ l ++ [symbol.nonterminal (sum.inr 0)] ++ v,
+          {
+            apply list.mem_append_left,
+            apply list.mem_append_right,
+            apply list.mem_singleton_self,
+          },
+          rw bef_tail at Z_not_in_tail,
+          exact Z_not_in_tail Z_in_tail,
+        },
+      },
+      have v_rest : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
+      {
+        rw u_nil at bef,
+        clear_except bef,
+        finish,
+      },
+      rw aft,
+      rw [u_nil, v_rest],
+      -- copypaste (I) ends
+      refl,
+    },
+    cases rin,
+    {
+      exfalso,
+      apply no_R_in_a,
+      rw bef,
+      apply list.mem_append_left,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      rw list.mem_singleton,
+      rw rin,
+      refl,
+    },
+    -- copypaste (II) begins
+    cases rin,
+    {
+      exfalso,
+      apply no_R_in_a,
+      rw bef,
+      apply list.mem_append_left,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      rw list.mem_singleton,
+      rw rin,
+      refl,
+    },
+    -- copypaste (II) ends
+    have rin' : r ∈ rules_that_scan_terminals g ∨ r ∈ list.map wrap_gr g.rules,
+    {
+      rw or_comm,
+      rwa ←list.mem_append,
+    },
+    clear rin,
+    -- nearly copypaste (II) begins
+    cases rin',
+    {
+      exfalso,
+      apply no_R_in_a,
+      rw bef,
+      apply list.mem_append_left,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      rw list.mem_singleton,
+      unfold rules_that_scan_terminals at rin',
+      rw list.mem_map at rin',
+      rcases rin' with ⟨t, -, form⟩,
+      rw ←form,
+      refl,
+    },
+    -- nearly copypaste (II) ends
+    left,
+    rw list.mem_map at rin',
+    rcases rin' with ⟨orig_r, orig_in, wrap_orig⟩,
     sorry,
   },
   sorry
@@ -206,7 +401,6 @@ begin
 
   apply set.eq_of_subset_of_subset,
   {
-    -- prove `L₁ * L₂ ⊇` here
     intros w hyp,
     unfold grammar_language at hyp,
     rw set.mem_set_of_eq at hyp,
