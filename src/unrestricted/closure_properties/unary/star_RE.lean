@@ -9,8 +9,10 @@ N ⊕ fin 3
 private def ns (T N : Type) : Type :=
 symbol T (nn N)
 
-
 variables {T : Type}
+
+
+section specific_symbols
 
 private def Z {N : Type} : ns T N := symbol.nonterminal (sum.inr 0)
 private def H {N : Type} : ns T N := symbol.nonterminal (sum.inr 1) -- originally denoted `#`
@@ -18,6 +20,17 @@ private def R {N : Type} : ns T N := symbol.nonterminal (sum.inr 2)
 
 private def S {g : grammar T} : ns T g.nt := symbol.nonterminal (sum.inl g.initial)
 
+private lemma Z_neq_H {N : Type} : Z ≠ @H T N :=
+begin
+  intro ass,
+  have imposs := sum.inr.inj (symbol.nonterminal.inj ass),
+  exact fin.zero_ne_one imposs,
+end
+
+end specific_symbols
+
+
+section construction
 
 private def wrap_sym {N : Type} : symbol T N → ns T N
 | (symbol.terminal t)    := symbol.terminal t
@@ -46,6 +59,23 @@ grammar.mk (nn g.nt) (sum.inr 0) (
   rules_that_scan_terminals g
 )
 
+end construction
+
+
+private lemma wrap_never_outputs_Z {N : Type} (a : symbol T N) :
+  wrap_sym a ≠ Z :=
+begin
+  unfold Z,
+  cases a;
+  unfold wrap_sym,
+  {
+    tauto,
+  },
+  intro contr,
+  have inl_eq_inr := symbol.nonterminal.inj contr,
+  clear_except inl_eq_inr,
+  tauto,
+end
 
 private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
     (ass : grammar_derives (star_grammar g) [Z] α) :
@@ -83,6 +113,7 @@ begin
       rw rin at *,
       clear rin,
       dsimp at *,
+      rw [list.append_nil, list.append_nil] at bef,
       use ([symbol.nonterminal g.initial] :: x),
       split,
       {
@@ -98,13 +129,62 @@ begin
       },
       have u_nil : u = [],
       {
-        -- follows from `bef`
-        sorry,
+        clear_except bef,
+        have Z_not_in_tail : Z ∉ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join,
+        {
+          intro Zin,
+          clear_except Zin,
+          rw list.map_map at Zin,
+          rw list.mem_join at Zin,
+          rcases Zin with ⟨l, lin, Zil⟩,
+          rw list.mem_map at lin,
+          rcases lin with ⟨z, -, eq_l⟩,
+          change (list.map wrap_sym z ++ [H]) = l at eq_l,
+          rw ←eq_l at Zil,
+          rw list.mem_append at Zil,
+          cases Zil,
+          {
+            rw list.mem_map at Zil,
+            rcases Zil with ⟨a, -, imposs⟩,
+            exact wrap_never_outputs_Z a imposs,
+          },
+          {
+            rw list.mem_singleton at Zil,
+            clear_except Zil,
+            exact Z_neq_H Zil,
+          },
+        },
+        rw ←list.length_eq_zero,
+        by_contradiction,
+        have ul_pos : 0 < u.length,
+        {
+          rwa pos_iff_ne_zero,
+        },
+        clear h,
+        have bef_tail := congr_arg list.tail bef,
+        cases u with d l,
+        {
+          clear_except ul_pos,
+          rw list.length at ul_pos,
+          exact nat.lt_asymm ul_pos ul_pos,
+        },
+        {
+          dsimp at bef_tail,
+          have Z_in_tail : Z ∈ l ++ [symbol.nonterminal (sum.inr 0)] ++ v,
+          {
+            apply list.mem_append_left,
+            apply list.mem_append_right,
+            apply list.mem_singleton_self,
+          },
+          rw bef_tail at Z_not_in_tail,
+          exact Z_not_in_tail Z_in_tail,
+        },
       },
       have v_rest : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
       {
-        -- follows from `bef`
-        sorry,
+        rw u_nil at bef,
+        clear_except bef,
+        finish,
       },
       rw aft,
       rw [u_nil, v_rest],

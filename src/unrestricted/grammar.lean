@@ -144,17 +144,6 @@ begin
   simp only [list.append_assoc],
 end
 
-lemma grammar_deri_with_prefix_and_postfix
-    {w₁ w₂ : list (symbol T g.nt)}
-    (pᵣ pₒ : list (symbol T g.nt))
-    (ass : grammar_derives g w₁ w₂) :
-  grammar_derives g (pᵣ ++ w₁ ++ pₒ) (pᵣ ++ w₂ ++ pₒ) :=
-begin
-  apply grammar_deri_with_postfix,
-  apply grammar_deri_with_prefix,
-  exact ass,
-end
-
 
 def as_terminal {N : Type} : symbol T N → option T
 | (symbol.terminal t)    := some t
