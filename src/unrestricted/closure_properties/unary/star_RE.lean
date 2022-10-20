@@ -94,6 +94,23 @@ begin
 end
 
 -- copypaste (III) begins
+private lemma wrap_never_outputs_H {N : Type} (a : symbol T N) :
+  wrap_sym a ≠ H :=
+begin
+  unfold H,
+  cases a;
+  unfold wrap_sym,
+  {
+    tauto,
+  },
+  intro contr,
+  have inl_eq_inr := symbol.nonterminal.inj contr,
+  clear_except inl_eq_inr,
+  tauto,
+end
+-- copypaste (III) ends
+
+-- copypaste (III) begins
 private lemma wrap_never_outputs_R {N : Type} (a : symbol T N) :
   wrap_sym a ≠ R :=
 begin
@@ -385,9 +402,157 @@ begin
     left,
     rw list.mem_map at rin',
     rcases rin' with ⟨orig_r, orig_in, wrap_orig⟩,
-    sorry,
+    unfold wrap_gr at wrap_orig,
+    rw ←wrap_orig at *,
+    clear wrap_orig,
+    dsimp at *,
+    have H_not_in_middle :
+      H ∉ list.map wrap_sym orig_r.input_L ++ [symbol.nonterminal (sum.inl orig_r.input_N)] ++
+          list.map wrap_sym orig_r.input_R,
+    {
+      intro contra,
+      clear_except contra,
+      rw list.mem_append at contra,
+      cases contra,
+      swap, {
+        rw list.mem_map at contra,
+        rcases contra with ⟨s, -, is_H⟩,
+        exact wrap_never_outputs_H s is_H,
+      },
+      rw list.mem_append at contra,
+      cases contra,
+      {
+        -- copypaste (VI) begins
+        rw list.mem_map at contra,
+        rcases contra with ⟨s, -, is_H⟩,
+        exact wrap_never_outputs_H s is_H,
+        -- copypaste (VI) ends
+      },
+      {
+        rw list.mem_singleton at contra,
+        have imposs := symbol.nonterminal.inj contra,
+        clear_except imposs,
+        tauto,
+      },
+    },
+    have befo : ∃ m : ℕ, ∃ u₁ v₁ : list (symbol T g.nt),
+      u = Z :: list.join (list.map (++ [H]) (list.take (m-1) (list.map (list.map wrap_sym) x))) ++
+          list.map wrap_sym u₁
+      ∧ list.nth x m = some (u₁ ++ orig_r.input_L ++ [symbol.nonterminal orig_r.input_N] ++ orig_r.input_R ++ v₁) ∧
+      v = list.map wrap_sym v₁++ [H] ++ list.join (list.map (++ [H]) (list.drop m (list.map (list.map wrap_sym) x))),
+    {
+      clear_except no_R_in_a H_not_in_middle bef,
+      -- number of `H`s in `u` plus in `v` is all of `x.length` follows from `H_not_in_middle` and `bef`
+      -- hence `u` is a prefix that contains some quantity `m` of them
+      -- and `v` is a suffix that contains `x.length - m` of them
+      sorry,
+    },
+    clear bef,
+    rcases befo with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+    rw [u_eq, v_eq] at aft,
+    use (list.take (m-1) x ++ [u₁ ++ orig_r.output_string ++ v₁] ++ list.drop m x),
+    split,
+    {
+      intros xᵢ xiin,
+      rw list.mem_append at xiin,
+      rw list.mem_append at xiin,
+      cases xiin,
+      swap, {
+        apply valid,
+        exact list.mem_of_mem_drop xiin,
+      },
+      cases xiin,
+      {
+        apply valid,
+        exact list.mem_of_mem_take xiin,
+      },
+      {
+        rw list.mem_singleton at xiin,
+        rw xiin,
+        have last_step :
+          grammar_transforms g
+            (u₁ ++ orig_r.input_L ++ [symbol.nonterminal orig_r.input_N] ++ orig_r.input_R ++ v₁)
+            (u₁ ++ orig_r.output_string ++ v₁),
+        {
+          use orig_r,
+          split,
+          {
+            exact orig_in,
+          },
+          use [u₁, v₁],
+          split;
+          refl,
+        },
+        apply grammar_deri_of_deri_tran _ last_step,
+        apply valid (u₁ ++ orig_r.input_L ++ [symbol.nonterminal orig_r.input_N] ++ orig_r.input_R ++ v₁),
+        exact list.nth_mem xm_eq,
+      },
+    },
+    rw aft,
+    repeat {
+      rw list.cons_append,
+    },
+    apply congr_arg2,
+    {
+      refl,
+    },
+    repeat {
+      rw list.map_append,
+    },
+    rw list.join_append,
+    rw list.join_append,
+    repeat {
+      rw list.append_assoc,
+    },
+    apply congr_arg2,
+    {
+      rw ←list.map_take,
+      refl,
+    },
+    repeat {
+      rw ←list.append_assoc,
+    },
+    apply congr_arg2,
+    swap, {
+      rw ←list.map_drop,
+      refl,
+    },
+    rw [
+      list.map_singleton, list.map_singleton,
+      list.join, list.join, list.append_nil,
+      list.map_append, list.map_append
+    ],
   },
   sorry
+end
+
+private lemma short_induction {g : grammar T} {w : list (list T)}
+    (ass : ∀ wᵢ ∈ w, grammar_generates g wᵢ) :
+  grammar_derives (star_grammar g) [Z] (Z ::
+      list.join (list.map (++ [H]) (list.map (list.map symbol.terminal) w))
+    ) :=
+begin
+  induction w with v x ih,
+  {
+    apply grammar_deri_self,
+  },
+  specialize ih (by finish), -- TODO replace
+  specialize ass v (list.mem_cons_self v x),
+  unfold grammar_generates at ass,
+  apply grammar_deri_of_tran_deri,
+  {
+    use (star_grammar g).rules.nth_le 0 (by dec_trivial),
+    split,
+    {
+      apply list.nth_le_mem,
+    },
+    use [[], []],
+    split;
+    refl,
+  },
+  rw [list.nil_append, list.append_nil],
+  rw [list.map_cons, list.map_cons, list.join],
+  sorry,
 end
 
 
@@ -525,6 +690,33 @@ begin
     },
   },
   {
+    intros p ass,
+    unfold grammar_language,
+    rw language.star at ass,
+    rw set.mem_set_of_eq at ⊢ ass,
+    rcases ass with ⟨w, w_join, parts_in_L⟩,
+    rw w_join,
+    clear w_join p,
+    unfold grammar_generates,
+    rw ←hg at parts_in_L,
+    apply grammar_deri_of_deri_deri (short_induction parts_in_L),
+    apply grammar_deri_of_tran_deri,
+    {
+      use (star_grammar g).rules.nth_le 1 (by dec_trivial),
+      split,
+      {
+        apply list.nth_le_mem,
+      },
+      use [[], (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join],
+      split,
+      {
+        refl, -- performs several definitional equalities to verify the equality
+      },
+      {
+        refl, -- binds the implicit argument of `grammar_deri_of_tran_deri` nothing to verify
+      },
+    },
+    rw list.nil_append,
     sorry,
   },
 end
