@@ -127,6 +127,17 @@ begin
 end
 -- copypaste (III) ends
 
+example {l : list (list ℕ)} {x y z : list ℕ}
+    (l_nozeros : ∀ lᵢ ∈ l, 0 ∉ lᵢ) (y_nonzero : 0 ∉ y)
+    (hyp : (list.map (++ [0]) l).join = x ++ y ++ z) :
+  ∃ k : ℕ, ∃ x' z' : list ℕ, ∃ k_le : k < l.length,
+    (list.map (++ [0]) (list.take k l)).join ++ x' = x ∧
+    l.nth_le k k_le = x' ++ y ++ z' ∧
+    z' ++ [0] ++ (list.map (++ [0]) (list.drop k.succ l)).join = z :=
+begin
+  sorry,
+end
+
 private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
     (ass : grammar_derives (star_grammar g) [Z] α) :
   (∃ x : list (list (symbol T g.nt)),
@@ -401,14 +412,14 @@ begin
     -- nearly copypaste (II) ends
     left,
     rw list.mem_map at rin',
-    rcases rin' with ⟨orig_r, orig_in, wrap_orig⟩,
+    rcases rin' with ⟨r₀, orig_in, wrap_orig⟩,
     unfold wrap_gr at wrap_orig,
     rw ←wrap_orig at *,
     clear wrap_orig,
     dsimp at *,
     have H_not_in_middle :
-      H ∉ list.map wrap_sym orig_r.input_L ++ [symbol.nonterminal (sum.inl orig_r.input_N)] ++
-          list.map wrap_sym orig_r.input_R,
+      H ∉ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
+          list.map wrap_sym r₀.input_R,
     {
       intro contra,
       clear_except contra,
@@ -436,12 +447,12 @@ begin
       },
     },
     have befo : ∃ m : ℕ, ∃ u₁ v₁ : list (symbol T g.nt),
-      u = Z :: list.join (list.map (++ [H]) (list.take (m-1) (list.map (list.map wrap_sym) x))) ++
-          list.map wrap_sym u₁
-      ∧ list.nth x m = some (u₁ ++ orig_r.input_L ++ [symbol.nonterminal orig_r.input_N] ++ orig_r.input_R ++ v₁) ∧
-      v = list.map wrap_sym v₁++ [H] ++ list.join (list.map (++ [H]) (list.drop m (list.map (list.map wrap_sym) x))),
+      u = Z :: list.join (list.map (++ [H]) (list.take m (list.map (list.map wrap_sym) x))) ++ list.map wrap_sym u₁
+      ∧ list.nth x m = some (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁) ∧
+      v = list.map wrap_sym v₁ ++ [H] ++
+          list.join (list.map (++ [H]) (list.drop m.succ (list.map (list.map wrap_sym) x))),
     {
-      clear_except no_R_in_a H_not_in_middle bef,
+      clear_except /-no_R_in_a-/ H_not_in_middle bef,
       -- number of `H`s in `u` plus in `v` is all of `x.length` follows from `H_not_in_middle` and `bef`
       -- hence `u` is a prefix that contains some quantity `m` of them
       -- and `v` is a suffix that contains `x.length - m` of them
@@ -450,7 +461,7 @@ begin
     clear bef,
     rcases befo with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
     rw [u_eq, v_eq] at aft,
-    use (list.take (m-1) x ++ [u₁ ++ orig_r.output_string ++ v₁] ++ list.drop m x),
+    use (list.take m x ++ [u₁ ++ r₀.output_string ++ v₁] ++ list.drop m.succ x),
     split,
     {
       intros xᵢ xiin,
@@ -471,10 +482,10 @@ begin
         rw xiin,
         have last_step :
           grammar_transforms g
-            (u₁ ++ orig_r.input_L ++ [symbol.nonterminal orig_r.input_N] ++ orig_r.input_R ++ v₁)
-            (u₁ ++ orig_r.output_string ++ v₁),
+            (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁)
+            (u₁ ++ r₀.output_string ++ v₁),
         {
-          use orig_r,
+          use r₀,
           split,
           {
             exact orig_in,
@@ -484,7 +495,7 @@ begin
           refl,
         },
         apply grammar_deri_of_deri_tran _ last_step,
-        apply valid (u₁ ++ orig_r.input_L ++ [symbol.nonterminal orig_r.input_N] ++ orig_r.input_R ++ v₁),
+        apply valid (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁),
         exact list.nth_mem xm_eq,
       },
     },
@@ -523,7 +534,7 @@ begin
       list.map_append, list.map_append
     ],
   },
-  sorry
+  sorry,
 end
 
 private lemma short_induction {g : grammar T} {w : list (list T)}
