@@ -181,6 +181,10 @@ begin
     linarith,
   }),
   rw drop_xyl at eq_z,
+  have qltll : q < l.length,
+  {
+    rwa list.length_map at qlt,
+  },
   have key : q = k,
   {
     have count_orig := congr_arg (λ l, count_in l 0) hyp,
@@ -206,9 +210,6 @@ begin
     repeat {
       rw count_in_append at zeroc,
     },
-    /-rw count_in_zero_of_notin y_nonzero at zeroc,
-    rw add_zero at zeroc,-/
-
     have count_in_k : count_in (list.take k (list.map (++ [0]) l)).join 0 = k,
     {
       sorry,
@@ -217,7 +218,11 @@ begin
     {
       sorry,
     },
-    have count_in_b : count_in (list.drop b ((list.map (++ [0]) l).nth_le q qlt)) 0 = 0,
+    have count_in_middle : count_in (list.take y.length (list.drop x.length (list.map (++ [0]) l).join)) 0 = 0,
+    {
+      sorry,
+    },
+    have count_in_b : count_in (list.drop b ((list.map (++ [0]) l).nth_le q qlt)) 0 = 1,
     {
       sorry,
     },
@@ -225,18 +230,16 @@ begin
     {
       sorry,
     },
-    rw [count_in_k, count_in_e, count_in_b, count_in_q] at zeroc,
-    clear count_in_k count_in_e count_in_b count_in_q,
+    rw [count_in_k, count_in_e, count_in_middle, count_in_b, count_in_q] at zeroc,
+    clear count_in_k count_in_e count_in_middle count_in_b count_in_q,
     rw ← count_orig at zeroc,
-    sorry,
+    ring_nf at zeroc,
+    clear_except zeroc qltll,
+    omega,
   },
   have kltll : k < l.length,
   {
     rwa list.length_map at klt,
-  },
-  have qltll : q < l.length,
-  {
-    rwa list.length_map at qlt,
   },
   use [k, list.take e ((list.map (++ [0]) l).nth_le k klt), list.drop b (l.nth_le q qltll)],
   use kltll,
