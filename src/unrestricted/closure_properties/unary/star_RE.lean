@@ -127,14 +127,77 @@ begin
 end
 -- copypaste (III) ends
 
+lemma list.take_join {α : Type*} {l : list (list α)} {n : ℕ} (nonempty : l ≠ []) :
+  ∃ m k : ℕ, ∃ mlt : m < l.length, -- maybe add `k < (l.nth_le m mlt).length`
+    l.join.take n = (l.take m).join ++ (l.nth_le m mlt).take k :=
+begin
+  sorry
+end
+
+lemma list.drop_join {α : Type*} {l : list (list α)} {n : ℕ} (nonempty : l ≠ []) :
+  ∃ m k : ℕ, ∃ mlt : m < l.length, k < (l.nth_le m mlt).length ∧
+    l.join.drop n = (l.nth_le m mlt).drop k ++ (l.drop m).join :=
+begin
+  sorry
+end
+
 example {l : list (list ℕ)} {x y z : list ℕ}
     (l_nozeros : ∀ lᵢ ∈ l, 0 ∉ lᵢ) (y_nonzero : 0 ∉ y)
     (hyp : (list.map (++ [0]) l).join = x ++ y ++ z) :
-  ∃ k : ℕ, ∃ x' z' : list ℕ, ∃ k_le : k < l.length,
+  ∃ k : ℕ, ∃ x' z' : list ℕ, ∃ k_lt : k < l.length,
     (list.map (++ [0]) (list.take k l)).join ++ x' = x ∧
-    l.nth_le k k_le = x' ++ y ++ z' ∧
+    l.nth_le k k_lt = x' ++ y ++ z' ∧
     z' ++ [0] ++ (list.map (++ [0]) (list.drop k.succ l)).join = z :=
 begin
+  have eq_x := congr_arg (list.take x.length) hyp,
+  rw list.append_assoc at eq_x,
+  rw list.take_left at eq_x,
+  obtain ⟨k, e, foo, bar⟩ := @list.take_join _ (list.map (++ [0]) l) x.length sorry,
+  rw bar at eq_x,
+  have eq_z := congr_arg (list.drop (x.length + y.length)) hyp,
+  rw ←list.length_append at eq_z,
+  rw list.drop_left at eq_z,
+  obtain ⟨q, b, baz, qux, quux⟩ := @list.drop_join _ (list.map (++ [0]) l) (x ++ y).length sorry,
+  rw quux at eq_z,
+  have key : q = k + 1,
+  {
+    sorry,
+  },
+  have klt : k < l.length,
+  {
+    rwa list.length_map at foo,
+  },
+  have qlt : q < l.length,
+  {
+    rwa list.length_map at baz,
+  },
+  use [k, list.take e ((list.map (++ [0]) l).nth_le k foo), list.drop b (l.nth_le q qlt)],
+  use klt,
+  split,
+  {
+    convert eq_x,
+    apply list.map_take,
+  },
+  split,
+  swap, {
+    rw key at *,
+    convert eq_z,
+    {
+      rw list.nth_le_map',
+      rw list.drop_append_of_le_length,
+      rw list.nth_le_map at qux,
+      swap, {
+        assumption,
+      },
+      rw list.length_append at qux,
+      rw list.length_singleton at qux,
+      rwa nat.lt_succ_iff at qux,
+    },
+    {
+      rw list.map_drop,
+      rw key,
+    },
+  },
   sorry,
 end
 
