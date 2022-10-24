@@ -1,4 +1,5 @@
 import unrestricted.grammar
+import context_free.closure_properties.binary.CF_intersection_CF
 
 
 -- new nonterminal type
@@ -127,22 +128,22 @@ begin
 end
 -- copypaste (III) ends
 
-lemma list.take_join {α : Type*} {l : list (list α)} {n : ℕ} (nonempty : l ≠ []) :
-  ∃ m k : ℕ, ∃ mlt : m < l.length, -- maybe add `k < (l.nth_le m mlt).length`
+lemma list.take_join_of_lt {α : Type*} {l : list (list α)} {n : ℕ} (notall : n < l.join.length) :
+  ∃ m k : ℕ, ∃ mlt : m < l.length, k < (l.nth_le m mlt).length ∧
     l.join.take n = (l.take m).join ++ (l.nth_le m mlt).take k :=
 begin
   sorry
 end
 
-lemma list.drop_join {α : Type*} {l : list (list α)} {n : ℕ} (nonempty : l ≠ []) :
+lemma list.drop_join_of_lt {α : Type*} {l : list (list α)} {n : ℕ} (notall : n < l.join.length) :
   ∃ m k : ℕ, ∃ mlt : m < l.length, k < (l.nth_le m mlt).length ∧
-    l.join.drop n = (l.nth_le m mlt).drop k ++ (l.drop m).join :=
+    l.join.drop n = (l.nth_le m mlt).drop k ++ (l.drop m.succ).join :=
 begin
   sorry
 end
 
 example {l : list (list ℕ)} {x y z : list ℕ}
-    (l_nozeros : ∀ lᵢ ∈ l, 0 ∉ lᵢ) (y_nonzero : 0 ∉ y)
+    (l_nozeros : ∀ lᵢ ∈ l, 0 ∉ lᵢ) (y_nonzero : 0 ∉ y) (y_nonempty : 0 < y.length)
     (hyp : (list.map (++ [0]) l).join = x ++ y ++ z) :
   ∃ k : ℕ, ∃ x' z' : list ℕ, ∃ k_lt : k < l.length,
     (list.map (++ [0]) (list.take k l)).join ++ x' = x ∧
@@ -152,27 +153,93 @@ begin
   have eq_x := congr_arg (list.take x.length) hyp,
   rw list.append_assoc at eq_x,
   rw list.take_left at eq_x,
-  obtain ⟨k, e, foo, bar⟩ := @list.take_join _ (list.map (++ [0]) l) x.length sorry,
-  rw bar at eq_x,
+  obtain ⟨k, e, klt, elt, take_xl⟩ := @list.take_join_of_lt _ (list.map (++ [0]) l) x.length (by {
+    have lens := congr_arg list.length hyp,
+    rw list.length_append_append at lens,
+    rw lens,
+    clear_except y_nonempty,
+    linarith,
+  }),
+  rw take_xl at eq_x,
   have eq_z := congr_arg (list.drop (x.length + y.length)) hyp,
   rw ←list.length_append at eq_z,
   rw list.drop_left at eq_z,
-  obtain ⟨q, b, baz, qux, quux⟩ := @list.drop_join _ (list.map (++ [0]) l) (x ++ y).length sorry,
-  rw quux at eq_z,
-  have key : q = k + 1,
+  have z_nonempty : 0 < z.length,
   {
+    -- `(list.map (++ [0]) l).join` ends with `0`
+    -- hence `x ++ y ++ z` ends with `0` by `rw hyp`
+    -- if `z` was empty (for contradition)
+    -- we could not satisfy both `(y_nonzero : 0 ∉ y)` and `(y_nonempty : 0 < y.length)`
     sorry,
   },
-  have klt : k < l.length,
+  obtain ⟨q, b, qlt, blt, drop_xyl⟩ := @list.drop_join_of_lt _ (list.map (++ [0]) l) (x ++ y).length (by {
+    have lens := congr_arg list.length hyp,
+    rw list.length_append_append at lens,
+    rw list.length_append,
+    rw lens,
+    clear_except z_nonempty,
+    linarith,
+  }),
+  rw drop_xyl at eq_z,
+  have key : q = k,
   {
-    rwa list.length_map at foo,
+    have count_orig := congr_arg (λ l, count_in l 0) hyp,
+    dsimp at count_orig,
+    rw count_in_append at count_orig,
+    rw count_in_append at count_orig,
+    have count_in_k : count_in (list.map (++ [0]) l).join 0 = l.length,
+    {
+      sorry,
+    },
+    rw count_in_k at count_orig,
+    -- copypaste (VII) begins
+    rw ←list.take_append_drop x.length (list.map (++ [0]) l).join at hyp,
+    rw take_xl at hyp,
+    rw ←list.take_append_drop y.length (list.drop x.length (list.map (++ [0]) l).join) at hyp,
+    rw list.drop_drop at hyp,
+    rw add_comm at hyp,
+    rw ←list.length_append at hyp,
+    rw drop_xyl at hyp,
+    -- copypaste (VII) ends
+    have zeroc := congr_arg (λ l, count_in l 0) hyp,
+    dsimp at zeroc,
+    repeat {
+      rw count_in_append at zeroc,
+    },
+    /-rw count_in_zero_of_notin y_nonzero at zeroc,
+    rw add_zero at zeroc,-/
+
+    have count_in_k : count_in (list.take k (list.map (++ [0]) l)).join 0 = k,
+    {
+      sorry,
+    },
+    have count_in_e : count_in (list.take e ((list.map (++ [0]) l).nth_le k klt)) 0 = 0,
+    {
+      sorry,
+    },
+    have count_in_b : count_in (list.drop b ((list.map (++ [0]) l).nth_le q qlt)) 0 = 0,
+    {
+      sorry,
+    },
+    have count_in_q : count_in (list.drop q.succ (list.map (++ [0]) l)).join 0 = l.length - q.succ,
+    {
+      sorry,
+    },
+    rw [count_in_k, count_in_e, count_in_b, count_in_q] at zeroc,
+    clear count_in_k count_in_e count_in_b count_in_q,
+    rw ← count_orig at zeroc,
+    sorry,
   },
-  have qlt : q < l.length,
+  have kltll : k < l.length,
   {
-    rwa list.length_map at baz,
+    rwa list.length_map at klt,
   },
-  use [k, list.take e ((list.map (++ [0]) l).nth_le k foo), list.drop b (l.nth_le q qlt)],
-  use klt,
+  have qltll : q < l.length,
+  {
+    rwa list.length_map at qlt,
+  },
+  use [k, list.take e ((list.map (++ [0]) l).nth_le k klt), list.drop b (l.nth_le q qltll)],
+  use kltll,
   split,
   {
     convert eq_x,
@@ -185,19 +252,26 @@ begin
     {
       rw list.nth_le_map',
       rw list.drop_append_of_le_length,
-      rw list.nth_le_map at qux,
+      rw list.nth_le_map at blt,
       swap, {
         assumption,
       },
-      rw list.length_append at qux,
-      rw list.length_singleton at qux,
-      rwa nat.lt_succ_iff at qux,
+      rw list.length_append at blt,
+      rw list.length_singleton at blt,
+      rwa nat.lt_succ_iff at blt,
     },
     {
       rw list.map_drop,
       rw key,
     },
   },
+  rw ←list.take_append_drop x.length (list.map (++ [0]) l).join at hyp,
+  rw take_xl at hyp,
+  rw ←list.take_append_drop y.length (list.drop x.length (list.map (++ [0]) l).join) at hyp,
+  rw list.drop_drop at hyp,
+  rw add_comm at hyp,
+  rw ←list.length_append at hyp,
+  rw drop_xyl at hyp,
   sorry,
 end
 
