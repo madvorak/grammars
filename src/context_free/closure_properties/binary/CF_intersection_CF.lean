@@ -13,49 +13,43 @@ list.sum (list.map (λ x, ite (x = a) 1 0) w)
 lemma count_in_repeat_eq (a : α) (n : ℕ) :
   count_in (list.repeat a n) a  =  n  :=
 begin
-  induction n with n ih,
+  unfold count_in,
+  induction n with m ih,
   {
     refl,
   },
-  change count_in (a :: list.repeat a n) a = n.succ,
-  unfold count_in,
-  unfold list.map,
-  simp [nat.one_add],
+  rw [list.repeat_succ, list.map_cons, list.sum_cons, ih],
+  rw if_pos rfl,
+  apply nat.one_add,
 end
 
 lemma count_in_repeat_neq {a : α} {b : α} (hyp : a ≠ b) (n : ℕ) :
   count_in (list.repeat a n) b  =  0  :=
 begin
-  induction n with n ih,
+  unfold count_in,
+  induction n with m ih,
   {
     refl,
   },
-  change count_in (a :: list.repeat a n) b = 0,
-  unfold count_in,
-  unfold list.map,
-  simp,
-  split,
-  {
-    exact hyp,
-  },
-  intro h,
+  rw [list.repeat_succ, list.map_cons, list.sum_cons, ih, add_zero],
+  rw ite_eq_right_iff,
+  intro impos,
   exfalso,
-  exact hyp h,
+  exact hyp impos,
 end
 
 lemma count_in_append (w₁ w₂ : list α) (a : α) :
   count_in (w₁ ++ w₂) a  =  count_in w₁ a  +  count_in w₂ a  :=
 begin
-  rw count_in,
+  unfold count_in,
   rw list.map_append,
   rw list.sum_append,
-  refl,
 end
 
 lemma count_in_pos_of_in {w : list α} {a : α} (hyp : a ∈ w) :
   count_in w a > 0 :=
 begin
-  induction w with head tail ih,
+  induction w with d l ih,
   {
     exfalso,
     rw list.mem_nil_iff at hyp,
@@ -73,7 +67,7 @@ begin
     exact contr.left hyp.symm,
   },
   specialize ih hyp,
-  have zero_in_tail : count_in tail a = 0,
+  have zero_in_tail : count_in l a = 0,
   {
     unfold count_in,
     exact contr.right,
@@ -85,13 +79,20 @@ end
 lemma count_in_zero_of_notin {w : list α} {a : α} (hyp : a ∉ w) :
   count_in w a = 0 :=
 begin
-  induction w with head tail ih,
+  induction w with d l ih,
   {
     refl,
   },
   unfold count_in,
-  rw list.map_cons,
-  finish,
+  rw [list.map_cons, list.sum_cons, add_eq_zero_iff, ite_eq_right_iff],
+  split,
+  {
+    simp only [nat.one_ne_zero],
+    exact (list.ne_of_not_mem_cons hyp).symm,
+  },
+  {
+    exact ih (list.not_mem_of_not_mem_cons hyp),
+  },
 end
 
 end reusable_defs_and_lemmata

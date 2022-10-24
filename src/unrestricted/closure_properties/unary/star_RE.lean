@@ -142,6 +142,18 @@ begin
   sorry
 end
 
+lemma count_in_join {α : Type} [decidable_eq α] (l : list (list α)) (a : α) :
+  count_in l.join a = list.sum (list.map (λ w, count_in w a) l) :=
+begin
+  induction l,
+  {
+    refl,
+  },
+  {
+    rw [list.join, count_in_append, list.map, list.sum_cons, l_ih],
+  },
+end
+
 example {l : list (list ℕ)} {x y z : list ℕ}
     (l_nozeros : ∀ lᵢ ∈ l, 0 ∉ lᵢ) (y_nonzero : 0 ∉ y) (y_nonempty : 0 < y.length)
     (hyp : (list.map (++ [0]) l).join = x ++ y ++ z) :
@@ -181,65 +193,86 @@ begin
     linarith,
   }),
   rw drop_xyl at eq_z,
+
   have qltll : q < l.length,
   {
     rwa list.length_map at qlt,
   },
+  have kltll : k < l.length,
+  {
+    rwa list.length_map at klt,
+  },
   have key : q = k,
   {
-    have count_orig := congr_arg (λ l, count_in l 0) hyp,
-    dsimp at count_orig,
-    rw count_in_append at count_orig,
-    rw count_in_append at count_orig,
-    have count_in_k : count_in (list.map (++ [0]) l).join 0 = l.length,
+    have segment_left := congr_arg (list.take x.length) hyp,
+    rw list.append_assoc at segment_left,
+    rw list.take_left at segment_left,
+    rw take_xl at segment_left,
+    have segment_right := congr_arg (list.drop (x ++ y).length) hyp,
+    rw list.drop_left at segment_right,
+    rw drop_xyl at segment_right,
+    have count_zeros := congr_arg (λ l, count_in l 0) hyp,
+    dsimp at count_zeros,
+
+    have count_in_l : count_in (list.map (++ [0]) l).join 0 = l.length,
     {
-      sorry,
-    },
-    rw count_in_k at count_orig,
-    -- copypaste (VII) begins
-    rw ←list.take_append_drop x.length (list.map (++ [0]) l).join at hyp,
-    rw take_xl at hyp,
-    rw ←list.take_append_drop y.length (list.drop x.length (list.map (++ [0]) l).join) at hyp,
-    rw list.drop_drop at hyp,
-    rw add_comm at hyp,
-    rw ←list.length_append at hyp,
-    rw drop_xyl at hyp,
-    -- copypaste (VII) ends
-    have zeroc := congr_arg (λ l, count_in l 0) hyp,
-    dsimp at zeroc,
-    repeat {
-      rw count_in_append at zeroc,
+      rw count_in_join,
+      rw list.map_map,
+      change (list.map (λ (w : list ℕ), count_in (w ++ [0]) 0) l).sum = l.length,
+      simp [count_in_append, count_in],
+      clear_except l_nozeros,
+      change (list.map (λ (w : list ℕ), count_in w 0) l).sum = 0,
+      have counted_zero : ∀ (w : list ℕ), w ∈ l → count_in w 0 = 0,
+      {
+        intros w winl,
+        exact count_in_zero_of_notin (l_nozeros w winl),
+      },
+      induction l with x r ih,
+      {
+        refl,
+      },
+      rw list.map_cons,
+      rw counted_zero x (list.mem_cons_self x r),
+      rw list.sum_cons,
+      rw nat.zero_add,
+      apply ih;
+      finish,
     },
     have count_in_k : count_in (list.take k (list.map (++ [0]) l)).join 0 = k,
     {
+      -- similar to `count_in_l` TODO
       sorry,
     },
     have count_in_e : count_in (list.take e ((list.map (++ [0]) l).nth_le k klt)) 0 = 0,
     {
-      sorry,
-    },
-    have count_in_middle : count_in (list.take y.length (list.drop x.length (list.map (++ [0]) l).join)) 0 = 0,
-    {
-      sorry,
+      apply count_in_zero_of_notin,
+      rw list.nth_le_map,
+      swap, {
+        exact kltll,
+      },
+      rw list.take_append_of_le_length,
+      swap, {
+        rwa [list.nth_le_map', list.length_append, list.length_singleton, nat.lt_succ_iff ] at elt,
+      },
+      intro contr,
+      exact l_nozeros (l.nth_le k kltll) (list.nth_le_mem l k kltll) (list.mem_of_mem_take contr),
     },
     have count_in_b : count_in (list.drop b ((list.map (++ [0]) l).nth_le q qlt)) 0 = 1,
     {
+      -- kinda similar to `count_in_e` TODO
       sorry,
     },
     have count_in_q : count_in (list.drop q.succ (list.map (++ [0]) l)).join 0 = l.length - q.succ,
     {
+      -- similar to `count_in_l` TODO
       sorry,
     },
-    rw [count_in_k, count_in_e, count_in_middle, count_in_b, count_in_q] at zeroc,
-    clear count_in_k count_in_e count_in_middle count_in_b count_in_q,
-    rw ← count_orig at zeroc,
-    ring_nf at zeroc,
-    clear_except zeroc qltll,
+    rw [count_in_l,
+      count_in_append, count_in_append, count_in_zero_of_notin y_nonzero, add_zero,
+      ←segment_left, ←segment_right, count_in_append, count_in_append,
+      count_in_k, count_in_e, count_in_b, count_in_q, add_zero] at count_zeros,
+    clear_except count_zeros qltll,
     omega,
-  },
-  have kltll : k < l.length,
-  {
-    rwa list.length_map at klt,
   },
   use [k, list.take e ((list.map (++ [0]) l).nth_le k klt), list.drop b (l.nth_le q qltll)],
   use kltll,
