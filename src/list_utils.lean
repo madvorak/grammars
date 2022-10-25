@@ -60,11 +60,18 @@ begin
   refl,
 end
 
+end list_repeat
+
+section list_join
+
+lemma join_singleton {l : list α} : [l].join = l :=
+by simp
+
 def n_times (l : list α) (n : ℕ) : list α :=
 (list.repeat l n).join
 
 infix ` ^ ` : 100 := n_times
 
-end list_repeat
+end list_join
 
 end list

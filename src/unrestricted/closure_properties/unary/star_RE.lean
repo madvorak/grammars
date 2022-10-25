@@ -702,8 +702,7 @@ begin
       refl,
     },
     rw [
-      list.map_singleton, list.map_singleton,
-      list.join, list.join, list.append_nil,
+      list.map_singleton, list.map_singleton, list.join_singleton,
       list.map_append, list.map_append
     ],
   },
@@ -711,17 +710,30 @@ begin
 end
 
 private lemma short_induction {g : grammar T} {w : list (list T)}
-    (ass : ∀ wᵢ ∈ w, grammar_generates g wᵢ) :
+    (ass : ∀ wᵢ ∈ w.reverse, grammar_generates g wᵢ) :
   grammar_derives (star_grammar g) [Z] (Z ::
-      list.join (list.map (++ [H]) (list.map (list.map symbol.terminal) w))
+      list.join (list.map (++ [H]) (list.map (list.map symbol.terminal) w.reverse))
     ) :=
 begin
   induction w with v x ih,
   {
     apply grammar_deri_self,
   },
-  specialize ih (by finish), -- TODO replace
-  specialize ass v (list.mem_cons_self v x),
+  have vx_reverse : (v :: x).reverse = x.reverse ++ [v],
+  {
+    apply list.reverse_cons,
+  },
+  rw vx_reverse at *,
+  specialize ih (by {
+    intros wᵢ in_reversed,
+    apply ass,
+    apply list.mem_append_left,
+    exact in_reversed,
+  }),
+  specialize ass v (by {
+    apply list.mem_append_right,
+    apply list.mem_singleton_self,
+  }),
   unfold grammar_generates at ass,
   apply grammar_deri_of_tran_deri,
   {
@@ -734,9 +746,25 @@ begin
     split;
     refl,
   },
-  rw [list.nil_append, list.append_nil],
-  rw [list.map_cons, list.map_cons, list.join],
-  sorry,
+  rw [list.nil_append, list.append_nil, list.map_append, list.map_append],
+  change grammar_derives (star_grammar g) [Z, S, H] _,
+  have ih_plus := grammar_deri_with_postfix ([S, H] : list (symbol T (star_grammar g).nt)) ih,
+  apply grammar_deri_of_deri_deri ih_plus,
+  have ass_lifted : grammar_derives (star_grammar g) [S] (list.map symbol.terminal v),
+  {
+    clear_except ass,
+    -- TODO use grammar lifting
+    sorry,
+  },
+  have ass_pos := grammar_deri_with_postfix ([H] : list (symbol T (star_grammar g).nt)) ass_lifted,
+  rw list.join_append,
+  rw ←list.cons_append,
+  apply grammar_deri_with_prefix,
+  rw list.map_map,
+  rw list.map_singleton,
+  rw list.join_singleton,
+  change grammar_derives (star_grammar g) [S, H] (list.map symbol.terminal v ++ [H]),
+  convert ass_pos,
 end
 
 
@@ -879,6 +907,12 @@ begin
     rw language.star at ass,
     rw set.mem_set_of_eq at ⊢ ass,
     rcases ass with ⟨w, w_join, parts_in_L⟩,
+    let v := w.reverse,
+    have v_reverse : v.reverse = w,
+    {
+      apply list.reverse_reverse,
+    },
+    rw ←v_reverse at *,
     rw w_join,
     clear w_join p,
     unfold grammar_generates,
@@ -891,16 +925,18 @@ begin
       {
         apply list.nth_le_mem,
       },
-      use [[], (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join],
+      use [[], (list.map (++ [H]) (list.map (list.map symbol.terminal) v.reverse)).join],
       split,
       {
-        refl, -- performs several definitional equalities to verify the equality
+        rw list.reverse_reverse,
+        refl,
       },
       {
-        refl, -- binds the implicit argument of `grammar_deri_of_tran_deri` nothing to verify
+        refl, -- binds the implicit argument of `grammar_deri_of_tran_deri`
       },
     },
     rw list.nil_append,
+    rw v_reverse,
     sorry,
   },
 end
