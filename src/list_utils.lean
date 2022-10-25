@@ -64,8 +64,22 @@ end list_repeat
 
 section list_join
 
-lemma join_singleton {l : list α} : [l].join = l :=
-by simp
+lemma join_singleton : [x].join = x :=
+by rw [list.join, list.join, list.append_nil]
+
+lemma take_join_of_lt {L : list (list α)} {n : ℕ} (notall : n < L.join.length) :
+  ∃ m k : ℕ, ∃ mlt : m < L.length, k < (L.nth_le m mlt).length ∧
+    L.join.take n = (L.take m).join ++ (L.nth_le m mlt).take k :=
+begin
+  sorry
+end
+
+lemma drop_join_of_lt {L : list (list α)} {n : ℕ} (notall : n < L.join.length) :
+  ∃ m k : ℕ, ∃ mlt : m < L.length, k < (L.nth_le m mlt).length ∧
+    L.join.drop n = (L.nth_le m mlt).drop k ++ (L.drop m.succ).join :=
+begin
+  sorry
+end
 
 def n_times (l : list α) (n : ℕ) : list α :=
 (list.repeat l n).join
@@ -73,5 +87,111 @@ def n_times (l : list α) (n : ℕ) : list α :=
 infix ` ^ ` : 100 := n_times
 
 end list_join
+
+section countin
+
+variables [decidable_eq α]
+
+def count_in (l : list α) (a : α) : ℕ :=
+list.sum (list.map (λ s, ite (s = a) 1 0) l)
+
+lemma count_in_repeat_eq (a : α) (n : ℕ) :
+  count_in (list.repeat a n) a  =  n  :=
+begin
+  unfold count_in,
+  induction n with m ih,
+  {
+    refl,
+  },
+  rw [list.repeat_succ, list.map_cons, list.sum_cons, ih],
+  rw if_pos rfl,
+  apply nat.one_add,
+end
+
+lemma count_in_repeat_neq {a : α} {b : α} (hyp : a ≠ b) (n : ℕ) :
+  count_in (list.repeat a n) b  =  0  :=
+begin
+  unfold count_in,
+  induction n with m ih,
+  {
+    refl,
+  },
+  rw [list.repeat_succ, list.map_cons, list.sum_cons, ih, add_zero],
+  rw ite_eq_right_iff,
+  intro impos,
+  exfalso,
+  exact hyp impos,
+end
+
+lemma count_in_append (a : α) :
+  count_in (x ++ y) a  =  count_in x a  +  count_in y a  :=
+begin
+  unfold count_in,
+  rw list.map_append,
+  rw list.sum_append,
+end
+
+lemma count_in_pos_of_in {a : α} (hyp : a ∈ x) :
+  count_in x a > 0 :=
+begin
+  induction x with d l ih,
+  {
+    exfalso,
+    rw list.mem_nil_iff at hyp,
+    exact hyp,
+  },
+  by_contradiction contr,
+  rw not_lt at contr,
+  rw nat.le_zero_iff at contr,
+  rw list.mem_cons_eq at hyp,
+  unfold count_in at contr,
+  unfold list.map at contr,
+  simp at contr,
+  cases hyp,
+  {
+    exact contr.left hyp.symm,
+  },
+  specialize ih hyp,
+  have zero_in_tail : count_in l a = 0,
+  {
+    unfold count_in,
+    exact contr.right,
+  },
+  rw zero_in_tail at ih,
+  exact nat.lt_asymm ih ih,
+end
+
+lemma count_in_zero_of_notin {a : α} (hyp : a ∉ x) :
+  count_in x a = 0 :=
+begin
+  induction x with d l ih,
+  {
+    refl,
+  },
+  unfold count_in,
+  rw [list.map_cons, list.sum_cons, add_eq_zero_iff, ite_eq_right_iff],
+  split,
+  {
+    simp only [nat.one_ne_zero],
+    exact (list.ne_of_not_mem_cons hyp).symm,
+  },
+  {
+    exact ih (list.not_mem_of_not_mem_cons hyp),
+  },
+end
+
+lemma count_in_join (L : list (list α)) (a : α) :
+  count_in L.join a = list.sum (list.map (λ w, count_in w a) L) :=
+begin
+  induction L,
+  {
+    refl,
+  },
+  {
+    rw [list.join, count_in_append, list.map, list.sum_cons, L_ih],
+  },
+end
+
+end countin
 
 end list

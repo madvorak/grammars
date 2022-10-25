@@ -1,5 +1,4 @@
 import unrestricted.grammar
-import context_free.closure_properties.binary.CF_intersection_CF
 
 
 -- new nonterminal type
@@ -128,32 +127,6 @@ begin
 end
 -- copypaste (III) ends
 
-lemma list.take_join_of_lt {α : Type*} {l : list (list α)} {n : ℕ} (notall : n < l.join.length) :
-  ∃ m k : ℕ, ∃ mlt : m < l.length, k < (l.nth_le m mlt).length ∧
-    l.join.take n = (l.take m).join ++ (l.nth_le m mlt).take k :=
-begin
-  sorry
-end
-
-lemma list.drop_join_of_lt {α : Type*} {l : list (list α)} {n : ℕ} (notall : n < l.join.length) :
-  ∃ m k : ℕ, ∃ mlt : m < l.length, k < (l.nth_le m mlt).length ∧
-    l.join.drop n = (l.nth_le m mlt).drop k ++ (l.drop m.succ).join :=
-begin
-  sorry
-end
-
-lemma count_in_join {α : Type} [decidable_eq α] (l : list (list α)) (a : α) :
-  count_in l.join a = list.sum (list.map (λ w, count_in w a) l) :=
-begin
-  induction l,
-  {
-    refl,
-  },
-  {
-    rw [list.join, count_in_append, list.map, list.sum_cons, l_ih],
-  },
-end
-
 example {l : list (list ℕ)} {x y z : list ℕ}
     (l_nozeros : ∀ lᵢ ∈ l, 0 ∉ lᵢ) (y_nonzero : 0 ∉ y) (y_nonempty : 0 < y.length)
     (hyp : (list.map (++ [0]) l).join = x ++ y ++ z) :
@@ -211,21 +184,21 @@ begin
     have segment_right := congr_arg (list.drop (x ++ y).length) hyp,
     rw list.drop_left at segment_right,
     rw drop_xyl at segment_right,
-    have count_zeros := congr_arg (λ l, count_in l 0) hyp,
+    have count_zeros := congr_arg (λ l, list.count_in l 0) hyp,
     dsimp at count_zeros,
 
-    have count_in_l : count_in (list.map (++ [0]) l).join 0 = l.length,
+    have count_in_l : list.count_in (list.map (++ [0]) l).join 0 = l.length,
     {
-      rw count_in_join,
+      rw list.count_in_join,
       rw list.map_map,
-      change (list.map (λ (w : list ℕ), count_in (w ++ [0]) 0) l).sum = l.length,
-      simp [count_in_append, count_in],
+      change (list.map (λ (w : list ℕ), list.count_in (w ++ [0]) 0) l).sum = l.length,
+      simp [list.count_in_append, list.count_in],
       clear_except l_nozeros,
-      change (list.map (λ (w : list ℕ), count_in w 0) l).sum = 0,
-      have counted_zero : ∀ (w : list ℕ), w ∈ l → count_in w 0 = 0,
+      change (list.map (λ (w : list ℕ), list.count_in w 0) l).sum = 0,
+      have counted_zero : ∀ (w : list ℕ), w ∈ l → list.count_in w 0 = 0,
       {
         intros w winl,
-        exact count_in_zero_of_notin (l_nozeros w winl),
+        exact list.count_in_zero_of_notin (l_nozeros w winl),
       },
       induction l with x r ih,
       {
@@ -238,14 +211,14 @@ begin
       apply ih;
       finish,
     },
-    have count_in_k : count_in (list.take k (list.map (++ [0]) l)).join 0 = k,
+    have count_in_k : list.count_in (list.take k (list.map (++ [0]) l)).join 0 = k,
     {
-      -- similar to `count_in_l` TODO
+      -- similar to `list.count_in_l` TODO
       sorry,
     },
-    have count_in_e : count_in (list.take e ((list.map (++ [0]) l).nth_le k klt)) 0 = 0,
+    have count_in_e : list.count_in (list.take e ((list.map (++ [0]) l).nth_le k klt)) 0 = 0,
     {
-      apply count_in_zero_of_notin,
+      apply list.count_in_zero_of_notin,
       rw list.nth_le_map,
       swap, {
         exact kltll,
@@ -257,19 +230,19 @@ begin
       intro contr,
       exact l_nozeros (l.nth_le k kltll) (list.nth_le_mem l k kltll) (list.mem_of_mem_take contr),
     },
-    have count_in_b : count_in (list.drop b ((list.map (++ [0]) l).nth_le q qlt)) 0 = 1,
+    have count_in_b : list.count_in (list.drop b ((list.map (++ [0]) l).nth_le q qlt)) 0 = 1,
     {
-      -- kinda similar to `count_in_e` TODO
+      -- kinda similar to `list.count_in_e` TODO
       sorry,
     },
-    have count_in_q : count_in (list.drop q.succ (list.map (++ [0]) l)).join 0 = l.length - q.succ,
+    have count_in_q : list.count_in (list.drop q.succ (list.map (++ [0]) l)).join 0 = l.length - q.succ,
     {
-      -- similar to `count_in_l` TODO
+      -- similar to `list.count_in_l` TODO
       sorry,
     },
     rw [count_in_l,
-      count_in_append, count_in_append, count_in_zero_of_notin y_nonzero, add_zero,
-      ←segment_left, ←segment_right, count_in_append, count_in_append,
+      list.count_in_append, list.count_in_append, list.count_in_zero_of_notin y_nonzero, add_zero,
+      ←segment_left, ←segment_right, list.count_in_append, list.count_in_append,
       count_in_k, count_in_e, count_in_b, count_in_q, add_zero] at count_zeros,
     clear_except count_zeros qltll,
     omega,

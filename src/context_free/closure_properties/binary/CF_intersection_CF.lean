@@ -4,101 +4,7 @@ import context_free.closure_properties.binary.CF_concatenation_CF
 import context_free.closure_properties.unary.permutation_CF
 
 
-section reusable_defs_and_lemmata
-variables {α : Type} [decidable_eq α]
-
-def count_in (w : list α) (a : α) : ℕ :=
-list.sum (list.map (λ x, ite (x = a) 1 0) w)
-
-lemma count_in_repeat_eq (a : α) (n : ℕ) :
-  count_in (list.repeat a n) a  =  n  :=
-begin
-  unfold count_in,
-  induction n with m ih,
-  {
-    refl,
-  },
-  rw [list.repeat_succ, list.map_cons, list.sum_cons, ih],
-  rw if_pos rfl,
-  apply nat.one_add,
-end
-
-lemma count_in_repeat_neq {a : α} {b : α} (hyp : a ≠ b) (n : ℕ) :
-  count_in (list.repeat a n) b  =  0  :=
-begin
-  unfold count_in,
-  induction n with m ih,
-  {
-    refl,
-  },
-  rw [list.repeat_succ, list.map_cons, list.sum_cons, ih, add_zero],
-  rw ite_eq_right_iff,
-  intro impos,
-  exfalso,
-  exact hyp impos,
-end
-
-lemma count_in_append (w₁ w₂ : list α) (a : α) :
-  count_in (w₁ ++ w₂) a  =  count_in w₁ a  +  count_in w₂ a  :=
-begin
-  unfold count_in,
-  rw list.map_append,
-  rw list.sum_append,
-end
-
-lemma count_in_pos_of_in {w : list α} {a : α} (hyp : a ∈ w) :
-  count_in w a > 0 :=
-begin
-  induction w with d l ih,
-  {
-    exfalso,
-    rw list.mem_nil_iff at hyp,
-    exact hyp,
-  },
-  by_contradiction contr,
-  rw not_lt at contr,
-  rw nat.le_zero_iff at contr,
-  rw list.mem_cons_eq at hyp,
-  unfold count_in at contr,
-  unfold list.map at contr,
-  simp at contr,
-  cases hyp,
-  {
-    exact contr.left hyp.symm,
-  },
-  specialize ih hyp,
-  have zero_in_tail : count_in l a = 0,
-  {
-    unfold count_in,
-    exact contr.right,
-  },
-  rw zero_in_tail at ih,
-  exact nat.lt_asymm ih ih,
-end
-
-lemma count_in_zero_of_notin {w : list α} {a : α} (hyp : a ∉ w) :
-  count_in w a = 0 :=
-begin
-  induction w with d l ih,
-  {
-    refl,
-  },
-  unfold count_in,
-  rw [list.map_cons, list.sum_cons, add_eq_zero_iff, ite_eq_right_iff],
-  split,
-  {
-    simp only [nat.one_ne_zero],
-    exact (list.ne_of_not_mem_cons hyp).symm,
-  },
-  {
-    exact ih (list.not_mem_of_not_mem_cons hyp),
-  },
-end
-
-end reusable_defs_and_lemmata
-
-
-section specific_defs_and_lemmata
+section defs_over_fin3
 
 private def a_ : fin 3 := 0
 private def b_ : fin 3 := 1
@@ -125,8 +31,8 @@ private def lang_any_eq : language (fin 3) :=
 private def lang_eq_eq : language (fin 3) :=
 λ w, ∃ n : ℕ, w = list.repeat a_ n ++ list.repeat b_ n ++ list.repeat c_ n
 
+end defs_over_fin3
 
-section what_is_CF
 
 section not_CF
 
@@ -134,11 +40,11 @@ private lemma false_of_uvvxyyz
     {_a _b _c : fin 3} {n : ℕ} {u v x y z : list (fin 3)}
     (elimin : ∀ s : fin 3,  s ≠ _a  →  s ≠ _b  →  s ≠ _c  → false)
     (no_a : _a ∉ v ++ y) (nonempty : (v ++ y).length > 0)
-    (counts_ab : ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _b)
-    (counts_ac : ∀ (w : list (fin 3)), w ∈ lang_eq_eq → count_in w _a = count_in w _c)
-    (counted_a : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _a = n + 1 + count_in (v ++ y) _a)
-    (counted_b : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _b = n + 1 + count_in (v ++ y) _b)
-    (counted_c : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _c = n + 1 + count_in (v ++ y) _c)
+    (counts_ab : ∀ (w : list (fin 3)), w ∈ lang_eq_eq → list.count_in w _a = list.count_in w _b)
+    (counts_ac : ∀ (w : list (fin 3)), w ∈ lang_eq_eq → list.count_in w _a = list.count_in w _c)
+    (counted_a : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _a = n + 1 + list.count_in (v ++ y) _a)
+    (counted_b : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _b = n + 1 + list.count_in (v ++ y) _b)
+    (counted_c : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _c = n + 1 + list.count_in (v ++ y) _c)
     (pumping : u ++ v ^ 2 ++ x ++ y ^ 2 ++ z ∈ lang_eq_eq) :
   false :=
 begin
@@ -179,64 +85,68 @@ begin
   have hac := counts_ac (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
 
   cases pumping with n' pump',
-  have count_a : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _a = n + 1,
+  have count_a : list.count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _a = n + 1,
   {
     unfold list.n_times,
     simp [- list.append_assoc],
     repeat {
-      rw count_in_append,
+      rw list.count_in_append,
     },
     have rearrange :
-      count_in u _a + (count_in v _a + count_in v _a) + count_in x _a + (count_in y _a + count_in y _a) + count_in z _a =
-      (count_in u _a + count_in v _a + count_in x _a + count_in y _a + count_in z _a) + (count_in v _a + count_in y _a),
+      list.count_in u _a + (list.count_in v _a + list.count_in v _a) + list.count_in x _a +
+        (list.count_in y _a + list.count_in y _a) + list.count_in z _a =
+      (list.count_in u _a + list.count_in v _a + list.count_in x _a + list.count_in y _a + list.count_in z _a) +
+        (list.count_in v _a + list.count_in y _a),
     {
       ring,
     },
-    have zero_in_v : count_in v _a = 0,
+    have zero_in_v : list.count_in v _a = 0,
     {
       rw list.mem_append at no_a,
       push_neg at no_a,
-      exact count_in_zero_of_notin no_a.left,
+      exact list.count_in_zero_of_notin no_a.left,
     },
-    have zero_in_y : count_in y _a = 0,
+    have zero_in_y : list.count_in y _a = 0,
     {
       rw list.mem_append at no_a,
       push_neg at no_a,
-      exact count_in_zero_of_notin no_a.right,
+      exact list.count_in_zero_of_notin no_a.right,
     },
     rw rearrange,
     repeat {
-      rw ←count_in_append,
+      rw ←list.count_in_append,
     },
     rw counted_a,
-    rw count_in_append,
+    rw list.count_in_append,
     rw zero_in_v,
     rw zero_in_y,
   },
   
   cases extra_not_a with extra_b extra_c,
   {
-    have count_b : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _b > n + 1,
+    have count_b : list.count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _b > n + 1,
     {
       unfold list.n_times,
       simp [- list.append_assoc],
       repeat {
-        rw count_in_append,
+        rw list.count_in_append,
       },
       have big_equality :
-        count_in u _b + (count_in v _b + count_in v _b) + count_in x _b + (count_in y _b + count_in y _b) + count_in z _b =
-        (count_in u _b + count_in v _b + count_in x _b + count_in y _b + count_in z _b) + (count_in v _b + count_in y _b),
+        list.count_in u _b + (list.count_in v _b + list.count_in v _b) + list.count_in x _b +
+          (list.count_in y _b + list.count_in y _b) + list.count_in z _b =
+        (list.count_in u _b + list.count_in v _b + list.count_in x _b + list.count_in y _b + list.count_in z _b) +
+          (list.count_in v _b + list.count_in y _b),
       {
         ring,
       },
       rw big_equality,
       repeat {
-        rw ←count_in_append,
+        rw ←list.count_in_append,
       },
       rw counted_b,
-      have at_least_one_b : count_in (v ++ y) _b > 0,
+      have at_least_one_b : list.count_in (v ++ y) _b > 0,
       {
-        exact count_in_pos_of_in extra_b,
+        exact list.count_in_pos_of_in extra_b,
       },
       linarith,
     },
@@ -245,27 +155,29 @@ begin
     exact has_lt.lt.false count_b,
   },
   {
-    have count_c : count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _c > n + 1,
+    have count_c : list.count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _c > n + 1,
     {
       unfold list.n_times,
       simp [- list.append_assoc],
       repeat {
-        rw count_in_append,
+        rw list.count_in_append,
       },
       have big_equality :
-        count_in u _c + (count_in v _c + count_in v _c) + count_in x _c + (count_in y _c + count_in y _c) + count_in z _c =
-        (count_in u _c + count_in v _c + count_in x _c + count_in y _c + count_in z _c) + (count_in v _c + count_in y _c),
+        list.count_in u _c + (list.count_in v _c + list.count_in v _c) + list.count_in x _c +
+          (list.count_in y _c + list.count_in y _c) + list.count_in z _c =
+        (list.count_in u _c + list.count_in v _c + list.count_in x _c + list.count_in y _c + list.count_in z _c) +
+          (list.count_in v _c + list.count_in y _c),
       {
         ring,
       },
       rw big_equality,
       repeat {
-        rw ←count_in_append,
+        rw ←list.count_in_append,
       },
       rw counted_c,
-      have at_least_one_c : count_in (v ++ y) _c > 0,
+      have at_least_one_c : list.count_in (v ++ y) _c > 0,
       {
-        exact count_in_pos_of_in extra_c,
+        exact list.count_in_pos_of_in extra_c,
       },
       linarith,
     },
@@ -354,7 +266,8 @@ begin
           rw list.append_assoc at concatenating,
         },
         rcases list.nth_le_of_mem relaxed_a with ⟨nₐ, hnₐ, h_nthₐ⟩,
-        obtain ⟨h_nth_a_pr, h_nth_a⟩ : ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
+        obtain ⟨h_nth_a_pr, h_nth_a⟩ :
+          ∃ proofoo, (v ++ x ++ y ++ z).nth_le ((nₐ + u.length) - u.length) proofoo = a_,
         {
           rw nat.add_sub_cancel nₐ u.length,
           use hnₐ,
@@ -518,63 +431,63 @@ begin
     exact not_le_of_gt vxy_long vxy_short,
   },
 
-  have counts_ab : ∀ w ∈ lang_eq_eq, count_in w a_ = count_in w b_,
+  have counts_ab : ∀ w ∈ lang_eq_eq, list.count_in w a_ = list.count_in w b_,
   {
     intros w w_in,
     cases w_in with w_n w_prop,
     rw w_prop,
     repeat {
-      rw count_in_append,
+      rw list.count_in_append,
     },
-    rw count_in_repeat_neq neq_ab,
-    rw count_in_repeat_neq neq_ba,
-    rw count_in_repeat_neq neq_ca,
-    rw count_in_repeat_neq neq_cb,
-    rw count_in_repeat_eq a_,
-    rw count_in_repeat_eq b_,
+    rw list.count_in_repeat_neq neq_ab,
+    rw list.count_in_repeat_neq neq_ba,
+    rw list.count_in_repeat_neq neq_ca,
+    rw list.count_in_repeat_neq neq_cb,
+    rw list.count_in_repeat_eq a_,
+    rw list.count_in_repeat_eq b_,
     repeat {
       rw add_zero,
     },
     rw zero_add,
   },
-  have counts_ac : ∀ w ∈ lang_eq_eq, count_in w a_ = count_in w c_,
+  have counts_ac : ∀ w ∈ lang_eq_eq, list.count_in w a_ = list.count_in w c_,
   {
     intros w w_in,
     cases w_in with w_n w_prop,
     rw w_prop,
     repeat {
-      rw count_in_append,
+      rw list.count_in_append,
     },
-    rw count_in_repeat_neq neq_ac,
-    rw count_in_repeat_neq neq_ca,
-    rw count_in_repeat_neq neq_ba,
-    rw count_in_repeat_neq neq_bc,
-    rw count_in_repeat_eq a_,
-    rw count_in_repeat_eq c_,
+    rw list.count_in_repeat_neq neq_ac,
+    rw list.count_in_repeat_neq neq_ca,
+    rw list.count_in_repeat_neq neq_ba,
+    rw list.count_in_repeat_neq neq_bc,
+    rw list.count_in_repeat_eq a_,
+    rw list.count_in_repeat_eq c_,
     repeat {
       rw add_zero,
     },
     rw zero_add,
   },
-  have counts_bc : ∀ w ∈ lang_eq_eq, count_in w b_ = count_in w c_,
+  have counts_bc : ∀ w ∈ lang_eq_eq, list.count_in w b_ = list.count_in w c_,
   {
     intros w w_in,
     rw ←counts_ab w w_in,
     exact counts_ac w w_in,
   },
-  have counts_ba : ∀ w ∈ lang_eq_eq, count_in w b_ = count_in w a_,
+  have counts_ba : ∀ w ∈ lang_eq_eq, list.count_in w b_ = list.count_in w a_,
   {
     intros w w_in,
     symmetry,
     exact counts_ab w w_in,
   },
-  have counts_ca : ∀ w ∈ lang_eq_eq, count_in w c_ = count_in w a_,
+  have counts_ca : ∀ w ∈ lang_eq_eq, list.count_in w c_ = list.count_in w a_,
   {
     intros w w_in,
     symmetry,
     exact counts_ac w w_in,
   },
-  have counts_cb : ∀ w ∈ lang_eq_eq, count_in w c_ = count_in w b_,
+  have counts_cb : ∀ w ∈ lang_eq_eq, list.count_in w c_ = list.count_in w b_,
   {
     intros w w_in,
     symmetry,
@@ -582,37 +495,37 @@ begin
   },
 
   have counted_letter : ∀ s,
-    count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) s =
-    count_in (list.repeat a_ (n+1)) s + count_in (list.repeat b_ (n+1)) s +
-      count_in (list.repeat c_ (n+1)) s + count_in (v ++ y) s,
+    list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) s =
+    list.count_in (list.repeat a_ (n+1)) s + list.count_in (list.repeat b_ (n+1)) s +
+      list.count_in (list.repeat c_ (n+1)) s + list.count_in (v ++ y) s,
   {
     intro s,
     rw ←concatenating,
     repeat {
-      rw count_in_append,
+      rw list.count_in_append,
     },
   },
-  have counted_a : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) a_ = n + 1 + count_in (v ++ y) a_,
+  have counted_a : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) a_ = n + 1 + list.count_in (v ++ y) a_,
   {
     rw counted_letter,
-    rw count_in_repeat_eq a_,
-    rw count_in_repeat_neq neq_ba,
-    rw count_in_repeat_neq neq_ca,
+    rw list.count_in_repeat_eq a_,
+    rw list.count_in_repeat_neq neq_ba,
+    rw list.count_in_repeat_neq neq_ca,
   },
-  have counted_b : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) b_ = n + 1 + count_in (v ++ y) b_,
+  have counted_b : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) b_ = n + 1 + list.count_in (v ++ y) b_,
   {
     rw counted_letter,
-    rw count_in_repeat_eq b_,
-    rw count_in_repeat_neq neq_cb,
-    rw count_in_repeat_neq neq_ab,
+    rw list.count_in_repeat_eq b_,
+    rw list.count_in_repeat_neq neq_cb,
+    rw list.count_in_repeat_neq neq_ab,
     rw zero_add,
   },
-  have counted_c : count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) c_ = n + 1 + count_in (v ++ y) c_,
+  have counted_c : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) c_ = n + 1 + list.count_in (v ++ y) c_,
   {
     rw counted_letter,
-    rw count_in_repeat_eq c_,
-    rw count_in_repeat_neq neq_ac,
-    rw count_in_repeat_neq neq_bc,
+    rw list.count_in_repeat_eq c_,
+    rw list.count_in_repeat_neq neq_ac,
+    rw list.count_in_repeat_neq neq_bc,
     rw zero_add,
   },
 
@@ -1135,8 +1048,6 @@ end
 
 end yes_CF
 
-end what_is_CF
-
 
 section intersection_inclusions
 
@@ -1524,8 +1435,6 @@ begin
 end
 
 end intersection_inclusions
-
-end specific_defs_and_lemmata
 
 
 /-- The class of context-free languages isn't closed under intersection. -/
