@@ -352,14 +352,7 @@ begin
           repeat {
             rw list.append_assoc,
           },
-          apply congr_arg2,
-          {
-            refl,
-          },
-          apply congr_arg2,
-          {
-            refl,
-          },
+          trim,
           have r_lt_n : r < n,
           {
             rwa nat.succ_le_iff at p_le_n,
@@ -372,10 +365,7 @@ begin
           refl,
         },
         {
-          apply congr_arg2, swap,
-          {
-            refl,
-          },
+          trim,
           unfold list.n_times,
           rw list.repeat_succ_eq_append_singleton,
           rw list.join_append,
@@ -461,10 +451,7 @@ begin
           use [list.repeat C (z - y.succ), list.repeat C y],
           split,
           {
-            apply congr_arg2, swap,
-            {
-              refl,
-            },
+            trim,
             have y_lt_z : y < z,
             {
               rwa nat.succ_le_iff at x_le_z,
@@ -479,12 +466,7 @@ begin
           {
             rw list.repeat_succ_eq_singleton_append C,
             rw ←list.append_assoc,
-            apply congr_arg2, swap,
-            {
-              refl,
-            },
-            rw list.append_assoc,
-            refl,
+            trim,
           },
         },
         have bubbledB := aux_bubbleB z (by refl),
@@ -540,21 +522,11 @@ begin
         rw sub_suc_suc f_lt_e,
         rw list.repeat_succ_eq_singleton_append C,
         rw ←list.append_assoc,
-        apply congr_arg2, swap,
-        {
-          refl,
-        },
-        repeat {
-          rw list.append_assoc,
-        },
-        refl,
+        trim,
       },
       {
         rw list.repeat_succ_eq_append_singleton C,
-        apply congr_arg2, swap,
-        {
-          refl,
-        },
+        trim,
         rw list.append_assoc,
         refl,
       },
@@ -642,21 +614,11 @@ begin
       repeat {
         rw list.append_assoc,
       },
-      apply congr_arg2,
-      {
-        refl,
-      },
-      repeat {
-        rw ←list.append_assoc,
-      },
-      refl,
+      trim,
     },
     {
       rw list.repeat_succ_eq_append_singleton b,
-      apply congr_arg2, swap,
-      {
-        refl,
-      },
+      trim,
       rw list.append_assoc,
       refl,
     },
@@ -701,21 +663,11 @@ begin
       repeat {
         rw list.append_assoc,
       },
-      apply congr_arg2,
-      {
-        refl,
-      },
-      repeat {
-        rw ←list.append_assoc,
-      },
-      refl,
+      trim,
     },
     {
       rw list.repeat_succ_eq_append_singleton c,
-      apply congr_arg2, swap,
-      {
-        refl,
-      },
+      trim,
       rw list.append_assoc,
       refl,
     },

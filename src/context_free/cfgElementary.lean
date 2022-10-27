@@ -328,12 +328,8 @@ begin
       change
         symbol.terminal a :: (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]) =
         list.repeat (symbol.terminal a) n ++ ([symbol.terminal a] ++ [symbol.nonterminal 0]),
-      rw ←list.append_assoc,
       rw ←list.cons_append,
-      apply congr_arg2, swap,
-      {
-        refl,
-      },
+      trim,
       have count_succ_left :
         @symbol.terminal T (fin 1) a :: list.repeat (symbol.terminal a) n =
         list.repeat (symbol.terminal a) (n + 1),

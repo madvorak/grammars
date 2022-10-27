@@ -898,10 +898,7 @@ begin
               lsTN₁_of_lsTN c ++ r₁.snd ++ lsTN₁_of_lsTN (list.take (u.length - (c.length + 1)) d),
             {
               apply congr_arg,
-              apply congr_arg2,
-              {
-                refl,
-              },
+              trim,
               unfold lsTN_of_lsTN₁,
               rw list.length_map,
             },
@@ -1077,10 +1074,7 @@ begin
           },
           rw len_add_sub,
           rw list.take_append,
-          apply congr_arg2,
-          {
-            refl,
-          },
+          trim,
           rw list.length_append,
           apply congr_arg2, swap,
           {

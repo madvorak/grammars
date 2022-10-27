@@ -47,11 +47,7 @@ begin
   repeat {
     rw list.map_append,
   },
-  apply congr_arg2,
-  {
-    apply congr_arg2;
-    finish,
-  },
+  trim,
   {
     apply congr_arg2,
     {
