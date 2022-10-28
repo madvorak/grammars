@@ -1,5 +1,4 @@
 import tactic
-import algebra.group.defs
 
 -- Copyright (c) 2022 Damiano Testa.
 

@@ -1,4 +1,4 @@
-import unrestricted.grammar
+import unrestricted.grammarLiftSink
 
 
 -- new nonterminal type
@@ -726,10 +726,146 @@ begin
   have ass_lifted : grammar_derives (star_grammar g) [S] (list.map symbol.terminal v),
   {
     clear_except ass,
-    -- TODO use grammar lifting
-    sorry,
+    have wrap_eq_lift : @wrap_sym T g.nt = lift_symbol_ sum.inl,
+    {
+      ext,
+      cases x;
+      refl,
+    },
+    let lifted_g : lifted_grammar_ T :=
+      lifted_grammar_.mk g (star_grammar g) sum.inl sum.get_left (by {
+        intros x y hyp,
+        exact sum.inl.inj hyp,
+      }) (by {
+        intros x y hyp,
+        cases x,
+        {
+          cases y,
+          {
+            simp only [sum.get_left] at hyp,
+            left,
+            congr,
+            exact hyp,
+          },
+          {
+            simp only [sum.get_left] at hyp,
+            exfalso,
+            exact hyp,
+          },
+        },
+        {
+          cases y,
+          -- copypaste (VII) begins
+          {
+            simp only [sum.get_left] at hyp,
+            exfalso,
+            exact hyp,
+          },
+          -- copypaste (VII) ends
+          {
+            right,
+            refl,
+          },
+        },
+      }) (by {
+        intro x,
+        refl,
+      }) (by {
+        intros r rin,
+        apply list.mem_cons_of_mem,
+        apply list.mem_cons_of_mem,
+        apply list.mem_cons_of_mem,
+        apply list.mem_cons_of_mem,
+        apply list.mem_append_left,
+        rw list.mem_map,
+        use r,
+        split,
+        {
+          exact rin,
+        },
+        unfold wrap_gr,
+        unfold lift_rule_,
+        unfold lift_string_,
+        rw wrap_eq_lift,
+      }) (by {
+        rintros r ⟨rin, n, nrn⟩,
+        cases rin,
+        {
+          exfalso,
+          rw rin at nrn,
+          clear_except nrn,
+          dsimp at nrn,
+          tauto,
+        },
+        -- copypaste (VIII) begins
+        cases rin,
+        {
+          exfalso,
+          rw rin at nrn,
+          clear_except nrn,
+          dsimp at nrn,
+          tauto,
+        },
+        -- copypaste (VIII) ends and begins
+        cases rin,
+        {
+          exfalso,
+          rw rin at nrn,
+          clear_except nrn,
+          dsimp at nrn,
+          tauto,
+        },
+        -- copypaste (VIII) ends and begins
+        cases rin,
+        {
+          exfalso,
+          rw rin at nrn,
+          clear_except nrn,
+          dsimp at nrn,
+          tauto,
+        },
+        -- copypaste (VIII) ends
+        change r ∈ list.map wrap_gr g.rules ++ rules_that_scan_terminals g at rin,
+        rw list.mem_append at rin,
+        cases rin,
+        {
+          clear_except rin wrap_eq_lift,
+          rw list.mem_map at rin,
+          rcases rin with ⟨r₀, rin₀, r_of_r₀⟩,
+          use r₀,
+          split,
+          {
+            exact rin₀,
+          },
+          convert r_of_r₀,
+          unfold lift_rule_,
+          unfold wrap_gr,
+          unfold lift_string_,
+          rw wrap_eq_lift,
+        },
+        {
+          exfalso,
+          unfold rules_that_scan_terminals at rin,
+          rw list.mem_map at rin,
+          rcases rin with ⟨t, tin, r_of_tg⟩,
+          rw ←r_of_tg at nrn,
+          clear_except nrn,
+          dsimp at nrn,
+          tauto,
+        },
+      }),
+    convert_to
+      grammar_derives lifted_g.g
+        [symbol.nonterminal (sum.inl g.initial)]
+        (lift_string_ lifted_g.lift_nt (list.map symbol.terminal v)),
+    {
+      unfold lift_string_,
+      rw list.map_map,
+      congr,
+    },
+    exact lift_deri_ lifted_g ass,
   },
-  have ass_pos := grammar_deri_with_postfix ([H] : list (symbol T (star_grammar g).nt)) ass_lifted,
+  have ass_postf := grammar_deri_with_postfix ([H] : list (symbol T (star_grammar g).nt)) ass_lifted,
   rw list.join_append,
   rw ←list.cons_append,
   apply grammar_deri_with_prefix,
@@ -737,7 +873,7 @@ begin
   rw list.map_singleton,
   rw list.join_singleton,
   change grammar_derives (star_grammar g) [S, H] (list.map symbol.terminal v ++ [H]),
-  convert ass_pos,
+  convert ass_postf,
 end
 
 

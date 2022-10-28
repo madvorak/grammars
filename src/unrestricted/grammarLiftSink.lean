@@ -5,20 +5,25 @@ section functions_lift_sink
 
 variables {T N₀ N : Type}
 
+-- TODO rename after collision with `cfgLiftSink.lift_symbol` disappears
 def lift_symbol_ (lift_N : N₀ → N) : symbol T N₀ → symbol T N
 | (symbol.terminal ter) := symbol.terminal ter
 | (symbol.nonterminal nonter) := symbol.nonterminal (lift_N nonter)
 
+-- TODO rename after collision with `cfgLiftSink.sink_symbol` disappears
 def sink_symbol_ (sink_N : N → option N₀) : symbol T N → option (symbol T N₀)
 | (symbol.terminal ter) := some (symbol.terminal ter)
 | (symbol.nonterminal nonter) := option.map symbol.nonterminal (sink_N nonter)
 
+-- TODO rename after collision with `cfgLiftSink.lift_string` disappears
 def lift_string_ (lift_N : N₀ → N) : list (symbol T N₀) → list (symbol T N) :=
 list.map (lift_symbol_ lift_N)
 
+-- TODO rename after collision with `cfgLiftSink.sink_string` disappears
 def sink_string_ (sink_N : N → option N₀) : list (symbol T N) → list (symbol T N₀) :=
 list.filter_map (sink_symbol_ sink_N)
 
+-- TODO rename after collision with `cfgLiftSink.lift_rule` disappears
 def lift_rule_ (lift_N : N₀ → N) : grule T N₀ → grule T N :=
 λ r : grule T N₀, grule.mk
   (lift_string_ lift_N r.input_L)
@@ -31,6 +36,7 @@ end functions_lift_sink
 
 section lifting_conditions
 
+-- TODO rename after collision with `cfgLiftSink.lifted_grammar` disappears
 structure lifted_grammar_ (T : Type) :=
 (g₀ g : grammar T)
 (lift_nt : g₀.nt → g.nt)
@@ -79,6 +85,7 @@ section translating_derivations
 
 variables {T : Type}
 
+-- TODO rename as well
 private lemma lift_tran_
     {lg : lifted_grammar_ T}
     {input output : list (symbol T lg.g₀.nt)}
@@ -109,6 +116,7 @@ begin
   },
 end
 
+-- TODO rename after collision with `cfgLiftSink.lift_deri` disappears
 lemma lift_deri_
     (lg : lifted_grammar_ T)
     {input output : list (symbol T lg.g₀.nt)}
@@ -127,13 +135,16 @@ begin
 end
 
 
+-- TODO rename after collision with `cfgLiftSink.good_letter` disappears
 def good_letter_ {lg : lifted_grammar_ T} : symbol T lg.g.nt → Prop
 | (symbol.terminal t)     := true
 | (symbol.nonterminal nt) := ∃ n₀ : lg.g₀.nt, lg.sink_nt nt = n₀
 
+-- TODO rename after collision with `cfgLiftSink.good_string` disappears
 def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ s, good_letter_ letter
 
+-- TODO rename as well
 private lemma sink_tran_
     {lg : lifted_grammar_ T}
     {input output : list (symbol T lg.g.nt)}
@@ -311,6 +322,7 @@ begin
   },
 end
 
+-- TODO rename after collision with `cfgLiftSink.sink_deri` disappears
 lemma sink_deri_
     (lg : lifted_grammar_ T)
     {input output : list (symbol T lg.g.nt)}
