@@ -81,6 +81,23 @@ begin
   sorry
 end
 
+-- should be added to mathlib
+lemma reverse_join (L : list (list α)) :
+  L.join.reverse = (list.map list.reverse L).reverse.join :=
+begin
+  induction L with l L' ih,
+  {
+    refl,
+  },
+  rw list.join,
+  rw list.reverse_append,
+  rw ih,
+  rw list.map_cons,
+  rw list.reverse_cons,
+  rw list.join_append,
+  rw list.join_singleton,
+end
+
 def n_times (l : list α) (n : ℕ) : list α :=
 (list.repeat l n).join
 

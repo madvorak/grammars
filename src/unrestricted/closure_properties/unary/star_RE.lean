@@ -155,7 +155,49 @@ begin
     -- hence `x ++ y ++ z` ends with `0` by `rw hyp`
     -- if `z` was empty (for contradition)
     -- we could not satisfy both `(y_nonzero : 0 ∉ y)` and `(y_nonempty : 0 < y.length)`
-    sorry,
+    by_contradiction contra,
+    push_neg at contra,
+    rw nat.le_zero_iff at contra,
+    rw list.length_eq_zero at contra,
+    rw contra at *,
+    clear contra,
+    rw list.append_nil at *,
+    have hyp_rev := congr_arg list.reverse hyp,
+    rw list.reverse_append at hyp_rev,
+    rw list.reverse_join at hyp_rev,
+    rw list.map_map at hyp_rev,
+    change (list.map (λ (v : list ℕ), list.reverse (v ++ [0])) l).reverse.join = y.reverse ++ x.reverse at hyp_rev,
+    have hyp_new : (list.map (λ (v : list ℕ), 0 :: v.reverse) l).reverse.join = y.reverse ++ x.reverse,
+    {
+      convert hyp_rev,
+      finish, -- TODO use `list.reverse_append` instead
+    },
+    have hyp_head := congr_fun (congr_arg list.nth hyp_new) 0,
+    clear hyp hyp_rev hyp_new,
+    have yr_nonempty : 0 < y.reverse.length,
+    {
+      rw list.length_reverse,
+      exact y_nonempty,
+    },
+    rw list.nth_append yr_nonempty at hyp_head,
+    rw ←list.map_reverse at hyp_head,
+    cases l.reverse with w l',
+    {
+      exfalso,
+      -- contradicts `y_nonempty` via `hyp` TODO
+      sorry,
+    },
+    rw list.map_cons at hyp_head,
+    have starts_with_zero :
+      ∀ a : list ℕ, ∀ b : list (list ℕ), ((0 :: a) :: b).join.nth 0 = some 0,
+    {
+      intros a b,
+      refl,
+    },
+    rw starts_with_zero at hyp_head,
+    have zero_in_y := list.nth_mem hyp_head.symm,
+    rw list.mem_reverse at zero_in_y,
+    exact y_nonzero zero_in_y,
   },
   obtain ⟨q, b, qlt, blt, drop_xyl⟩ := @list.drop_join_of_lt _ (list.map (++ [0]) l) (x ++ y).length (by {
     have lens := congr_arg list.length hyp,
