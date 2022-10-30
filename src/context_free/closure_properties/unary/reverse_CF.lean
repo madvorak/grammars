@@ -24,8 +24,13 @@ begin
       λ (r : g_nt × list (symbol T g_nt)), (r.fst, r.snd.reverse))
      g_rules = g_rules,
   convert_to list.map ((λ (r : g_nt × list (symbol T g_nt)), (r.fst, r.snd.reverse.reverse))) g_rules = g_rules,
-  convert_to list.map ((λ (r : g_nt × list (symbol T g_nt)), (r.fst, r.snd))) g_rules = g_rules;
-  finish,
+  convert_to list.map ((λ (r : g_nt × list (symbol T g_nt)), (r.fst, r.snd))) g_rules = g_rules,
+  {
+    simp [list.reverse_reverse],
+  },
+  {
+    simp,
+  },
 end
 
 private lemma derives_reversed (g : CF_grammar T) (v : list (symbol T g.nt)) :
