@@ -1237,7 +1237,7 @@ begin
           ... ≥ c.length + d.length + 1 :   by { apply nat.succ_le_of_lt, apply add_lt_add_right too_long, }
           ... = c.length + 1 + d.length :   nat.add_right_comm _ _ _,
         },
-        exact nat.lt_asymm imposs_gt_self imposs_gt_self,
+        exact nat.lt_irrefl _ imposs_gt_self,
       },
       have hlen_uc_orig : u.length ≤ c.length,
       {

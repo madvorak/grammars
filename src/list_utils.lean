@@ -175,7 +175,7 @@ begin
     exact contr.right,
   },
   rw zero_in_tail at ih,
-  exact nat.lt_asymm ih ih,
+  exact nat.lt_irrefl 0 ih,
 end
 
 lemma count_in_zero_of_notin {a : α} (hyp : a ∉ x) :

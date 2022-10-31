@@ -173,7 +173,7 @@ begin
       finish, -- TODO use `list.reverse_append` instead
     },
     have hyp_head := congr_fun (congr_arg list.nth hyp_new) 0,
-    clear hyp hyp_rev hyp_new,
+    clear hyp_rev hyp_new,
     have yr_nonempty : 0 < y.reverse.length,
     {
       rw list.length_reverse,
@@ -181,11 +181,23 @@ begin
     },
     rw list.nth_append yr_nonempty at hyp_head,
     rw ←list.map_reverse at hyp_head,
+    rw ←list.reverse_reverse l at hyp,
     cases l.reverse with w l',
     {
       exfalso,
-      -- contradicts `y_nonempty` via `hyp` TODO
-      sorry,
+      have nil_eq_xy : list.nil = x ++ y,
+      {
+        convert hyp,
+      },
+      have len_eq := congr_arg list.length nil_eq_xy,
+      clear_except y_nonempty len_eq,
+      rw list.length_append at len_eq,
+      rw list.length at len_eq,
+      apply nat.lt_irrefl 0,
+      calc
+        0 < y.length            : y_nonempty
+      ... ≤ x.length + y.length : le_add_self
+      ... = 0                   : len_eq.symm,
     },
     rw list.map_cons at hyp_head,
     have starts_with_zero :
@@ -504,7 +516,7 @@ begin
       {
         clear_except ul_pos,
         rw list.length at ul_pos,
-        exact nat.lt_asymm ul_pos ul_pos,
+        exact nat.lt_irrefl 0 ul_pos,
       },
       {
         dsimp at bef_tail,
@@ -581,7 +593,7 @@ begin
       {
         clear_except ul_pos,
         rw list.length at ul_pos,
-        exact nat.lt_asymm ul_pos ul_pos,
+        exact nat.lt_irrefl 0 ul_pos,
       },
       {
         dsimp at bef_tail,
@@ -855,7 +867,7 @@ private lemma star_case_5 {g : grammar T} {α α' : list (ns T g.nt)}
     (∀ wᵢ ∈ w, grammar_generates g wᵢ) ∧
     (grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal β ++ γ)) ∧
     (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
-    (α' = (list.map symbol.terminal (list.join w)) ++ list.map symbol.terminal β ++ [R] ++
+    (α' = list.map symbol.terminal (list.join w) ++ list.map symbol.terminal β ++ [R] ++
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
@@ -878,7 +890,7 @@ private lemma star_case_6 {g : grammar T} {α α' : list (ns T g.nt)}
     (∀ wᵢ ∈ w, grammar_generates g wᵢ) ∧
     (grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal β ++ γ)) ∧
     (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
-    (α' = (list.map symbol.terminal (list.join w)) ++ list.map symbol.terminal β ++ [R] ++
+    (α' = list.map symbol.terminal (list.join w) ++ list.map symbol.terminal β ++ [R] ++
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨

@@ -165,7 +165,7 @@ begin
     rw list.length at impossible_lengths,
     rw list.length_map at impossible_lengths,
     rw ←impossible_lengths at w_not_nil,
-    exact nat.lt_asymm w_not_nil w_not_nil,
+    exact nat.lt_irrefl 0 w_not_nil,
   },
   {
     exfalso,
