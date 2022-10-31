@@ -323,7 +323,51 @@ begin
   rw add_comm at hyp,
   rw ←list.length_append at hyp,
   rw drop_xyl at hyp,
-  sorry,
+  have y_mid : y = list.take y.length (list.drop x.length (list.map (++ [0]) l).join),
+  {
+    rw [eq_x, eq_z] at hyp,
+    clear_except hyp,
+    sorry,
+  },
+  rw y_mid,
+  have subst_kq : l.nth_le q qltll = l.nth_le k kltll,
+  {
+    clear_except key,
+    finish,
+  },
+  rw subst_kq,
+  rw list.nth_le_map,
+  swap, {
+    exact kltll,
+  },
+  have tech : e ≤ b,
+  {
+    sorry,
+  },
+  have easy : list.take e (l.nth_le k kltll ++ [0]) = list.take e (l.nth_le k kltll),
+  {
+    sorry,
+  },
+  rw easy,
+  have hard :
+    list.take y.length (list.drop x.length (list.map (++ [0]) l).join) =
+    list.take (b - e) (list.drop e (l.nth_le k kltll)),
+  {
+    sorry,
+  },
+  rw hard,
+  clear_except tech,
+  rw ←list.drop_take,
+  rw nat.add_sub_of_le tech,
+  rw list.append_assoc,
+  nth_rewrite 0 ←(list.take_append_drop e (l.nth_le k kltll)),
+  congr,
+  obtain ⟨d, hd⟩ := nat.le.dest tech,
+  rw ←hd,
+  rw list.drop_take,
+  rw add_comm,
+  rw ←list.drop_drop,
+  rw list.take_append_drop,
 end
 
 private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
