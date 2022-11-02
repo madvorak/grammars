@@ -1150,6 +1150,80 @@ begin
   convert ass_postf,
 end
 
+private lemma inductive_terminal_scan_3 {g : grammar T} {w : list (list T)} (n : ℕ) :
+  grammar_derives (star_grammar g)
+    ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
+      (list.map (λ v, [H] ++ list.map symbol.terminal v) (list.drop (w.length - n) w)).join ++ [H])
+    (list.map symbol.terminal w.join ++ [R, H]) :=
+begin
+  induction n with k ih,
+  {
+    rw nat.sub_zero,
+    rw list.drop_length,
+    rw list.map_nil,
+    rw list.join,
+    rw list.append_nil,
+    rw list.take_length,
+    rw list.map_join,
+    rw list.append_assoc,
+    apply grammar_deri_self,
+  },
+  apply grammar_deri_of_deri_deri _ ih,
+  clear ih,
+
+  have wlk_succ : w.length - k = (w.length - k.succ).succ,
+  {
+    sorry,
+  },
+  rw wlk_succ,
+  rw list.take_succ,
+  rw list.map_append,
+  rw list.join_append,
+  repeat {
+    rw list.append_assoc,
+  },
+  apply grammar_deri_with_prefix,
+  sorry,
+end
+
+private lemma inductive_terminal_scan_2 {g : grammar T} {w : list (list T)} :
+  grammar_derives (star_grammar g)
+    ([R] ++ (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H])
+    (list.map symbol.terminal w.join ++ [R, H]) :=
+begin
+  rw list.map_map,
+  convert inductive_terminal_scan_3 w.length,
+  {
+    rw nat.sub_self,
+    rw list.take_zero,
+    refl,
+  },
+  {
+    rw nat.sub_self,
+    refl,
+  },
+end
+
+private lemma inductive_terminal_scan_1 {g : grammar T} {w : list (list T)} :
+  grammar_derives (star_grammar g)
+    ([R, H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join)
+    (list.map symbol.terminal w.join ++ [R, H]) :=
+begin
+  convert_to
+    grammar_derives (star_grammar g)
+      ([R] ++ ([H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join))
+      (list.map symbol.terminal w.join ++ [R, H]),
+  have rebracket :
+    [H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join =
+    (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H],
+  {
+    -- TODO extract to a reusable lemma
+    sorry,
+  },
+  rw rebracket,
+  apply inductive_terminal_scan_2,
+end
+
 
 /-- The class of recursively-enumerable languages is closed under the Kleene star. -/
 theorem RE_of_star_RE (L : language T) :
@@ -1321,6 +1395,29 @@ begin
     },
     rw list.nil_append,
     rw v_reverse,
-    sorry,
+    have final_step :
+      grammar_transforms (star_grammar g)
+        (list.map symbol.terminal w.join ++ [R, H])
+        (list.map symbol.terminal w.join),
+    {
+      use (star_grammar g).rules.nth_le 3 (by dec_trivial),
+      split_ile,
+      use [list.map symbol.terminal w.join, list.nil],
+      split,
+      {
+        trim,
+      },
+      {
+        have out_nil : ((star_grammar g).rules.nth_le 3 _).output_string = [],
+        {
+          refl,
+        },
+        rw [list.append_nil, out_nil, list.append_nil],
+      },
+    },
+    apply grammar_deri_of_deri_tran _ final_step,
+    clear_except,
+    -- TODO refactor "wrappers" to here
+    apply inductive_terminal_scan_1,
   },
 end
