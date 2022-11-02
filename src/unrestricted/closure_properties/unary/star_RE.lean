@@ -1150,6 +1150,13 @@ begin
   convert ass_postf,
 end
 
+-- TODO delete this copypaste!!
+private lemma list_drop_take_succ {α : Type} {l : list α} {i : ℕ} (hil : i < l.length) :
+  list.drop i (list.take (i + 1) l) = [l.nth_le i hil] :=
+begin
+  sorry,
+end
+
 private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length) :
   grammar_derives (star_grammar g)
     ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
@@ -1181,14 +1188,90 @@ begin
     (w.nth (w.length - k.succ)).to_list ++ list.drop (w.length - k) w,
   {
     rw wlk_succ,
-    sorry,
+    have lt_wl : w.length - k.succ < w.length,
+    {
+      sorry,
+    },
+    generalize substit : w.length - k.succ = q,
+    rw substit at lt_wl,
+    rw ←list.take_append_drop q w,
+    rw list.nth_append_right,
+    swap, {
+      apply list.length_take_le,
+    },
+    have hq : (list.take q w).length = q, sorry,
+    rw hq,
+    rw nat.sub_self,
+    have foo : list.drop q.succ (list.take q w ++ list.drop q w) = list.drop 1 (list.drop q w), sorry,
+    have bar : list.drop q (list.take q w ++ list.drop q w) = list.drop q w, sorry,
+    rw [foo, bar],
+    rw list.drop_drop,
+    rw ←list.take_append_drop (1 + q) w,
+    rw list.drop_append_of_le_length,
+    swap, sorry,
+    apply congr_arg2,
+    {
+      rw list.nth_append,
+      swap, sorry,
+      rw list.nth_drop,
+      rw add_zero,
+      rw list.nth_take,
+      swap, exact lt_one_add q,
+      rw add_comm,
+      rw list_drop_take_succ lt_wl,
+      rw list.nth_le_nth lt_wl,
+      refl,
+    },
+    {
+      rw list.take_append_drop,
+    },
   },
   apply grammar_deri_with_postfix,
   rw [split_ldw, list.map_append, list.join_append, ←list.append_assoc],
   apply grammar_deri_with_postfix,
   rw [wlk_succ, list.take_succ, list.map_append, list.join_append, list.append_assoc, list.append_assoc],
   apply grammar_deri_with_prefix,
-  sorry,
+  clear_except,
+  cases w.nth (w.length - k.succ) with z;
+  unfold option.to_list,
+  {
+    rw [list.map_nil, list.map_nil, list.join, list.append_nil, list.nil_append],
+    apply grammar_deri_self,
+  },
+  rw [list.map_singleton, list.join_singleton, ←list.map_join, list.join_singleton],
+  apply grammar_deri_of_tran_deri,
+  {
+    use (star_grammar g).rules.nth_le 2 (by dec_trivial),
+    split_ile,
+    use [[], list.map symbol.terminal z],
+    split;
+    refl,
+  },
+  rw list.nil_append,
+
+  have scan_segment : ∀ x : list T, ∀ m : ℕ,
+    grammar_derives (star_grammar g)
+      ([R] ++ list.map symbol.terminal x)
+      (list.map symbol.terminal (list.take m x) ++ ([R] ++ list.map symbol.terminal (list.drop m x))),
+  {
+    intros,
+    induction m with n ih,
+    {
+      rw ←list.append_assoc,
+      convert grammar_deri_self,
+    },
+    apply grammar_deri_of_deri_tran ih,
+    sorry,
+  },
+  convert scan_segment z z.length,
+  {
+    rw list.take_length,
+  },
+  {
+    rw list.drop_length,
+    rw list.map_nil,
+    refl,
+  },
 end
 
 private lemma terminal_scan_aux {g : grammar T} {w : list (list T)} :
