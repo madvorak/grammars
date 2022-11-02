@@ -1150,7 +1150,7 @@ begin
   convert ass_postf,
 end
 
-private lemma inductive_terminal_scan_3 {g : grammar T} {w : list (list T)} (n : ℕ) :
+private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) :
   grammar_derives (star_grammar g)
     ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
       (list.map (λ v, [H] ++ list.map symbol.terminal v) (list.drop (w.length - n) w)).join ++ [H])
@@ -1186,13 +1186,13 @@ begin
   sorry,
 end
 
-private lemma inductive_terminal_scan_2 {g : grammar T} {w : list (list T)} :
+private lemma terminal_scan_aux {g : grammar T} {w : list (list T)} :
   grammar_derives (star_grammar g)
     ([R] ++ (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H])
     (list.map symbol.terminal w.join ++ [R, H]) :=
 begin
   rw list.map_map,
-  convert inductive_terminal_scan_3 w.length,
+  convert inductive_terminal_scan w.length,
   {
     rw nat.sub_self,
     rw list.take_zero,
@@ -1202,26 +1202,6 @@ begin
     rw nat.sub_self,
     refl,
   },
-end
-
-private lemma inductive_terminal_scan_1 {g : grammar T} {w : list (list T)} :
-  grammar_derives (star_grammar g)
-    ([R, H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join)
-    (list.map symbol.terminal w.join ++ [R, H]) :=
-begin
-  convert_to
-    grammar_derives (star_grammar g)
-      ([R] ++ ([H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join))
-      (list.map symbol.terminal w.join ++ [R, H]),
-  have rebracket :
-    [H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join =
-    (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H],
-  {
-    -- TODO extract to a reusable lemma
-    sorry,
-  },
-  rw rebracket,
-  apply inductive_terminal_scan_2,
 end
 
 
@@ -1417,7 +1397,17 @@ begin
     },
     apply grammar_deri_of_deri_tran _ final_step,
     clear_except,
-    -- TODO refactor "wrappers" to here
-    apply inductive_terminal_scan_1,
+    convert_to
+      grammar_derives (star_grammar g)
+        ([R] ++ ([H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join))
+        (list.map symbol.terminal w.join ++ [R, H]),
+    have rebracket :
+      [H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join =
+      (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H],
+    {
+      apply list.append_join_append,
+    },
+    rw rebracket,
+    apply terminal_scan_aux,
   },
 end

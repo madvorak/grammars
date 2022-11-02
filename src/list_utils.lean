@@ -81,6 +81,20 @@ begin
   sorry
 end
 
+lemma append_join_append (L : list (list α)) :
+  x ++ (list.map (λ l, l ++ x) L).join = (list.map (λ l, x ++ l) L).join ++ x :=
+begin
+  induction L with l L' ih,
+  {
+    rw [list.map_nil, list.join, list.append_nil, list.map_nil, list.join, list.nil_append],
+  },
+  rw [list.map_cons, list.join, list.map_cons, list.join],
+  repeat {
+    rw list.append_assoc,
+  },
+  rw ih,
+end
+
 -- should be added to mathlib
 lemma reverse_join (L : list (list α)) :
   L.join.reverse = (list.map list.reverse L).reverse.join :=
