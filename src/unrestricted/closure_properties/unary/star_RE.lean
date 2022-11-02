@@ -1150,7 +1150,7 @@ begin
   convert ass_postf,
 end
 
-private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) :
+private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length) :
   grammar_derives (star_grammar g)
     ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
       (list.map (λ v, [H] ++ list.map symbol.terminal v) (list.drop (w.length - n) w)).join ++ [H])
@@ -1168,20 +1168,25 @@ begin
     rw list.append_assoc,
     apply grammar_deri_self,
   },
+  specialize ih (nat.le_of_succ_le n_lt_wl),
   apply grammar_deri_of_deri_deri _ ih,
   clear ih,
 
   have wlk_succ : w.length - k = (w.length - k.succ).succ,
   {
+    omega,
+  },
+  have split_ldw :
+    list.drop (w.length - k.succ) w =
+    (w.nth (w.length - k.succ)).to_list ++ list.drop (w.length - k) w,
+  {
+    rw wlk_succ,
     sorry,
   },
-  rw wlk_succ,
-  rw list.take_succ,
-  rw list.map_append,
-  rw list.join_append,
-  repeat {
-    rw list.append_assoc,
-  },
+  apply grammar_deri_with_postfix,
+  rw [split_ldw, list.map_append, list.join_append, ←list.append_assoc],
+  apply grammar_deri_with_postfix,
+  rw [wlk_succ, list.take_succ, list.map_append, list.join_append, list.append_assoc, list.append_assoc],
   apply grammar_deri_with_prefix,
   sorry,
 end
@@ -1192,7 +1197,7 @@ private lemma terminal_scan_aux {g : grammar T} {w : list (list T)} :
     (list.map symbol.terminal w.join ++ [R, H]) :=
 begin
   rw list.map_map,
-  convert inductive_terminal_scan w.length,
+  convert inductive_terminal_scan w.length (by refl),
   {
     rw nat.sub_self,
     rw list.take_zero,

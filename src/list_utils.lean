@@ -81,6 +81,7 @@ begin
   sorry
 end
 
+-- should probably be added to mathlib
 lemma append_join_append (L : list (list α)) :
   x ++ (list.map (λ l, l ++ x) L).join = (list.map (λ l, x ++ l) L).join ++ x :=
 begin
@@ -88,11 +89,12 @@ begin
   {
     rw [list.map_nil, list.join, list.append_nil, list.map_nil, list.join, list.nil_append],
   },
-  rw [list.map_cons, list.join, list.map_cons, list.join],
-  repeat {
-    rw list.append_assoc,
+  {
+    rw [
+      list.map_cons, list.join, list.map_cons, list.join,
+      list.append_assoc, ih, list.append_assoc, list.append_assoc
+    ],
   },
-  rw ih,
 end
 
 -- should be added to mathlib
@@ -103,13 +105,9 @@ begin
   {
     refl,
   },
-  rw list.join,
-  rw list.reverse_append,
-  rw ih,
-  rw list.map_cons,
-  rw list.reverse_cons,
-  rw list.join_append,
-  rw list.join_singleton,
+  {
+    rw [list.join, list.reverse_append, ih, list.map_cons, list.reverse_cons, list.join_append, list.join_singleton],
+  },
 end
 
 def n_times (l : list α) (n : ℕ) : list α :=
