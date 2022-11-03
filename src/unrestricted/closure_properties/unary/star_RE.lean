@@ -127,6 +127,9 @@ begin
 end
 -- copypaste (III) ends
 
+
+section hard_direction
+
 example {l : list (list ℕ)} {x y z : list ℕ}
     (l_nozeros : ∀ lᵢ ∈ l, 0 ∉ lᵢ) (y_nonzero : 0 ∉ y) (y_nonempty : 0 < y.length)
     (hyp : (list.map (++ [0]) l).join = x ++ y ++ z) :
@@ -956,6 +959,11 @@ begin
   },
 end
 
+end hard_direction
+
+
+section easy_direction
+
 private lemma short_induction {g : grammar T} {w : list (list T)}
     (ass : ∀ wᵢ ∈ w.reverse, grammar_generates g wᵢ) :
   grammar_derives (star_grammar g) [Z] (Z ::
@@ -1150,13 +1158,6 @@ begin
   convert ass_postf,
 end
 
--- TODO delete this copypaste!!
-private lemma list_drop_take_succ {α : Type} {l : list α} {i : ℕ} (hil : i < l.length) :
-  list.drop i (list.take (i + 1) l) = [l.nth_le i hil] :=
-begin
-  sorry,
-end
-
 private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length) :
   grammar_derives (star_grammar g)
     ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
@@ -1190,7 +1191,7 @@ begin
     rw wlk_succ,
     have lt_wl : w.length - k.succ < w.length,
     {
-      sorry,
+      omega,
     },
     generalize substit : w.length - k.succ = q,
     rw substit at lt_wl,
@@ -1199,26 +1200,40 @@ begin
     swap, {
       apply list.length_take_le,
     },
-    have hq : (list.take q w).length = q, sorry,
-    rw hq,
+    have eq_q : (list.take q w).length = q,
+    {
+      rw list.length_take,
+      exact min_eq_left_of_lt lt_wl,
+    },
+    rw eq_q,
     rw nat.sub_self,
-    have foo : list.drop q.succ (list.take q w ++ list.drop q w) = list.drop 1 (list.drop q w), sorry,
-    have bar : list.drop q (list.take q w ++ list.drop q w) = list.drop q w, sorry,
-    rw [foo, bar],
-    rw list.drop_drop,
+    have drop_q_succ :
+      list.drop q.succ (list.take q w ++ list.drop q w) = list.drop 1 (list.drop q w),
+    {
+      rw list.drop_drop,
+      rw list.take_append_drop,
+      rw add_comm,
+    },
+    rw [drop_q_succ, list.drop_left' eq_q, list.drop_drop],
     rw ←list.take_append_drop (1 + q) w,
-    rw list.drop_append_of_le_length,
-    swap, sorry,
+    have q_lt : q < (list.take (1 + q) w).length,
+    {
+      rw list.length_take,
+      exact lt_min (lt_one_add q) lt_wl,
+    },
+    rw list.drop_append_of_le_length (le_of_lt q_lt),
     apply congr_arg2,
     {
       rw list.nth_append,
-      swap, sorry,
+      swap, {
+        rw list.length_drop,
+        exact nat.sub_pos_of_lt q_lt,
+      },
       rw list.nth_drop,
       rw add_zero,
-      rw list.nth_take,
-      swap, exact lt_one_add q,
+      rw list.nth_take (lt_one_add q),
       rw add_comm,
-      rw list_drop_take_succ lt_wl,
+      rw list.drop_take_succ lt_wl,
       rw list.nth_le_nth lt_wl,
       refl,
     },
@@ -1261,7 +1276,47 @@ begin
       convert grammar_deri_self,
     },
     apply grammar_deri_of_deri_tran ih,
-    sorry,
+    have n_lt : n < x.length, sorry, -- missing assumption
+    use ⟨[], (sum.inr 2), [symbol.terminal (list.nth_le x n n_lt)],
+      [symbol.terminal (list.nth_le x n n_lt), R]⟩,
+    split,
+    {
+      iterate 4 {
+        apply list.mem_cons_of_mem,
+      },
+      apply list.mem_append_right,
+      unfold rules_that_scan_terminals,
+      rw list.mem_map,
+      use list.nth_le x n n_lt,
+      split,
+      {
+        sorry, -- another missing assumption
+      },
+      {
+        refl,
+      },
+    },
+    use list.map symbol.terminal (list.take n x),
+    use list.map symbol.terminal (list.drop n.succ x),
+    dsimp only,
+    split,
+    {
+      trim,
+      rw list.nil_append,
+      rw list.append_assoc,
+      apply congr_arg2,
+      {
+        refl,
+      },
+      sorry, -- TODO
+    },
+    {
+      rw list.take_succ,
+      rw list.map_append,
+      trim,
+      rw list.nth_le_nth n_lt,
+      refl,
+    },
   },
   convert scan_segment z z.length,
   {
@@ -1291,6 +1346,8 @@ begin
     refl,
   },
 end
+
+end easy_direction
 
 
 /-- The class of recursively-enumerable languages is closed under the Kleene star. -/

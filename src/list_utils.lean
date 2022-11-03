@@ -42,6 +42,51 @@ by rw [list.forall_mem_append, list.forall_mem_append, and_assoc]
 
 end list_append_append
 
+section list_take_drop
+
+lemma take_one_drop {i : ℕ} (i_lt : i < x.length) :
+  list.take 1 (list.drop i x) = [x.nth_le i i_lt] :=
+begin
+  have x_split : x = list.take i x ++ list.drop i x,
+  {
+    rw list.take_append_drop,
+  },
+  rw list.nth_le_of_eq x_split,
+  rw list.nth_le_append_right,
+  {
+    have smaller_i : min i x.length = i,
+    {
+      exact min_eq_left (le_of_lt i_lt),
+    },
+    simp only [list.length_take, smaller_i, nat.sub_self],
+    have underscore : 0 < (list.drop i x).length,
+    {
+      rw list.length_drop,
+      exact nat.sub_pos_of_lt i_lt,
+    },
+    cases (list.drop i x) with d l,
+    {
+      exfalso,
+      exact false_of_ne (ne_of_lt underscore),
+    },
+    {
+      refl,
+    },
+  },
+  {
+    apply list.length_take_le,
+  },
+end
+
+lemma drop_take_succ {i : ℕ} (i_lt : i < x.length) :
+  list.drop i (list.take (i + 1) x) = [x.nth_le i i_lt] :=
+begin
+  rw list.drop_take,
+  apply list.take_one_drop,
+end
+
+end list_take_drop
+
 section list_repeat
 
 lemma repeat_zero (s : α) :
