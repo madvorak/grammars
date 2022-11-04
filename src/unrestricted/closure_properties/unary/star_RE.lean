@@ -969,7 +969,7 @@ private lemma short_induction {g : grammar T} {w : list (list T)}
   grammar_derives (star_grammar g) [Z] (Z ::
       list.join (list.map (++ [H]) (list.map (list.map symbol.terminal) w.reverse))
     ) :=
-begin
+begin -- TODO at the same time, prove that all terminals are outputted by rules
   induction w with v x ih,
   {
     apply grammar_deri_self,
@@ -1158,7 +1158,8 @@ begin
   convert ass_postf,
 end
 
-private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length) :
+private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length)
+    (terminals : ∀ v ∈ w, ∀ t ∈ v, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)) :
   grammar_derives (star_grammar g)
     ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
       (list.map (λ v, [H] ++ list.map symbol.terminal v) (list.drop (w.length - n) w)).join ++ [H])
@@ -1246,14 +1247,16 @@ begin
   apply grammar_deri_with_postfix,
   rw [wlk_succ, list.take_succ, list.map_append, list.join_append, list.append_assoc, list.append_assoc],
   apply grammar_deri_with_prefix,
-  clear_except,
-  cases w.nth (w.length - k.succ) with z;
+  clear_except terminals,
+  specialize terminals (w.nth (w.length - k.succ)).to_list.head,
+  cases w.nth (w.length - k.succ) with z; -- connection between `w.nth (w.length - k.succ)` and `terminals` is lost
   unfold option.to_list,
   {
     rw [list.map_nil, list.map_nil, list.join, list.append_nil, list.nil_append],
     apply grammar_deri_self,
   },
   rw [list.map_singleton, list.join_singleton, ←list.map_join, list.join_singleton],
+  --unfold option.to_list at terminals,
   apply grammar_deri_of_tran_deri,
   {
     use (star_grammar g).rules.nth_le 2 (by dec_trivial),
@@ -1264,21 +1267,21 @@ begin
   },
   rw list.nil_append,
 
-  have scan_segment : ∀ x : list T, ∀ m : ℕ,
+  have scan_segment : ∀ x : list T, ∀ m : ℕ, m ≤ x.length →
     grammar_derives (star_grammar g)
       ([R] ++ list.map symbol.terminal x)
       (list.map symbol.terminal (list.take m x) ++ ([R] ++ list.map symbol.terminal (list.drop m x))),
   {
-    intros,
+    intros x m small,
     induction m with n ih,
     {
       rw ←list.append_assoc,
       convert grammar_deri_self,
     },
-    apply grammar_deri_of_deri_tran ih,
-    have n_lt : n < x.length, sorry, -- missing assumption
-    use ⟨[], (sum.inr 2), [symbol.terminal (list.nth_le x n n_lt)],
-      [symbol.terminal (list.nth_le x n n_lt), R]⟩,
+    apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le small)),
+    rw nat.succ_le_iff at small,
+    use ⟨[], (sum.inr 2), [symbol.terminal (list.nth_le x n small)],
+      [symbol.terminal (list.nth_le x n small), R]⟩,
     split,
     {
       iterate 4 {
@@ -1287,10 +1290,20 @@ begin
       apply list.mem_append_right,
       unfold rules_that_scan_terminals,
       rw list.mem_map,
-      use list.nth_le x n n_lt,
+      use list.nth_le x n small,
       split,
       {
-        sorry, -- another missing assumption
+        unfold all_used_terminals,
+        rw list.mem_filter_map,
+        use x.nth_le n small,
+        split,
+        {
+          --apply terminals,
+          sorry,
+        },
+        {
+          refl,
+        },
       },
       {
         refl,
@@ -1314,11 +1327,11 @@ begin
       rw list.take_succ,
       rw list.map_append,
       trim,
-      rw list.nth_le_nth n_lt,
+      rw list.nth_le_nth small,
       refl,
     },
   },
-  convert scan_segment z z.length,
+  convert scan_segment z z.length (by refl),
   {
     rw list.take_length,
   },
@@ -1329,13 +1342,14 @@ begin
   },
 end
 
-private lemma terminal_scan_aux {g : grammar T} {w : list (list T)} :
+private lemma terminal_scan_aux {g : grammar T} {w : list (list T)}
+    (terminals : ∀ v ∈ w, ∀ t ∈ v, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)) :
   grammar_derives (star_grammar g)
     ([R] ++ (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H])
     (list.map symbol.terminal w.join ++ [R, H]) :=
 begin
   rw list.map_map,
-  convert inductive_terminal_scan w.length (by refl),
+  convert inductive_terminal_scan w.length (by refl) terminals,
   {
     rw nat.sub_self,
     rw list.take_zero,
@@ -1500,7 +1514,7 @@ begin
     clear w_join p,
     unfold grammar_generates,
     rw ←hg at parts_in_L,
-    apply grammar_deri_of_deri_deri (short_induction parts_in_L),
+    apply grammar_deri_of_deri_deri (short_induction parts_in_L), -- TODO here more
     apply grammar_deri_of_tran_deri,
     {
       use (star_grammar g).rules.nth_le 1 (by dec_trivial),
@@ -1554,5 +1568,6 @@ begin
     },
     rw rebracket,
     apply terminal_scan_aux,
+    sorry, -- TODO close by what `short_induction` outputted
   },
 end
