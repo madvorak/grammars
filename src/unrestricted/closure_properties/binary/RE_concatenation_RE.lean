@@ -105,24 +105,7 @@ end the_construction
 
 section easy_direction
 
-private lemma first_transformation {g₁ g₂ : grammar T} :
-  grammar_transforms (big_grammar g₁ g₂) [symbol.nonterminal (big_grammar g₁ g₂).initial] [
-      symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
-      symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))
-    ] :=
-begin
-  use (big_grammar g₁ g₂).rules.nth_le 0 dec_trivial,
-  split,
-  {
-    change _ ∈ list.cons _ _,
-    finish,
-  },
-  use [[], []],
-  split;
-  refl,
-end
-
-private lemma grammar_generates_only_legit_terminals
+lemma grammar_generates_only_legit_terminals
     {g : grammar T}
     {w : list (symbol T g.nt)}
     (ass : grammar_derives g [symbol.nonterminal g.initial] w)
@@ -170,6 +153,23 @@ begin
     right,
     exact symbol_derived,
   },
+end
+
+private lemma first_transformation {g₁ g₂ : grammar T} :
+  grammar_transforms (big_grammar g₁ g₂) [symbol.nonterminal (big_grammar g₁ g₂).initial] [
+      symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
+      symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))
+    ] :=
+begin
+  use (big_grammar g₁ g₂).rules.nth_le 0 dec_trivial,
+  split,
+  {
+    change _ ∈ list.cons _ _,
+    finish,
+  },
+  use [[], []],
+  split;
+  refl,
 end
 
 private lemma substitute_terminals

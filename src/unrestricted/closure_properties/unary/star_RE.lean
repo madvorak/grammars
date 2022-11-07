@@ -1,4 +1,5 @@
 import unrestricted.grammarLiftSink
+import unrestricted.closure_properties.binary.RE_concatenation_RE
 
 
 -- new nonterminal type
@@ -78,6 +79,9 @@ grammar.mk (nn g.nt) (sum.inr 0) (
 end construction
 
 
+
+section hard_direction
+
 private lemma wrap_never_outputs_Z {N : Type} (a : symbol T N) :
   wrap_sym a ≠ Z :=
 begin
@@ -126,9 +130,6 @@ begin
   tauto,
 end
 -- copypaste (III) ends
-
-
-section hard_direction
 
 example {l : list (list ℕ)} {x y z : list ℕ}
     (l_nozeros : ∀ lᵢ ∈ l, 0 ∉ lᵢ) (y_nonzero : 0 ∉ y) (y_nonempty : 0 < y.length)
@@ -970,7 +971,7 @@ private lemma short_induction {g : grammar T} {w : list (list T)}
       list.join (list.map (++ [H]) (list.map (list.map symbol.terminal) w.reverse))
     ) ∧
   ∀ p ∈ w, ∀ t ∈ p, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules) :=
-begin -- TODO at the same time, prove that all terminals are outputted by rules
+begin
   induction w with v x ih,
   {
     split,
@@ -1174,8 +1175,44 @@ begin -- TODO at the same time, prove that all terminals are outputted by rules
     {
       rw pin at tin,
       clear pin,
-      --induction ass,
-      sorry,
+      have stin : symbol.terminal t ∈ list.map symbol.terminal v,
+      {
+        rw list.mem_map,
+        use t,
+        split,
+        {
+          exact tin,
+        },
+        {
+          refl,
+        },
+      },
+      cases grammar_generates_only_legit_terminals ass stin with rule_exists imposs,
+      {
+        rcases rule_exists with ⟨r, rin, stirn⟩,
+        rw list.mem_join,
+        use r.output_string,
+        split,
+        {
+          rw list.mem_map,
+          use r,
+          split,
+          {
+            exact rin,
+          },
+          {
+            refl,
+          },
+        },
+        {
+          exact stirn,
+        },
+      },
+      {
+        exfalso,
+        clear_except imposs,
+        tauto,
+      }
     },
     {
       exact ih.right p pin t tin,
@@ -1210,15 +1247,15 @@ begin
   {
     omega,
   },
+  have lt_wl : w.length - k.succ < w.length,
+  {
+    omega,
+  },
   have split_ldw :
     list.drop (w.length - k.succ) w =
     (w.nth (w.length - k.succ)).to_list ++ list.drop (w.length - k) w,
   {
     rw wlk_succ,
-    have lt_wl : w.length - k.succ < w.length,
-    {
-      omega,
-    },
     generalize substit : w.length - k.succ = q,
     rw substit at lt_wl,
     rw ←list.take_append_drop q w,
@@ -1272,30 +1309,26 @@ begin
   apply grammar_deri_with_postfix,
   rw [wlk_succ, list.take_succ, list.map_append, list.join_append, list.append_assoc, list.append_assoc],
   apply grammar_deri_with_prefix,
-  clear_except terminals n_lt_wl,
-  have missing : w.length - k.succ < w.length,
-  {
-    omega,
-  },
-  specialize terminals (w.nth_le (w.length - k.succ) missing) (list.nth_le_mem w (w.length - k.succ) missing),
-  rw list.nth_le_nth missing,
+  clear_except terminals lt_wl,
+  specialize terminals (w.nth_le (w.length - k.succ) lt_wl) (list.nth_le_mem w (w.length - k.succ) lt_wl),
+  rw list.nth_le_nth lt_wl,
   unfold option.to_list,
   rw [list.map_singleton, list.join_singleton, ←list.map_join, list.join_singleton],
   apply grammar_deri_of_tran_deri,
   {
     use (star_grammar g).rules.nth_le 2 (by dec_trivial),
     split_ile,
-    use [[], list.map symbol.terminal (w.nth_le (w.length - k.succ) missing)],
+    use [[], list.map symbol.terminal (w.nth_le (w.length - k.succ) lt_wl)],
     split;
     refl,
   },
   rw list.nil_append,
 
-  have scan_segment : ∀ m : ℕ, m ≤ (w.nth_le (w.length - k.succ) missing).length →
+  have scan_segment : ∀ m : ℕ, m ≤ (w.nth_le (w.length - k.succ) lt_wl).length →
     grammar_derives (star_grammar g)
-      ([R] ++ list.map symbol.terminal (w.nth_le (w.length - k.succ) missing))
-      (list.map symbol.terminal (list.take m (w.nth_le (w.length - k.succ) missing)) ++
-        ([R] ++ list.map symbol.terminal (list.drop m (w.nth_le (w.length - k.succ) missing)))),
+      ([R] ++ list.map symbol.terminal (w.nth_le (w.length - k.succ) lt_wl))
+      (list.map symbol.terminal (list.take m (w.nth_le (w.length - k.succ) lt_wl)) ++
+        ([R] ++ list.map symbol.terminal (list.drop m (w.nth_le (w.length - k.succ) lt_wl)))),
   {
     intros m small,
     induction m with n ih,
@@ -1305,8 +1338,8 @@ begin
     },
     apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le small)),
     rw nat.succ_le_iff at small,
-    use ⟨[], (sum.inr 2), [symbol.terminal (list.nth_le (w.nth_le (w.length - k.succ) missing) n small)],
-      [symbol.terminal (list.nth_le (w.nth_le (w.length - k.succ) missing) n small), R]⟩,
+    use ⟨[], (sum.inr 2), [symbol.terminal (list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small)],
+      [symbol.terminal (list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small), R]⟩,
     split,
     {
       iterate 4 {
@@ -1315,12 +1348,12 @@ begin
       apply list.mem_append_right,
       unfold rules_that_scan_terminals,
       rw list.mem_map,
-      use list.nth_le (w.nth_le (w.length - k.succ) missing) n small,
+      use list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small,
       split,
       {
         unfold all_used_terminals,
         rw list.mem_filter_map,
-        use (w.nth_le (w.length - k.succ) missing).nth_le n small,
+        use (w.nth_le (w.length - k.succ) lt_wl).nth_le n small,
         split,
         {
           apply terminals,
@@ -1334,8 +1367,8 @@ begin
         refl,
       },
     },
-    use list.map symbol.terminal (list.take n (w.nth_le (w.length - k.succ) missing)),
-    use list.map symbol.terminal (list.drop n.succ (w.nth_le (w.length - k.succ) missing)),
+    use list.map symbol.terminal (list.take n (w.nth_le (w.length - k.succ) lt_wl)),
+    use list.map symbol.terminal (list.drop n.succ (w.nth_le (w.length - k.succ) lt_wl)),
     dsimp only,
     split,
     {
@@ -1346,7 +1379,18 @@ begin
       {
         refl,
       },
-      sorry, -- TODO
+      rw ←list.take_append_drop 1 (list.map symbol.terminal (list.drop n (w.nth_le (w.length - k.succ) lt_wl))),
+      apply congr_arg2,
+      {
+        rw ←list.map_take,
+        rw list.take_one_drop,
+        rw list.map_singleton,
+      },
+      {
+        rw ←list.map_drop,
+        rw list.drop_drop,
+        rw add_comm,
+      },
     },
     {
       rw list.take_succ,
@@ -1356,7 +1400,7 @@ begin
       refl,
     },
   },
-  convert scan_segment (w.nth_le (w.length - k.succ) missing).length (by refl),
+  convert scan_segment (w.nth_le (w.length - k.succ) lt_wl).length (by refl),
   {
     rw list.take_length,
   },
