@@ -130,14 +130,14 @@ end
 lemma append_join_append (L : list (list α)) :
   x ++ (list.map (λ l, l ++ x) L).join = (list.map (λ l, x ++ l) L).join ++ x :=
 begin
-  induction L with l L' ih,
+  induction L,
   {
     rw [list.map_nil, list.join, list.append_nil, list.map_nil, list.join, list.nil_append],
   },
   {
     rw [
       list.map_cons, list.join, list.map_cons, list.join,
-      list.append_assoc, ih, list.append_assoc, list.append_assoc
+      list.append_assoc, L_ih, list.append_assoc, list.append_assoc
     ],
   },
 end
@@ -146,12 +146,12 @@ end
 lemma reverse_join (L : list (list α)) :
   L.join.reverse = (list.map list.reverse L).reverse.join :=
 begin
-  induction L with l L' ih,
+  induction L,
   {
     refl,
   },
   {
-    rw [list.join, list.reverse_append, ih, list.map_cons, list.reverse_cons, list.join_append, list.join_singleton],
+    rw [list.join, list.reverse_append, L_ih, list.map_cons, list.reverse_cons, list.join_append, list.join_singleton],
   },
 end
 
