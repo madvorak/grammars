@@ -82,7 +82,13 @@ end construction
 
 section hard_direction
 
-private lemma wrap_never_outputs_Z {N : Type} (a : symbol T N) :
+lemma zero_of_not_ge_one {n : ℕ} (not_pos : ¬ (n ≥ 1)) : n = 0 :=
+begin
+  push_neg at not_pos,
+  rwa nat.lt_one_iff at not_pos,
+end
+
+private lemma wrap_never_outputs_Z {N : Type} {a : symbol T N} :
   wrap_sym a ≠ Z :=
 begin
   unfold Z,
@@ -98,7 +104,7 @@ begin
 end
 
 -- copypaste (III) begins
-private lemma wrap_never_outputs_H {N : Type} (a : symbol T N) :
+private lemma wrap_never_outputs_H {N : Type} {a : symbol T N} :
   wrap_sym a ≠ H :=
 begin
   unfold H,
@@ -115,7 +121,7 @@ end
 -- copypaste (III) ends
 
 -- copypaste (III) begins
-private lemma wrap_never_outputs_R {N : Type} (a : symbol T N) :
+private lemma wrap_never_outputs_R {N : Type} {a : symbol T N} :
   wrap_sym a ≠ R :=
 begin
   unfold R,
@@ -436,7 +442,7 @@ private lemma star_case_1 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H] ∧ Z ∉ α' ∧ R ∉ α') :=
+  ((∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α') :=
 begin
   rcases hyp with ⟨x, valid, cat⟩,
   have no_R_in_alpha : R ∉ α,
@@ -462,7 +468,7 @@ begin
     {
       rw list.mem_map at Ril,
       rcases Ril with ⟨s, -, imposs⟩,
-      exact wrap_never_outputs_R s imposs,
+      exact wrap_never_outputs_R imposs,
     },
     {
       rw list.mem_singleton at Ril,
@@ -514,7 +520,7 @@ begin
         {
           rw list.mem_map at Zil,
           rcases Zil with ⟨s, -, imposs⟩,
-          exact wrap_never_outputs_Z s imposs,
+          exact wrap_never_outputs_Z imposs,
         },
         {
           rw list.mem_singleton at Zil,
@@ -591,7 +597,7 @@ begin
         {
           rw list.mem_map at Zil,
           rcases Zil with ⟨s, -, imposs⟩,
-          exact wrap_never_outputs_Z s imposs,
+          exact wrap_never_outputs_Z imposs,
         },
         {
           rw list.mem_singleton at Zil,
@@ -703,7 +709,7 @@ begin
     swap, {
       rw list.mem_map at contra,
       rcases contra with ⟨s, -, is_H⟩,
-      exact wrap_never_outputs_H s is_H,
+      exact wrap_never_outputs_H is_H,
     },
     rw list.mem_append at contra,
     cases contra,
@@ -711,7 +717,7 @@ begin
       -- copypaste (VI) begins
       rw list.mem_map at contra,
       rcases contra with ⟨s, -, is_H⟩,
-      exact wrap_never_outputs_H s is_H,
+      exact wrap_never_outputs_H is_H,
       -- copypaste (VI) ends
     },
     {
@@ -815,7 +821,7 @@ private lemma star_case_2 {g : grammar T} {α α' : list (symbol T (star_grammar
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H] ∧ Z ∉ α' ∧ R ∉ α') :=
+  ((∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α') :=
 begin
   sorry,
 end
@@ -843,7 +849,7 @@ private lemma star_case_3 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H] ∧ Z ∉ α' ∧ R ∉ α') :=
+  ((∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α') :=
 begin
   sorry,
 end
@@ -866,9 +872,13 @@ private lemma star_case_4 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H] ∧ Z ∉ α' ∧ R ∉ α') :=
+  ((∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α') :=
 begin
-  sorry,
+  exfalso,
+  rcases hyp with ⟨w, -, alpha_of_w⟩,
+  rw alpha_of_w at orig,
+  rcases orig with ⟨r, -, u, v, bef, -⟩,
+  simpa using congr_arg (λ l, symbol.nonterminal r.input_N ∈ l) bef,
 end
 
 private lemma star_case_5 {g : grammar T} {α α' : list (ns T g.nt)}
@@ -889,14 +899,39 @@ private lemma star_case_5 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H] ∧ Z ∉ α' ∧ R ∉ α') :=
+  ((∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α') :=
 begin
   sorry,
 end
 
+private lemma false_of_wrap_concat_H_eq_appends {g : grammar T}
+    {w : list (symbol T g.nt)} {v₁ v₂ v₄ v₅ : list (ns T g.nt)} {Y : ns T g.nt}
+    (YneqH : Y ≠ H) (wrap_never_outs_Y : ∀ a : symbol T g.nt, wrap_sym a ≠ Y) :
+  list.map wrap_sym w ++ [H] = v₁ ++ v₂ ++ [Y] ++ v₄ ++ v₅ → false :=
+begin
+  intro hyp,
+  have contrast := congr_arg (λ l, Y ∈ l) hyp,
+  have Y_not_in : (λ l, Y ∈ l) (list.map wrap_sym w ++ [H]) = false,
+  {
+    change (Y ∈ (list.map wrap_sym w ++ [H])) = false,
+    rw [list.mem_append, list.mem_singleton, list.mem_map, eq_iff_iff, iff_false],
+    by_contradiction if_Y_in,
+    cases if_Y_in,
+    {
+      rcases if_Y_in with ⟨a, -, imposs⟩,
+      exact wrap_never_outs_Y a imposs,
+    },
+    {
+      exact YneqH if_Y_in,
+    },
+  },
+  rw Y_not_in at contrast,
+  simpa using contrast,
+end
+
 private lemma star_case_6 {g : grammar T} {α α' : list (ns T g.nt)}
     (orig : grammar_transforms (star_grammar g) α α')
-    (hyp : ∃ ω : list (symbol T g.nt), α = list.map wrap_sym ω ++ [H] ∧ Z ∉ α ∧ R ∉ α) :
+    (hyp : (∃ ω : list (symbol T g.nt), α = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α ∧ R ∉ α) :
 -- Do not change even though the statement could easily be made stronger!
   (∃ x : list (list (symbol T g.nt)),
     (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
@@ -912,9 +947,274 @@ private lemma star_case_6 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H] ∧ Z ∉ α' ∧ R ∉ α') :=
+  ((∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α') :=
 begin
-  sorry,
+  rcases hyp with ⟨⟨w, ends_with_H⟩, no_Z, no_R⟩,
+  rcases orig with ⟨r, rin, u, v, bef, aft⟩,
+  rw ends_with_H at bef,
+  iterate 2 {
+    cases rin,
+    {
+      exfalso,
+      rw rin at bef,
+      exact false_of_wrap_concat_H_eq_appends Z_neq_H (@wrap_never_outputs_Z T g.nt) bef,
+    },
+  },
+  iterate 2 {
+    cases rin,
+    {
+      exfalso,
+      rw rin at bef,
+      exact false_of_wrap_concat_H_eq_appends R_neq_H (@wrap_never_outputs_R T g.nt) bef,
+    },
+  },
+  change r ∈ list.map wrap_gr g.rules ++ rules_that_scan_terminals g at rin,
+  rw list.mem_append at rin,
+  cases rin,
+  {
+    repeat {
+      right,
+    },
+    rw list.mem_map at rin,
+    rcases rin with ⟨r₀, -, r_of_r₀⟩,
+    split,
+    swap, {
+      split,
+      {
+        rw aft,
+        intro contra,
+        rw list.mem_append at contra,
+        rw list.mem_append at contra,
+        cases contra,
+        swap, {
+          apply no_Z,
+          rw ends_with_H,
+          rw bef,
+          rw list.mem_append,
+          right,
+          exact contra,
+        },
+        cases contra,
+        {
+          apply no_Z,
+          rw ends_with_H,
+          rw bef,
+          repeat {
+            rw list.append_assoc,
+          },
+          rw list.mem_append,
+          left,
+          exact contra,
+        },
+        rw ←r_of_r₀ at contra,
+        unfold wrap_gr at contra,
+        rw list.mem_map at contra,
+        rcases contra with ⟨s, -, imposs⟩,
+        cases s,
+        {
+          unfold wrap_sym at imposs,
+          exact symbol.no_confusion imposs,
+        },
+        {
+          unfold wrap_sym at imposs,
+          unfold Z at imposs,
+          rw symbol.nonterminal.inj_eq at imposs,
+          exact sum.no_confusion imposs,
+        },
+      },
+      {
+        -- copypaste (IX) begins
+        rw aft,
+        intro contra,
+        rw list.mem_append at contra,
+        rw list.mem_append at contra,
+        cases contra,
+        swap, {
+          apply no_R,
+          rw ends_with_H,
+          rw bef,
+          rw list.mem_append,
+          right,
+          exact contra,
+        },
+        cases contra,
+        {
+          apply no_R,
+          rw ends_with_H,
+          rw bef,
+          repeat {
+            rw list.append_assoc,
+          },
+          rw list.mem_append,
+          left,
+          exact contra,
+        },
+        rw ←r_of_r₀ at contra,
+        unfold wrap_gr at contra,
+        rw list.mem_map at contra,
+        rcases contra with ⟨s, -, imposs⟩,
+        cases s,
+        {
+          unfold wrap_sym at imposs,
+          exact symbol.no_confusion imposs,
+        },
+        {
+          unfold wrap_sym at imposs,
+          unfold R at imposs,
+          rw symbol.nonterminal.inj_eq at imposs,
+          exact sum.no_confusion imposs,
+        },
+        -- copypaste (IX) ends
+      },
+    },
+    use w.take u.length ++ r₀.output_string ++
+      (w.drop (u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R).length).take (v.length - 1),
+    rw aft,
+    -- part "for later" begins
+    have bef_len := congr_arg list.length bef,
+    repeat {
+      rw list.length_append at bef_len,
+    },
+    rw list.length_singleton at bef_len,
+    have vlnn : v.length ≥ 1,
+    {
+      by_contradiction contra,
+      have v_nil := zero_of_not_ge_one contra,
+      rw list.length_eq_zero at v_nil,
+      rw v_nil at bef,
+      rw ←r_of_r₀ at bef,
+      rw list.append_nil at bef,
+      unfold wrap_gr at bef,
+      have rev := congr_arg list.reverse bef,
+      clear_except rev,
+      repeat {
+        rw list.reverse_append at rev,
+      },
+      rw ←list.map_reverse _ r₀.input_R at rev,
+      rw list.reverse_singleton at rev,
+      cases r₀.input_R.reverse with d l,
+      {
+        have H_eq_N : H = symbol.nonterminal (sum.inl r₀.input_N),
+        {
+          rw [list.map_nil, list.nil_append,
+            list.reverse_singleton, list.singleton_append, list.singleton_append,
+            list.cons.inj_eq] at rev,
+          exact rev.left,
+        },
+        unfold H at H_eq_N,
+        have inr_eq_inl := symbol.nonterminal.inj H_eq_N,
+        exact sum.no_confusion inr_eq_inl,
+      },
+      {
+        rw list.map_cons at rev,
+        have H_is : H = wrap_sym d,
+        {
+          rw [list.singleton_append, list.cons_append, list.cons.inj_eq] at rev,
+          exact rev.left,
+        },
+        unfold H at H_is,
+        cases d;
+        unfold wrap_sym at H_is,
+        {
+          exact symbol.no_confusion H_is,
+        },
+        {
+          rw symbol.nonterminal.inj_eq at H_is,
+          exact sum.no_confusion H_is,
+        },
+      },
+    },
+    -- part "for later" ends
+    rw list.map_append_append,
+    rw list.map_take,
+    have bef_take := congr_arg (list.take u.length) bef,
+    repeat {
+      rw list.append_assoc at bef_take,
+    },
+    rw list.take_left at bef_take,
+    rw list.take_append_of_le_length at bef_take,
+    rw bef_take,
+    trim,
+    rw ←r_of_r₀,
+    unfold wrap_gr,
+    dsimp,
+    have bef_drop := congr_arg (list.drop (u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R).length) bef,
+    rw list.drop_left at bef_drop,
+    rw list.drop_append_of_le_length at bef_drop,
+    have bef_segm := congr_arg (list.take (v.length - 1)) bef_drop,
+    rw list.take_append_of_le_length at bef_segm,
+    rw ←r_of_r₀ at bef_segm,
+    unfold wrap_gr at bef_segm,
+    rw list.map_take,
+    rw list.map_drop,
+    rw bef_segm,
+    rw list.append_assoc,
+    apply congr_arg2,
+    {
+      refl,
+    },
+    clear_except bef vlnn,
+    convert_to
+      list.take (v.length - 1) v ++ list.drop (v.length - 1) v =
+      list.take (v.length - 1) v ++ [H],
+    {
+      rw list.take_append_drop,
+    },
+    have bef_rev := congr_arg list.reverse bef,
+    repeat {
+      rw list.reverse_append at bef_rev,
+    },
+    have bef_rev_tak := congr_arg (list.take 1) bef_rev,
+    rw list.take_left' at bef_rev_tak,
+    swap, {
+      rw list.length_reverse,
+      apply list.length_singleton,
+    },
+    rw list.take_append_of_le_length at bef_rev_tak,
+    swap, {
+      rw list.length_reverse,
+      exact vlnn,
+    },
+    rw list.reverse_take _ vlnn at bef_rev_tak,
+    rw list.reverse_eq_iff at bef_rev_tak,
+    rw list.reverse_reverse at bef_rev_tak,
+    rw bef_rev_tak,
+    -- and now close the residues from `_le_length` lemmata
+    {
+      clear_except bef_len vlnn,
+      rw list.length_drop,
+      repeat {
+        rw list.length_append,
+      },
+      rw list.length_singleton at *,
+      apply le_of_eq,
+      obtain ⟨m, vlm⟩ := le_iff_exists_add.mp vlnn,
+      rw vlm at *,
+      clear vlm vlnn v,
+      rw [add_comm, nat.add_succ_sub_one, add_zero],
+      have almost : (list.map wrap_sym w).length = u.length + r.input_L.length + r.input_R.length + (1 + m),
+      {
+        linarith, -- TODO try to refactor to not need both `linarith` and `omega`
+      },
+      clear_except almost,
+      omega,
+    },
+    iterate 2 {
+      clear_except bef_len vlnn,
+      repeat {
+        rw list.length_append,
+      },
+      linarith,
+    },
+  },
+  {
+    exfalso,
+    unfold rules_that_scan_terminals at rin,
+    rw list.mem_map at rin,
+    rcases rin with ⟨t, -, eq_r⟩,
+    rw ←eq_r at bef,
+    exact false_of_wrap_concat_H_eq_appends R_neq_H (@wrap_never_outputs_R T g.nt) bef,
+  },
 end
 
 private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
@@ -933,7 +1233,7 @@ private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
       list.map wrap_sym γ ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α = list.map wrap_sym ω ++ [H] ∧ Z ∉ α ∧ R ∉ α) :=
+  ((∃ ω : list (symbol T g.nt), α = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α ∧ R ∉ α) :=
 begin
   induction ass with a b trash orig ih,
   {
@@ -1310,7 +1610,7 @@ begin
       rw add_zero,
       rw list.nth_take (lt_one_add q),
       rw add_comm,
-      rw list.drop_take_succ lt_wl,
+      rw list_drop_take_succ lt_wl,
       rw list.nth_le_nth lt_wl,
       refl,
     },
@@ -1397,7 +1697,7 @@ begin
       apply congr_arg2,
       {
         rw ←list.map_take,
-        rw list.take_one_drop,
+        rw list_take_one_drop,
         rw list.map_singleton,
       },
       {
@@ -1555,7 +1855,7 @@ begin
     },
     {
       exfalso,
-      rcases result with ⟨ω, contr, -⟩,
+      rcases result with ⟨⟨ω, contr⟩, -⟩,
       -- copypaste (V) begins
       have last_symbols := congr_fun (congr_arg list.nth (congr_arg list.reverse contr)) 0,
       rw [

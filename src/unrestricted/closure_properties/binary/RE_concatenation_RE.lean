@@ -4,6 +4,47 @@ import unrestricted.grammar
 section list_technicalities
 variables {α β : Type}
 
+lemma list_take_one_drop {l : list α} {i : ℕ} (hil : i < l.length) :
+  list.take 1 (list.drop i l) = [l.nth_le i hil] :=
+begin
+  have l_split : l = list.take i l ++ list.drop i l,
+  {
+    rw list.take_append_drop,
+  },
+  rw list.nth_le_of_eq l_split,
+  rw list.nth_le_append_right,
+  {
+    have smaller_i : min i l.length = i,
+    {
+      exact min_eq_left (le_of_lt hil),
+    },
+    simp only [list.length_take, smaller_i, nat.sub_self],
+    have underscore : 0 < (list.drop i l).length,
+    {
+      finish,
+    },
+    cases (list.drop i l) with d x,
+    {
+      exfalso,
+      exact false_of_ne (ne_of_lt underscore),
+    },
+    {
+      refl,
+    },
+  },
+  {
+    apply list.length_take_le,
+  },
+end
+
+lemma list_drop_take_succ {l : list α} {i : ℕ} (hil : i < l.length) :
+  list.drop i (list.take (i + 1) l) = [l.nth_le i hil] :=
+begin
+  rw list.drop_take,
+  apply list_take_one_drop,
+end
+
+
 lemma list_forall₂_nth_le {R : α → β → Prop} :
   ∀ {x : list α}, ∀ {y : list β}, list.forall₂ R x y →
     ∀ {i : ℕ}, ∀ i_lt_len_x : i < x.length, ∀ i_lt_len_y : i < y.length,
@@ -2430,7 +2471,7 @@ begin
             [list.nth_le (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) u.length ul_lt_len_xy]
             [symbol.terminal t],
         {
-          apply list.take_one_drop,
+          apply list_take_one_drop,
         },
         clear_except middle_nt_elem,
         apply corresponding_strings_singleton,
@@ -2555,7 +2596,7 @@ begin
             [list.nth_le (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y) u.length ul_lt_len_xy]
             [symbol.terminal t],
         {
-          apply list.drop_take_succ,
+          apply list_drop_take_succ,
         },
         clear_except middle_nt_elem,
         apply corresponding_strings_singleton,
