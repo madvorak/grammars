@@ -74,8 +74,7 @@ begin
     exact h case_valu,
   },
   rw ass at case_none,
-  clear_except case_none,
-  tauto,
+  exact option.no_confusion case_none,
 end
 
 end lifting_conditions
@@ -200,7 +199,7 @@ begin
     cases a,
     {
       clear_except,
-      tauto,
+      unfold good_letter_,
     },
     unfold lift_rule_ at a_in_ros,
     dsimp at a_in_ros,
@@ -213,7 +212,7 @@ begin
       exfalso,
       clear_except a_from_s,
       unfold lift_symbol_ at a_from_s,
-      tauto,
+      exact symbol.no_confusion a_from_s,
     },
     unfold lift_symbol_,
     unfold good_letter_,

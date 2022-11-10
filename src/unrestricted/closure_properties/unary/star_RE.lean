@@ -95,12 +95,11 @@ begin
   cases a;
   unfold wrap_sym,
   {
-    tauto,
+    apply symbol.no_confusion,
   },
   intro contr,
   have inl_eq_inr := symbol.nonterminal.inj contr,
-  clear_except inl_eq_inr,
-  tauto,
+  exact sum.no_confusion inl_eq_inr,
 end
 
 -- copypaste (III) begins
@@ -111,12 +110,11 @@ begin
   cases a;
   unfold wrap_sym,
   {
-    tauto,
+    apply symbol.no_confusion,
   },
   intro contr,
   have inl_eq_inr := symbol.nonterminal.inj contr,
-  clear_except inl_eq_inr,
-  tauto,
+  exact sum.no_confusion inl_eq_inr,
 end
 -- copypaste (III) ends
 
@@ -128,12 +126,11 @@ begin
   cases a;
   unfold wrap_sym,
   {
-    tauto,
+    apply symbol.no_confusion,
   },
   intro contr,
   have inl_eq_inr := symbol.nonterminal.inj contr,
-  clear_except inl_eq_inr,
-  tauto,
+  exact sum.no_confusion inl_eq_inr,
 end
 -- copypaste (III) ends
 
@@ -723,8 +720,7 @@ begin
     {
       rw list.mem_singleton at contra,
       have imposs := symbol.nonterminal.inj contra,
-      clear_except imposs,
-      tauto,
+      exact sum.no_confusion imposs,
     },
   },
   rcases case_1_match_rule H_not_in_middle bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
@@ -1401,36 +1397,28 @@ begin
           {
             exfalso,
             rw rin at nrn,
-            clear_except nrn,
-            dsimp at nrn,
-            tauto,
+            exact sum.no_confusion nrn,
           },
           -- copypaste (VIII) begins
           cases rin,
           {
             exfalso,
             rw rin at nrn,
-            clear_except nrn,
-            dsimp at nrn,
-            tauto,
+            exact sum.no_confusion nrn,
           },
           -- copypaste (VIII) ends and begins
           cases rin,
           {
             exfalso,
             rw rin at nrn,
-            clear_except nrn,
-            dsimp at nrn,
-            tauto,
+            exact sum.no_confusion nrn,
           },
           -- copypaste (VIII) ends and begins
           cases rin,
           {
             exfalso,
             rw rin at nrn,
-            clear_except nrn,
-            dsimp at nrn,
-            tauto,
+            exact sum.no_confusion nrn,
           },
           -- copypaste (VIII) ends
           change r ∈ list.map wrap_gr g.rules ++ rules_that_scan_terminals g at rin,
@@ -1457,9 +1445,7 @@ begin
             rw list.mem_map at rin,
             rcases rin with ⟨t, tin, r_of_tg⟩,
             rw ←r_of_tg at nrn,
-            clear_except nrn,
-            dsimp at nrn,
-            tauto,
+            exact sum.no_confusion nrn,
           },
         }),
       convert_to
@@ -1524,8 +1510,7 @@ begin
       },
       {
         exfalso,
-        clear_except imposs,
-        tauto,
+        exact symbol.no_confusion imposs,
       }
     },
     {
@@ -1774,8 +1759,7 @@ begin
       {
         exact list.head_eq_of_cons_eq contr,
       },
-      clear_except terminal_eq_Z,
-      tauto,
+      exact symbol.no_confusion terminal_eq_Z,
     },
     -- copypaste (IV) begins
     cases result,
@@ -1791,8 +1775,7 @@ begin
       {
         exact list.head_eq_of_cons_eq contr,
       },
-      clear_except terminal_eq_R,
-      tauto,
+      exact symbol.no_confusion terminal_eq_R,
     },
     -- copypaste (IV) ends
     cases result,
@@ -1809,8 +1792,7 @@ begin
       },
       rw list.mem_map at output_contains_R,
       rcases output_contains_R with ⟨t, -, terminal_eq_R⟩,
-      clear_except terminal_eq_R,
-      tauto,
+      exact symbol.no_confusion terminal_eq_R,
     },
     cases result,
     {
@@ -1843,14 +1825,12 @@ begin
       cases w.reverse.nth 0,
       {
         rw option.map_none' at last_symbols,
-        clear_except last_symbols, -- `none = some R`
-        tauto,
+        exact option.no_confusion last_symbols,
       },
       {
         rw option.map_some' at last_symbols,
         have terminal_eq_R := option.some.inj last_symbols,
-        clear_except terminal_eq_R,
-        tauto,
+        exact symbol.no_confusion terminal_eq_R,
       },
     },
     {
@@ -1869,14 +1849,12 @@ begin
       cases w.reverse.nth 0,
       {
         rw option.map_none' at last_symbols,
-        clear_except last_symbols, -- `none = some H`
-        tauto,
+        exact option.no_confusion last_symbols,
       },
       {
         rw option.map_some' at last_symbols,
         have terminal_eq_H := option.some.inj last_symbols,
-        clear_except terminal_eq_H,
-        tauto,
+        exact symbol.no_confusion terminal_eq_H,
       },
       -- copypaste (V) ends
     },

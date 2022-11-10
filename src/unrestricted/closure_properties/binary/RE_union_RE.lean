@@ -36,7 +36,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
 }
 ) (by
 {
-  intros x y h,
+  intros x y hyp,
   cases x,
   {
     right,
@@ -49,17 +49,19 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
   },
   cases y,
   {
-    tauto,
+    rw hyp,
+    right,
+    refl,
   },
   cases y, swap,
   {
     tauto,
   },
   left,
-  simp only [oN₁_of_N] at h,
+  simp only [oN₁_of_N] at hyp,
   apply congr_arg,
   apply congr_arg,
-  exact h,
+  exact hyp,
 }
 ) (by
 {
@@ -87,17 +89,13 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
   {
     exfalso,
     rw rin at rnt,
-    dsimp at rnt,
-    clear_except rnt,
-    tauto,
+    exact option.no_confusion rnt,
   },
   cases rin,
   {
     exfalso,
     rw rin at rnt,
-    dsimp at rnt,
-    clear_except rnt,
-    tauto,
+    exact option.no_confusion rnt,
   },
   change r ∈ (
       list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules ++
@@ -123,8 +121,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
     unfold lift_rule_ at rnt,
     dsimp at rnt,
     have rnti := option.some.inj rnt,
-    clear_except rnti,
-    tauto,
+    exact sum.no_confusion rnti,
   },
 })
 
@@ -138,7 +135,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
 }
 ) (by
 {
-  intros x y h,
+  intros x y hyp,
   cases x,
   {
     right,
@@ -151,17 +148,19 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
   },
   cases y,
   {
-    tauto,
+    right,
+    rw hyp,
+    refl,
   },
   cases y,
   {
     tauto,
   },
   left,
-  simp only [oN₂_of_N] at h,
+  simp only [oN₂_of_N] at hyp,
   apply congr_arg,
   apply congr_arg,
-  exact h,
+  exact hyp,
 }
 ) (by
 {
@@ -189,17 +188,13 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
   {
     exfalso,
     rw rin at rnt,
-    dsimp at rnt,
-    clear_except rnt,
-    tauto,
+    exact option.no_confusion rnt,
   },
   cases rin,
   {
     exfalso,
     rw rin at rnt,
-    dsimp at rnt,
-    clear_except rnt,
-    tauto,
+    exact option.no_confusion rnt,
   },
   change r ∈ (
       list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules ++
@@ -215,8 +210,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
     unfold lift_rule_ at rnt,
     dsimp at rnt,
     have rnti := option.some.inj rnt,
-    clear_except rnti,
-    tauto,
+    exact sum.no_confusion rnti,
   },
   {
     rw list.mem_map at rin,
@@ -246,16 +240,13 @@ begin
     have zeroth := congr_fun (congr_arg list.nth hyp) 0,
     cases w,
     {
-      dsimp at zeroth,
-      clear_except zeroth,
-      tauto,
+      exact option.no_confusion zeroth,
     },
     {
       dsimp at zeroth,
       have nt_eq_ter := option.some.inj zeroth,
-      clear_except nt_eq_ter,
-      tauto,
-    }
+      exact symbol.no_confusion nt_eq_ter,
+    },
   },
   rcases hyp with ⟨i, ⟨rul, rin, u, v, bef, aft⟩, deri⟩,
 

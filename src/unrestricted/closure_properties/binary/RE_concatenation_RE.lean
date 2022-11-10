@@ -366,8 +366,7 @@ begin
         },
         {
           exfalso,
-          clear_except legit,
-          tauto,
+          exact symbol.no_confusion legit,
         },
       },
       apply substitute_terminals,
@@ -493,8 +492,7 @@ begin
         },
         {
           exfalso,
-          clear_except legit,
-          tauto,
+          exact symbol.no_confusion legit,
         },
       },
       apply substitute_terminals,
@@ -965,7 +963,7 @@ begin
       rw list.length at imposs,
       rw list.length_map at imposs,
       rw list.length at imposs,
-      tauto,
+      linarith,
     },
     {
       rw list.map_cons at hyp,
@@ -1081,7 +1079,7 @@ begin
       rw list.length at imposs,
       rw list.length_map at imposs,
       rw list.length at imposs,
-      tauto,
+      linarith,
     },
     {
       rw list.map_cons at hyp,
@@ -2315,8 +2313,8 @@ begin
       cases (list.map (wrap_symbol₁ g₂.nt) x ++ list.map (wrap_symbol₂ g₁.nt) y).nth_le u.length ulen₁ with t s,
       {
         exfalso,
-        clear_except eqi_symb,
-        tauto,
+        unfold corresponding_symbols at eqi_symb,
+        exact eqi_symb,
       },
       cases s,
       {
@@ -2351,10 +2349,14 @@ begin
       rw list.mem_map at impossible_in,
       rcases impossible_in with ⟨s, -, contradic⟩,
       clear_except contradic,
-      cases s;
+      cases s,
       {
-        repeat { injections_and_clear },
-        tauto,
+        have imposs := symbol.nonterminal.inj contradic,
+        exact sum.no_confusion imposs,
+      },
+      {
+        have impos := sum.inl.inj (symbol.nonterminal.inj contradic),
+        exact option.no_confusion impos,
       },
     },
   },
@@ -2651,14 +2653,14 @@ begin
     unfold list.nth at nonmatch,
     cases w,
     {
-      change some _ = none at nonmatch,
-      tauto,
+      rw list.map_nil at nonmatch,
+      exact option.no_confusion nonmatch,
     },
     {
       unfold list.map at nonmatch,
       unfold list.nth at nonmatch,
-      rw option.some.inj_eq at nonmatch,
-      tauto,
+      have imposs := option.some.inj nonmatch,
+      exact symbol.no_confusion imposs,
     },
   },
   clear ass,
@@ -2721,8 +2723,7 @@ begin
         have inl_match := symbol.nonterminal.inj nt_match,
         change sum.inl none = sum.inl (some (sum.inl r₀.input_N)) at inl_match,
         have none_eq_some := sum.inl.inj inl_match,
-        clear_except none_eq_some,
-        tauto,
+        exact option.no_confusion none_eq_some,
       },
       {
         rw list.mem_map at rin,
@@ -2732,8 +2733,7 @@ begin
         have inl_match := symbol.nonterminal.inj nt_match,
         change sum.inl none = sum.inl (some (sum.inr r₀.input_N)) at inl_match,
         have none_eq_some := sum.inl.inj inl_match,
-        clear_except none_eq_some,
-        tauto,
+        exact option.no_confusion none_eq_some,
       },
     },
     {
@@ -2744,9 +2744,7 @@ begin
         rcases rin with ⟨t, htg₁, tt_eq_r⟩,
         rw ←tt_eq_r at nt_match,
         have inl_eq_inr := symbol.nonterminal.inj nt_match,
-        change sum.inl none = sum.inr (sum.inl t) at inl_eq_inr,
-        clear_except inl_eq_inr,
-        tauto,
+        exact sum.no_confusion inl_eq_inr,
       },
       {
         unfold rules_for_terminals₂ at rin,
@@ -2754,9 +2752,7 @@ begin
         rcases rin with ⟨t, htg₂, tt_eq_r⟩,
         rw ←tt_eq_r at nt_match,
         have inl_eq_inr := symbol.nonterminal.inj nt_match,
-        change sum.inl none = sum.inr (sum.inr t) at inl_eq_inr,
-        clear_except inl_eq_inr,
-        tauto,
+        exact sum.no_confusion inl_eq_inr,
       },
     },
   },
