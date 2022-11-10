@@ -59,7 +59,8 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
     exfalso,
     rw r_in at r_ntype,
     dsimp at r_ntype,
-    tauto,
+    cases r_ntype with n₀ imposs,
+    exact option.no_confusion imposs,
   },
   change r ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at r_in,
   rw list.mem_append at r_in,
@@ -88,10 +89,10 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
     dsimp at r_ntype,
     cases r_ntype with n₁ contr,
     rw option.some_inj at contr,
-    tauto,
+    exact sum.no_confusion contr,
   },
 }) oN₁_of_N (by {
-  intros x y h,
+  intros x y ass,
   cases x,
   {
     right,
@@ -104,17 +105,19 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
   },
   cases y,
   {
-    tauto,
+    rw ass,
+    right,
+    refl,
   },
   cases y, swap,
   {
     tauto,
   },
   left,
-  simp only [oN₁_of_N] at h,
+  simp only [oN₁_of_N] at ass,
   apply congr_arg,
   apply congr_arg,
-  exact h,
+  exact ass,
 }) (by { intro, refl })
 
 private def g₂g (g₁ g₂ : CF_grammar T) : @lifted_grammar T :=
@@ -149,7 +152,8 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
     exfalso,
     rw r_in at r_ntype,
     dsimp at r_ntype,
-    tauto,
+    cases r_ntype with n₀ imposs,
+    exact option.no_confusion imposs,
   },
   change r ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at r_in,
   rw list.mem_append at r_in,
@@ -163,7 +167,7 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
     dsimp at r_ntype,
     cases r_ntype with n₂ contr,
     rw option.some_inj at contr,
-    tauto,
+    exact sum.no_confusion contr,
   },
   {
     rw list.mem_map at r_in,
@@ -181,7 +185,7 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
     five_steps,
   },
 }) oN₂_of_N (by {
-  intros x y h,
+  intros x y ass,
   cases x,
   {
     right,
@@ -194,17 +198,19 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
   },
   cases y,
   {
-    tauto,
+    right,
+    rw ass,
+    refl,
   },
   cases y,
   {
     tauto,
   },
   left,
-  simp only [oN₂_of_N] at h,
+  simp only [oN₂_of_N] at ass,
   apply congr_arg,
   apply congr_arg,
-  exact h,
+  exact ass,
 }) (by { intro, refl })
 
 
@@ -278,7 +284,7 @@ begin
     },
     apply congr_arg,
     norm_num,
-    cases u.nth_le n h with termi nonte,
+    cases u.nth_le n h,
     {
       unfold sTN_of_sTN₁ at nth_equ,
       clear_except nth_equ,
@@ -286,7 +292,7 @@ begin
     },
     {
       exfalso,
-      tauto,
+      exact symbol.no_confusion nth_equ,
     },
   },
   convert_to none = none,
@@ -502,14 +508,14 @@ begin
     have hh := congr_fun (congr_arg list.nth refl_contr) 0,
     dsimp at hh,
     
-    by_cases (list.map symbol.terminal w).length = 0,
+    by_cases (list.map (@symbol.terminal T (combined_grammar g₁ g₂).nt) w).length = 0,
     {
       have empty_none : (list.map symbol.terminal w).nth 0 = none,
       {
         finish,
       },
       rw empty_none at hh,
-      tauto,
+      exact option.no_confusion hh,
     },
     rw list.nth_map at hh,
     have hw0 : ∃ s, w.nth 0 = some s,
@@ -517,8 +523,7 @@ begin
       cases w.nth 0,
       {
         exfalso,
-        dsimp at hh,
-        tauto,
+        exact option.no_confusion hh,
       },
       use val,
     },
@@ -526,8 +531,7 @@ begin
     rw hs at hh,
     dsimp at hh,
     rw option.some_inj at hh,
-    tauto,
-    exact T,
+    exact symbol.no_confusion hh,
   },
   rcases h with ⟨y, first_step, derivation⟩,
   clear hyp,
@@ -689,14 +693,13 @@ begin
           {
             cases u.nth_le n _ with t s,
             {
-              tauto,
+              apply symbol.no_confusion,
             },
             {
               unfold sTN_of_sTN₁,
               intro hypo,
               have impossible := symbol.nonterminal.inj hypo,
-              clear_except impossible,
-              tauto,
+              exact option.no_confusion impossible,
             },
           },
           {
@@ -713,14 +716,13 @@ begin
           {
             cases v.nth_le n _ with t s,
             {
-              tauto,
+              apply symbol.no_confusion,
             },
             {
               unfold sTN_of_sTN₂,
               intro hypo,
               have impossible := symbol.nonterminal.inj hypo,
-              clear_except impossible,
-              tauto,
+              exact option.no_confusion impossible,
             },
           },
           {
@@ -758,24 +760,14 @@ begin
         {
           unfold lsTN_of_lsTN₂,
           rw list.mem_map,
-          rintro ⟨s, trash, imposs⟩,
+          rintro ⟨s, -, imposs⟩,
           cases s,
           {
-            have terminal_eq_nonte : symbol.terminal s = symbol.nonterminal (some (sum.inl r₁.fst)),
-            {
-              exact imposs,
-            },
-            clear_except terminal_eq_nonte,
-            tauto,
+            exact symbol.no_confusion imposs,
           },
           {
-            have ntinr_eq_ntinl : symbol.nonterminal (some (sum.inr s)) = symbol.nonterminal (some (sum.inl r₁.fst)),
-            {
-              exact imposs,
-            },
-            have inr_eq_inl := option.some.inj (symbol.nonterminal.inj ntinr_eq_ntinl),
-            clear_except inr_eq_inl,
-            tauto,
+            have inr_eq_inl := option.some.inj (symbol.nonterminal.inj imposs),
+            exact sum.no_confusion inr_eq_inl,
           },
         },
 
@@ -1170,24 +1162,14 @@ begin
         {
           unfold lsTN_of_lsTN₁,
           rw list.mem_map,
-          rintro ⟨s, trash, imposs⟩,
+          rintro ⟨s, -, imposs⟩,
           cases s,
           {
-            have terminal_eq_nonte : symbol.terminal s = symbol.nonterminal (some (sum.inr r₂.fst)),
-            {
-              exact imposs,
-            },
-            clear_except terminal_eq_nonte,
-            tauto,
+            exact symbol.no_confusion imposs,
           },
           {
-            have ntinl_eq_ntinr : symbol.nonterminal (some (sum.inl s)) = symbol.nonterminal (some (sum.inr r₂.fst)),
-            {
-              exact imposs,
-            },
-            have inl_eq_inr := option.some.inj (symbol.nonterminal.inj ntinl_eq_ntinr),
-            clear_except inl_eq_inr,
-            tauto,
+            have inl_eq_inr := option.some.inj (symbol.nonterminal.inj imposs),
+            exact sum.no_confusion inl_eq_inr,
           },
         },
 

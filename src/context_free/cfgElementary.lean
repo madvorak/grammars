@@ -92,7 +92,7 @@ begin
         refl,
       },
       rw is_none at zeroth,
-      tauto,
+      exact option.no_confusion zeroth,
     },
     {
       have is_terminal : ∃ t, (list.map symbol.terminal w).nth 0 = some (symbol.terminal t),
@@ -247,7 +247,7 @@ begin
         {
           clear_except,
           rw list.mem_singleton,
-          tauto,
+          apply symbol.no_confusion,
         },
         rcases orig with ⟨rul, rin, p, q, bef, aft⟩,
         rw aft,

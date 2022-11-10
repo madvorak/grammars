@@ -632,7 +632,7 @@ begin
             rw list.mem_repeat,
             push_neg,
             intro trash,
-            tauto,
+            apply symbol.no_confusion,
           },
         },
         rw bef at not_in,
@@ -688,7 +688,7 @@ begin
           rw plengthth_is_a at kth_eq,
           have S_neq_a : S ≠ a,
           {
-            tauto,
+            apply symbol.no_confusion,
           },
           rw option.some_inj at kth_eq,
           exact S_neq_a kth_eq,
@@ -727,7 +727,7 @@ begin
           rw plengthth_is_b at kth_eq,
           have S_neq_b : S ≠ b,
           {
-            tauto,
+            apply symbol.no_confusion,
           },
           rw option.some_inj at kth_eq,
           exact S_neq_b kth_eq,

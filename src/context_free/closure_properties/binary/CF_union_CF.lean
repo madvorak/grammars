@@ -55,14 +55,16 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
     exfalso,
     rw r_in at r_ntype,
     dsimp at r_ntype,
-    tauto,
+    cases r_ntype with n₀ imposs,
+    exact option.no_confusion imposs,
   },
   cases r_in,
   {
     exfalso,
     rw r_in at r_ntype,
     dsimp at r_ntype,
-    tauto,
+    cases r_ntype with n₀ imposs,
+    exact option.no_confusion imposs,
   },
   change r ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules) at r_in,
   rw list.mem_append at r_in,
@@ -91,10 +93,10 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
     dsimp at r_ntype,
     cases r_ntype with n₁ contr,
     rw option.some_inj at contr,
-    tauto,
+    exact sum.no_confusion contr,
   },
 }) oN₁_of_N (by {
-  intros x y h,
+  intros x y ass,
   cases x,
   {
     right,
@@ -107,17 +109,19 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
   },
   cases y,
   {
-    tauto,
+    rw ass,
+    right,
+    refl,
   },
   cases y, swap,
   {
     tauto,
   },
   left,
-  simp only [oN₁_of_N] at h,
+  simp only [oN₁_of_N] at ass,
   apply congr_arg,
   apply congr_arg,
-  exact h,
+  exact ass,
 }) (by { intro, refl })
 
 private def g₂g : @lifted_grammar T :=
@@ -151,14 +155,16 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
     exfalso,
     rw r_eq at r_ntype,
     dsimp at r_ntype,
-    tauto,
+    cases r_ntype with n₀ imposs,
+    exact option.no_confusion imposs,
   },
   cases list.eq_or_mem_of_mem_cons r_in_ with r_eq_ r_in__,
   {
     exfalso,
     rw r_eq_ at r_ntype,
     dsimp at r_ntype,
-    tauto,
+    cases r_ntype with n₀ imposs,
+    exact option.no_confusion imposs,
   },
   clear r_in r_in_,
   rename r_in__ r_in,
@@ -173,7 +179,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
     dsimp at r_ntype,
     cases r_ntype with n₂ contr,
     rw option.some_inj at contr,
-    tauto,
+    exact sum.no_confusion contr,
   },
   {
     rw list.mem_map at r_in,
@@ -191,7 +197,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
     five_steps,
   },
 }) oN₂_of_N (by {
-  intros x y h,
+  intros x y ass,
   cases x,
   {
     right,
@@ -204,17 +210,19 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
   },
   cases y,
   {
-    tauto,
+    right,
+    rw ass,
+    refl,
   },
   cases y,
   {
     tauto,
   },
   left,
-  simp only [oN₂_of_N] at h,
+  simp only [oN₂_of_N] at ass,
   apply congr_arg,
   apply congr_arg,
-  exact h,
+  exact ass,
 }) (by { intro, refl })
 
 end lifted_grammars

@@ -60,7 +60,7 @@ begin
     exact h case_valu,
   },
   rw ass at case_none,
-  tauto,
+  exact option.no_confusion case_none,
 end
 
 
@@ -265,7 +265,8 @@ begin
           },
           unfold good_letter at glruf,
           rw h at glruf,
-          tauto,
+          cases glruf with n₀ imposs,
+          exact option.no_confusion imposs,
         },
         cases (option.ne_none_iff_exists'.mp h) with x ex,
         use x,
@@ -285,7 +286,7 @@ begin
       rw ←symbol_letter,
       cases s,
       {
-        tauto,
+        unfold lift_symbol,
       },
       unfold lift_symbol,
       unfold good_letter,

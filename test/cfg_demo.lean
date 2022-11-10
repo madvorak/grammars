@@ -339,7 +339,7 @@ begin
             rw list.mem_repeat at contra,
             have triv : R ≠ a,
             {
-              tauto,
+              apply symbol.no_confusion,
             },
             exact triv contra.right,
           },
@@ -354,7 +354,7 @@ begin
             rw list.mem_repeat at contra,
             have triv : R ≠ c,
             {
-              tauto,
+              apply symbol.no_confusion,
             },
             exact triv contra.right,
           },
@@ -381,7 +381,7 @@ begin
             rw list.mem_repeat at contra,
             have triv : S ≠ a,
             {
-              tauto,
+              apply symbol.no_confusion,
             },
             exact triv contra.right,
           },
@@ -390,7 +390,7 @@ begin
             rw list.mem_repeat at contra,
             have triv : S ≠ b,
             {
-              tauto,
+              apply symbol.no_confusion,
             },
             exact triv contra.right,
           },
@@ -405,7 +405,7 @@ begin
             rw list.mem_repeat at contra,
             have triv : S ≠ c,
             {
-              tauto,
+              apply symbol.no_confusion,
             },
             exact triv contra.right,
           },
@@ -477,7 +477,7 @@ begin
                 {
                   have nidRa : R ≠ a,
                   {
-                    tauto,
+                    apply symbol.no_confusion,
                   },
                   by_contradiction,
                   rw list.mem_repeat at h,
@@ -486,7 +486,7 @@ begin
                 {
                   have nidRb : R ≠ b,
                   {
-                    tauto,
+                    apply symbol.no_confusion,
                   },
                   by_contradiction,
                   rw list.mem_repeat at h,
@@ -546,7 +546,7 @@ begin
                 rw list.mem_repeat at h,
                 have nidRc : R ≠ c,
                 {
-                  tauto,
+                  apply symbol.no_confusion,
                 },
                 exact nidRc h.right,
               },
@@ -627,7 +627,7 @@ begin
         {
           have neq : symbol.nonterminal rule.fst ≠ a,
           {
-            tauto,
+            apply symbol.no_confusion,
           },
           rw list.mem_repeat at contra,
           apply neq,
@@ -637,7 +637,7 @@ begin
         {
           have neq : symbol.nonterminal rule.fst ≠ b,
           {
-            tauto,
+            apply symbol.no_confusion,
           },
           rw list.mem_repeat at contra,
           apply neq,
@@ -646,7 +646,7 @@ begin
         {
           have neq : symbol.nonterminal rule.fst ≠ c,
           {
-            tauto,
+            apply symbol.no_confusion,
           },
           rw list.mem_repeat at contra,
           apply neq,
