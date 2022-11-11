@@ -79,7 +79,6 @@ grammar.mk (nn g.nt) (sum.inr 0) (
 end construction
 
 
-
 section hard_direction
 
 lemma zero_of_not_ge_one {n : ℕ} (not_pos : ¬ (n ≥ 1)) : n = 0 :=
@@ -166,22 +165,13 @@ begin
     rw symbol.nonterminal.inj_eq at imposs,
     exact sum.no_confusion imposs,
   },
-  have fake_instance : decidable_eq (ns T g.nt),
-  {
-    classical,
-    tauto,
-  },
-  have count_Hs := congr_arg (λ l, @list.count_in _ fake_instance l H) hyp,
-  change
-    @list.count_in _ fake_instance
-      ([Z] ++ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join) H =
-    @list.count_in _ fake_instance
-      (u ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
-        list.map wrap_sym r₀.input_R ++ v) H
-    at count_Hs,
+  classical,
+  have count_Hs := congr_arg (λ l, list.count_in l H) hyp,
+  dsimp only at count_Hs,
   repeat {
     rw list.count_in_append at count_Hs,
   },
+  rw [list.count_in_cons, eq_false_intro Z_neq_H, if_false, zero_add] at count_Hs,
   rw [list.count_in_join, list.map_map, list.map_map] at count_Hs,
   sorry,
 end

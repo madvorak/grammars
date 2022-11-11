@@ -126,6 +126,22 @@ variables [decidable_eq α]
 def count_in (l : list α) (a : α) : ℕ :=
 list.sum (list.map (λ s, ite (s = a) 1 0) l)
 
+lemma count_in_cons (a b : α) :
+  count_in (b :: x) a  =  ite (b = a) 1 0  +  count_in x a  :=
+begin
+  unfold count_in,
+  rw list.map_cons,
+  rw list.sum_cons,
+end
+
+lemma count_in_append (a : α) :
+  count_in (x ++ y) a  =  count_in x a  +  count_in y a  :=
+begin
+  unfold count_in,
+  rw list.map_append,
+  rw list.sum_append,
+end
+
 lemma count_in_repeat_eq (a : α) (n : ℕ) :
   count_in (list.repeat a n) a  =  n  :=
 begin
@@ -152,14 +168,6 @@ begin
   intro impos,
   exfalso,
   exact hyp impos,
-end
-
-lemma count_in_append (a : α) :
-  count_in (x ++ y) a  =  count_in x a  +  count_in y a  :=
-begin
-  unfold count_in,
-  rw list.map_append,
-  rw list.sum_append,
 end
 
 lemma count_in_pos_of_in {a : α} (hyp : a ∈ x) :
