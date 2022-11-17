@@ -83,7 +83,6 @@ begin
   sorry
 end
 
--- should probably be added to mathlib
 lemma append_join_append (L : list (list α)) :
   x ++ (list.map (λ l, l ++ x) L).join = (list.map (λ l, x ++ l) L).join ++ x :=
 begin
@@ -99,7 +98,6 @@ begin
   },
 end
 
--- should be added to mathlib
 lemma reverse_join (L : list (list α)) :
   L.join.reverse = (list.map list.reverse L).reverse.join :=
 begin
@@ -155,7 +153,7 @@ begin
   apply nat.one_add,
 end
 
-lemma count_in_repeat_neq {a : α} {b : α} (hyp : a ≠ b) (n : ℕ) :
+lemma count_in_repeat_neq {a b : α} (hyp : a ≠ b) (n : ℕ) :
   count_in (list.repeat a n) b  =  0  :=
 begin
   unfold count_in,
@@ -168,6 +166,18 @@ begin
   intro impos,
   exfalso,
   exact hyp impos,
+end
+
+lemma count_in_singleton_eq (a : α) :
+  count_in [a] a  =  1  :=
+begin
+  exact count_in_repeat_eq a 1,
+end
+
+lemma count_in_singleton_neq {a b : α} (hyp : a ≠ b) :
+  count_in [a] b  =  0  :=
+begin
+  exact count_in_repeat_neq hyp 1,
 end
 
 lemma count_in_pos_of_in {a : α} (hyp : a ∈ x) :

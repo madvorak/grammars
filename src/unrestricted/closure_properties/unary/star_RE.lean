@@ -133,6 +133,321 @@ begin
 end
 -- copypaste (III) ends
 
+private lemma wrap_sym_inj {N : Type} {a b : symbol T N} (wrap_eq : wrap_sym a = wrap_sym b) :
+  a = b  :=
+begin
+  cases a,
+  {
+    cases b,
+    {
+      congr,
+      exact symbol.terminal.inj wrap_eq,
+    },
+    {
+      exfalso,
+      exact symbol.no_confusion wrap_eq,
+    },
+  },
+  {
+    cases b,
+    {
+      exfalso,
+      exact symbol.no_confusion wrap_eq,
+    },
+    {
+      congr,
+      unfold wrap_sym at wrap_eq,
+      exact sum.inl.inj (symbol.nonterminal.inj wrap_eq),
+    },
+  },
+end
+
+private lemma wrap_str_inj {N : Type} {x y : list (symbol T N)}
+    (wrap_eqs : list.map wrap_sym x = list.map wrap_sym y) :
+  x = y  :=
+begin
+  ext1,
+  have eqnth := congr_arg (λ l, list.nth l n) wrap_eqs,
+  dsimp only at eqnth,
+  rw list.nth_map at eqnth,
+  rw list.nth_map at eqnth,
+
+  cases x.nth n with xₙ,
+  {
+    cases y.nth n with yₙ,
+    {
+      refl,
+    },
+    {
+      exfalso,
+      exact option.no_confusion eqnth,
+    },
+  },
+  {
+    cases y.nth n with yₙ,
+    {
+      exfalso,
+      exact option.no_confusion eqnth,
+    },
+    {
+      congr,
+      apply wrap_sym_inj,
+      rw option.map_some' at eqnth,
+      rw option.map_some' at eqnth,
+      exact option.some.inj eqnth,
+    },
+  },
+end
+
+private lemma H_not_in_rule_input {g : grammar T} {r : grule T g.nt} :
+  H ∉ list.map wrap_sym r.input_L ++ [symbol.nonterminal (sum.inl r.input_N)] ++
+      list.map wrap_sym r.input_R :=
+begin
+  intro contra,
+  clear_except contra,
+  rw list.mem_append at contra,
+  cases contra,
+  swap, {
+    rw list.mem_map at contra,
+    rcases contra with ⟨s, -, is_H⟩,
+    exact wrap_never_outputs_H is_H,
+  },
+  rw list.mem_append at contra,
+  cases contra,
+  {
+    -- copypaste (VI) begins
+    rw list.mem_map at contra,
+    rcases contra with ⟨s, -, is_H⟩,
+    exact wrap_never_outputs_H is_H,
+    -- copypaste (VI) ends
+  },
+  {
+    rw list.mem_singleton at contra,
+    have imposs := symbol.nonterminal.inj contra,
+    exact sum.no_confusion imposs,
+  },
+end
+
+private lemma cases_1_and_2_match_aux {g : grammar T} {r₀ : grule T g.nt}
+    {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} (xnn : x ≠ [])
+    (H_not_in_mid : H ∉
+      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R)
+    (hyp : (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))) =
+      u ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
+        list.map wrap_sym r₀.input_R ++ v) :
+  ∃ m : ℕ, ∃ u₁ v₁ : list (symbol T g.nt),
+    u = list.join (list.map (++ [H]) (list.take m (list.map (list.map wrap_sym) x))) ++ list.map wrap_sym u₁
+    ∧ list.nth x m = some (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁) ∧
+    v = list.map wrap_sym v₁ ++ [H] ++
+        list.join (list.map (++ [H]) (list.drop m.succ (list.map (list.map wrap_sym) x))) :=
+begin
+  have hypp :
+    (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
+    u ++ (
+        list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+      ) ++ v,
+  {
+    simpa [list.append_assoc] using hyp,
+  },
+  have mid_brack : ∀ u', ∀ v',
+    u' ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v' =
+    u' ++ (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R) ++ v',
+  {
+    intros,
+    simp only [list.append_assoc],
+  },
+  simp_rw mid_brack,
+  clear hyp mid_brack,
+
+  classical,
+  have count_Hs := congr_arg (λ l, list.count_in l H) hypp,
+  dsimp only at count_Hs,
+  rw list.count_in_append at count_Hs,
+  rw list.count_in_append at count_Hs,
+  rw list.count_in_zero_of_notin H_not_in_mid at count_Hs,
+  rw add_zero at count_Hs,
+  rw [list.count_in_join, list.map_map, list.map_map] at count_Hs,
+
+  have lens := congr_arg list.length hypp,
+  rw list.length_append_append at lens,
+  rw list.length_append_append at lens,
+  rw list.length_singleton at lens,
+
+  have ul_lt : u.length < list.length (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))),
+  {
+    clear_except lens,
+    linarith,
+  },
+  have urrrl_lt :
+    list.length (u ++ (
+        list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+      )) <
+    list.length (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))),
+  {
+    sorry,
+  },
+  rcases list.take_join_of_lt ul_lt with ⟨m, k, mlt, klt, init_ul⟩,
+  rcases list.drop_join_of_lt urrrl_lt with ⟨m', k', mlt', klt', last_vl⟩,
+  use [m, list.take k (x.nth_le m sorry), list.drop k' (x.nth_le m' sorry)],
+
+  have hyp_u := congr_arg (list.take u.length) hypp,
+  rw list.append_assoc at hyp_u,
+  rw list.take_left at hyp_u,
+  rw init_ul at hyp_u,
+  rw list.nth_le_map at hyp_u,
+  swap, {
+    sorry,
+  },
+  rw list.take_append_of_le_length at hyp_u,
+  swap, {
+    sorry,
+  },
+  rw ←hyp_u at count_Hs,
+
+  have hyp_v := congr_arg (list.drop (list.length (u ++ (
+      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+    )))) hypp,
+  rw list.drop_left at hyp_v,
+  rw last_vl at hyp_v,
+  rw list.nth_le_map at hyp_v,
+  swap, {
+    sorry,
+  },
+  rw list.drop_append_of_le_length at hyp_v,
+  swap, {
+    sorry,
+  },
+  rw ←hyp_v at count_Hs,
+
+  have mm : m' = m,
+  {
+    clear_except count_Hs klt klt',
+    rw list.count_in_append at count_Hs,
+    rw list.count_in_append at count_Hs,
+    rw list.count_in_join at count_Hs,
+    rw list.count_in_join at count_Hs,
+    rw list.map_map at count_Hs,
+    rw ←list.map_take at count_Hs,
+    rw list.map_map at count_Hs,
+    rw ←list.map_drop at count_Hs,
+    rw list.map_map at count_Hs,
+    change
+      (list.map (λ w, list.count_in (list.map wrap_sym w ++ [H]) H) x).sum =
+      (list.map (λ w, list.count_in (list.map wrap_sym w ++ [H]) H) (list.take m x)).sum + _ +
+        (_ + (list.map (λ w, list.count_in (list.map wrap_sym w ++ [H]) H) (list.drop m'.succ x)).sum)
+      at count_Hs,
+    simp_rw list.count_in_append at count_Hs,
+    /-have H_count_1 : [H].count_in H = 1,
+    {
+      apply list.count_in_singleton_eq,
+    },
+    simp_rw H_count_1,-/
+    have zero_Hs_in_wrap : ∀ w : list (symbol T g.nt), (list.map wrap_sym w).count_in H = 0,
+    {
+      intro,
+      apply list.count_in_zero_of_notin,
+      rw list.mem_map,
+      push_neg,
+      intros s trash,
+      apply wrap_never_outputs_H,
+    },
+    -- TODO !!
+    sorry,
+  },
+  rw mm at *,
+  clear mm,
+
+  split,
+  {
+    symmetry,
+    convert hyp_u,
+    {
+      rw list.map_take,
+    },
+    {
+      rw list.map_take,
+      rw list.nth_le_map,
+    },
+  },
+  split,
+  swap, {
+    symmetry,
+    convert hyp_v,
+    {
+      rw list.map_drop,
+      rw list.nth_le_map,
+    },
+    {
+      rw list.map_drop,
+    },
+  },
+
+  rw [←hyp_u, ←hyp_v] at hypp,
+  have mltx : m < x.length,
+  {
+    rw list.length_map at mlt,
+    rw list.length_map at mlt,
+    exact mlt,
+  },
+  have xxx : x = x.take m ++ [x.nth_le m mltx] ++ x.drop m.succ,
+  {
+    rw list.append_assoc,
+    rw list.singleton_append,
+    rw list.cons_nth_le_drop_succ,
+    rw list.take_append_drop,
+  },
+  have hyppp :
+    (list.map (++ [H]) (list.map (list.map wrap_sym) (x.take m ++ [x.nth_le m mltx] ++ x.drop m.succ))).join =
+    (list.take m (list.map (++ [H]) (list.map (list.map wrap_sym) x))).join ++
+      list.take k ((list.map (list.map wrap_sym) x).nth_le m _) ++
+      (list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R) ++
+      (list.drop k' ((list.map (list.map wrap_sym) x).nth_le m _) ++ [H] ++
+      (list.drop m.succ (list.map (++ [H]) (list.map (list.map wrap_sym) x))).join),
+  {
+    convert hypp,
+    exact xxx.symm,
+  },
+  clear_except hyppp,
+  repeat {
+    rw list.map_append at hyppp,
+  },
+  rw list.join_append at hyppp,
+  rw list.join_append at hyppp,
+  repeat {
+    rw list.append_assoc at hyppp,
+  },
+  rw list.map_take at hyppp,
+  rw list.map_take at hyppp,
+  rw list.append_right_inj at hyppp,
+  repeat {
+    rw ←list.append_assoc at hyppp,
+  },
+  rw list.map_drop at hyppp,
+  rw list.map_drop at hyppp,
+  rw list.append_left_inj at hyppp,
+  rw list.map_singleton at hyppp,
+  rw list.map_singleton at hyppp,
+  rw list.join_singleton at hyppp,
+  rw list.append_left_inj at hyppp,
+  rw list.nth_le_nth mltx,
+  apply congr_arg,
+  apply wrap_str_inj,
+  rw hyppp,
+  rw list.map_append_append,
+  rw list.map_take,
+  rw list.nth_le_map,
+  swap, {
+    exact mltx,
+  },
+  rw list.map_drop,
+  rw list.map_append_append,
+  rw list.map_singleton,
+  repeat {
+    rw ←list.append_assoc,
+  },
+  refl,
+end
+
 private lemma case_1_match_rule {g : grammar T} {r₀ : grule T g.nt}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
     (H_not_in_mid : H ∉
@@ -150,14 +465,23 @@ begin
   {
     exfalso,
     rw [is_x_nil, list.map_nil, list.map_nil, list.join] at hyp,
-
+    have hyp_len := congr_arg list.length hyp,
+    rw list.length_singleton at hyp_len,
+    repeat {
+      rw list.length_append at hyp_len,
+    },
+    rw list.length_singleton at hyp_len,
     have left_nil : u ++ list.map wrap_sym r₀.input_L = [],
     {
-      sorry, -- easy
+      rw ←list.length_eq_zero,
+      rw list.length_append,
+      omega,
     },
     have right_nil : list.map wrap_sym r₀.input_R ++ v = [],
     {
-      sorry, -- easy
+      rw ←list.length_eq_zero,
+      rw list.length_append,
+      omega,
     },
     rw [left_nil, list.nil_append, list.append_assoc, right_nil, list.append_nil] at hyp,
     have imposs := list.head_eq_of_cons_eq hyp,
@@ -165,15 +489,69 @@ begin
     rw symbol.nonterminal.inj_eq at imposs,
     exact sum.no_confusion imposs,
   },
-  classical,
-  have count_Hs := congr_arg (λ l, list.count_in l H) hyp,
-  dsimp only at count_Hs,
-  repeat {
-    rw list.count_in_append at count_Hs,
+  have unn : u ≠ [],
+  {
+    by_contradiction u_nil,
+    rw [u_nil, list.nil_append] at hyp,
+    cases r₀.input_L with d l,
+    {
+      rw [list.map_nil, list.nil_append] at hyp,
+      have imposs := list.head_eq_of_cons_eq hyp,
+      have inr_eq_inl := symbol.nonterminal.inj imposs,
+      exact sum.no_confusion inr_eq_inl,
+    },
+    {
+      rw list.map_cons at hyp,
+      have imposs := list.head_eq_of_cons_eq hyp,
+      cases d,
+      {
+        unfold wrap_sym at imposs,
+        exact symbol.no_confusion imposs,
+      },
+      {
+        unfold wrap_sym at imposs,
+        have inr_eq_inl := symbol.nonterminal.inj imposs,
+        exact sum.no_confusion inr_eq_inl,
+      },
+    },
   },
-  rw [list.count_in_cons, eq_false_intro Z_neq_H, if_false, zero_add] at count_Hs,
-  rw [list.count_in_join, list.map_map, list.map_map] at count_Hs,
-  sorry,
+  have hypr := congr_arg list.tail hyp,
+  rw list.tail at hypr,
+  repeat {
+    rw list.append_assoc at hypr,
+  },
+  rw list.tail_append_of_ne_nil _ _ unn at hypr,
+  repeat {
+    rw ←list.append_assoc at hypr,
+  },
+  rcases cases_1_and_2_match_aux is_x_nil H_not_in_mid hypr with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  use [m, u₁, v₁],
+  split,
+  {
+    cases u with d l,
+    {
+      exfalso,
+      exact unn rfl,
+    },
+    have headZ : d = Z,
+    {
+      repeat {
+        rw list.cons_append at hyp,
+      },
+      exact list.head_eq_of_cons_eq hyp.symm,
+    },
+    rw headZ,
+    rw list.tail at u_eq,
+    rw u_eq,
+    apply list.cons_append,
+  },
+  split,
+  {
+    exact xm_eq,
+  },
+  {
+    exact v_eq,
+  },
 end
 
 private lemma star_case_1 {g : grammar T} {α α' : list (ns T g.nt)}
@@ -452,35 +830,7 @@ begin
   rw ←wrap_orig at *,
   clear wrap_orig,
   dsimp at *,
-  have H_not_in_middle :
-    H ∉ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
-        list.map wrap_sym r₀.input_R,
-  {
-    intro contra,
-    clear_except contra,
-    rw list.mem_append at contra,
-    cases contra,
-    swap, {
-      rw list.mem_map at contra,
-      rcases contra with ⟨s, -, is_H⟩,
-      exact wrap_never_outputs_H is_H,
-    },
-    rw list.mem_append at contra,
-    cases contra,
-    {
-      -- copypaste (VI) begins
-      rw list.mem_map at contra,
-      rcases contra with ⟨s, -, is_H⟩,
-      exact wrap_never_outputs_H is_H,
-      -- copypaste (VI) ends
-    },
-    {
-      rw list.mem_singleton at contra,
-      have imposs := symbol.nonterminal.inj contra,
-      exact sum.no_confusion imposs,
-    },
-  },
-  rcases case_1_match_rule H_not_in_middle bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  rcases case_1_match_rule H_not_in_rule_input bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
   clear bef,
   rw [u_eq, v_eq] at aft,
   use (list.take m x ++ [u₁ ++ r₀.output_string ++ v₁] ++ list.drop m.succ x),
@@ -554,6 +904,138 @@ begin
   ],
 end
 
+private lemma case_2_match_rule {g : grammar T} {r₀ : grule T g.nt}
+    {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
+    (H_not_in_mid : H ∉
+      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R)
+    (hyp : R :: H :: (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))) =
+      u ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
+        list.map wrap_sym r₀.input_R ++ v) :
+  ∃ m : ℕ, ∃ u₁ v₁ : list (symbol T g.nt),
+    u = R :: H :: list.join (list.map (++ [H]) (list.take m (list.map (list.map wrap_sym) x))) ++ list.map wrap_sym u₁
+    ∧ list.nth x m = some (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁) ∧
+    v = list.map wrap_sym v₁ ++ [H] ++
+        list.join (list.map (++ [H]) (list.drop m.succ (list.map (list.map wrap_sym) x))) :=
+begin
+  by_cases is_x_nil : x = [],
+  {
+    exfalso,
+    rw [is_x_nil, list.map_nil, list.map_nil, list.join] at hyp,
+    -- TODO
+    sorry,
+  },
+  -- nearly copypaste (X) begins
+  have unn : u ≠ [],
+  {
+    by_contradiction u_nil,
+    rw [u_nil, list.nil_append] at hyp,
+    cases r₀.input_L with d l,
+    {
+      rw [list.map_nil, list.nil_append] at hyp,
+      have imposs := list.head_eq_of_cons_eq hyp,
+      have inr_eq_inl := symbol.nonterminal.inj imposs,
+      exact sum.no_confusion inr_eq_inl,
+    },
+    {
+      rw list.map_cons at hyp,
+      have imposs := list.head_eq_of_cons_eq hyp,
+      cases d,
+      {
+        unfold wrap_sym at imposs,
+        exact symbol.no_confusion imposs,
+      },
+      {
+        unfold wrap_sym at imposs,
+        have inr_eq_inl := symbol.nonterminal.inj imposs,
+        exact sum.no_confusion inr_eq_inl,
+      },
+    },
+  },
+  -- nearly copypaste (X) ends
+  have hypt := congr_arg list.tail hyp,
+  rw list.tail at hypt,
+  repeat {
+    rw list.append_assoc at hypt,
+  },
+  rw list.tail_append_of_ne_nil _ _ unn at hypt,
+  -- nearly copypaste (X) begins
+  have utnn : u.tail ≠ [],
+  {
+    by_contradiction ut_nil,
+    rw [ut_nil, list.nil_append] at hypt,
+    cases r₀.input_L with d l,
+    {
+      rw [list.map_nil, list.nil_append] at hypt,
+      have imposs := list.head_eq_of_cons_eq hypt,
+      have inr_eq_inl := symbol.nonterminal.inj imposs,
+      exact sum.no_confusion inr_eq_inl,
+    },
+    {
+      rw list.map_cons at hypt,
+      have imposs := list.head_eq_of_cons_eq hypt,
+      cases d,
+      {
+        unfold wrap_sym at imposs,
+        exact symbol.no_confusion imposs,
+      },
+      {
+        unfold wrap_sym at imposs,
+        have inr_eq_inl := symbol.nonterminal.inj imposs,
+        exact sum.no_confusion inr_eq_inl,
+      },
+    },
+  },
+  -- nearly copypaste (X) ends
+  have hyptt := congr_arg list.tail hypt,
+  rw list.tail at hyptt,
+  rw list.tail_append_of_ne_nil _ _ utnn at hyptt,
+  repeat {
+    rw ←list.append_assoc at hyptt,
+  },
+  rcases cases_1_and_2_match_aux is_x_nil H_not_in_mid hyptt with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  use [m, u₁, v₁],
+  split,
+  {
+    cases u with d l,
+    {
+      exfalso,
+      exact unn rfl,
+    },
+    have headR : d = R,
+    {
+      repeat {
+        rw list.cons_append at hyp,
+      },
+      exact list.head_eq_of_cons_eq hyp.symm,
+    },
+    rw list.tail at u_eq,
+    rw list.tail at hypt,
+    -- nearly copypaste (XI) begins
+    cases l with d' l',
+    {
+      exfalso,
+      exact utnn rfl,
+    },
+    have tailHead : d' = H,
+    {
+      repeat {
+        rw list.cons_append at hypt,
+      },
+      exact list.head_eq_of_cons_eq hypt.symm,
+    },
+    rw list.tail at u_eq,
+    -- nearly copypaste (XI) ends
+    rw [headR, tailHead, u_eq, list.cons_append, list.cons_append],
+  },
+  split,
+  {
+    exact xm_eq,
+  },
+  {
+    exact v_eq,
+  },
+end
+
 private lemma star_case_2 {g : grammar T} {α α' : list (symbol T (star_grammar g).nt)}
     (orig : grammar_transforms (star_grammar g) α α')
     (hyp : ∃ x : list (list (symbol T g.nt)),
@@ -576,7 +1058,124 @@ private lemma star_case_2 {g : grammar T} {α α' : list (symbol T (star_grammar
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
   ((∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α') :=
 begin
-  sorry,
+  rcases hyp with ⟨x, valid, cat⟩,
+  rw cat at *,
+  clear cat,
+  rcases orig with ⟨r, rin, u, v, bef, aft⟩,
+
+  cases rin,
+  {
+    sorry,
+  },
+  cases rin,
+  {
+    sorry,
+  },
+  cases rin,
+  {
+    sorry,
+  },
+  cases rin,
+  {
+    sorry,
+  },
+  have rin' : r ∈ rules_that_scan_terminals g ∨ r ∈ list.map wrap_gr g.rules,
+  {
+    rw or_comm,
+    rwa ←list.mem_append,
+  },
+  clear rin,
+  cases rin',
+  {
+    sorry,
+  },
+  right, left,
+  rw list.mem_map at rin',
+  rcases rin' with ⟨r₀, orig_in, wrap_orig⟩,
+  unfold wrap_gr at wrap_orig,
+  rw ←wrap_orig at *,
+  clear wrap_orig,
+  dsimp at bef,
+  rcases case_2_match_rule
+    -- copypaste (XII) begins
+    H_not_in_rule_input bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  clear bef,
+  rw [u_eq, v_eq] at aft,
+  use (list.take m x ++ [u₁ ++ r₀.output_string ++ v₁] ++ list.drop m.succ x),
+  split,
+  {
+    intros xᵢ xiin,
+    rw list.mem_append at xiin,
+    rw list.mem_append at xiin,
+    cases xiin,
+    swap, {
+      apply valid,
+      exact list.mem_of_mem_drop xiin,
+    },
+    cases xiin,
+    {
+      apply valid,
+      exact list.mem_of_mem_take xiin,
+    },
+    {
+      rw list.mem_singleton at xiin,
+      rw xiin,
+      have last_step :
+        grammar_transforms g
+          (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁)
+          (u₁ ++ r₀.output_string ++ v₁),
+      {
+        use r₀,
+        split,
+        {
+          exact orig_in,
+        },
+        use [u₁, v₁],
+        split;
+        refl,
+      },
+      apply grammar_deri_of_deri_tran _ last_step,
+      apply valid (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁),
+      exact list.nth_mem xm_eq,
+    },
+  },
+  rw aft,
+  repeat {
+    rw list.cons_append,
+  },
+  apply congr_arg2,
+  {
+    refl,
+  },
+  repeat {
+    rw list.map_append,
+  },
+  rw list.join_append,
+  rw list.join_append,
+  repeat {
+    rw list.append_assoc,
+  },
+  apply congr_arg2,
+  {
+    refl,
+  },
+  rw list.nil_append,
+  apply congr_arg2,
+  {
+    rw ←list.map_take,
+    -- copypaste (XII) ends
+    refl,
+  },
+  dsimp,
+  rw list.map_append,
+  rw list.map_append,
+  rw list.append_nil,
+  repeat {
+    rw list.append_assoc,
+  },
+  rw list.singleton_append,
+  congr,
+  rw list.map_drop,
 end
 
 private lemma star_case_3 {g : grammar T} {α α' : list (ns T g.nt)}
