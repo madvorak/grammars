@@ -900,8 +900,12 @@ begin
   {
     exfalso,
     rw [is_x_nil, list.map_nil, list.map_nil, list.join] at hyp,
-    -- TODO
-    sorry,
+    have imposs : symbol.nonterminal (sum.inl r₀.input_N) = R ∨ symbol.nonterminal (sum.inl r₀.input_N) = H,
+    {
+      simpa using congr_arg (λ l, symbol.nonterminal (sum.inl r₀.input_N) ∈ l) hyp,
+    },
+    cases imposs;
+    exact sum.no_confusion (symbol.nonterminal.inj imposs),
   },
   -- nearly copypaste (X) begins
   have unn : u ≠ [],
