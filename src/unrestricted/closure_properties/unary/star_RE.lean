@@ -1041,19 +1041,78 @@ private lemma star_case_2 {g : grammar T} {α α' : list (symbol T (star_grammar
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
   ((∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α') :=
 begin
+  -- nearly copypaste (XIII) begins
   rcases hyp with ⟨x, valid, cat⟩,
+  have no_Z_in_alpha : Z ∉ α,
+  {
+    intro contr,
+    rw cat at contr,
+    clear_except contr,
+    rw list.mem_append at contr,
+    cases contr,
+    {
+      cases contr,
+      {
+        exact R_neq_Z contr.symm,
+      },
+      {
+        apply Z_neq_H,
+        rw ←list.mem_singleton,
+        exact contr,
+      },
+    },
+    rw list.mem_join at contr,
+    rw list.map_map at contr,
+    rcases contr with ⟨l, lin, Zil⟩,
+    rw list.mem_map at lin,
+    rcases lin with ⟨y, -, eq_l⟩,
+    change (list.map wrap_sym y ++ [H]) = l at eq_l,
+    rw ←eq_l at Zil,
+    rw list.mem_append at Zil,
+    cases Zil,
+    {
+      rw list.mem_map at Zil,
+      rcases Zil with ⟨s, -, imposs⟩,
+      exact wrap_never_outputs_Z imposs,
+    },
+    {
+      rw list.mem_singleton at Zil,
+      clear_except Zil,
+      exact Z_neq_H Zil,
+    },
+  },
   rw cat at *,
   clear cat,
   rcases orig with ⟨r, rin, u, v, bef, aft⟩,
+  -- nearly copypaste (XIII) ends
 
+  -- copypaste (II) begins
   cases rin,
   {
-    sorry,
+    exfalso,
+    apply no_Z_in_alpha,
+    rw bef,
+    apply list.mem_append_left,
+    apply list.mem_append_left,
+    apply list.mem_append_right,
+    rw list.mem_singleton,
+    rw rin,
+    refl,
   },
+  -- copypaste (II) ends and begins
   cases rin,
   {
-    sorry,
+    exfalso,
+    apply no_Z_in_alpha,
+    rw bef,
+    apply list.mem_append_left,
+    apply list.mem_append_left,
+    apply list.mem_append_right,
+    rw list.mem_singleton,
+    rw rin,
+    refl,
   },
+  -- copypaste (II) ends
   cases rin,
   {
     sorry,
