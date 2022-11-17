@@ -87,51 +87,36 @@ begin
   rwa nat.lt_one_iff at not_pos,
 end
 
+private lemma wrap_never_outputs_nt_inr {N : Type} {a : symbol T N} (i : fin 3) :
+  wrap_sym a ≠ symbol.nonterminal (sum.inr i) :=
+begin
+  cases a;
+  unfold wrap_sym,
+  {
+    apply symbol.no_confusion,
+  },
+  intro contr,
+  have inl_eq_inr := symbol.nonterminal.inj contr,
+  exact sum.no_confusion inl_eq_inr,
+end
+
 private lemma wrap_never_outputs_Z {N : Type} {a : symbol T N} :
   wrap_sym a ≠ Z :=
 begin
-  unfold Z,
-  cases a;
-  unfold wrap_sym,
-  {
-    apply symbol.no_confusion,
-  },
-  intro contr,
-  have inl_eq_inr := symbol.nonterminal.inj contr,
-  exact sum.no_confusion inl_eq_inr,
+  exact wrap_never_outputs_nt_inr 0,
 end
 
--- copypaste (III) begins
 private lemma wrap_never_outputs_H {N : Type} {a : symbol T N} :
   wrap_sym a ≠ H :=
 begin
-  unfold H,
-  cases a;
-  unfold wrap_sym,
-  {
-    apply symbol.no_confusion,
-  },
-  intro contr,
-  have inl_eq_inr := symbol.nonterminal.inj contr,
-  exact sum.no_confusion inl_eq_inr,
+  exact wrap_never_outputs_nt_inr 1,
 end
--- copypaste (III) ends
 
--- copypaste (III) begins
 private lemma wrap_never_outputs_R {N : Type} {a : symbol T N} :
   wrap_sym a ≠ R :=
 begin
-  unfold R,
-  cases a;
-  unfold wrap_sym,
-  {
-    apply symbol.no_confusion,
-  },
-  intro contr,
-  have inl_eq_inr := symbol.nonterminal.inj contr,
-  exact sum.no_confusion inl_eq_inr,
+  exact wrap_never_outputs_nt_inr 2,
 end
--- copypaste (III) ends
 
 private lemma wrap_sym_inj {N : Type} {a b : symbol T N} (wrap_eq : wrap_sym a = wrap_sym b) :
   a = b  :=
@@ -230,8 +215,6 @@ end
 
 private lemma cases_1_and_2_match_aux {g : grammar T} {r₀ : grule T g.nt}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} (xnn : x ≠ [])
-    (H_not_in_mid : H ∉
-      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R)
     (hyp : (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))) =
       u ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
         list.map wrap_sym r₀.input_R ++ v) :
@@ -264,7 +247,7 @@ begin
   dsimp only at count_Hs,
   rw list.count_in_append at count_Hs,
   rw list.count_in_append at count_Hs,
-  rw list.count_in_zero_of_notin H_not_in_mid at count_Hs,
+  rw list.count_in_zero_of_notin H_not_in_rule_input at count_Hs,
   rw add_zero at count_Hs,
   rw [list.count_in_join, list.map_map, list.map_map] at count_Hs,
 
@@ -450,8 +433,6 @@ end
 
 private lemma case_1_match_rule {g : grammar T} {r₀ : grule T g.nt}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
-    (H_not_in_mid : H ∉
-      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R)
     (hyp : Z :: (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))) =
       u ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
         list.map wrap_sym r₀.input_R ++ v) :
@@ -524,7 +505,7 @@ begin
   repeat {
     rw ←list.append_assoc at hypr,
   },
-  rcases cases_1_and_2_match_aux is_x_nil H_not_in_mid hypr with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  rcases cases_1_and_2_match_aux is_x_nil hypr with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
   use [m, u₁, v₁],
   split,
   {
@@ -617,7 +598,7 @@ begin
     left,
     rw rin at *,
     clear rin,
-    dsimp at *,
+    dsimp only at *,
     rw [list.append_nil, list.append_nil] at bef,
     use ([symbol.nonterminal g.initial] :: x),
     split,
@@ -830,7 +811,7 @@ begin
   rw ←wrap_orig at *,
   clear wrap_orig,
   dsimp at *,
-  rcases case_1_match_rule H_not_in_rule_input bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  rcases case_1_match_rule bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
   clear bef,
   rw [u_eq, v_eq] at aft,
   use (list.take m x ++ [u₁ ++ r₀.output_string ++ v₁] ++ list.drop m.succ x),
@@ -906,8 +887,6 @@ end
 
 private lemma case_2_match_rule {g : grammar T} {r₀ : grule T g.nt}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
-    (H_not_in_mid : H ∉
-      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R)
     (hyp : R :: H :: (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))) =
       u ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
         list.map wrap_sym r₀.input_R ++ v) :
@@ -992,7 +971,7 @@ begin
   repeat {
     rw ←list.append_assoc at hyptt,
   },
-  rcases cases_1_and_2_match_aux is_x_nil H_not_in_mid hyptt with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  rcases cases_1_and_2_match_aux is_x_nil hyptt with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
   use [m, u₁, v₁],
   split,
   {
@@ -1095,10 +1074,10 @@ begin
   unfold wrap_gr at wrap_orig,
   rw ←wrap_orig at *,
   clear wrap_orig,
-  dsimp at bef,
+  dsimp only at bef,
   rcases case_2_match_rule
     -- copypaste (XII) begins
-    H_not_in_rule_input bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+    bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
   clear bef,
   rw [u_eq, v_eq] at aft,
   use (list.take m x ++ [u₁ ++ r₀.output_string ++ v₁] ++ list.drop m.succ x),
