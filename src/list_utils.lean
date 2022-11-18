@@ -40,6 +40,10 @@ lemma forall_mem_append_append {p : α → Prop} :
   (∀ a ∈ x ++ y ++ z, p a)  ↔  (∀ a ∈ x, p a) ∧ (∀ a ∈ y, p a) ∧ (∀ a ∈ z, p a)  :=
 by rw [list.forall_mem_append, list.forall_mem_append, and_assoc]
 
+lemma join_append_append {X Y Z : list (list α)} :
+  list.join (X ++ Y ++ Z) = X.join ++ Y.join ++ Z.join :=
+by rw [list.join_append, list.join_append]
+
 end list_append_append
 
 section list_repeat
