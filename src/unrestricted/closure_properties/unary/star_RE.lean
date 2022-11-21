@@ -1361,7 +1361,7 @@ private lemma case_3_match_rule {g : grammar T} {r₀ : grule T g.nt}
       u ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
         list.map wrap_sym r₀.input_R ++ v) :
   (∃ m : ℕ, ∃ u₁ v₁ : list (symbol T g.nt),
-    u = list.map symbol.terminal (list.join w) ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ ++
+    u = list.map symbol.terminal (list.join w) ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ ++ [H] ++
         list.join (list.map (++ [H]) (list.take m (list.map (list.map wrap_sym) x))) ++ list.map wrap_sym u₁
     ∧ list.nth x m = some (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁) ∧
     v = list.map wrap_sym v₁ ++ [H] ++
@@ -1501,18 +1501,117 @@ begin
   clear wrap_orig,
   cases case_3_match_rule bef,
   {
+    -- kinda copypaste (XII) begins
     rcases h with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
     clear bef,
     dsimp only at aft,
     rw [u_eq, v_eq] at aft,
-    sorry,
+    use w,
+    use β,
+    use γ,
+    use (list.take m x ++ [u₁ ++ r₀.output_string ++ v₁] ++ list.drop m.succ x),
+    split,
+    {
+      exact valid_w,
+    },
+    split,
+    {
+      exact valid_middle,
+    },
+    split,
+    {
+      intros xᵢ xiin,
+      rw list.mem_append at xiin,
+      rw list.mem_append at xiin,
+      cases xiin,
+      swap, {
+        apply valid_x,
+        exact list.mem_of_mem_drop xiin,
+      },
+      cases xiin,
+      {
+        apply valid_x,
+        exact list.mem_of_mem_take xiin,
+      },
+      {
+        rw list.mem_singleton at xiin,
+        rw xiin,
+        have last_step :
+          grammar_transforms g
+            (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁)
+            (u₁ ++ r₀.output_string ++ v₁),
+        {
+          use r₀,
+          split,
+          {
+            exact orig_in,
+          },
+          use [u₁, v₁],
+          split;
+          refl,
+        },
+        apply grammar_deri_of_deri_tran _ last_step,
+        apply valid_x (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁),
+        exact list.nth_mem xm_eq,
+      },
+    },
+    -- kinda copypaste (XII) ends
+    {
+      rw aft,
+      trim,
+      rw [
+        list.map_append_append,
+        list.map_append_append,
+        list.join_append_append,
+        ←list.map_take,
+        ←list.map_drop,
+        list.map_singleton,
+        list.map_singleton,
+        list.join_singleton,
+        list.map_append_append,
+        ←list.append_assoc,
+        ←list.append_assoc,
+        ←list.append_assoc
+      ],
+    },
   },
   {
     rcases h with ⟨u₁, v₁, u_eq, γ_eq, v_eq⟩,
     clear bef,
     dsimp only at aft,
     rw [u_eq, v_eq] at aft,
-    sorry,
+    use w,
+    use β,
+    use u₁ ++ r₀.output_string ++ v₁,
+    use x,
+    split,
+    {
+      exact valid_w,
+    },
+    split,
+    {
+      apply grammar_deri_of_deri_tran valid_middle,
+      rw γ_eq,
+      use r₀,
+      split,
+      {
+        exact orig_in,
+      },
+      use [list.map symbol.terminal β ++ u₁, v₁],
+      split,
+      repeat {
+        rw ←list.append_assoc,
+      },
+    },
+    split,
+    {
+      exact valid_x,
+    },
+    {
+      rw aft,
+      trim,
+      rw list.map_append_append,
+    },
   },
 end
 
