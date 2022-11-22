@@ -1778,7 +1778,7 @@ begin
         rw v_is_R at aft,
         rw [is_x_nil, list.append_nil] at ur_eq,
         have u_from_w : u = list.take u.length (list.map wrap_sym w),
-        {
+        { -- do not extract out of `cases bef`
           repeat {
             rw list.append_assoc at ur_eq,
           },
@@ -1846,7 +1846,37 @@ begin
       },
     },
     {
-      sorry,
+      rcases bef with ⟨y, w_eq, v_eq⟩,
+      have u_from_w : u = list.take u.length (list.map wrap_sym w),
+      { -- do not extract out of `cases bef`
+        repeat {
+          rw list.append_assoc at w_eq,
+        },
+        have tak := congr_arg (list.take u.length) w_eq,
+        rw list.take_left at tak,
+        exact tak.symm,
+      },
+      have y_from_w :
+        y = list.drop (u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R).length (list.map wrap_sym w),
+      {
+        have drp := congr_arg (list.drop (u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R).length) w_eq,
+        rw list.drop_left at drp,
+        exact drp.symm,
+      },
+      -- weird that `u_from_w` and `y_from_w` did not unify their type parameters in the same way
+      rw u_from_w at aft,
+      rw y_from_w at v_eq,
+      rw v_eq at aft,
+      use list.take u.length w ++ r₀.output_string ++
+          list.drop (u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R).length w,
+      rw list.map_append_append,
+      rw list.map_take,
+      rw list.map_drop,
+      rw aft,
+      trim, -- fails to identify `list.take u.length (list.map wrap_sym w)` of defin-equal type parameters
+      rw ←r_of_r₀,
+      dsimp only [wrap_gr],
+      refl, -- outside level `(symbol T (star_grammar g).nt) = (ns T g.nt) = (symbol T (nn g.nt))`
     },
   },
   {
