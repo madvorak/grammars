@@ -1422,11 +1422,85 @@ begin
   {
     rcases hyp with ⟨v', left_half, right_half⟩,
     right,
-    -- `v` consists of a suffix of `list.map wrap_sym γ` and `H`
-    -- thus in `right_half`
-    -- `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
-    -- can match only `list.map wrap_sym γ` and not `(list.map (++ [H]) (list.map (list.map wrap_sym) x)).join`
-    sorry,
+    -- all `H`s must match `v`
+    -- thus `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
+    -- is a prefix of `v'`
+    obtain ⟨z, v'_eq⟩ : ∃ z,
+      v' = list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R ++ z,
+    {
+      obtain ⟨v'', without_final_H⟩ : ∃ v'', v' = v'' ++ [H],
+      {
+        sorry,
+      },
+      rw without_final_H at right_half,
+      rw list.append_assoc v'' at right_half,
+      -- `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
+      -- is a prefix of `v''`
+      rw list.append_eq_append_iff at right_half,
+      cases right_half,
+      {
+        rcases right_half with ⟨e, v''_eq, -⟩,
+        use e ++ [H],
+        rw v''_eq at without_final_H,
+        rw without_final_H,
+        rw ←list.append_assoc,
+      },
+      {
+        exfalso,
+        rcases right_half with ⟨f, part_with_r, part_with_x⟩,
+        -- `part_with_x` implies `f` starts with `H`
+        -- `part_with_x` implies `H` (at the beginning of `f`) would have to match
+        -- either `symbol.nonterminal (sum.inl r₀.input_N)` or the head of `list.map wrap_sym r₀.input_R`
+        -- which both gives contradiction
+        sorry,
+      },
+    },
+    -- therefore `v` corresponds to the suffix of `v'` whose last symbol is `H` followed by the `x` part
+    rw v'_eq at right_half,
+    rw list.append_assoc _ z at right_half,
+    rw list.append_right_inj at right_half,
+    -- so `v'` without the last symbol will become `v₁` modulo wrapping, which also corresponds to `γ`
+    rw v'_eq at left_half,
+    rw list.append_assoc _ (list.map wrap_sym γ) at left_half,
+    rw list.append_eq_append_iff at left_half,
+    -- also `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
+    -- cannot overlap with `R` therefore it must match the part between `R` and `H`
+    -- so `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
+    -- is a substring of `γ`h
+    obtain ⟨u₁, v₁, gamma_parts⟩ : ∃ γₗ, ∃ γᵣ,
+      list.map wrap_sym γ =
+      list.map wrap_sym γₗ ++ (
+        list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+      ) ++ list.map wrap_sym γᵣ,
+    {
+      sorry,
+    },
+    -- remaining part of `γ` to the left will become `u₁`
+    -- the part `list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R]` will end up `u`
+    use [u₁, v₁],
+    split,
+    {
+      sorry,
+    },
+    split,
+    {
+      apply wrap_str_inj,
+      have very_middle :
+        [symbol.nonterminal (sum.inl r₀.input_N)] = list.map wrap_sym [symbol.nonterminal r₀.input_N],
+      {
+        rw list.map_singleton,
+        refl,
+      },
+      rw very_middle at gamma_parts,
+      rw ←list.map_append_append at gamma_parts,
+      rw ←list.map_append_append at gamma_parts,
+      rw ←list.append_assoc at gamma_parts,
+      rw ←list.append_assoc at gamma_parts,
+      exact gamma_parts,
+    },
+    {
+      sorry,
+    },
   },
 end
 
@@ -1955,7 +2029,63 @@ begin
     unfold rules_that_scan_terminals at rin,
     rw list.mem_map at rin,
     rcases rin with ⟨t, -, eq_r⟩,
-    sorry,
+    rw ←eq_r at bef,
+    clear eq_r,
+    -- nearly copypaste (XIV) begins
+    dsimp only at bef,
+    rw list.append_nil at bef,
+    have rev := congr_arg list.reverse bef,
+    repeat {
+      rw list.reverse_append at rev,
+    },
+    repeat {
+      rw list.reverse_singleton at rev,
+    },
+    rw list.singleton_append at rev,
+    cases v.reverse with d l,
+    {
+      rw list.nil_append at rev,
+      rw list.singleton_append at rev,
+      have tails := list.tail_eq_of_cons_eq rev,
+      rw ←list.map_reverse at tails,
+      cases w.reverse with d' l',
+      {
+        rw list.map_nil at tails,
+        have imposs := congr_arg list.length tails,
+        rw [list.length, list.length_append, list.length_singleton] at imposs,
+        clear_except imposs,
+        linarith,
+      },
+      {
+        rw list.map_cons at tails,
+        rw list.singleton_append at tails,
+        have heads := list.head_eq_of_cons_eq tails,
+        exact wrap_never_outputs_R heads,
+      },
+    },
+    {
+      have tails := list.tail_eq_of_cons_eq rev,
+      have R_in_tails := congr_arg (λ l, R ∈ l) tails,
+      dsimp only at R_in_tails,
+      rw list.mem_reverse at R_in_tails,
+      apply false_of_true_eq_false,
+      convert R_in_tails.symm,
+      {
+        rw [eq_iff_iff, true_iff],
+        apply list.mem_append_right,
+        apply list.mem_append_right,
+        apply list.mem_append_left,
+        apply list.mem_singleton_self,
+      },
+      {
+        rw [eq_iff_iff, false_iff],
+        intro hyp_H_in,
+        rw list.mem_map at hyp_H_in,
+        rcases hyp_H_in with ⟨s, -, imposs⟩,
+        exact wrap_never_outputs_R imposs,
+      }
+    },
+    -- nearly copypaste (XIV) ends
   },
 end
 
@@ -2271,6 +2401,13 @@ begin
     exact false_of_wrap_concat_H_eq_appends R_neq_H (@wrap_never_outputs_R T g.nt) bef,
   },
 end
+
+#print axioms star_case_1
+#print axioms star_case_2
+#print axioms star_case_3
+#print axioms star_case_4
+#print axioms star_case_5
+#print axioms star_case_6
 
 private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
     (ass : grammar_derives (star_grammar g) [Z] α) :
