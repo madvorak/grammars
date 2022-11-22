@@ -1415,7 +1415,7 @@ begin
     rcases hyp with ⟨v', left_half, right_half⟩,
     right,
     -- `v` consists of a suffix of `list.map wrap_sym γ` and `H`
-    -- thus  in `right_half`
+    -- thus in `right_half`
     -- `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
     -- can match only `list.map wrap_sym γ` and not `(list.map (++ [H]) (list.map (list.map wrap_sym) x)).join`
     sorry,
@@ -1725,7 +1725,114 @@ private lemma star_case_5 {g : grammar T} {α α' : list (ns T g.nt)}
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
   (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
 begin
-  sorry,
+  rcases hyp with ⟨w, ends_with_R⟩,
+  rcases orig with ⟨r, rin, u, v, bef, aft⟩,
+  rw ends_with_R at bef,
+  clear ends_with_R,
+  cases rin,
+  {
+    exfalso,
+    sorry,
+  },
+  cases rin,
+  {
+    exfalso,
+    sorry,
+  },
+  cases rin,
+  {
+    exfalso,
+    sorry,
+  },
+  cases rin,
+  {
+    exfalso,
+    sorry,
+  },
+  change r ∈ list.map wrap_gr g.rules ++ rules_that_scan_terminals g at rin,
+  rw list.mem_append at rin,
+  cases rin,
+  {
+    right, right, right, right, left,
+    rw list.mem_map at rin,
+    rcases rin with ⟨r₀, -, r_of_r₀⟩,
+    rw list.append_eq_append_iff at bef,
+    cases bef,
+    {
+      rcases bef with ⟨x, ur_eq, singleR⟩,
+      by_cases x = [],
+      {
+        have v_is_R : v = [R],
+        {
+          rw [h, list.nil_append] at singleR,
+          exact singleR.symm,
+        },
+        rw v_is_R at aft,
+        rw [h, list.append_nil] at ur_eq,
+        have u_from_w : u = list.take u.length (list.map wrap_sym w),
+        {
+          repeat {
+            rw list.append_assoc at ur_eq,
+          },
+          have tak := congr_arg (list.take u.length) ur_eq,
+          rw list.take_left at tak,
+          exact tak,
+        },
+        rw ←list.map_take at u_from_w,
+        rw u_from_w at aft,
+        rw ←r_of_r₀ at aft,
+        dsimp only [wrap_gr] at aft,
+        use list.take u.length w ++ r₀.output_string,
+        rw list.map_append,
+        exact aft,
+      },
+      {
+        exfalso,
+        have x_is_R : x = [R],
+        {
+          sorry,
+        },
+        rw x_is_R at ur_eq,
+        have ru_eq := congr_arg list.reverse ur_eq,
+        repeat {
+          rw list.reverse_append at ru_eq,
+        },
+        repeat {
+          rw list.reverse_singleton at ru_eq,
+          rw list.singleton_append at ru_eq,
+        },
+        cases r.input_R.reverse with d l,
+        {
+          rw list.nil_append at ru_eq,
+          have imposs := list.head_eq_of_cons_eq ru_eq,
+          rw ←r_of_r₀ at imposs,
+          dsimp only [wrap_gr, R] at imposs,
+          exact sum.no_confusion (symbol.nonterminal.inj imposs),
+        },
+        {
+          have imposs := list.head_eq_of_cons_eq ru_eq,
+          cases d,
+          {
+            exact symbol.no_confusion imposs,
+          },
+          sorry,
+        },
+      },
+    },
+    sorry,/-rw ←r_of_r₀ at concrete,
+    clear_except concrete,
+    tauto,-/
+  },
+  {
+    exfalso,
+    unfold rules_that_scan_terminals at rin,
+    rw list.mem_map at rin,
+    rcases rin with ⟨t, -, eq_r⟩,
+    sorry,/-have cannot_right := v_nil_too.right,
+    rw ←eq_r at cannot_right,
+    clear_except cannot_right,
+    tauto,-/
+  },
 end
 
 private lemma false_of_wrap_concat_H_eq_appends {g : grammar T}
