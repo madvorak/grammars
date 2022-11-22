@@ -87,6 +87,14 @@ begin
   rwa nat.lt_one_iff at not_pos,
 end
 
+lemma length_ge_one_of_not_nil {α : Type*} {l : list α} (lnn : l ≠ []) : l.length ≥ 1 :=
+begin
+  by_contradiction contra,
+  have llz := zero_of_not_ge_one contra,
+  rw list.length_eq_zero at llz,
+  exact lnn llz,
+end
+
 private lemma wrap_never_outputs_nt_inr {N : Type} {a : symbol T N} (i : fin 3) :
   wrap_sym a ≠ symbol.nonterminal (sum.inr i) :=
 begin
@@ -1760,15 +1768,15 @@ begin
     cases bef,
     {
       rcases bef with ⟨x, ur_eq, singleR⟩,
-      by_cases x = [],
+      by_cases is_x_nil : x = [],
       {
         have v_is_R : v = [R],
         {
-          rw [h, list.nil_append] at singleR,
+          rw [is_x_nil, list.nil_append] at singleR,
           exact singleR.symm,
         },
         rw v_is_R at aft,
-        rw [h, list.append_nil] at ur_eq,
+        rw [is_x_nil, list.append_nil] at ur_eq,
         have u_from_w : u = list.take u.length (list.map wrap_sym w),
         {
           repeat {
@@ -1790,7 +1798,21 @@ begin
         exfalso,
         have x_is_R : x = [R],
         {
-          sorry,
+          by_cases is_v_nil : v = [],
+          {
+            rw [is_v_nil, list.append_nil] at singleR,
+            exact singleR.symm,
+          },
+          {
+            exfalso,
+            have imposs := congr_arg list.length singleR,
+            rw list.length_singleton at imposs,
+            rw list.length_append at imposs,
+            have xl_ge_one := length_ge_one_of_not_nil is_x_nil,
+            have vl_ge_one := length_ge_one_of_not_nil is_v_nil,
+            clear_except imposs xl_ge_one vl_ge_one,
+            linarith,
+          },
         },
         rw x_is_R at ur_eq,
         have ru_eq := congr_arg list.reverse ur_eq,
@@ -1801,37 +1823,38 @@ begin
           rw list.reverse_singleton at ru_eq,
           rw list.singleton_append at ru_eq,
         },
-        cases r.input_R.reverse with d l,
+        rw ←r_of_r₀ at ru_eq,
+        dsimp only [wrap_gr, R] at ru_eq,
+        rw ←list.map_reverse at ru_eq,
+        cases r₀.input_R.reverse with d l,
         {
-          rw list.nil_append at ru_eq,
+          rw [list.map_nil, list.nil_append] at ru_eq,
           have imposs := list.head_eq_of_cons_eq ru_eq,
-          rw ←r_of_r₀ at imposs,
-          dsimp only [wrap_gr, R] at imposs,
           exact sum.no_confusion (symbol.nonterminal.inj imposs),
         },
         {
           have imposs := list.head_eq_of_cons_eq ru_eq,
-          cases d,
+          cases d;
+          unfold wrap_sym at imposs,
           {
             exact symbol.no_confusion imposs,
           },
-          sorry,
+          {
+            exact sum.no_confusion (symbol.nonterminal.inj imposs),
+          },
         },
       },
     },
-    sorry,/-rw ←r_of_r₀ at concrete,
-    clear_except concrete,
-    tauto,-/
+    {
+      sorry,
+    },
   },
   {
     exfalso,
     unfold rules_that_scan_terminals at rin,
     rw list.mem_map at rin,
     rcases rin with ⟨t, -, eq_r⟩,
-    sorry,/-have cannot_right := v_nil_too.right,
-    rw ←eq_r at cannot_right,
-    clear_except cannot_right,
-    tauto,-/
+    sorry,
   },
 end
 
