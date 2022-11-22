@@ -1372,11 +1372,6 @@ private lemma case_3_match_rule {g : grammar T} {r₀ : grule T g.nt}
     ∧  γ = u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁  ∧
     v = list.map wrap_sym v₁ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))) :=
 begin
-  by_cases is_x_nil : x = [],
-  {
-    exfalso,
-    sorry,
-  },
   repeat {
     rw list.append_assoc u at hyp,
   },
@@ -1384,14 +1379,45 @@ begin
   cases hyp,
   {
     rcases hyp with ⟨u', u_eq, xj_eq⟩,
+    left,
     repeat {
       rw ←list.append_assoc at xj_eq,
     },
+    by_cases is_x_nil : x = [],
+    {
+      exfalso,
+      rw [is_x_nil, list.map_nil, list.map_nil, list.join] at xj_eq,
+      have imposs := congr_arg list.length xj_eq,
+      rw list.length at imposs,
+      rw list.length_append_append at imposs,
+      rw list.length_append_append at imposs,
+      rw list.length_singleton at imposs,
+      clear_except imposs,
+      linarith,
+    },
     rcases cases_1_and_2_and_3a_match_aux is_x_nil xj_eq with ⟨m, u₁, v₁, u'_eq, xm_eq, v_eq⟩,
-    sorry,
+    use [m, u₁, v₁],
+    split,
+    {
+      rw u_eq,
+      rw u'_eq,
+      rw ←list.append_assoc,
+    },
+    split,
+    {
+      exact xm_eq,
+    },
+    {
+      exact v_eq,
+    },
   },
   {
     rcases hyp with ⟨v', left_half, right_half⟩,
+    right,
+    -- `v` consists of a suffix of `list.map wrap_sym γ` and `H`
+    -- thus  in `right_half`
+    -- `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
+    -- can match only `list.map wrap_sym γ` and not `(list.map (++ [H]) (list.map (list.map wrap_sym) x)).join`
     sorry,
   },
 end
@@ -1458,7 +1484,22 @@ begin
       rw list.mem_join at contr,
       rcases contr with ⟨l, lin, Zin⟩,
       rw list.mem_map at lin,
-      sorry,
+      rcases lin with ⟨a, ain, aHl⟩,
+      rw ←aHl at Zin,
+      rw list.mem_append at Zin,
+      cases Zin,
+      {
+        rw list.mem_map at ain,
+        rcases ain with ⟨b, -, eq_a⟩,
+        rw ←eq_a at Zin,
+        rw list.mem_map at Zin,
+        rcases Zin with ⟨c, -, imposs⟩,
+        exact wrap_never_outputs_Z imposs,
+      },
+      {
+        rw list.mem_singleton at Zin,
+        exact Z_neq_H Zin,
+      },
     },
   },
   rw cat at *,
