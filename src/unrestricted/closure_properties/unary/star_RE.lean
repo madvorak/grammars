@@ -28,20 +28,20 @@ begin
   exact fin.zero_ne_one imposs,
 end
 
-private lemma R_neq_Z {N : Type} : R ≠ @Z T N :=
+private lemma Z_neq_R {N : Type} : Z ≠ @R T N :=
 begin
   intro ass,
   have imposs := sum.inr.inj (symbol.nonterminal.inj ass),
-  have : (2 : fin 3) ≠ (0 : fin 3), dec_trivial,
-  exact this imposs,
+  have zero_ne_two : (0 : fin 3) ≠ (2 : fin 3), dec_trivial,
+  exact zero_ne_two imposs,
 end
 
-private lemma R_neq_H {N : Type} : R ≠ @H T N :=
+private lemma H_neq_R {N : Type} : H ≠ @R T N :=
 begin
   intro ass,
   have imposs := sum.inr.inj (symbol.nonterminal.inj ass),
-  have : (2 : fin 3) ≠ (1 : fin 3), dec_trivial,
-  exact this imposs,
+  have one_ne_two : (1 : fin 3) ≠ (2 : fin 3), dec_trivial,
+  exact one_ne_two imposs,
 end
 
 end specific_symbols
@@ -126,6 +126,33 @@ begin
   exact wrap_never_outputs_nt_inr 2,
 end
 
+private lemma map_wrap_never_contains_nt_inr {N : Type} {l : list (symbol T N)} (i : fin 3) :
+  symbol.nonterminal (sum.inr i) ∉ list.map wrap_sym l :=
+begin
+  intro contra,
+  rw list.mem_map at contra,
+  rcases contra with ⟨s, -, imposs⟩,
+  exact wrap_never_outputs_nt_inr i imposs,
+end
+
+private lemma mem_wrap_never_contains_Z {N : Type} {l : list (symbol T N)} :
+  Z ∉ list.map wrap_sym l :=
+begin
+  exact map_wrap_never_contains_nt_inr 0,
+end
+
+private lemma mem_wrap_never_contains_H {N : Type} {l : list (symbol T N)} :
+  H ∉ list.map wrap_sym l :=
+begin
+  exact map_wrap_never_contains_nt_inr 1,
+end
+
+private lemma mem_wrap_never_contains_R {N : Type} {l : list (symbol T N)} :
+  R ∉ list.map wrap_sym l :=
+begin
+  exact map_wrap_never_contains_nt_inr 2,
+end
+
 private lemma wrap_sym_inj {N : Type} {a b : symbol T N} (wrap_eq : wrap_sym a = wrap_sym b) :
   a = b  :=
 begin
@@ -201,18 +228,12 @@ begin
   rw list.mem_append at contra,
   cases contra,
   swap, {
-    rw list.mem_map at contra,
-    rcases contra with ⟨s, -, is_H⟩,
-    exact wrap_never_outputs_H is_H,
+    exact mem_wrap_never_contains_H contra,
   },
   rw list.mem_append at contra,
   cases contra,
   {
-    -- copypaste (VI) begins
-    rw list.mem_map at contra,
-    rcases contra with ⟨s, -, is_H⟩,
-    exact wrap_never_outputs_H is_H,
-    -- copypaste (VI) ends
+    exact mem_wrap_never_contains_H contra,
   },
   {
     rw list.mem_singleton at contra,
@@ -323,7 +344,7 @@ begin
       exact sum.no_confusion (symbol.nonterminal.inj hhh),
     },
     {
-      simp only [list.nth, list.map, list.cons_append] at hhh,
+      simp only [list.nth, list.map_cons, list.cons_append] at hhh,
       exact wrap_never_outputs_H hhh.symm,
     },
   },
@@ -443,10 +464,7 @@ begin
     {
       intro,
       rw list.count_in_zero_of_notin,
-      rw list.mem_map,
-      push_neg,
-      intros s trash,
-      apply wrap_never_outputs_H,
+      apply mem_wrap_never_contains_H,
     },
     have inside_one : ∀ z : list (symbol T g.nt),
       (list.map wrap_sym z).count_in (@H T g.nt) + [@H T g.nt].count_in (@H T g.nt) = 1,
@@ -704,7 +722,7 @@ begin
     cases contr,
     {
       rw list.mem_singleton at contr,
-      exact R_neq_Z contr,
+      exact Z_neq_R.symm contr,
     },
     rw list.mem_join at contr,
     rw list.map_map at contr,
@@ -716,14 +734,12 @@ begin
     rw list.mem_append at Ril,
     cases Ril,
     {
-      rw list.mem_map at Ril,
-      rcases Ril with ⟨s, -, imposs⟩,
-      exact wrap_never_outputs_R imposs,
+      exact mem_wrap_never_contains_R Ril,
     },
     {
       rw list.mem_singleton at Ril,
       clear_except Ril,
-      exact R_neq_H Ril,
+      exact H_neq_R Ril.symm,
     },
   },
   rw cat at *,
@@ -768,9 +784,7 @@ begin
         rw list.mem_append at Zil,
         cases Zil,
         {
-          rw list.mem_map at Zil,
-          rcases Zil with ⟨s, -, imposs⟩,
-          exact wrap_never_outputs_Z imposs,
+          exact mem_wrap_never_contains_Z Zil,
         },
         {
           rw list.mem_singleton at Zil,
@@ -845,9 +859,7 @@ begin
         rw list.mem_append at Zil,
         cases Zil,
         {
-          rw list.mem_map at Zil,
-          rcases Zil with ⟨s, -, imposs⟩,
-          exact wrap_never_outputs_Z imposs,
+          exact mem_wrap_never_contains_Z Zil,
         },
         {
           rw list.mem_singleton at Zil,
@@ -1189,7 +1201,7 @@ begin
     {
       cases contr,
       {
-        exact R_neq_Z contr.symm,
+        exact Z_neq_R contr,
       },
       {
         apply Z_neq_H,
@@ -1207,9 +1219,7 @@ begin
     rw list.mem_append at Zil,
     cases Zil,
     {
-      rw list.mem_map at Zil,
-      rcases Zil with ⟨s, -, imposs⟩,
-      exact wrap_never_outputs_Z imposs,
+      exact mem_wrap_never_contains_Z Zil,
     },
     {
       rw list.mem_singleton at Zil,
@@ -1261,7 +1271,10 @@ begin
       rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
       have empty_string : u = [] ∧ v = [],
       {
-        sorry,
+        rw rin at bef,
+        dsimp only at bef,
+        rw list.append_nil at bef,
+        sorry, -- trivi
       },
       rw [empty_string.left, list.nil_append, empty_string.right, list.append_nil] at aft,
       use list.nil,
@@ -1297,8 +1310,52 @@ begin
       },
       rw [u_nil, list.nil_append] at bef,
       have v_eq := eq.symm (list.append_inj_right bef (by refl)),
-      rw [u_nil, list.nil_append, v_eq, rin, list.nil_append] at aft,
-      -- TODO should be doable now
+      rw [
+        u_nil, list.nil_append, v_eq, rin, list.nil_append,
+        list.map_cons, list.map_cons, list.join,
+        list.append_assoc, list.append_join_append, ←list.append_assoc
+      ] at aft,
+      split,
+      {
+        use list.map wrap_sym x₀ ++ (list.map (λ l, [H] ++ l) (list.map (list.map wrap_sym) L)).join,
+        rw aft,
+        trim,
+      },
+      rw aft,
+      split,
+      {
+        rw list.mem_append,
+        rw list.mem_append,
+        push_neg,
+        split,
+        swap, {
+          intro nin,
+          rw list.mem_singleton at nin,
+          exact Z_neq_H nin,
+        },
+        split,
+        {
+          apply mem_wrap_never_contains_Z,
+        },
+        rw list.mem_join,
+        push_neg,
+        intros l lin,
+        rw list.mem_map at lin,
+        rcases lin with ⟨z, zin, eq_l⟩,
+        rw ←eq_l,
+        rw list.mem_append,
+        push_neg,
+        split,
+        {
+          intro nin,
+          rw list.mem_singleton at nin,
+          exact Z_neq_H nin,
+        },
+        rw list.mem_map at zin,
+        rcases zin with ⟨y, -, eq_z⟩,
+        rw ←eq_z,
+        apply mem_wrap_never_contains_Z,
+      },
       sorry,
     },
   },
@@ -1598,7 +1655,7 @@ begin
     },
     {
       rw list.mem_singleton at contr,
-      exact R_neq_Z contr.symm,
+      exact Z_neq_R contr,
     },
     {
       exact wrap_never_outputs_Z imposs,
@@ -1619,9 +1676,7 @@ begin
         rw list.mem_map at ain,
         rcases ain with ⟨b, -, eq_a⟩,
         rw ←eq_a at Zin,
-        rw list.mem_map at Zin,
-        rcases Zin with ⟨c, -, imposs⟩,
-        exact wrap_never_outputs_Z imposs,
+        exact mem_wrap_never_contains_Z Zin,
       },
       {
         rw list.mem_singleton at Zin,
@@ -1862,13 +1917,10 @@ begin
         push_neg,
         split,
         {
-          rw list.mem_map,
-          push_neg,
-          intros s trash,
-          apply wrap_never_outputs_Z,
+          apply mem_wrap_never_contains_Z,
         },
         {
-          exact R_neq_Z.symm,
+          exact Z_neq_R,
         },
       },
     },
@@ -1925,9 +1977,7 @@ begin
         {
           rw [eq_iff_iff, false_iff],
           intro hyp_H_in,
-          rw list.mem_map at hyp_H_in,
-          rcases hyp_H_in with ⟨s, -, imposs⟩,
-          exact wrap_never_outputs_H imposs,
+          exact mem_wrap_never_contains_H hyp_H_in,
         }
       },
     },
@@ -2109,11 +2159,9 @@ begin
       },
       {
         rw [eq_iff_iff, false_iff],
-        intro hyp_H_in,
-        rw list.mem_map at hyp_H_in,
-        rcases hyp_H_in with ⟨s, -, imposs⟩,
-        exact wrap_never_outputs_R imposs,
-      }
+        intro hyp_R_in,
+        exact mem_wrap_never_contains_R hyp_R_in,
+      },
     },
     -- nearly copypaste (XIV) ends
   },
