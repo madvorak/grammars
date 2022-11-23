@@ -1255,7 +1255,52 @@ begin
   },
   cases rin,
   {
-    sorry,
+    cases x with x₀ L,
+    {
+      right, right, right, left,
+      rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
+      have empty_string : u = [] ∧ v = [],
+      {
+        sorry,
+      },
+      rw [empty_string.left, list.nil_append, empty_string.right, list.append_nil] at aft,
+      use list.nil,
+      split,
+      {
+        use list.nil,
+        split,
+        {
+          refl,
+        },
+        {
+          intros y imposs,
+          exfalso,
+          exact list.not_mem_nil y imposs,
+        },
+      },
+      {
+        rw aft,
+        rw list.map_nil,
+        rw rin,
+      },
+    },
+    {
+      repeat {
+        right,
+      },
+      rw rin at bef,
+      dsimp only at bef,
+      rw list.append_nil at bef,
+      have u_nil : u = [],
+      {
+        sorry,
+      },
+      rw [u_nil, list.nil_append] at bef,
+      have v_eq := eq.symm (list.append_inj_right bef (by refl)),
+      rw [u_nil, list.nil_append, v_eq] at aft,
+      -- TODO the last case must allow more than just `symbol T g.nt` !!!!!!!!!!!!!!!!
+      sorry,
+    },
   },
   have rin' : r ∈ rules_that_scan_terminals g ∨ r ∈ list.map wrap_gr g.rules,
   {
