@@ -692,7 +692,7 @@ private lemma star_case_1 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
+  (∃ ω : list (ns T g.nt), α' = ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
 begin
   rcases hyp with ⟨x, valid, cat⟩,
   have no_R_in_alpha : R ∉ α,
@@ -1175,7 +1175,7 @@ private lemma star_case_2 {g : grammar T} {α α' : list (symbol T (star_grammar
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
+  (∃ ω : list (ns T g.nt), α' = ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
 begin
   -- nearly copypaste (XIII) begins
   rcases hyp with ⟨x, valid, cat⟩,
@@ -1297,8 +1297,8 @@ begin
       },
       rw [u_nil, list.nil_append] at bef,
       have v_eq := eq.symm (list.append_inj_right bef (by refl)),
-      rw [u_nil, list.nil_append, v_eq] at aft,
-      -- TODO the last case must allow more than just `symbol T g.nt` !!!!!!!!!!!!!!!!
+      rw [u_nil, list.nil_append, v_eq, rin, list.nil_append] at aft,
+      -- TODO should be doable now
       sorry,
     },
   },
@@ -1572,7 +1572,7 @@ private lemma star_case_3 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
+  (∃ ω : list (ns T g.nt), α' = ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
 begin
   rcases hyp with ⟨w, β, γ, x, valid_w, valid_middle, valid_x, cat⟩,
   have no_Z_in_alpha : Z ∉ α,
@@ -1805,25 +1805,10 @@ begin
   },
 end
 
-private lemma star_case_4 {g : grammar T} {α α' : list (ns T g.nt)}
+private lemma star_case_4 {g : grammar T} {α α' : list (ns T g.nt)} {arbitrary_prop : Prop}
     (orig : grammar_transforms (star_grammar g) α α')
     (hyp : ∃ u : list T, u ∈ (grammar_language g).star ∧ α = list.map symbol.terminal u) :
--- Do not change even though the statement could easily be made stronger!
-  (∃ x : list (list (symbol T g.nt)),
-    (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
-    (α' = [Z] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
-  (∃ x : list (list (symbol T g.nt)),
-    (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
-    (α' = [R, H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
-  (∃ w : list (list T), ∃ β : list T, ∃ γ : list (symbol T g.nt), ∃ x : list (list (symbol T g.nt)),
-    (∀ wᵢ ∈ w, grammar_generates g wᵢ) ∧
-    (grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal β ++ γ)) ∧
-    (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
-    (α' = list.map symbol.terminal (list.join w) ++ list.map symbol.terminal β ++ [R] ++
-      list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
-  (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
-  (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
+  arbitrary_prop :=
 begin
   exfalso,
   rcases hyp with ⟨w, -, alpha_of_w⟩,
@@ -1850,7 +1835,7 @@ private lemma star_case_5 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
+  (∃ ω : list (ns T g.nt), α' = ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
 begin
   rcases hyp with ⟨w, ends_with_R⟩,
   rcases orig with ⟨r, rin, u, v, bef, aft⟩,
@@ -2134,7 +2119,7 @@ begin
   },
 end
 
-private lemma false_of_wrap_concat_H_eq_appends {g : grammar T}
+/-private lemma false_of_wrap_concat_H_eq_appends {g : grammar T}
     {w : list (symbol T g.nt)} {v₁ v₂ v₄ v₅ : list (ns T g.nt)} {Y : ns T g.nt}
     (YneqH : Y ≠ H) (wrap_never_outs_Y : ∀ a : symbol T g.nt, wrap_sym a ≠ Y) :
   list.map wrap_sym w ++ [H] = v₁ ++ v₂ ++ [Y] ++ v₄ ++ v₅ → false :=
@@ -2157,11 +2142,11 @@ begin
   },
   rw Y_not_in at contrast,
   simpa using contrast,
-end
+end-/
 
 private lemma star_case_6 {g : grammar T} {α α' : list (ns T g.nt)}
     (orig : grammar_transforms (star_grammar g) α α')
-    (hyp : (∃ ω : list (symbol T g.nt), α = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α ∧ R ∉ α) :
+    (hyp : (∃ ω : list (ns T g.nt), α = ω ++ [H]) ∧ Z ∉ α ∧ R ∉ α) :
 -- Do not change even though the statement could easily be made stronger!
   (∃ x : list (list (symbol T g.nt)),
     (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
@@ -2177,16 +2162,17 @@ private lemma star_case_6 {g : grammar T} {α α' : list (ns T g.nt)}
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α' = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
+  (∃ ω : list (ns T g.nt), α' = ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α' :=
 begin
   rcases hyp with ⟨⟨w, ends_with_H⟩, no_Z, no_R⟩,
   rcases orig with ⟨r, rin, u, v, bef, aft⟩,
   rw ends_with_H at bef,
-  iterate 2 {
+  /-iterate 2 {
     cases rin,
     {
       exfalso,
       rw rin at bef,
+      dsimp only at bef,
       exact false_of_wrap_concat_H_eq_appends Z_neq_H (@wrap_never_outputs_Z T g.nt) bef,
     },
   },
@@ -2197,6 +2183,26 @@ begin
       rw rin at bef,
       exact false_of_wrap_concat_H_eq_appends R_neq_H (@wrap_never_outputs_R T g.nt) bef,
     },
+  },-/
+  cases rin,
+  {
+    exfalso,
+    sorry,
+  },
+  cases rin,
+  {
+    exfalso,
+    sorry,
+  },
+  cases rin,
+  {
+    exfalso,
+    sorry,
+  },
+  cases rin,
+  {
+    exfalso,
+    sorry,
   },
   change r ∈ list.map wrap_gr g.rules ++ rules_that_scan_terminals g at rin,
   rw list.mem_append at rin,
@@ -2297,7 +2303,8 @@ begin
         -- copypaste (IX) ends
       },
     },
-    use w.take u.length ++ r₀.output_string ++
+    sorry,
+    /-use w.take u.length ++ r₀.output_string ++
       (w.drop (u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R).length).take (v.length - 1),
     rw aft,
     -- part "for later" begins
@@ -2435,7 +2442,7 @@ begin
         rw list.length_append,
       },
       linarith,
-    },
+    },-/
   },
   {
     exfalso,
@@ -2443,7 +2450,9 @@ begin
     rw list.mem_map at rin,
     rcases rin with ⟨t, -, eq_r⟩,
     rw ←eq_r at bef,
-    exact false_of_wrap_concat_H_eq_appends R_neq_H (@wrap_never_outputs_R T g.nt) bef,
+    dsimp only at bef,
+    rw list.append_nil at bef,
+    sorry,--exact false_of_wrap_concat_H_eq_appends R_neq_H (@wrap_never_outputs_R T g.nt) bef,
   },
 end
 
@@ -2470,7 +2479,7 @@ private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))) ∨
   (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α = list.map symbol.terminal u) ∨
   (∃ σ : list (symbol T g.nt), α = list.map wrap_sym σ ++ [R]) ∨
-  (∃ ω : list (symbol T g.nt), α = list.map wrap_sym ω ++ [H]) ∧ Z ∉ α ∧ R ∉ α :=
+  (∃ ω : list (ns T g.nt), α = ω ++ [H]) ∧ Z ∉ α ∧ R ∉ α :=
 begin
   induction ass with a b trash orig ih,
   {
