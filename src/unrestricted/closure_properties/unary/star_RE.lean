@@ -2119,31 +2119,6 @@ begin
   },
 end
 
-/-private lemma false_of_wrap_concat_H_eq_appends {g : grammar T}
-    {w : list (symbol T g.nt)} {v₁ v₂ v₄ v₅ : list (ns T g.nt)} {Y : ns T g.nt}
-    (YneqH : Y ≠ H) (wrap_never_outs_Y : ∀ a : symbol T g.nt, wrap_sym a ≠ Y) :
-  list.map wrap_sym w ++ [H] = v₁ ++ v₂ ++ [Y] ++ v₄ ++ v₅ → false :=
-begin
-  intro hyp,
-  have contrast := congr_arg (λ l, Y ∈ l) hyp,
-  have Y_not_in : (λ l, Y ∈ l) (list.map wrap_sym w ++ [H]) = false,
-  {
-    change (Y ∈ (list.map wrap_sym w ++ [H])) = false,
-    rw [list.mem_append, list.mem_singleton, list.mem_map, eq_iff_iff, iff_false],
-    by_contradiction if_Y_in,
-    cases if_Y_in,
-    {
-      rcases if_Y_in with ⟨a, -, imposs⟩,
-      exact wrap_never_outs_Y a imposs,
-    },
-    {
-      exact YneqH if_Y_in,
-    },
-  },
-  rw Y_not_in at contrast,
-  simpa using contrast,
-end-/
-
 private lemma star_case_6 {g : grammar T} {α α' : list (ns T g.nt)}
     (orig : grammar_transforms (star_grammar g) α α')
     (hyp : (∃ ω : list (ns T g.nt), α = ω ++ [H]) ∧ Z ∉ α ∧ R ∉ α) :
@@ -2166,14 +2141,17 @@ private lemma star_case_6 {g : grammar T} {α α' : list (ns T g.nt)}
 begin
   rcases hyp with ⟨⟨w, ends_with_H⟩, no_Z, no_R⟩,
   rcases orig with ⟨r, rin, u, v, bef, aft⟩,
-  rw ends_with_H at bef,
-  /-iterate 2 {
+  iterate 2 {
     cases rin,
     {
       exfalso,
       rw rin at bef,
-      dsimp only at bef,
-      exact false_of_wrap_concat_H_eq_appends Z_neq_H (@wrap_never_outputs_Z T g.nt) bef,
+      simp only [list.append_nil] at bef,
+      rw bef at no_Z,
+      apply no_Z,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      apply list.mem_singleton_self,
     },
   },
   iterate 2 {
@@ -2181,28 +2159,15 @@ begin
     {
       exfalso,
       rw rin at bef,
-      exact false_of_wrap_concat_H_eq_appends R_neq_H (@wrap_never_outputs_R T g.nt) bef,
+      dsimp only at bef,
+      rw list.append_nil at bef,
+      rw bef at no_R,
+      apply no_R,
+      apply list.mem_append_left,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      apply list.mem_singleton_self,
     },
-  },-/
-  cases rin,
-  {
-    exfalso,
-    sorry,
-  },
-  cases rin,
-  {
-    exfalso,
-    sorry,
-  },
-  cases rin,
-  {
-    exfalso,
-    sorry,
-  },
-  cases rin,
-  {
-    exfalso,
-    sorry,
   },
   change r ∈ list.map wrap_gr g.rules ++ rules_that_scan_terminals g at rin,
   rw list.mem_append at rin,
@@ -2211,6 +2176,7 @@ begin
     repeat {
       right,
     },
+    rw ends_with_H at bef,
     rw list.mem_map at rin,
     rcases rin with ⟨r₀, -, r_of_r₀⟩,
     split,
@@ -2303,16 +2269,9 @@ begin
         -- copypaste (IX) ends
       },
     },
-    sorry,
-    /-use w.take u.length ++ r₀.output_string ++
-      (w.drop (u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R).length).take (v.length - 1),
+    use u ++ r.output_string ++ v.take (v.length - 1),
     rw aft,
-    -- part "for later" begins
-    have bef_len := congr_arg list.length bef,
-    repeat {
-      rw list.length_append at bef_len,
-    },
-    rw list.length_singleton at bef_len,
+    trim,
     have vlnn : v.length ≥ 1,
     {
       by_contradiction contra,
@@ -2361,42 +2320,11 @@ begin
         },
       },
     },
-    -- part "for later" ends
-    rw list.map_append_append,
-    rw list.map_take,
-    have bef_take := congr_arg (list.take u.length) bef,
-    repeat {
-      rw list.append_assoc at bef_take,
-    },
-    rw list.take_left at bef_take,
-    rw list.take_append_of_le_length at bef_take,
-    rw bef_take,
-    trim,
-    rw ←r_of_r₀,
-    unfold wrap_gr,
-    dsimp,
-    have bef_drop := congr_arg (list.drop (u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R).length) bef,
-    rw list.drop_left at bef_drop,
-    rw list.drop_append_of_le_length at bef_drop,
-    have bef_segm := congr_arg (list.take (v.length - 1)) bef_drop,
-    rw list.take_append_of_le_length at bef_segm,
-    rw ←r_of_r₀ at bef_segm,
-    unfold wrap_gr at bef_segm,
-    rw list.map_take,
-    rw list.map_drop,
-    rw bef_segm,
-    rw list.append_assoc,
-    apply congr_arg2,
-    {
-      refl,
-    },
-    clear_except bef vlnn,
-    convert_to
-      list.take (v.length - 1) v ++ list.drop (v.length - 1) v =
-      list.take (v.length - 1) v ++ [H],
+    convert_to list.take (v.length - 1) v ++ list.drop (v.length - 1) v = list.take (v.length - 1) v ++ [H],
     {
       rw list.take_append_drop,
     },
+    trim,
     have bef_rev := congr_arg list.reverse bef,
     repeat {
       rw list.reverse_append at bef_rev,
@@ -2415,34 +2343,7 @@ begin
     rw list.reverse_take _ vlnn at bef_rev_tak,
     rw list.reverse_eq_iff at bef_rev_tak,
     rw list.reverse_reverse at bef_rev_tak,
-    rw bef_rev_tak,
-    -- and now close the residues from `_le_length` lemmata
-    {
-      clear_except bef_len vlnn,
-      rw list.length_drop,
-      repeat {
-        rw list.length_append,
-      },
-      rw list.length_singleton at *,
-      apply le_of_eq,
-      obtain ⟨m, vlm⟩ := le_iff_exists_add.mp vlnn,
-      rw vlm at *,
-      clear vlm vlnn v,
-      rw [add_comm, nat.add_succ_sub_one, add_zero],
-      have almost : (list.map wrap_sym w).length = u.length + r.input_L.length + r.input_R.length + (1 + m),
-      {
-        linarith, -- TODO try to refactor to not need both `linarith` and `omega`
-      },
-      clear_except almost,
-      omega,
-    },
-    iterate 2 {
-      clear_except bef_len vlnn,
-      repeat {
-        rw list.length_append,
-      },
-      linarith,
-    },-/
+    exact bef_rev_tak.symm,
   },
   {
     exfalso,
@@ -2450,9 +2351,16 @@ begin
     rw list.mem_map at rin,
     rcases rin with ⟨t, -, eq_r⟩,
     rw ←eq_r at bef,
+    -- copypaste (XV) begins
     dsimp only at bef,
     rw list.append_nil at bef,
-    sorry,--exact false_of_wrap_concat_H_eq_appends R_neq_H (@wrap_never_outputs_R T g.nt) bef,
+    rw bef at no_R,
+    apply no_R,
+    apply list.mem_append_left,
+    apply list.mem_append_left,
+    apply list.mem_append_right,
+    apply list.mem_singleton_self,
+    -- copypaste (XV) ends
   },
 end
 
