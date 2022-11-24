@@ -1,5 +1,4 @@
 import tactic
-import print_sorry
 
 meta def in_list_explicit : tactic unit := `[
   tactic.repeat `[
