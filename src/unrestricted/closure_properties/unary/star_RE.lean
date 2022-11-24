@@ -1785,7 +1785,151 @@ begin
   -- copypaste (II) ends
   cases rin,
   {
-    sorry,
+    rw rin at bef aft,
+    dsimp only at bef aft,
+    rw list.append_nil at bef,
+    have gamma_nil : γ = [],
+    {
+      -- because `R` and `H` must be next to each other
+      -- observe the first occurence of `R` on each side of `bef`
+      sorry,
+    },
+    rw [gamma_nil, list.map_nil, list.append_nil] at *,
+    clear gamma_nil γ,
+    cases x with x₀ L,
+    {
+      right, right, right, right, left,
+      rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
+      have v_nil : v = [],
+      {
+        clear_except bef,
+        have bef_rev := congr_arg list.reverse bef,
+        repeat {
+          rw list.reverse_append at bef_rev,
+        },
+        repeat {
+          rw list.reverse_singleton at bef_rev,
+        },
+        rw ←list.reverse_eq_nil,
+        cases v.reverse with d l,
+        {
+          refl,
+        },
+        exfalso,
+        rw list.singleton_append at bef_rev,
+        have brt := list.tail_eq_of_cons_eq bef_rev,
+        have brtt := congr_arg list.tail brt,
+        rw list.singleton_append at brtt,
+        rw list.tail_cons at brtt,
+        cases l with e l',
+        {
+          change
+            (list.map symbol.terminal β).reverse ++ (list.map symbol.terminal w.join).reverse =
+            [symbol.nonterminal (sum.inr 2)] ++ u.reverse
+          at brtt,
+          have imposs := congr_arg (λ a, R ∈ a) brtt,
+          dsimp only at imposs,
+          apply false_of_true_eq_false,
+          convert imposs.symm,
+          {
+            rw [eq_iff_iff, true_iff],
+            apply list.mem_append_left,
+            apply list.mem_singleton_self,
+          },
+          {
+            rw [eq_iff_iff, false_iff],
+            rw list.mem_append,
+            push_neg,
+            split;
+            {
+              rw list.mem_reverse,
+              rw list.mem_map,
+              push_neg,
+              intros t trash,
+              apply symbol.no_confusion,
+            },
+          },
+        },
+        {
+          change _ = _ ++ _ at brtt,
+          -- nearly copypaste (XVI) begins
+          have imposs := congr_arg (λ a, H ∈ a) brtt,
+          dsimp only at imposs,
+          apply false_of_true_eq_false,
+          convert imposs.symm,
+          {
+            rw [eq_iff_iff, true_iff],
+            apply list.mem_append_right,
+            apply list.mem_append_left,
+            apply list.mem_singleton_self,
+          },
+          {
+            rw [eq_iff_iff, false_iff],
+            rw list.mem_append,
+            push_neg,
+            split;
+            {
+              rw list.mem_reverse,
+              rw list.mem_map,
+              push_neg,
+              intros t trash,
+              apply symbol.no_confusion,
+            },
+          },
+          -- nearly copypaste (XVI) ends
+        },
+      },
+      rw [v_nil, list.append_nil] at bef aft,
+      use list.map symbol.terminal w.join ++ list.map symbol.terminal β,
+      rw aft,
+      have bef_minus_H := list.append_inj_left' bef rfl,
+      have bef_minus_RH := list.append_inj_left' bef_minus_H rfl,
+      rw ←bef_minus_RH,
+      rw [list.map_append, list.map_map, list.map_map],
+      refl,
+    },
+    right, right, left,
+    use [[], [], x₀, L],
+    split,
+    {
+      intros wᵢ wiin,
+      exfalso,
+      rw list.mem_nil_iff at wiin,
+      exact wiin,
+    },
+    split,
+    {
+      rw [list.map_nil, list.nil_append],
+      apply valid_x,
+      apply list.mem_cons_self,
+    },
+    split,
+    {
+      intros xᵢ xiin,
+      apply valid_x,
+      exact list.mem_cons_of_mem x₀ xiin,
+    },
+    have u_nil : u = [],
+    {
+      clear_except bef,
+      sorry,
+    },
+    rw [u_nil, list.nil_append] at bef aft,
+    rw [list.map_nil, list.join, list.map_nil, list.nil_append, list.nil_append],
+    rw aft,
+    have v_from_x : v = (list.map (++ [H]) (list.map (list.map wrap_sym) (x₀ :: L))).join,
+    {
+      have nothing_to_the_left : list.map symbol.terminal w.join ++ list.map symbol.terminal β = [],
+      {
+        sorry,
+      },
+      rw [nothing_to_the_left, list.nil_append] at bef,
+      symmetry,
+      exact list.append_inj_right bef rfl,
+    },
+    rw v_from_x,
+    rw [list.map_cons, list.map_cons, list.join],
+    rw [←list.append_assoc, ←list.append_assoc],
   },
   cases rin,
   {
