@@ -2480,13 +2480,6 @@ begin
   },
 end
 
-#print axioms star_case_1
-#print axioms star_case_2
-#print axioms star_case_3
-#print axioms star_case_4
-#print axioms star_case_5
-#print axioms star_case_6
-
 private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
     (ass : grammar_derives (star_grammar g) [Z] α) :
   (∃ x : list (list (symbol T g.nt)),

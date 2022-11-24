@@ -12,36 +12,36 @@ import unrestricted.closure_properties.unary.reverse_RE
 
 section context_free
 
-#check        CF_of_CF_u_CF
-#print axioms CF_of_CF_u_CF
+#check          CF_of_CF_u_CF
+#print_sorry_in CF_of_CF_u_CF
 
-#check        nnyCF_of_CF_i_CF
-#print axioms nnyCF_of_CF_i_CF
+#check          nnyCF_of_CF_i_CF
+#print_sorry_in nnyCF_of_CF_i_CF
 
-#check        nnyCF_of_complement_CF
-#print axioms nnyCF_of_complement_CF
+#check          nnyCF_of_complement_CF
+#print_sorry_in nnyCF_of_complement_CF
 
-#check        CF_of_CF_c_CF
-#print axioms CF_of_CF_c_CF
+#check          CF_of_CF_c_CF
+#print_sorry_in CF_of_CF_c_CF
 
-#check        CF_of_reverse_CF
-#print axioms CF_of_reverse_CF
+#check          CF_of_reverse_CF
+#print_sorry_in CF_of_reverse_CF
 
 end context_free
 
 
 section unrestricted
 
-#check        RE_of_RE_u_RE
-#print axioms RE_of_RE_u_RE
+#check          RE_of_RE_u_RE
+#print_sorry_in RE_of_RE_u_RE
 
-#check        RE_of_RE_c_RE
-#print axioms RE_of_RE_c_RE
+#check          RE_of_RE_c_RE
+#print_sorry_in RE_of_RE_c_RE
 
-#check        RE_of_star_RE
-#print axioms RE_of_star_RE
+#check          RE_of_star_RE
+#print_sorry_in RE_of_star_RE
 
-#check        RE_of_reverse_RE
-#print axioms RE_of_reverse_RE
+#check          RE_of_reverse_RE
+#print_sorry_in RE_of_reverse_RE
 
 end unrestricted

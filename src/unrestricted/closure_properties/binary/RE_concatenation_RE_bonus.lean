@@ -209,11 +209,8 @@ end
 end bonus_CS
 
 
-#check        RE_of_RE_c_RE
-#print axioms RE_of_RE_c_RE
+#check          bonus_CF_of_CF_c_CF
+#print_sorry_in bonus_CF_of_CF_c_CF
 
-#check        bonus_CF_of_CF_c_CF
-#print axioms bonus_CF_of_CF_c_CF
-
-#check        bonus_CS_of_CS_c_CS
-#print axioms bonus_CS_of_CS_c_CS
+#check          bonus_CS_of_CS_c_CS
+#print_sorry_in bonus_CS_of_CS_c_CS

@@ -1,4 +1,5 @@
 import tactic
+import print_sorry
 
 meta def in_list_explicit : tactic unit := `[
   tactic.repeat `[
@@ -76,7 +77,7 @@ lemma take_join_of_lt {L : list (list α)} {n : ℕ} (notall : n < L.join.length
   ∃ m k : ℕ, ∃ mlt : m < L.length, k < (L.nth_le m mlt).length ∧
     L.join.take n = (L.take m).join ++ (L.nth_le m mlt).take k :=
 begin
-  sorry
+  sorry,
 end
 
 -- hopefully similar to `take_join_of_lt`
@@ -84,7 +85,7 @@ lemma drop_join_of_lt {L : list (list α)} {n : ℕ} (notall : n < L.join.length
   ∃ m k : ℕ, ∃ mlt : m < L.length, k < (L.nth_le m mlt).length ∧
     L.join.drop n = (L.nth_le m mlt).drop k ++ (L.drop m.succ).join :=
 begin
-  sorry
+  sorry,
 end
 
 lemma append_join_append (L : list (list α)) :
