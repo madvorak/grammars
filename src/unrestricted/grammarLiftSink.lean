@@ -233,7 +233,7 @@ begin
     {
       refl,
     },
-    dsimp only [function.comp_app],
+    rw function.comp_app,
     unfold lift_symbol_,
     unfold sink_symbol_,
     rw lg.lift_nt_sink,

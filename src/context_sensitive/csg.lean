@@ -114,7 +114,7 @@ begin
       unfold CS_transforms at hyp,
       unfold grammar_transforms,
       delta grammar_of_csg,
-      dsimp,
+      dsimp only,
       rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       use grule.mk
         r.context_left r.input_nonterminal r.context_right
@@ -137,10 +137,7 @@ begin
       {
         exact bef,
       },
-      dsimp,
-      rw ←list.append_assoc,
-      rw ←list.append_assoc,
-      exact aft,
+      simpa [list.append_assoc] using aft,
     },
     exact indu (list.map symbol.terminal w),
   },
@@ -163,7 +160,7 @@ begin
       unfold grammar_transforms at hyp,
       unfold CS_transforms,
       delta grammar_of_csg at hyp,
-      dsimp at hyp,
+      dsimp only at hyp,
       rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       rw list.mem_map at rin,
       rcases rin with ⟨new_rule, new_rule_in, new_rule_def⟩,
@@ -181,10 +178,7 @@ begin
       },
       {
         rw ←new_rule_def at aft,
-        dsimp at aft,
-        rw ←list.append_assoc at aft,
-        rw ←list.append_assoc at aft,
-        exact aft,
+        simpa [list.append_assoc] using aft,
       },
     },
     exact indu (list.map symbol.terminal w),
