@@ -121,10 +121,29 @@ infix ` ^ ` : 100 := n_times
 
 end list_join
 
+variables [decidable_eq α]
+
+section list_index_of
+
+lemma index_of_append_of_notin {a : α} (not_on_left : a ∉ x) :
+  index_of a (x ++ y)  =  x.length  +  index_of a y  :=
+begin
+  induction x with d l ih,
+  {
+    rw [list.nil_append, list.length, zero_add],
+  },
+  rw [
+    list.cons_append,
+    index_of_cons_ne _ (ne_of_not_mem_cons not_on_left),
+    list.length,
+    ih (not_mem_of_not_mem_cons not_on_left),
+    nat.succ_add
+  ],
+end
+
+end list_index_of
 
 section countin
-
-variables [decidable_eq α]
 
 def count_in (l : list α) (a : α) : ℕ :=
 list.sum (list.map (λ s, ite (s = a) 1 0) l)
