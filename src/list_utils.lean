@@ -121,6 +121,7 @@ infix ` ^ ` : 100 := n_times
 
 end list_join
 
+
 section countin
 
 variables [decidable_eq α]

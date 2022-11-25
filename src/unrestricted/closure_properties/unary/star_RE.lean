@@ -1791,7 +1791,6 @@ begin
     have gamma_nil : γ = [],
     {
       -- because `R` and `H` must be next to each other
-      -- observe the first occurence of `R` on each side of `bef`
       sorry,
     },
     rw [gamma_nil, list.map_nil, list.append_nil] at *,
@@ -1919,9 +1918,40 @@ begin
     rw aft,
     have v_from_x : v = (list.map (++ [H]) (list.map (list.map wrap_sym) (x₀ :: L))).join,
     {
-      have nothing_to_the_left : list.map symbol.terminal w.join ++ list.map symbol.terminal β = [],
+      have nothing_to_the_left :
+        list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β = [],
+        -- very weird things happen when the type parameter is removed
       {
-        sorry,
+        have hyp_head := congr_fun (congr_arg list.nth bef) 0,
+        rw list.append_assoc [symbol.nonterminal (sum.inr 2)] [H] v at hyp_head,
+        rw list.singleton_append at hyp_head,
+        rw list.nth at hyp_head,
+        cases w.join with t s,
+        {
+          cases β with t' s',
+          {
+            rw list.map_nil,
+            rw list.nil_append,
+          },
+          {
+            exfalso,
+            rw [list.map_nil, list.nil_append, list.map_cons] at hyp_head,
+            repeat {
+              rw list.cons_append at hyp_head,
+            },
+            rw list.nth at hyp_head,
+            exact symbol.no_confusion (option.some.inj hyp_head),
+          },
+        },
+        {
+          exfalso,
+          rw list.map_cons at hyp_head,
+          repeat {
+            rw list.cons_append at hyp_head,
+          },
+          rw list.nth at hyp_head,
+          exact symbol.no_confusion (option.some.inj hyp_head),
+        },
       },
       rw [nothing_to_the_left, list.nil_append] at bef,
       symmetry,
