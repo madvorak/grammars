@@ -42,7 +42,7 @@ begin
   unfold big_CF_grammar,
   unfold grammar_of_cfg,
   unfold big_grammar,
-  dsimp,
+  dsimp only [list.map],
   congr,
   repeat {
     rw list.map_append,
@@ -141,7 +141,7 @@ begin
   unfold big_CS_grammar,
   unfold grammar_of_csg,
   unfold big_grammar,
-  dsimp,
+  dsimp only [list.map],
   congr,
   repeat {
     rw list.map_append,

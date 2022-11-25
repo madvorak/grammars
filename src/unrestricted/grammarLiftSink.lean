@@ -202,7 +202,7 @@ begin
       unfold good_letter_,
     },
     unfold lift_rule_ at a_in_ros,
-    dsimp at a_in_ros,
+    dsimp only at a_in_ros,
     unfold lift_string_ at a_in_ros,
     rw list.mem_map at a_in_ros,
     rcases a_in_ros with ⟨s, trash, a_from_s⟩,
@@ -233,7 +233,7 @@ begin
     {
       refl,
     },
-    dsimp,
+    dsimp only [function.comp_app],
     unfold lift_symbol_,
     unfold sink_symbol_,
     rw lg.lift_nt_sink,
@@ -248,7 +248,7 @@ begin
     convert sink_bef;
     rw ←preimage;
     unfold lift_rule_;
-    dsimp;
+    dsimp only;
     clear_except correct_inverse,
     {
       unfold lift_string_,
@@ -280,7 +280,7 @@ begin
     rw ←preimage,
     clear_except correct_inverse,
     unfold lift_rule_,
-    dsimp,
+    dsimp only,
     unfold lift_string_,
     rw list.filter_map_map,
     rw correct_inverse,

@@ -14,7 +14,7 @@ private lemma dual_of_reversal_grule {N : Type} (r : grule T N) :
 begin
   cases r,
   unfold reversal_grule,
-  dsimp,
+  dsimp only,
   simp [list.reverse_reverse],
 end
 
@@ -33,7 +33,7 @@ private lemma dual_of_reversal_grammar (g : grammar T) :
 begin
   cases g,
   unfold reversal_grammar,
-  dsimp,
+  dsimp only,
   rw list.map_map,
   rw reversal_grule_reversal_grule,
   rw list.map_id,

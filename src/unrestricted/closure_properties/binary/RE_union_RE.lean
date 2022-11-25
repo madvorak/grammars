@@ -119,7 +119,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
     rcases rin with ⟨r₂, r₂_in, r₂_lift⟩,
     rw ←r₂_lift at rnt,
     unfold lift_rule_ at rnt,
-    dsimp at rnt,
+    dsimp only at rnt,
     have rnti := option.some.inj rnt,
     exact sum.no_confusion rnti,
   },
@@ -208,7 +208,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
     rcases rin with ⟨r₁, r₁_in, r₁_lift⟩,
     rw ←r₁_lift at rnt,
     unfold lift_rule_ at rnt,
-    dsimp at rnt,
+    dsimp only at rnt,
     have rnti := option.some.inj rnt,
     exact sum.no_confusion rnti,
   },
@@ -243,7 +243,7 @@ begin
       exact option.no_confusion zeroth,
     },
     {
-      dsimp at zeroth,
+      rw [list.nth, list.map_cons, list.nth] at zeroth,
       have nt_eq_ter := option.some.inj zeroth,
       exact symbol.no_confusion nt_eq_ter,
     },
@@ -306,7 +306,7 @@ begin
   cases rin,
   {
     rw rin at aft,
-    dsimp at aft,
+    dsimp only at aft,
     rw aft at deri,
     left,
 
@@ -329,7 +329,7 @@ begin
   cases rin,
   {
     rw rin at aft,
-    dsimp at aft,
+    dsimp only at aft,
     rw aft at deri,
     right,
 
@@ -415,7 +415,8 @@ begin
     split;
     refl,
   },
-  dsimp,
+  dsimp only,
+  rw [list.nil_append, list.append_nil],
   have lifted := lift_deri_ (@lg₁ _ _ g₂) ass,
   change
     grammar_derives lg₁.g
@@ -449,7 +450,8 @@ begin
     split;
     refl,
   },
-  dsimp,
+  dsimp only,
+  rw [list.nil_append, list.append_nil],
   have lifted := lift_deri_ (@lg₂ _ g₁ _) ass,
   change
     grammar_derives lg₂.g

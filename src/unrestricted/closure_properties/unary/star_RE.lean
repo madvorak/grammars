@@ -807,7 +807,7 @@ begin
         exact nat.lt_irrefl 0 ul_pos,
       },
       {
-        dsimp at bef_tail,
+        rw [list.singleton_append, list.tail_cons, list.cons_append, list.cons_append, list.tail_cons] at bef_tail,
         have Z_in_tail : Z ∈ l ++ [symbol.nonterminal (sum.inr 0)] ++ v,
         {
           apply list.mem_append_left,
@@ -834,7 +834,7 @@ begin
     right, left,
     rw rin at *,
     clear rin,
-    dsimp at *,
+    dsimp only at *,
     rw [list.append_nil, list.append_nil] at bef,
     use x,
     split,
@@ -882,7 +882,7 @@ begin
         exact nat.lt_irrefl 0 ul_pos,
       },
       {
-        dsimp at bef_tail,
+        rw [list.singleton_append, list.tail_cons, list.cons_append, list.cons_append, list.tail_cons] at bef_tail,
         have Z_in_tail : Z ∈ l ++ [symbol.nonterminal (sum.inr 0)] ++ v,
         {
           apply list.mem_append_left,
@@ -959,7 +959,7 @@ begin
   unfold wrap_gr at wrap_orig,
   rw ←wrap_orig at *,
   clear wrap_orig,
-  dsimp at *,
+  dsimp only at *,
   rcases case_1_match_rule bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
   clear bef,
   rw [u_eq, v_eq] at aft,
@@ -1001,6 +1001,7 @@ begin
       exact list.nth_mem xm_eq,
     },
   },
+  rw list.singleton_append,
   rw aft,
   repeat {
     rw list.cons_append,
@@ -1518,16 +1519,7 @@ begin
     -- copypaste (XII) ends
     refl,
   },
-  dsimp,
-  rw list.map_append,
-  rw list.map_append,
-  rw list.append_nil,
-  repeat {
-    rw list.append_assoc,
-  },
-  rw list.singleton_append,
-  congr,
-  rw list.map_drop,
+  simp [list.map, list.join, list.singleton_append, list.map_append, list.append_assoc, list.map_map, list.map_drop],
 end
 
 private lemma case_3_match_rule {g : grammar T} {r₀ : grule T g.nt}
