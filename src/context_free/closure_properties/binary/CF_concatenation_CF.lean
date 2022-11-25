@@ -58,7 +58,7 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
   {
     exfalso,
     rw r_in at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₀ imposs,
     exact option.no_confusion imposs,
   },
@@ -86,7 +86,7 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
     rcases r_in with ⟨r₂, r₂_in, r₂_convert_r⟩,
     rw ←r₂_convert_r at r_ntype,
     unfold rule_of_rule₂ at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₁ contr,
     rw option.some_inj at contr,
     exact sum.no_confusion contr,
@@ -151,7 +151,7 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
   {
     exfalso,
     rw r_in at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₀ imposs,
     exact option.no_confusion imposs,
   },
@@ -164,7 +164,7 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
     rcases r_in with ⟨r₁, r₁_in, r₁_convert_r⟩,
     rw ←r₁_convert_r at r_ntype,
     unfold rule_of_rule₁ at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₂ contr,
     rw option.some_inj at contr,
     exact sum.no_confusion contr,
@@ -506,7 +506,7 @@ begin
     rename h refl_contr,
     exfalso,
     have hh := congr_fun (congr_arg list.nth refl_contr) 0,
-    dsimp at hh,
+    rw list.nth at hh,
     
     by_cases (list.map (@symbol.terminal T (combined_grammar g₁ g₂).nt) w).length = 0,
     {
@@ -529,7 +529,7 @@ begin
     },
     rcases hw0 with ⟨s, hs⟩,
     rw hs at hh,
-    dsimp at hh,
+    rw option.map_some' at hh,
     rw option.some_inj at hh,
     exact symbol.no_confusion hh,
   },
@@ -672,7 +672,7 @@ begin
       rw ←ih_concat at bef,
       rw orig_in at bef,
       clear_except bef,
-      dsimp at bef,
+      dsimp only at bef,
       have init_nt_in_bef_right : symbol.nonterminal none ∈ c ++ [symbol.nonterminal none] ++ d,
       {
         apply list.mem_append_left,
@@ -1347,7 +1347,6 @@ begin
           },
           {
             unfold rule_of_rule₂,
-            dsimp,
             change lsTN_of_lsTN₂ (lsTN₂_of_lsTN (lsTN_of_lsTN₂ r₂.snd)) = lsTN_of_lsTN₂ r₂.snd,
             rw self_of_lsTN₂,
           },

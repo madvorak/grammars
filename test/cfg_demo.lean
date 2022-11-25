@@ -131,7 +131,7 @@ begin
             rw rule_in at *,
             have u_must : u = list.repeat a i,
             {
-              dsimp at *,
+              dsimp only at *,
               rw ←S at *,
               have indexS: (u ++ [S] ++ v).nth u.length = some S,
               {
@@ -167,10 +167,9 @@ begin
                   rw list.append_assoc at thelength,
                   rw list.length_append at thelength,
                   rw list.append_assoc,
-                  change u.length < (list.repeat a i ++ S :: list.repeat c i).length,
                   rw ←thelength,
                   rw list.length_append,
-                  dsimp,
+                  rw list.length_singleton,
                   rw ←add_assoc,
                   apply lt_of_lt_of_le,
                   {
@@ -178,14 +177,13 @@ begin
                   },
                   exact le_self_add,
                 },
-                change (list.repeat a i ++ ([S] ++ list.repeat c i)).nth u.length = some S at indexS,
                 rw ←list.append_assoc at indexS,
                 rw list.nth_le_nth rightend at indexS,
                 injection indexS with continue,
                 have mala : (list.repeat a i ++ [S]).length ≤ u.length,
                 {
                   rw list.length_append,
-                  dsimp,
+                  rw list.length_singleton,
                   rw list.length_repeat a i,
                   rw ←nat.succ_le_iff at hgt,
                   apply hgt,
@@ -276,7 +274,7 @@ begin
                 change u.length < (list.repeat a i ++ S :: list.repeat c i).length,
                 rw ←thelength,
                 rw list.length_append,
-                dsimp,
+                rw list.length_singleton,
                 rw ←add_assoc,
                 apply lt_of_lt_of_le,
                 {
@@ -291,7 +289,7 @@ begin
               have mala : (list.repeat a i ++ [S]).length ≤ u.length,
               {
                 rw list.length_append,
-                dsimp,
+                rw list.length_singleton,
                 rw list.length_repeat a i,
                 rw ←nat.succ_le_iff at hgt,
                 apply hgt,

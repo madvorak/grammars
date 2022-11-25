@@ -54,7 +54,7 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
   {
     exfalso,
     rw r_in at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₀ imposs,
     exact option.no_confusion imposs,
   },
@@ -62,7 +62,7 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
   {
     exfalso,
     rw r_in at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₀ imposs,
     exact option.no_confusion imposs,
   },
@@ -90,7 +90,7 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
     rcases r_in with ⟨r₂, r₂_in, r₂_convert_r⟩,
     rw ←r₂_convert_r at r_ntype,
     unfold rule_of_rule₂ at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₁ contr,
     rw option.some_inj at contr,
     exact sum.no_confusion contr,
@@ -154,7 +154,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
   {
     exfalso,
     rw r_eq at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₀ imposs,
     exact option.no_confusion imposs,
   },
@@ -162,7 +162,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
   {
     exfalso,
     rw r_eq_ at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₀ imposs,
     exact option.no_confusion imposs,
   },
@@ -176,7 +176,7 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
     rcases r_in with ⟨r₁, r₁_in, r₁_convert_r⟩,
     rw ←r₁_convert_r at r_ntype,
     unfold rule_of_rule₁ at r_ntype,
-    dsimp at r_ntype,
+    dsimp only at r_ntype,
     cases r_ntype with n₂ contr,
     rw option.some_inj at contr,
     exact sum.no_confusion contr,

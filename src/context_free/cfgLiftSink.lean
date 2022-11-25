@@ -162,7 +162,7 @@ begin
     {
       refl,
     },
-    dsimp,
+    rw function.comp_app,
     unfold lift_symbol,
     unfold sink_symbol,
     rw lg.lift_nt_sink,
@@ -176,7 +176,7 @@ begin
     convert sink_bef,
     rw ←preimage,
     unfold lift_rule,
-    dsimp,
+    dsimp only,
     change
       [symbol.nonterminal pre_rule.fst] =
       list.filter_map (sink_symbol lg.sink_nt)
@@ -192,7 +192,7 @@ begin
     convert sink_aft,
     rw ←preimage,
     unfold lift_rule,
-    dsimp,
+    dsimp only,
     unfold lift_string,
     rw list.filter_map_map,
     rw correct_inverse,
@@ -279,7 +279,7 @@ begin
       rcases lg.preimage_of_rules rule ⟨in_rules, exn₀⟩ with ⟨rul, in0, lif⟩,
       rw ←lif at in_v,
       unfold lift_rule at in_v,
-      dsimp at in_v,
+      dsimp only at in_v,
       unfold lift_string at in_v,
       rw list.mem_map at in_v,
       rcases in_v with ⟨s, s_in_rulsnd, symbol_letter⟩,

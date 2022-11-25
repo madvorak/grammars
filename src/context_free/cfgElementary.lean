@@ -82,7 +82,7 @@ begin
   {
     exfalso,
     have zeroth := congr_fun (congr_arg list.nth h) 0,
-    dsimp at zeroth,
+    rw list.nth at zeroth,
     by_cases w = list.nil,
     {
       have is_none : (list.map symbol.terminal w).nth 0 = none,
@@ -121,7 +121,8 @@ begin
       rw rule at bef,
       have bef_lenghts := congr_arg list.length bef,
       rw list.length_append_append at bef_lenghts,
-      dsimp at bef_lenghts,
+      rw list.length_singleton at bef_lenghts,
+      rw list.length_singleton at bef_lenghts,
       split,
       {
         have pre_zero : pre.length = 0,
@@ -268,7 +269,7 @@ begin
         cases rin,
         {
           rw rin,
-          dsimp,
+          dsimp only,
           intro imposs,
           cases imposs,
           {

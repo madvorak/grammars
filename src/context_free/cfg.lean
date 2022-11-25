@@ -169,20 +169,17 @@ begin
   unfold grammar_of_cfg,
   delta csg_of_cfg,
   delta grammar_of_csg,
-  simp,
+  simp only [list.map_map, eq_self_iff_true, heq_iff_eq, true_and],
   ext1,
-  simp,
+  rw [list.nth_map, list.nth_map],
   apply congr_fun,
-  dsimp,
   ext1,
   cases x,
   {
     refl,
   },
-  -- option.some
   apply congr_arg option.some,
-  dsimp,
-  rw list.append_nil,
+  simp [list.append_nil],
 end
 
 lemma grammar_of_csg_of_cfg :
@@ -222,7 +219,7 @@ begin
       unfold CF_transforms at hyp,
       unfold CS_transforms,
       delta csg_of_cfg,
-      dsimp,
+      dsimp only,
       rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       use csrule.mk [] r.fst [] r.snd,
       split,
@@ -240,10 +237,12 @@ begin
       use u,
       use w,
       split;
-      dsimp;
-      rw list.append_nil;
-      rw list.append_nil;
-      assumption,
+      {
+        dsimp only,
+        rw list.append_nil,
+        rw list.append_nil,
+        assumption,
+      },
     },
     exact indu (list.map symbol.terminal w),
   },
@@ -266,7 +265,7 @@ begin
       unfold CS_transforms at hyp,
       unfold CF_transforms,
       delta csg_of_cfg at hyp,
-      dsimp at hyp,
+      dsimp only at hyp,
       rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       use (r.input_nonterminal, r.output_string),
       split,
@@ -288,7 +287,6 @@ begin
         rw list.append_nil at *,
       },
       split;
-      dsimp;
       assumption,
     },
     exact indu (list.map symbol.terminal w),
