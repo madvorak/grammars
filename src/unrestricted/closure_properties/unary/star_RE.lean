@@ -1691,15 +1691,76 @@ begin
   {
     rcases hyp with ⟨v', left_half, right_half⟩,
     right,
-    -- all `H`s must match `v`
+    by_cases is_x_nil : x = [],
+    {
+      exfalso,
+      rw [is_x_nil, list.map_nil, list.map_nil, list.join, list.append_nil] at right_half,
+      rw ←right_half at left_half,
+      have last_sym := congr_arg (λ l, list.nth (list.reverse l) 0) left_half,
+      clear_except last_sym,
+      dsimp only at last_sym,
+      repeat {
+        rw list.reverse_append at last_sym,
+      },
+      rw list.reverse_singleton H at last_sym,
+      rw list.singleton_append at last_sym,
+      rw list.nth at last_sym,
+      rw ←list.map_reverse _ r₀.input_R at last_sym,
+      rw list.append_assoc v.reverse at last_sym,
+      --cases v.reverse with d l,
+      sorry,
+      -- probably does not lead to contradiction
+    },
+    -- all `H`s must match `v` according to `right_half`
     -- thus `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
-    -- is a prefix of `v'`
+    -- is a prefix of `v'` according to `left_half`
     obtain ⟨z, v'_eq⟩ : ∃ z,
       v' = list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R ++ z,
     {
       obtain ⟨v'', without_final_H⟩ : ∃ v'', v' = v'' ++ [H],
       {
-        sorry,
+        by_cases is_v'_nil : v' = [],
+        {
+          exfalso,
+          --rw [is_v'_nil, list.append_nil] at left_half,
+          rw [is_v'_nil, list.nil_append] at right_half,
+          apply false_of_true_eq_false,
+          convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) right_half,
+          {
+            rw [eq_iff_iff, true_iff],
+            apply list.mem_append_left,
+            apply list.mem_append_left,
+            apply list.mem_append_right,
+            apply list.mem_singleton_self,
+          },
+          {
+            -- this is probably doomed to fail
+            sorry,
+          },
+        },
+        rw list.append_eq_append_iff at left_half,
+        cases left_half,
+        {
+          rcases left_half with ⟨a', -, matters⟩,
+          use list.nil,
+          cases a' with d l,
+          {
+            rw list.nil_append at matters ⊢,
+            exact matters.symm,
+          },
+          {
+            exfalso,
+            have imposs := congr_arg list.length matters,
+            rw [list.length_singleton, list.length_append, list.length_cons] at imposs,
+            have right_pos := length_ge_one_of_not_nil is_v'_nil,
+            clear_except imposs right_pos,
+            linarith,
+          },
+        },
+        {
+          rcases left_half with ⟨c', -, v_c'⟩,
+          exact ⟨c', v_c'⟩,
+        },
       },
       rw without_final_H at right_half,
       rw list.append_assoc v'' at right_half,
@@ -1724,7 +1785,6 @@ begin
         sorry,
       },
     },
-    -- therefore `v` corresponds to the suffix of `v'` whose last symbol is `H` followed by the `x` part
     rw v'_eq at right_half,
     rw list.append_assoc _ z at right_half,
     rw list.append_right_inj at right_half,
@@ -1768,6 +1828,7 @@ begin
       exact gamma_parts,
     },
     {
+      --rw right_half,
       sorry,
     },
   },
