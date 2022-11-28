@@ -1451,7 +1451,23 @@ begin
         rw list.mem_singleton at contra,
         exact H_neq_R contra.symm,
       },
-      sorry,
+      clear_except contra,
+      rw list.mem_join at contra,
+      rw list.map_map at contra,
+      rcases contra with ⟨l, lin, in_l⟩,
+      rw list.mem_map at lin,
+      rcases lin with ⟨l₀, -, eq_l⟩,
+      rw ←eq_l at in_l,
+      rw function.comp_app at in_l,
+      rw list.mem_append at in_l,
+      cases in_l,
+      {
+        rw list.mem_singleton at in_l,
+        exact H_neq_R in_l.symm,
+      },
+      {
+        exact map_wrap_never_contains_R in_l,
+      },
     },
   },
   have rin' : r ∈ rules_that_scan_terminals g ∨ r ∈ list.map wrap_gr g.rules,
@@ -1875,7 +1891,9 @@ begin
     {
       -- because `R` and `H` must be next to each other
       have R_ni_wb : R ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
-      {
+      swap,
+      have H_ni_wb : H ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
+      any_goals {
         intro contra,
         rw list.mem_append at contra,
         cases contra;
@@ -1884,11 +1902,6 @@ begin
           rcases contra with ⟨t, -, imposs⟩,
           exact symbol.no_confusion imposs,
         },
-      },
-      have H_ni_wb : H ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
-      {
-        -- like above
-        sorry,
       },
       have H_ni_wbrg : H ∉
         list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ,
@@ -1912,13 +1925,14 @@ begin
       have R_ni_u : R ∉ u,
       {
         intro contra,
-        -- list.count_in R bef
+        classical,
+        have count_R := congr_arg (λ l, list.count_in l R) bef,
+        dsimp at count_R,
         sorry,
       },
       have H_ni_u : H ∉ u,
       {
-        intro contra,
-        -- list.count_in H bef
+        -- dtto `list.count_in l H`
         sorry,
       },
       classical,
