@@ -1275,7 +1275,14 @@ begin
         rw rin at bef,
         dsimp only at bef,
         rw list.append_nil at bef,
-        sorry, -- trivi
+        have bef_len := congr_arg list.length bef,
+        clear_except bef_len,
+        simp only [list.length_append, list.length, zero_add] at bef_len,
+        split;
+        {
+          rw ←list.length_eq_zero,
+          omega,
+        },
       },
       rw [empty_string.left, list.nil_append, empty_string.right, list.append_nil] at aft,
       use list.nil,
@@ -1307,7 +1314,86 @@ begin
       rw list.append_nil at bef,
       have u_nil : u = [],
       {
-        sorry,
+        cases u with d l,
+        {
+          refl,
+        },
+        exfalso,
+        by_cases d = R,
+        {
+          rw h at bef,
+          clear h,
+          classical,
+          have imposs, { dsimp_result { exact congr_arg (λ c : list (ns T g.nt), list.count_in c R) bef } },
+          repeat {
+            rw list.count_in_append at imposs,
+          },
+          repeat {
+            rw list.count_in_cons at imposs,
+          },
+          repeat {
+            rw list.count_in_nil at imposs,
+          },
+          have one_imposs : 1 + (0 + 0) + 0 = 1 + list.count_in l R + (1 + 0) + (0 + 0) + list.count_in v R,
+          {
+            convert imposs,
+            {
+              norm_num,
+            },
+            {
+              simp [H_neq_R],
+            },
+            {
+              clear_except,
+              rw list.count_in_join,
+              symmetry,
+              rw list.sum_eq_zero_iff,
+              intros m m_expression,
+              rw list.map_map at m_expression,
+              rw list.map_map at m_expression,
+              rw list.mem_map at m_expression,
+              rcases m_expression with ⟨l, -, eq_m⟩,
+              rw ←eq_m,
+              clear eq_m,
+              rw function.comp_app,
+              rw function.comp_app,
+              rw list.count_in_append,
+              rw list.count_in_zero_of_notin map_wrap_never_contains_R,
+              rw list.count_in_zero_of_notin,
+              rw list.mem_singleton,
+              intro R_eq_H,
+              exact H_neq_R R_eq_H.symm,
+            },
+            {
+              norm_num,
+            },
+            {
+              simp [R],
+            },
+            {
+              simp [H_neq_R],
+            },
+          },
+          clear_except one_imposs,
+          repeat {
+            rw add_zero at one_imposs,
+          },
+          linarith,
+        },
+        {
+          apply h,
+          clear h,
+          have impos := congr_fun (congr_arg list.nth bef) 0,
+          iterate 4 {
+            rw list.nth_append at impos,
+            swap, {
+              norm_num,
+            },
+          },
+          rw list.nth at impos,
+          rw list.nth at impos,
+          exact (option.some.inj impos).symm,
+        },
       },
       rw [u_nil, list.nil_append] at bef,
       have v_eq := eq.symm (list.append_inj_right bef (by refl)),
@@ -2022,8 +2108,7 @@ begin
         },
       },
       rw [nothing_to_the_left, list.nil_append] at bef,
-      symmetry,
-      exact list.append_inj_right bef rfl,
+      exact (list.append_inj_right bef rfl).symm,
     },
     rw v_from_x,
     rw [list.map_cons, list.map_cons, list.join],

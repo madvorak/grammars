@@ -148,6 +148,12 @@ section countin
 def count_in (l : list α) (a : α) : ℕ :=
 list.sum (list.map (λ s, ite (s = a) 1 0) l)
 
+lemma count_in_nil (a : α) :
+  count_in [] a = 0 :=
+begin
+  refl,
+end
+
 lemma count_in_cons (a b : α) :
   count_in (b :: x) a  =  ite (b = a) 1 0  +  count_in x a  :=
 begin
