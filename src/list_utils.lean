@@ -36,6 +36,10 @@ lemma reverse_append_append :
   list.reverse (x ++ y ++ z) = z.reverse ++ y.reverse ++ x.reverse :=
 by rw [list.reverse_append, list.reverse_append, list.append_assoc]
 
+lemma mem_append_append {a : α} :
+  a ∈ x ++ y ++ z  ↔  a ∈ x ∨ a ∈ y ∨ a ∈ z  :=
+by rw [list.mem_append, list.mem_append, or_assoc]
+
 lemma forall_mem_append_append {p : α → Prop} :
   (∀ a ∈ x ++ y ++ z, p a)  ↔  (∀ a ∈ x, p a) ∧ (∀ a ∈ y, p a) ∧ (∀ a ∈ z, p a)  :=
 by rw [list.forall_mem_append, list.forall_mem_append, and_assoc]

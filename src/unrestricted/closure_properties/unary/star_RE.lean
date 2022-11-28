@@ -967,39 +967,36 @@ begin
   split,
   {
     intros xᵢ xiin,
-    rw list.mem_append at xiin,
-    rw list.mem_append at xiin,
-    cases xiin,
-    swap, {
-      apply valid,
-      exact list.mem_of_mem_drop xiin,
-    },
+    rw list.mem_append_append at xiin,
     cases xiin,
     {
       apply valid,
       exact list.mem_of_mem_take xiin,
     },
-    {
-      rw list.mem_singleton at xiin,
-      rw xiin,
-      have last_step :
-        grammar_transforms g
-          (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁)
-          (u₁ ++ r₀.output_string ++ v₁),
-      {
-        use r₀,
-        split,
-        {
-          exact orig_in,
-        },
-        use [u₁, v₁],
-        split;
-        refl,
-      },
-      apply grammar_deri_of_deri_tran _ last_step,
-      apply valid (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁),
-      exact list.nth_mem xm_eq,
+    cases xiin,
+    swap, {
+      apply valid,
+      exact list.mem_of_mem_drop xiin,
     },
+    rw list.mem_singleton at xiin,
+    rw xiin,
+    have last_step :
+      grammar_transforms g
+        (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁)
+        (u₁ ++ r₀.output_string ++ v₁),
+    {
+      use r₀,
+      split,
+      {
+        exact orig_in,
+      },
+      use [u₁, v₁],
+      split;
+      refl,
+    },
+    apply grammar_deri_of_deri_tran _ last_step,
+    apply valid (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁),
+    exact list.nth_mem xm_eq,
   },
   rw list.singleton_append,
   rw aft,
@@ -1360,8 +1357,8 @@ begin
               rw list.count_in_append,
               rw list.count_in_zero_of_notin map_wrap_never_contains_R,
               rw list.count_in_zero_of_notin,
-              rw list.mem_singleton,
               intro R_eq_H,
+              rw list.mem_singleton at R_eq_H,
               exact H_neq_R R_eq_H.symm,
             },
             {
@@ -1442,6 +1439,17 @@ begin
         rcases zin with ⟨y, -, eq_z⟩,
         rw ←eq_z,
         apply map_wrap_never_contains_Z,
+      },
+      intro contra,
+      rw list.mem_append_append at contra,
+      cases contra,
+      {
+        exact map_wrap_never_contains_R contra,
+      },
+      cases contra,
+      swap, {
+        rw list.mem_singleton at contra,
+        exact H_neq_R contra.symm,
       },
       sorry,
     },
@@ -1545,39 +1553,36 @@ begin
   split,
   {
     intros xᵢ xiin,
-    rw list.mem_append at xiin,
-    rw list.mem_append at xiin,
-    cases xiin,
-    swap, {
-      apply valid,
-      exact list.mem_of_mem_drop xiin,
-    },
+    rw list.mem_append_append at xiin,
     cases xiin,
     {
       apply valid,
       exact list.mem_of_mem_take xiin,
     },
-    {
-      rw list.mem_singleton at xiin,
-      rw xiin,
-      have last_step :
-        grammar_transforms g
-          (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁)
-          (u₁ ++ r₀.output_string ++ v₁),
-      {
-        use r₀,
-        split,
-        {
-          exact orig_in,
-        },
-        use [u₁, v₁],
-        split;
-        refl,
-      },
-      apply grammar_deri_of_deri_tran _ last_step,
-      apply valid (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁),
-      exact list.nth_mem xm_eq,
+    cases xiin,
+    swap, {
+      apply valid,
+      exact list.mem_of_mem_drop xiin,
     },
+    rw list.mem_singleton at xiin,
+    rw xiin,
+    have last_step :
+      grammar_transforms g
+        (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁)
+        (u₁ ++ r₀.output_string ++ v₁),
+    {
+      use r₀,
+      split,
+      {
+        exact orig_in,
+      },
+      use [u₁, v₁],
+      split;
+      refl,
+    },
+    apply grammar_deri_of_deri_tran _ last_step,
+    apply valid (u₁ ++ r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R ++ v₁),
+    exact list.nth_mem xm_eq,
   },
   rw aft,
   repeat {
@@ -2161,17 +2166,16 @@ begin
     split,
     {
       intros xᵢ xiin,
-      rw list.mem_append at xiin,
-      rw list.mem_append at xiin,
-      cases xiin,
-      swap, {
-        apply valid_x,
-        exact list.mem_of_mem_drop xiin,
-      },
+      rw list.mem_append_append at xiin,
       cases xiin,
       {
         apply valid_x,
         exact list.mem_of_mem_take xiin,
+      },
+      cases xiin,
+      swap, {
+        apply valid_x,
+        exact list.mem_of_mem_drop xiin,
       },
       {
         rw list.mem_singleton at xiin,
