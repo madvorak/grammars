@@ -261,20 +261,12 @@ begin
     rw list.length_singleton at bef_len,
     split,
     {
-      have u_len_0 : u.length = 0,
-      {
-        linarith,
-      },
       rw ←list.length_eq_zero,
-      exact u_len_0,
+      linarith,
     },
     {
-      have v_len_0 : v.length = 0,
-      {
-        linarith,
-      },
       rw ←list.length_eq_zero,
-      exact v_len_0,
+      linarith,
     },
   },
   rw [uv_nil.1, list.nil_append, uv_nil.2, list.append_nil] at bef aft,

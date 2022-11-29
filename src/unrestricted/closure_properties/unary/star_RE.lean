@@ -1045,6 +1045,77 @@ begin
   ],
 end
 
+private lemma u_nil_when_RH {g : grammar T} {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
+  (ass :
+    [R, H] ++ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
+    u ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v
+  ) : u = [] :=
+begin
+  cases u with d l,
+  {
+    refl,
+  },
+  exfalso,
+  by_cases d = R,
+  {
+    rw h at ass,
+    clear h,
+    classical,
+    have imposs, { dsimp_result { exact congr_arg (λ c : list (ns T g.nt), list.count_in c R) ass } },
+    repeat {
+      rw list.count_in_append at imposs,
+    },
+    repeat {
+      rw list.count_in_cons at imposs,
+    },
+    repeat {
+      rw list.count_in_nil at imposs,
+    },
+    have one_imposs : 1 + (0 + 0) + 0 = 1 + list.count_in l R + (1 + 0) + (0 + 0) + list.count_in v R,
+    {
+      convert imposs,
+      {
+        norm_num,
+      },
+      {
+        simp [H_neq_R],
+      },
+      {
+        symmetry,
+        apply zero_Rs_in_the_long_part,
+      },
+      {
+        norm_num,
+      },
+      {
+        simp [R],
+      },
+      {
+        simp [H_neq_R],
+      },
+    },
+    clear_except one_imposs,
+    repeat {
+      rw add_zero at one_imposs,
+    },
+    linarith,
+  },
+  {
+    apply h,
+    clear h,
+    have impos := congr_fun (congr_arg list.nth ass) 0,
+    iterate 4 {
+      rw list.nth_append at impos,
+      swap, {
+        norm_num,
+      },
+    },
+    rw list.nth at impos,
+    rw list.nth at impos,
+    exact (option.some.inj impos).symm,
+  },
+end
+
 private lemma case_2_match_rule {g : grammar T} {r₀ : grule T g.nt}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
     (hyp : R :: H :: (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))) =
@@ -1272,7 +1343,64 @@ begin
   -- copypaste (II) ends
   cases rin,
   {
-    sorry,
+    cases x with x₀ L,
+    {
+      right, right, right, right, left,
+      -- copypaste (XVII) begins
+      rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
+      have empty_string : u = [] ∧ v = [],
+      {
+        rw rin at bef,
+        dsimp only at bef,
+        rw list.append_nil at bef,
+        have bef_len := congr_arg list.length bef,
+        clear_except bef_len,
+        simp only [list.length_append, list.length, zero_add] at bef_len,
+        split;
+        {
+          rw ←list.length_eq_zero,
+          omega,
+        },
+      },
+      rw [empty_string.left, list.nil_append, empty_string.right, list.append_nil] at aft,
+      use list.nil,
+      rw aft,
+      rw [list.map_nil, list.nil_append],
+      rw rin,
+      -- copypaste (XVII) ends
+    },
+    {
+      right, right, left,
+      use [[], [], x₀, L],
+      split,
+      {
+        intros wᵢ wiin,
+        exfalso,
+        rw list.mem_nil_iff at wiin,
+        exact wiin,
+      },
+      split,
+      {
+        rw [list.map_nil, list.nil_append],
+        exact valid x₀ (list.mem_cons_self x₀ L),
+      },
+      split,
+      {
+        intros xᵢ xiin,
+        exact valid xᵢ (list.mem_cons_of_mem x₀ xiin),
+      },
+      rw aft,
+      rw [list.map_nil, list.append_nil, list.join, list.map_nil, list.nil_append],
+      rw rin at bef ⊢,
+      dsimp only at bef ⊢,
+      rw list.append_nil at bef,
+      have u_nil := u_nil_when_RH bef,
+      rw [u_nil, list.nil_append] at bef ⊢,
+      have eq_v := list.append_inj_right bef (by refl),
+      rw ←eq_v,
+      rw [list.map_cons, list.map_cons, list.join],
+      rw [←list.append_assoc, ←list.append_assoc],
+    },
   },
   cases rin,
   {
@@ -1322,72 +1450,7 @@ begin
       rw rin at bef,
       dsimp only at bef,
       rw list.append_nil at bef,
-      have u_nil : u = [],
-      {
-        cases u with d l,
-        {
-          refl,
-        },
-        exfalso,
-        by_cases d = R,
-        {
-          rw h at bef,
-          clear h,
-          classical,
-          have imposs, { dsimp_result { exact congr_arg (λ c : list (ns T g.nt), list.count_in c R) bef } },
-          repeat {
-            rw list.count_in_append at imposs,
-          },
-          repeat {
-            rw list.count_in_cons at imposs,
-          },
-          repeat {
-            rw list.count_in_nil at imposs,
-          },
-          have one_imposs : 1 + (0 + 0) + 0 = 1 + list.count_in l R + (1 + 0) + (0 + 0) + list.count_in v R,
-          {
-            convert imposs,
-            {
-              norm_num,
-            },
-            {
-              simp [H_neq_R],
-            },
-            {
-              symmetry,
-              apply zero_Rs_in_the_long_part,
-            },
-            {
-              norm_num,
-            },
-            {
-              simp [R],
-            },
-            {
-              simp [H_neq_R],
-            },
-          },
-          clear_except one_imposs,
-          repeat {
-            rw add_zero at one_imposs,
-          },
-          linarith,
-        },
-        {
-          apply h,
-          clear h,
-          have impos := congr_fun (congr_arg list.nth bef) 0,
-          iterate 4 {
-            rw list.nth_append at impos,
-            swap, {
-              norm_num,
-            },
-          },
-          rw list.nth at impos,
-          rw list.nth at impos,
-          exact (option.some.inj impos).symm,
-        },
-      },
+      have u_nil := u_nil_when_RH bef,
       rw [u_nil, list.nil_append] at bef,
       have v_eq := eq.symm (list.append_inj_right bef (by refl)),
       rw [
@@ -2162,7 +2225,7 @@ begin
     },
     have u_nil : u = [],
     {
-      clear_except bef,
+      -- TODO !!!!
       sorry,
     },
     rw [u_nil, list.nil_append] at bef aft,
@@ -3627,11 +3690,10 @@ begin
   },
 end
 
--- There are 554 lines of (nearly) copypasted code in this file ... TODO reduce!
+-- There are 575 lines of (nearly) copypasted code in this file ... TODO reduce!
 
 /-
-We have 10 sorries in this file:
-    case 2 subcase 3 is sorry
+We have 9 sorries in this file:
     6 sorries in lemma `case_3_match_rule` second part
     1 sorry in case 3 subcase 3
     case 3 subcase 4 is sorry
