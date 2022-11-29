@@ -242,6 +242,27 @@ begin
   },
 end
 
+private lemma zero_Rs_in_the_long_part {g : grammar T} {x : list (list (symbol T g.nt))} [decidable_eq (ns T g.nt)] :
+  list.count_in (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join R = 0 :=
+begin
+  rw list.count_in_join,
+  rw list.sum_eq_zero_iff,
+  intros m m_expression,
+  rw list.map_map at m_expression,
+  rw list.map_map at m_expression,
+  rw list.mem_map at m_expression,
+  rcases m_expression with ⟨l, -, eq_m⟩,
+  rw ←eq_m,
+  rw function.comp_app,
+  rw function.comp_app,
+  rw list.count_in_append,
+  rw list.count_in_zero_of_notin map_wrap_never_contains_R,
+  rw list.count_in_zero_of_notin,
+  intro R_eq_H,
+  rw list.mem_singleton at R_eq_H,
+  exact H_neq_R R_eq_H.symm,
+end
+
 private lemma nat_eq_tech {a b c : ℕ} (b_lt_c : b < c) (ass : c = a.succ + c - b.succ) :
   a = b :=
 begin
@@ -1333,25 +1354,8 @@ begin
               simp [H_neq_R],
             },
             {
-              clear_except,
-              rw list.count_in_join,
               symmetry,
-              rw list.sum_eq_zero_iff,
-              intros m m_expression,
-              rw list.map_map at m_expression,
-              rw list.map_map at m_expression,
-              rw list.mem_map at m_expression,
-              rcases m_expression with ⟨l, -, eq_m⟩,
-              rw ←eq_m,
-              clear eq_m,
-              rw function.comp_app,
-              rw function.comp_app,
-              rw list.count_in_append,
-              rw list.count_in_zero_of_notin map_wrap_never_contains_R,
-              rw list.count_in_zero_of_notin,
-              intro R_eq_H,
-              rw list.mem_singleton at R_eq_H,
-              exact H_neq_R R_eq_H.symm,
+              apply zero_Rs_in_the_long_part,
             },
             {
               norm_num,
@@ -1983,19 +1987,32 @@ begin
         rw [list.count_in_singleton_neq H_neq_R, add_zero, add_zero] at count_R,
         rw ←list.count_in_append at count_R,
         rw [list.count_in_zero_of_notin R_ni_wb, zero_add] at count_R,
+        rw [list.count_in_zero_of_notin map_wrap_never_contains_R, add_zero] at count_R,
+        rw [zero_Rs_in_the_long_part, add_zero] at count_R,
         have ucR_pos := list.count_in_pos_of_in R_in_u,
         clear_except count_R ucR_pos,
-        sorry,
+        linarith,
       },
       have H_ni_u : H ∉ u,
       {
-        -- (previous idea could not work)
-        -- now when we have `R_ni_u` we can look at both sides of `bef` before the first `R`
-        -- we hereby compare `u` to `list.map symbol.terminal w.join ++ list.map symbol.terminal β`
-        -- the latter is already known to not contain `H`
-        -- hence `u` does not contain `H` either
-        -- we do not invoke `list.count_in` here
-        sorry,
+        repeat {
+          rw list.append_assoc at bef,
+        },
+        have same_length : (list.map symbol.terminal w.join ++ list.map symbol.terminal β).length = u.length,
+        {
+          classical,
+          have index_of_first_R := congr_arg (list.index_of R) bef,
+          rw list.index_of_append_of_notin R_ni_u at index_of_first_R,
+          rw @list.singleton_append _ _ ([H] ++ v) at index_of_first_R,
+          rw [←R, list.index_of_cons_self, add_zero] at index_of_first_R,
+          rw [←list.append_assoc, list.index_of_append_of_notin R_ni_wb] at index_of_first_R,
+          rw [list.singleton_append, list.index_of_cons_self, add_zero] at index_of_first_R,
+          exact index_of_first_R,
+        },
+        have take_that_length := congr_arg (list.take u.length) bef,
+        rw [list.take_left, ←same_length, ←list.append_assoc, list.take_left] at take_that_length,
+        rw take_that_length at H_ni_wb,
+        exact H_ni_wb,
       },
       classical,
       have first_R := congr_arg (list.index_of R) bef,
@@ -3613,10 +3630,10 @@ end
 -- There are 554 lines of (nearly) copypasted code in this file ... TODO reduce!
 
 /-
-We have 12 sorries in this file:
+We have 10 sorries in this file:
     case 2 subcase 3 is sorry
     6 sorries in lemma `case_3_match_rule` second part
-    3 sorries in case 3 subcase 3
+    1 sorry in case 3 subcase 3
     case 3 subcase 4 is sorry
     case 3 subcase 5 is sorry
 
