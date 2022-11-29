@@ -738,7 +738,6 @@ begin
     },
     {
       rw list.mem_singleton at Ril,
-      clear_except Ril,
       exact H_neq_R Ril.symm,
     },
   },
@@ -788,7 +787,6 @@ begin
         },
         {
           rw list.mem_singleton at Zil,
-          clear_except Zil,
           exact Z_neq_H Zil,
         },
       },
@@ -802,7 +800,6 @@ begin
       have bef_tail := congr_arg list.tail bef,
       cases u with d l,
       {
-        clear_except ul_pos,
         rw list.length at ul_pos,
         exact nat.lt_irrefl 0 ul_pos,
       },
@@ -821,8 +818,7 @@ begin
     have v_rest : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
     {
       rw u_nil at bef,
-      clear_except bef,
-      finish,
+      convert congr_arg list.tail bef.symm,
     },
     rw aft,
     rw [u_nil, v_rest],
@@ -863,7 +859,6 @@ begin
         },
         {
           rw list.mem_singleton at Zil,
-          clear_except Zil,
           exact Z_neq_H Zil,
         },
       },
@@ -877,7 +872,6 @@ begin
       have bef_tail := congr_arg list.tail bef,
       cases u with d l,
       {
-        clear_except ul_pos,
         rw list.length at ul_pos,
         exact nat.lt_irrefl 0 ul_pos,
       },
@@ -896,8 +890,7 @@ begin
     have v_rest : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
     {
       rw u_nil at bef,
-      clear_except bef,
-      finish,
+      convert congr_arg list.tail bef.symm,
     },
     rw aft,
     rw [u_nil, v_rest],
@@ -1221,7 +1214,6 @@ begin
     },
     {
       rw list.mem_singleton at Zil,
-      clear_except Zil,
       exact Z_neq_H Zil,
     },
   },
@@ -3600,7 +3592,6 @@ begin
       },
     },
     apply grammar_deri_of_deri_tran _ final_step,
-    clear_except terminated,
     convert_to
       grammar_derives (star_grammar g)
         ([R] ++ ([H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join))
