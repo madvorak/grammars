@@ -1979,15 +1979,30 @@ begin
       },
       have R_ni_u : R ∉ u,
       {
-        intro contra,
+        intro R_in_u,
         classical,
         have count_R := congr_arg (λ l, list.count_in l R) bef,
-        dsimp at count_R,
+        dsimp only at count_R,
+        repeat {
+          rw list.count_in_append at count_R,
+        },
+        rw ←R at count_R,
+        rw list.count_in_singleton_eq at count_R,
+        rw [list.count_in_singleton_neq H_neq_R, add_zero, add_zero] at count_R,
+        rw ←list.count_in_append at count_R,
+        rw [list.count_in_zero_of_notin R_ni_wb, zero_add] at count_R,
+        have ucR_pos := list.count_in_pos_of_in R_in_u,
+        clear_except count_R ucR_pos,
         sorry,
       },
       have H_ni_u : H ∉ u,
       {
-        -- dtto `list.count_in l H`
+        -- (previous idea could not work)
+        -- now when we have `R_ni_u` we can look at both sides of `bef` before the first `R`
+        -- we hereby compare `u` to `list.map symbol.terminal w.join ++ list.map symbol.terminal β`
+        -- the latter is already known to not contain `H`
+        -- hence `u` does not contain `H` either
+        -- we do not invoke `list.count_in` here
         sorry,
       },
       classical,
