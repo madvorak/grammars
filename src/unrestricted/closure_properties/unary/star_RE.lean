@@ -1696,47 +1696,25 @@ begin
       exfalso,
       rw [is_x_nil, list.map_nil, list.map_nil, list.join, list.append_nil] at right_half,
       rw ←right_half at left_half,
-      have last_sym := congr_arg (λ l, list.nth (list.reverse l) 0) left_half,
-      clear_except last_sym,
-      dsimp only at last_sym,
-      repeat {
-        rw list.reverse_append at last_sym,
-      },
-      rw list.reverse_singleton H at last_sym,
-      rw list.singleton_append at last_sym,
-      rw list.nth at last_sym,
-      rw ←list.map_reverse _ r₀.input_R at last_sym,
-      rw list.append_assoc v.reverse at last_sym,
-      --cases v.reverse with d l,
       sorry,
-      -- probably does not lead to contradiction
+    },
+    have very_middle :
+      [symbol.nonterminal (sum.inl r₀.input_N)] = list.map wrap_sym [symbol.nonterminal r₀.input_N],
+    {
+      rw list.map_singleton,
+      refl,
     },
     -- all `H`s must match `v` according to `right_half`
     -- thus `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
     -- is a prefix of `v'` according to `left_half`
-    obtain ⟨z, v'_eq⟩ : ∃ z,
-      v' = list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R ++ z,
+    obtain ⟨z, v'_eq⟩ : ∃ z,  v' =
+        list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R ++ z,
     {
       obtain ⟨v'', without_final_H⟩ : ∃ v'', v' = v'' ++ [H],
       {
         by_cases is_v'_nil : v' = [],
         {
-          exfalso,
-          --rw [is_v'_nil, list.append_nil] at left_half,
-          rw [is_v'_nil, list.nil_append] at right_half,
-          apply false_of_true_eq_false,
-          convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) right_half,
-          {
-            rw [eq_iff_iff, true_iff],
-            apply list.mem_append_left,
-            apply list.mem_append_left,
-            apply list.mem_append_right,
-            apply list.mem_singleton_self,
-          },
-          {
-            -- this is probably doomed to fail
-            sorry,
-          },
+          sorry,
         },
         rw list.append_eq_append_iff at left_half,
         cases left_half,
@@ -1779,10 +1757,35 @@ begin
         exfalso,
         rcases right_half with ⟨f, part_with_r, part_with_x⟩,
         -- `part_with_x` implies `f` starts with `H`
-        -- `part_with_x` implies `H` (at the beginning of `f`) would have to match
+        -- `part_with_r` implies `H` (at the beginning of `f`) would have to match
         -- either `symbol.nonterminal (sum.inl r₀.input_N)` or the head of `list.map wrap_sym r₀.input_R`
         -- which both gives contradiction
-        sorry,
+        have Hhead := congr_fun (congr_arg list.nth part_with_x) 0,
+        rw [list.singleton_append, list.nth] at Hhead,
+        cases f with d l,
+        {
+          exfalso,
+          rw list.append_nil at part_with_r,
+          rw ←part_with_r at without_final_H,
+          rw without_final_H at left_half,
+          sorry, -- ??
+        },
+        rw [list.cons_append, list.nth] at Hhead,
+        have imposs := congr_arg ((∈) H) part_with_r,
+        rw [very_middle, ←list.map_append_append] at imposs,
+        apply false_of_true_eq_false,
+        convert imposs.symm,
+        {
+          rw [eq_iff_iff, true_iff],
+          apply list.mem_append_right,
+          rw list.mem_cons_iff,
+          left,
+          exact option.some.inj Hhead,
+        },
+        {
+          rw [eq_iff_iff, false_iff],
+          apply map_wrap_never_contains_H,
+        },
       },
     },
     rw v'_eq at right_half,
@@ -1795,7 +1798,7 @@ begin
     -- also `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
     -- cannot overlap with `R` therefore it must match the part between `R` and `H`
     -- so `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
-    -- is a substring of `γ`h
+    -- is a substring of `γ`
     obtain ⟨u₁, v₁, gamma_parts⟩ : ∃ γₗ, ∃ γᵣ,
       list.map wrap_sym γ =
       list.map wrap_sym γₗ ++ (
@@ -1814,21 +1817,12 @@ begin
     split,
     {
       apply wrap_str_inj,
-      have very_middle :
-        [symbol.nonterminal (sum.inl r₀.input_N)] = list.map wrap_sym [symbol.nonterminal r₀.input_N],
-      {
-        rw list.map_singleton,
-        refl,
-      },
-      rw very_middle at gamma_parts,
-      rw ←list.map_append_append at gamma_parts,
-      rw ←list.map_append_append at gamma_parts,
-      rw ←list.append_assoc at gamma_parts,
-      rw ←list.append_assoc at gamma_parts,
-      exact gamma_parts,
+      rwa [
+        very_middle, ←list.map_append_append, ←list.map_append_append,
+        ←list.append_assoc, ←list.append_assoc
+      ] at gamma_parts,
     },
     {
-      --rw right_half,
       sorry,
     },
   },
@@ -3609,3 +3603,16 @@ begin
     exact terminated v vin t tin,
   },
 end
+
+-- There are 554 lines of (nearly) copypasted code in this file ... TODO reduce!
+
+/-
+We have 12 sorries in this file:
+    case 2 subcase 3 is sorry
+    6 sorries in lemma `case_3_match_rule` second part
+    3 sorries in case 3 subcase 3
+    case 3 subcase 4 is sorry
+    case 3 subcase 5 is sorry
+
+Furthemore, there are 2 sorries in `list_utils` out of which one has a proof elsewhere.
+-/
