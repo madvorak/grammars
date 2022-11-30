@@ -1,6 +1,6 @@
 # Grammars formally in Lean
 
-Below you find what has finished so far.
+Below you find what has been completed so far.
 
 ## Context-free grammars
 
