@@ -1045,16 +1045,31 @@ begin
   ],
 end
 
+private lemma uv_nil_of_RH_eq {g : grammar T} {u v : list (ns T g.nt)}
+    (ass : [R, H] = u ++ [] ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v) :
+  u = []  ∧  v = []  :=
+begin
+  rw list.append_nil at ass,
+  have lens := congr_arg list.length ass,
+  simp only [list.length_append, list.length, zero_add] at lens,
+  split;
+  {
+    rw ←list.length_eq_zero,
+    omega,
+  },
+end
+
 private lemma u_nil_when_RH {g : grammar T} {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
   (ass :
     [R, H] ++ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
-    u ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v
-  ) : u = [] :=
+    u ++ [] ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v
+  ) :  u = []  :=
 begin
   cases u with d l,
   {
     refl,
   },
+  rw list.append_nil at ass,
   exfalso,
   by_cases d = R,
   {
@@ -1346,28 +1361,17 @@ begin
     cases x with x₀ L,
     {
       right, right, right, right, left,
-      -- copypaste (XVII) begins
       rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
       have empty_string : u = [] ∧ v = [],
       {
         rw rin at bef,
-        dsimp only at bef,
-        rw list.append_nil at bef,
-        have bef_len := congr_arg list.length bef,
-        clear_except bef_len,
-        simp only [list.length_append, list.length, zero_add] at bef_len,
-        split;
-        {
-          rw ←list.length_eq_zero,
-          omega,
-        },
+        exact uv_nil_of_RH_eq bef,
       },
       rw [empty_string.left, list.nil_append, empty_string.right, list.append_nil] at aft,
       use list.nil,
       rw aft,
       rw [list.map_nil, list.nil_append],
       rw rin,
-      -- copypaste (XVII) ends
     },
     {
       right, right, left,
@@ -1393,7 +1397,6 @@ begin
       rw [list.map_nil, list.append_nil, list.join, list.map_nil, list.nil_append],
       rw rin at bef ⊢,
       dsimp only at bef ⊢,
-      rw list.append_nil at bef,
       have u_nil := u_nil_when_RH bef,
       rw [u_nil, list.nil_append] at bef ⊢,
       have eq_v := list.append_inj_right bef (by refl),
@@ -1411,16 +1414,7 @@ begin
       have empty_string : u = [] ∧ v = [],
       {
         rw rin at bef,
-        dsimp only at bef,
-        rw list.append_nil at bef,
-        have bef_len := congr_arg list.length bef,
-        clear_except bef_len,
-        simp only [list.length_append, list.length, zero_add] at bef_len,
-        split;
-        {
-          rw ←list.length_eq_zero,
-          omega,
-        },
+        exact uv_nil_of_RH_eq bef,
       },
       rw [empty_string.left, list.nil_append, empty_string.right, list.append_nil] at aft,
       use list.nil,
@@ -1449,7 +1443,6 @@ begin
       },
       rw rin at bef,
       dsimp only at bef,
-      rw list.append_nil at bef,
       have u_nil := u_nil_when_RH bef,
       rw [u_nil, list.nil_append] at bef,
       have v_eq := eq.symm (list.append_inj_right bef (by refl)),
@@ -2225,7 +2218,7 @@ begin
     },
     have u_nil : u = [],
     {
-      -- TODO !!!!
+      -- TODO is it even possible ????????????????
       sorry,
     },
     rw [u_nil, list.nil_append] at bef aft,
@@ -3690,7 +3683,7 @@ begin
   },
 end
 
--- There are 575 lines of (nearly) copypasted code in this file ... TODO reduce!
+-- There are 565 lines of (nearly) copypasted code in this file ... TODO reduce!
 
 /-
 We have 9 sorries in this file:

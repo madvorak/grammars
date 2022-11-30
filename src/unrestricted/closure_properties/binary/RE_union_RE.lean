@@ -12,7 +12,6 @@ grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
 )))
 
 
-section auxiliary
 variables {g₁ g₂ : grammar T}
 
 private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)
@@ -259,11 +258,7 @@ begin
       rw list.length_append at bef_len
     },
     rw list.length_singleton at bef_len,
-    split,
-    {
-      rw ←list.length_eq_zero,
-      linarith,
-    },
+    split;
     {
       rw ←list.length_eq_zero,
       linarith,
@@ -459,8 +454,6 @@ begin
   exact lifted,
 end
 
-end auxiliary
-
 
 /-- The class of recursively-enumerable languages is closed under union. -/
 theorem RE_of_RE_u_RE (L₁ : language T) (L₂ : language T) :
@@ -475,8 +468,7 @@ begin
   {
     intros w ass,
     rw language.mem_add,
-    rw ←h₁,
-    rw ←h₂,
+    rw [←h₁, ←h₂],
     exact in_L₁_or_L₂_of_in_union ass,
   },
   {
