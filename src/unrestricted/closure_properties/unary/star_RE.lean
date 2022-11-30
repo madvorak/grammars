@@ -224,7 +224,6 @@ private lemma H_not_in_rule_input {g : grammar T} {r : grule T g.nt} :
       list.map wrap_sym r.input_R :=
 begin
   intro contra,
-  clear_except contra,
   rw list.mem_append at contra,
   cases contra,
   swap, {
@@ -242,29 +241,59 @@ begin
   },
 end
 
+private lemma Z_not_in_todo {g : grammar T} {x : list (list (symbol T g.nt))} :
+  Z ∉ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)) :=
+begin
+  intro Zin,
+  rw list.map_map at Zin,
+  rw list.mem_join at Zin,
+  rcases Zin with ⟨l, lin, Zil⟩,
+  rw list.mem_map at lin,
+  rcases lin with ⟨z, -, eq_l⟩,
+  change (list.map wrap_sym z ++ [H]) = l at eq_l,
+  rw ←eq_l at Zil,
+  rw list.mem_append at Zil,
+  cases Zil,
+  {
+    exact map_wrap_never_contains_Z Zil,
+  },
+  {
+    rw list.mem_singleton at Zil,
+    exact Z_neq_H Zil,
+  },
+end
+-- TODO choose between these two implementations and generalize AND rename both lemmas
+private lemma R_not_in_todo {g : grammar T} {x : list (list (symbol T g.nt))} :
+  R ∉ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)) :=
+begin
+  intro contra,
+  rw list.mem_join at contra,
+  rw list.map_map at contra,
+  rcases contra with ⟨l, lin, in_l⟩,
+  rw list.mem_map at lin,
+  rcases lin with ⟨l₀, -, eq_l⟩,
+  rw ←eq_l at in_l,
+  rw function.comp_app at in_l,
+  rw list.mem_append at in_l,
+  cases in_l,
+  {
+    exact map_wrap_never_contains_R in_l,
+  },
+  {
+    rw list.mem_singleton at in_l,
+    exact H_neq_R in_l.symm,
+  },
+end
+
 private lemma zero_Rs_in_the_long_part {g : grammar T} {x : list (list (symbol T g.nt))} [decidable_eq (ns T g.nt)] :
   list.count_in (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join R = 0 :=
 begin
-  rw list.count_in_join,
-  rw list.sum_eq_zero_iff,
-  intros m m_expression,
-  rw list.map_map at m_expression,
-  rw list.map_map at m_expression,
-  rw list.mem_map at m_expression,
-  rcases m_expression with ⟨l, -, eq_m⟩,
-  rw ←eq_m,
-  rw function.comp_app,
-  rw function.comp_app,
-  rw list.count_in_append,
-  rw list.count_in_zero_of_notin map_wrap_never_contains_R,
-  rw list.count_in_zero_of_notin,
-  intro R_eq_H,
-  rw list.mem_singleton at R_eq_H,
-  exact H_neq_R R_eq_H.symm,
+  apply list.count_in_zero_of_notin,
+  apply R_not_in_todo,
 end
 
 private lemma nat_eq_tech {a b c : ℕ} (b_lt_c : b < c) (ass : c = a.succ + c - b.succ) :
-  a = b :=
+  a = b  :=
 begin
   omega,
 end
@@ -745,21 +774,8 @@ begin
       rw list.mem_singleton at contr,
       exact Z_neq_R.symm contr,
     },
-    rw list.mem_join at contr,
-    rw list.map_map at contr,
-    rcases contr with ⟨l, lin, Ril⟩,
-    rw list.mem_map at lin,
-    rcases lin with ⟨y, -, eq_l⟩,
-    change (list.map wrap_sym y ++ [H]) = l at eq_l,
-    rw ←eq_l at Ril,
-    rw list.mem_append at Ril,
-    cases Ril,
     {
-      exact map_wrap_never_contains_R Ril,
-    },
-    {
-      rw list.mem_singleton at Ril,
-      exact H_neq_R Ril.symm,
+      exact R_not_in_todo contr,
     },
   },
   rw cat at *,
@@ -789,28 +805,6 @@ begin
     have u_nil : u = [],
     {
       clear_except bef,
-      have Z_not_in_tail : Z ∉ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join,
-      -- TODO extract this prop?
-      {
-        intro Zin,
-        clear_except Zin,
-        rw list.map_map at Zin,
-        rw list.mem_join at Zin,
-        rcases Zin with ⟨l, lin, Zil⟩,
-        rw list.mem_map at lin,
-        rcases lin with ⟨z, -, eq_l⟩,
-        change (list.map wrap_sym z ++ [H]) = l at eq_l,
-        rw ←eq_l at Zil,
-        rw list.mem_append at Zil,
-        cases Zil,
-        {
-          exact map_wrap_never_contains_Z Zil,
-        },
-        {
-          rw list.mem_singleton at Zil,
-          exact Z_neq_H Zil,
-        },
-      },
       rw ←list.length_eq_zero,
       by_contradiction,
       have ul_pos : 0 < u.length,
@@ -832,8 +826,8 @@ begin
           apply list.mem_append_right,
           apply list.mem_singleton_self,
         },
-        rw bef_tail at Z_not_in_tail,
-        exact Z_not_in_tail Z_in_tail,
+        rw ←bef_tail at Z_in_tail,
+        exact Z_not_in_todo Z_in_tail,
       },
     },
     have v_rest : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
@@ -862,27 +856,6 @@ begin
     have u_nil : u = [],
     {
       clear_except bef,
-      have Z_not_in_tail : Z ∉ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join,
-      {
-        intro Zin,
-        clear_except Zin,
-        rw list.map_map at Zin,
-        rw list.mem_join at Zin,
-        rcases Zin with ⟨l, lin, Zil⟩,
-        rw list.mem_map at lin,
-        rcases lin with ⟨z, -, eq_l⟩,
-        change (list.map wrap_sym z ++ [H]) = l at eq_l,
-        rw ←eq_l at Zil,
-        rw list.mem_append at Zil,
-        cases Zil,
-        {
-          exact map_wrap_never_contains_Z Zil,
-        },
-        {
-          rw list.mem_singleton at Zil,
-          exact Z_neq_H Zil,
-        },
-      },
       rw ←list.length_eq_zero,
       by_contradiction,
       have ul_pos : 0 < u.length,
@@ -904,8 +877,8 @@ begin
           apply list.mem_append_right,
           apply list.mem_singleton_self,
         },
-        rw bef_tail at Z_not_in_tail,
-        exact Z_not_in_tail Z_in_tail,
+        rw ←bef_tail at Z_in_tail,
+        exact Z_not_in_todo Z_in_tail,
       },
     },
     have v_rest : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
@@ -1060,10 +1033,11 @@ begin
 end
 
 private lemma u_nil_when_RH {g : grammar T} {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
-  (ass :
-    [R, H] ++ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
-    u ++ [] ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v
-  ) :  u = []  :=
+    (ass :
+      [R, H] ++ (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
+      u ++ [] ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v
+    ) :
+  u = []  :=
 begin
   cases u with d l,
   {
@@ -1307,21 +1281,8 @@ begin
         exact contr,
       },
     },
-    rw list.mem_join at contr,
-    rw list.map_map at contr,
-    rcases contr with ⟨l, lin, Zil⟩,
-    rw list.mem_map at lin,
-    rcases lin with ⟨y, -, eq_l⟩,
-    change (list.map wrap_sym y ++ [H]) = l at eq_l,
-    rw ←eq_l at Zil,
-    rw list.mem_append at Zil,
-    cases Zil,
     {
-      exact map_wrap_never_contains_Z Zil,
-    },
-    {
-      rw list.mem_singleton at Zil,
-      exact Z_neq_H Zil,
+      exact Z_not_in_todo contr,
     },
   },
   rw cat at *,
@@ -1457,68 +1418,36 @@ begin
         rw aft,
         trim,
       },
+      rw [list.append_assoc, ←list.append_join_append] at aft,
       rw aft,
-      split,
+      split;
+      intro contra;
+      rw list.mem_append at contra,
       {
-        rw list.mem_append,
-        rw list.mem_append,
-        push_neg,
-        split,
-        swap, {
-          intro nin,
-          rw list.mem_singleton at nin,
-          exact Z_neq_H nin,
-        },
-        split,
+        cases contra,
         {
-          apply map_wrap_never_contains_Z,
+          exact map_wrap_never_contains_Z contra,
         },
-        rw list.mem_join,
-        push_neg,
-        intros l lin,
-        rw list.mem_map at lin,
-        rcases lin with ⟨z, zin, eq_l⟩,
-        rw ←eq_l,
-        rw list.mem_append,
-        push_neg,
-        split,
+        cases contra,
         {
-          intro nin,
-          rw list.mem_singleton at nin,
-          exact Z_neq_H nin,
+          exact Z_neq_H contra,
         },
-        rw list.mem_map at zin,
-        rcases zin with ⟨y, -, eq_z⟩,
-        rw ←eq_z,
-        apply map_wrap_never_contains_Z,
-      },
-      intro contra,
-      rw list.mem_append_append at contra,
-      cases contra,
-      {
-        exact map_wrap_never_contains_R contra,
-      },
-      cases contra,
-      swap, {
-        rw list.mem_singleton at contra,
-        exact H_neq_R contra.symm,
-      },
-      clear_except contra,
-      rw list.mem_join at contra,
-      rw list.map_map at contra,
-      rcases contra with ⟨l, lin, in_l⟩,
-      rw list.mem_map at lin,
-      rcases lin with ⟨l₀, -, eq_l⟩,
-      rw ←eq_l at in_l,
-      rw function.comp_app at in_l,
-      rw list.mem_append at in_l,
-      cases in_l,
-      {
-        rw list.mem_singleton at in_l,
-        exact H_neq_R in_l.symm,
+        {
+          exact Z_not_in_todo contra,
+        },
       },
       {
-        exact map_wrap_never_contains_R in_l,
+        cases contra,
+        {
+          exact map_wrap_never_contains_R contra,
+        },
+        cases contra,
+        {
+          exact H_neq_R contra.symm,
+        },
+        {
+          exact R_not_in_todo contra,
+        },
       },
     },
   },
@@ -1796,6 +1725,91 @@ begin
   exact first_H,
 end
 
+private lemma v_nil_in_case_3 {g : grammar T}
+    {w : list (list T)} {β : list T} {u v : list (ns T g.nt)}
+    (ass :
+      list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] ++ [H] =
+      u ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v
+    ) :
+  v = []  :=
+begin
+  have rev := congr_arg list.reverse ass,
+  repeat {
+    rw list.reverse_append at rev,
+  },
+  repeat {
+    rw list.reverse_singleton at rev,
+  },
+  rw ←list.reverse_eq_nil,
+  cases v.reverse with d l,
+  {
+    refl,
+  },
+  exfalso,
+  rw list.singleton_append at rev,
+  have brt := list.tail_eq_of_cons_eq rev,
+  have brtt := congr_arg list.tail brt,
+  rw list.singleton_append at brtt,
+  rw list.tail_cons at brtt,
+  cases l with e l',
+  {
+    change
+      (list.map symbol.terminal β).reverse ++ (list.map symbol.terminal w.join).reverse =
+      [symbol.nonterminal (sum.inr 2)] ++ u.reverse
+    at brtt,
+    have imposs := congr_arg (λ a, R ∈ a) brtt,
+    dsimp only at imposs,
+    apply false_of_true_eq_false,
+    convert imposs.symm,
+    {
+      rw [eq_iff_iff, true_iff],
+      apply list.mem_append_left,
+      apply list.mem_singleton_self,
+    },
+    {
+      rw [eq_iff_iff, false_iff],
+      rw list.mem_append,
+      push_neg,
+      split;
+      {
+        rw list.mem_reverse,
+        rw list.mem_map,
+        push_neg,
+        intros t trash,
+        apply symbol.no_confusion,
+      },
+    },
+  },
+  {
+    change _ = _ ++ _ at brtt,
+    -- nearly copypaste (XVI) begins
+    have imposs := congr_arg (λ a, H ∈ a) brtt,
+    dsimp only at imposs,
+    apply false_of_true_eq_false,
+    convert imposs.symm,
+    {
+      rw [eq_iff_iff, true_iff],
+      apply list.mem_append_right,
+      apply list.mem_append_left,
+      apply list.mem_singleton_self,
+    },
+    {
+      rw [eq_iff_iff, false_iff],
+      rw list.mem_append,
+      push_neg,
+      split;
+      {
+        rw list.mem_reverse,
+        rw list.mem_map,
+        push_neg,
+        intros t trash,
+        apply symbol.no_confusion,
+      },
+    },
+    -- nearly copypaste (XVI) ends
+  },
+end
+
 private lemma case_3_match_rule {g : grammar T} {r₀ : grule T g.nt}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
     {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
@@ -2054,23 +2068,7 @@ begin
       exact Z_neq_H contr,
     },
     {
-      rw list.mem_join at contr,
-      rcases contr with ⟨l, lin, Zin⟩,
-      rw list.mem_map at lin,
-      rcases lin with ⟨a, ain, aHl⟩,
-      rw ←aHl at Zin,
-      rw list.mem_append at Zin,
-      cases Zin,
-      {
-        rw list.mem_map at ain,
-        rcases ain with ⟨b, -, eq_a⟩,
-        rw ←eq_a at Zin,
-        exact map_wrap_never_contains_Z Zin,
-      },
-      {
-        rw list.mem_singleton at Zin,
-        exact Z_neq_H Zin,
-      },
+      exact Z_not_in_todo contr,
     },
   },
   rw cat at *,
@@ -2115,85 +2113,7 @@ begin
     {
       right, right, right, right, left,
       rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
-      have v_nil : v = [],
-      {
-        clear_except bef,
-        have bef_rev := congr_arg list.reverse bef,
-        repeat {
-          rw list.reverse_append at bef_rev,
-        },
-        repeat {
-          rw list.reverse_singleton at bef_rev,
-        },
-        rw ←list.reverse_eq_nil,
-        cases v.reverse with d l,
-        {
-          refl,
-        },
-        exfalso,
-        rw list.singleton_append at bef_rev,
-        have brt := list.tail_eq_of_cons_eq bef_rev,
-        have brtt := congr_arg list.tail brt,
-        rw list.singleton_append at brtt,
-        rw list.tail_cons at brtt,
-        cases l with e l',
-        {
-          change
-            (list.map symbol.terminal β).reverse ++ (list.map symbol.terminal w.join).reverse =
-            [symbol.nonterminal (sum.inr 2)] ++ u.reverse
-          at brtt,
-          have imposs := congr_arg (λ a, R ∈ a) brtt,
-          dsimp only at imposs,
-          apply false_of_true_eq_false,
-          convert imposs.symm,
-          {
-            rw [eq_iff_iff, true_iff],
-            apply list.mem_append_left,
-            apply list.mem_singleton_self,
-          },
-          {
-            rw [eq_iff_iff, false_iff],
-            rw list.mem_append,
-            push_neg,
-            split;
-            {
-              rw list.mem_reverse,
-              rw list.mem_map,
-              push_neg,
-              intros t trash,
-              apply symbol.no_confusion,
-            },
-          },
-        },
-        {
-          change _ = _ ++ _ at brtt,
-          -- nearly copypaste (XVI) begins
-          have imposs := congr_arg (λ a, H ∈ a) brtt,
-          dsimp only at imposs,
-          apply false_of_true_eq_false,
-          convert imposs.symm,
-          {
-            rw [eq_iff_iff, true_iff],
-            apply list.mem_append_right,
-            apply list.mem_append_left,
-            apply list.mem_singleton_self,
-          },
-          {
-            rw [eq_iff_iff, false_iff],
-            rw list.mem_append,
-            push_neg,
-            split;
-            {
-              rw list.mem_reverse,
-              rw list.mem_map,
-              push_neg,
-              intros t trash,
-              apply symbol.no_confusion,
-            },
-          },
-          -- nearly copypaste (XVI) ends
-        },
-      },
+      have v_nil := v_nil_in_case_3 bef,
       rw [v_nil, list.append_nil] at bef aft,
       use list.map symbol.terminal w.join ++ list.map symbol.terminal β,
       rw aft,
@@ -2289,11 +2209,7 @@ begin
     {
       right, right, right, left,
       rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
-      have v_nil : v = [],
-      {
-        -- the same proved above
-        sorry,
-      },
+      have v_nil := v_nil_in_case_3 bef,
       rw [v_nil, list.append_nil] at bef aft,
       use list.join w ++ β,
       split,
@@ -3748,7 +3664,7 @@ begin
   },
 end
 
--- There are 570 lines of (nearly) copypasted code in this file ... TODO reduce!
+-- There are circa 536 lines of (nearly) copypasted code in this file.
 
 /-
 We have 9 sorries in this file:
