@@ -1,8 +1,8 @@
-# Formalization of formal grammars
+# Grammars formally in Lean
 
-I formalize formal grammars in Lean. I started with context-free grammars. Hopefully, this project will cover the whole Chomsky hierarchy in the future.
+Below you find what has finished so far.
 
-### Context-free grammars
+## Context-free grammars
 
 [Definition](https://github.com/madvorak/grammars/blob/main/src/context_free/cfg.lean)
 
@@ -20,7 +20,7 @@ I formalize formal grammars in Lean. I started with context-free grammars. Hopef
 
 Missing proof: [Context-free pumping lemma](https://github.com/madvorak/grammars/blob/main/src/context_free/cfgPumping.lean)
 
-### Recursively-enumerable grammars
+## Recursively-enumerable grammars
 
 [Definition](https://github.com/madvorak/grammars/blob/main/src/unrestricted/grammar.lean)
 
