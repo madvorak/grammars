@@ -1935,7 +1935,6 @@ begin
         rw [list.singleton_append, list.nth] at Hhead,
         cases f with d l,
         {
-          exfalso,
           rw list.append_nil at part_with_r,
           rw ←part_with_r at without_final_H,
           rw without_final_H at left_half,
@@ -2251,12 +2250,94 @@ begin
   clear rin,
   cases rin',
   {
-    exfalso,
-    -- this case is more complicated here
+    right, right, left,
     unfold rules_that_scan_terminals at rin',
     rw list.mem_map at rin',
-    rcases rin' with ⟨t, -, form⟩,
-    sorry,
+    rcases rin' with ⟨t, -, r_is⟩,
+    rw ←r_is at bef aft,
+    dsimp only at bef aft,
+    rw list.append_nil at bef,
+    -- almost copypaste (XVIII) begins
+    have R_ni_wb : R ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
+    {
+      intro contra,
+      rw list.mem_append at contra,
+      cases contra;
+      {
+        rw list.mem_map at contra,
+        rcases contra with ⟨t, -, imposs⟩,
+        exact symbol.no_confusion imposs,
+      },
+    },
+    have R_ni_u : R ∉ u,
+    {
+      intro R_in_u,
+      classical,
+      have count_R := congr_arg (λ l, list.count_in l R) bef,
+      dsimp only at count_R,
+      repeat {
+        rw list.count_in_append at count_R,
+      },
+      rw ←R at count_R,
+      rw list.count_in_singleton_eq at count_R,
+      rw [list.count_in_singleton_neq H_neq_R, add_zero] at count_R,
+      rw ←list.count_in_append at count_R,
+      rw [list.count_in_zero_of_notin R_ni_wb, zero_add] at count_R,
+      rw [list.count_in_zero_of_notin map_wrap_never_contains_R, add_zero] at count_R,
+      rw [zero_Rs_in_the_long_part, add_zero] at count_R,
+      have ucR_pos := list.count_in_pos_of_in R_in_u,
+      clear_except count_R ucR_pos,
+      linarith,
+    },
+    -- almost copypaste (XVIII) ends
+    have u_matches : u = list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
+    {
+      sorry,
+    },
+    have tv_matches :
+      [symbol.terminal t] ++ v =
+      list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
+    {
+      sorry,
+    },
+    cases γ with a δ,
+    {
+      exfalso,
+      rw [list.map_nil, list.nil_append, list.singleton_append, list.singleton_append] at tv_matches,
+      have t_matches := list.head_eq_of_cons_eq tv_matches,
+      exact symbol.no_confusion t_matches,
+    },
+    rw [list.singleton_append, list.map_cons, list.cons_append, list.cons_append] at tv_matches,
+    use [w, β ++ [t], δ, x],
+    split,
+    {
+      exact valid_w,
+    },
+    split,
+    {
+      have t_matches' := list.head_eq_of_cons_eq tv_matches,
+      cases a;
+      unfold wrap_sym at t_matches',
+      {
+        have t_eq_a := symbol.terminal.inj t_matches',
+        rw [t_eq_a, list.map_append, list.map_singleton, list.append_assoc, list.singleton_append],
+        exact valid_middle,
+      },
+      {
+        exfalso,
+        exact symbol.no_confusion t_matches',
+      },
+    },
+    split,
+    {
+      exact valid_x,
+    },
+    rw aft,
+    rw u_matches,
+    rw [list.map_append, list.map_singleton],
+    have v_matches := list.tail_eq_of_cons_eq tv_matches,
+    rw v_matches,
+    simp [list.append_assoc],
   },
   right, right, left,
   rw list.mem_map at rin',
@@ -3654,14 +3735,14 @@ begin
   },
 end
 
--- There are circa 536 lines of (nearly) copypasted code in this file.
+-- There are circa 568 lines of (nearly) copypasted code in this file.
 
 /-
-We have 9 sorries in this file:
+We have 10 sorries in this file:
     6 sorries in lemma `case_3_match_rule` second part
     1 sorry in case 3 subcase 3
-    case 3 subcase 4 is sorry
-    case 3 subcase 5 is sorry
+    1 sorry in case 3 subcase 4
+    2 sorries in case 3 subcase 5
 
 Furthemore, there are 2 sorries in `list_utils` out of which one has a proof elsewhere.
 -/
