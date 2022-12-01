@@ -1614,6 +1614,35 @@ begin
   },
 end
 
+private lemma case_3_R_ni_u {g : grammar T}
+    {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
+    {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} {s : ns T g.nt}
+    (R_ni_wb : R ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map (@symbol.terminal T (nn g.nt)) β)
+    (ass :
+      list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ ++ [H] ++
+        (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
+      u ++ [R] ++ [s] ++ v
+    ) :
+  R ∉ u  :=
+begin
+  intro R_in_u,
+  classical,
+  have count_R := congr_arg (λ l, list.count_in l R) ass,
+  dsimp only at count_R,
+  repeat {
+    rw list.count_in_append at count_R,
+  },
+  rw list.count_in_singleton_eq at count_R,
+  rw [list.count_in_singleton_neq H_neq_R, add_zero] at count_R,
+  rw ←list.count_in_append at count_R,
+  rw [list.count_in_zero_of_notin R_ni_wb, zero_add] at count_R,
+  rw [list.count_in_zero_of_notin map_wrap_never_contains_R, add_zero] at count_R,
+  rw [zero_Rs_in_the_long_part, add_zero] at count_R,
+  have ucR_pos := list.count_in_pos_of_in R_in_u,
+  clear_except count_R ucR_pos,
+  linarith,
+end
+
 private lemma case_3_same_length {g : grammar T}
     {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} {s : ns T g.nt}
@@ -1675,23 +1704,7 @@ begin
   },
   have R_ni_u : R ∉ u,
   {
-    intro R_in_u,
-    classical,
-    have count_R := congr_arg (λ l, list.count_in l R) ass,
-    dsimp only at count_R,
-    repeat {
-      rw list.count_in_append at count_R,
-    },
-    rw ←R at count_R,
-    rw list.count_in_singleton_eq at count_R,
-    rw [list.count_in_singleton_neq H_neq_R, add_zero, add_zero] at count_R,
-    rw ←list.count_in_append at count_R,
-    rw [list.count_in_zero_of_notin R_ni_wb, zero_add] at count_R,
-    rw [list.count_in_zero_of_notin map_wrap_never_contains_R, add_zero] at count_R,
-    rw [zero_Rs_in_the_long_part, add_zero] at count_R,
-    have ucR_pos := list.count_in_pos_of_in R_in_u,
-    clear_except count_R ucR_pos,
-    linarith,
+    exact case_3_R_ni_u R_ni_wb ass,
   },
   have H_ni_u : H ∉ u,
   {
@@ -2269,28 +2282,10 @@ begin
       {
         apply case_3_ni_wb,
       },
-      -- nearly copypaste (XVIII) begins
       have R_ni_u : R ∉ u,
       {
-        intro R_in_u,
-        rw [gamma_nil_here, list.map_nil, list.append_nil] at bef,
-        classical,
-        have count_R := congr_arg (λ l, list.count_in l R) bef,
-        dsimp only at count_R,
-        repeat {
-          rw list.count_in_append at count_R,
-        },
-        rw ←R at count_R,
-        rw list.count_in_singleton_eq at count_R,
-        rw [list.count_in_singleton_neq H_neq_R, add_zero] at count_R,
-        rw ←list.count_in_append at count_R,
-        rw [list.count_in_zero_of_notin R_ni_wb, zero_add] at count_R,
-        rw [zero_Rs_in_the_long_part, add_zero] at count_R,
-        have ucR_pos := list.count_in_pos_of_in R_in_u,
-        clear_except count_R ucR_pos,
-        linarith,
+        exact case_3_R_ni_u R_ni_wb bef,
       },
-      -- nearly copypaste related to (XVIII) ends
       have u_eq : u = list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
       {
         repeat {
@@ -2365,28 +2360,10 @@ begin
     {
       apply case_3_ni_wb,
     },
-    -- almost copypaste (XVIII) begins
     have R_ni_u : R ∉ u,
     {
-      intro R_in_u,
-      classical,
-      have count_R := congr_arg (λ l, list.count_in l R) bef,
-      dsimp only at count_R,
-      repeat {
-        rw list.count_in_append at count_R,
-      },
-      rw ←R at count_R,
-      rw list.count_in_singleton_eq at count_R,
-      rw [list.count_in_singleton_neq H_neq_R, add_zero] at count_R,
-      rw ←list.count_in_append at count_R,
-      rw [list.count_in_zero_of_notin R_ni_wb, zero_add] at count_R,
-      rw [list.count_in_zero_of_notin map_wrap_never_contains_R, add_zero] at count_R,
-      rw [zero_Rs_in_the_long_part, add_zero] at count_R,
-      have ucR_pos := list.count_in_pos_of_in R_in_u,
-      clear_except count_R ucR_pos,
-      linarith,
+      exact case_3_R_ni_u R_ni_wb bef,
     },
-    -- almost copypaste (XVIII) ends
     repeat {
       rw list.append_assoc at bef,
     },
@@ -3825,7 +3802,7 @@ begin
   },
 end
 
--- There are circa 558 lines of (nearly) copypasted code in this file.
+-- There are circa 516 lines of (nearly) copypasted code in this file.
 
 /-
 We have 7 sorries in this file:
