@@ -2290,18 +2290,38 @@ begin
       linarith,
     },
     -- almost copypaste (XVIII) ends
+    repeat {
+      rw list.append_assoc at bef,
+    },
     have u_matches : u = list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
     {
-      sorry,
+      convert congr_arg (list.take u.length) bef.symm,
+      {
+        rw list.take_left,
+      },
+      have left_length : u.length = (list.map symbol.terminal w.join ++ list.map symbol.terminal β).length,
+      {
+        -- almost copypaste (XIX) begins
+        classical,
+        have index_of_first_R := congr_arg (list.index_of R) bef,
+        rw list.index_of_append_of_notin R_ni_u at index_of_first_R,
+        rw @list.singleton_append _ _ ([symbol.terminal t] ++ v) at index_of_first_R,
+        rw [←R, list.index_of_cons_self, add_zero] at index_of_first_R,
+        rw [←list.append_assoc, list.index_of_append_of_notin R_ni_wb] at index_of_first_R,
+        rw [list.singleton_append, list.index_of_cons_self, add_zero] at index_of_first_R,
+        -- almost copypaste (XIX) ends
+        exact index_of_first_R.symm,
+      },
+      rw left_length,
+      rw ←list.append_assoc,
+      rw list.take_left,
     },
     have tv_matches :
       [symbol.terminal t] ++ v =
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
     {
       rw u_matches at bef,
-      repeat {
-        rw list.append_assoc at bef,
-      },
+      rw list.append_assoc at bef,
       have almost := list.append_left_cancel (list.append_left_cancel (list.append_left_cancel bef)),
       rw ←list.append_assoc at almost,
       exact almost.symm,
@@ -3741,14 +3761,13 @@ begin
   },
 end
 
--- There are circa 568 lines of (nearly) copypasted code in this file.
+-- There are circa 576 lines of (nearly) copypasted code in this file.
 
 /-
-We have 9 sorries in this file:
+We have 8 sorries in this file:
     6 sorries in lemma `case_3_match_rule` second part
     1 sorry in case 3 subcase 3
     1 sorry in case 3 subcase 4
-    1 sorries in case 3 subcase 5
 
 Furthemore, there are 2 sorries in `list_utils` out of which one has a proof elsewhere.
 -/
