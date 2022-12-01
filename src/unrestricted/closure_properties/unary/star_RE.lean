@@ -2194,10 +2194,11 @@ begin
     rw [gamma_nil_here, list.map_nil, list.append_nil] at bef no_Z_in_alpha,
     rw [gamma_nil_here, list.append_nil] at valid_middle,
     clear gamma_nil_here γ,
-    cases x with x₀ L,
+    rw ←list.reverse_reverse x at *,
+    cases x.reverse with xₘ L,
     {
       right, right, right, left,
-      rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
+      rw [list.reverse_nil, list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
       have v_nil := v_nil_in_case_3 bef,
       rw [v_nil, list.append_nil] at bef aft,
       use list.join w ++ β,
@@ -2237,9 +2238,70 @@ begin
       repeat {
         right,
       },
+      rw list.reverse_cons at bef,
       rw aft,
-      -- TODO first show what `u` and `v` are
-      sorry,
+      -- copypaste related to (XVIII) begins
+      have Z_ni_wb : Z ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
+      swap,
+      have R_ni_wb : R ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
+      any_goals {
+        intro contra,
+        rw list.mem_append at contra,
+        cases contra;
+        {
+          rw list.mem_map at contra,
+          rcases contra with ⟨t, -, imposs⟩,
+          exact symbol.no_confusion imposs,
+        },
+      },
+      -- copypaste related to (XVIII) ends
+      have u_eq : u = list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
+      {
+        have R_not_on_left : R ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
+        {
+          sorry,
+        },
+        sorry,
+      },
+      have v_eq : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) (L.reverse ++ [xₘ]))),
+      {
+        rw u_eq at bef,
+        exact (list.append_left_cancel bef).symm,
+      },
+      rw [u_eq, v_eq],
+      split,
+      {
+        use list.map symbol.terminal w.join ++ list.map symbol.terminal β ++
+            list.join (list.map (++ [H]) (list.map (list.map wrap_sym) L.reverse)) ++ list.map wrap_sym xₘ,
+        rw [
+          list.map_append, list.map_append, list.join_append,
+          list.map_singleton, list.map_singleton, list.join_singleton,
+          ←list.append_assoc, ←list.append_assoc
+        ], refl,
+      },
+      split,
+      {
+        intro contra,
+        rw list.mem_append at contra,
+        cases contra,
+        {
+          exact Z_ni_wb contra,
+        },
+        {
+          exact Z_not_in_join_mpHmmw contra,
+        },
+      },
+      {
+        intro contra,
+        rw list.mem_append at contra,
+        cases contra,
+        {
+          exact R_ni_wb contra,
+        },
+        {
+          exact R_not_in_join_mpHmmw contra,
+        },
+      },
     },
   },
   have rin' : r ∈ rules_that_scan_terminals g ∨ r ∈ list.map wrap_gr g.rules,
@@ -3761,13 +3823,13 @@ begin
   },
 end
 
--- There are circa 576 lines of (nearly) copypasted code in this file.
+-- There are circa 590 lines of (nearly) copypasted code in this file.
 
 /-
-We have 8 sorries in this file:
+We have 9 sorries in this file:
     6 sorries in lemma `case_3_match_rule` second part
     1 sorry in case 3 subcase 3
-    1 sorry in case 3 subcase 4
+    2 sorries in case 3 subcase 4
 
 Furthemore, there are 2 sorries in `list_utils` out of which one has a proof elsewhere.
 -/
