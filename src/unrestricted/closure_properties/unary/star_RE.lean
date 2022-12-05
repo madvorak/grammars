@@ -881,32 +881,20 @@ begin
     -- copypaste (I) ends
     refl,
   },
-  cases rin,
-  {
-    exfalso,
-    apply no_R_in_alpha,
-    rw bef,
-    apply list.mem_append_left,
-    apply list.mem_append_left,
-    apply list.mem_append_right,
-    rw list.mem_singleton,
-    rw rin,
-    refl,
+  iterate 2 {
+    cases rin,
+    {
+      exfalso,
+      apply no_R_in_alpha,
+      rw bef,
+      apply list.mem_append_left,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      rw list.mem_singleton,
+      rw rin,
+      refl,
+    },
   },
-  -- copypaste (II) begins
-  cases rin,
-  {
-    exfalso,
-    apply no_R_in_alpha,
-    rw bef,
-    apply list.mem_append_left,
-    apply list.mem_append_left,
-    apply list.mem_append_right,
-    rw list.mem_singleton,
-    rw rin,
-    refl,
-  },
-  -- copypaste (II) ends
   have rin' : r ∈ rules_that_scan_terminals g ∨ r ∈ list.map wrap_gr g.rules,
   {
     rw or_comm,
@@ -1281,30 +1269,19 @@ begin
   -- nearly copypaste (XIII) ends
 
   -- copypaste (II) begins
-  cases rin,
-  {
-    exfalso,
-    apply no_Z_in_alpha,
-    rw bef,
-    apply list.mem_append_left,
-    apply list.mem_append_left,
-    apply list.mem_append_right,
-    rw list.mem_singleton,
-    rw rin,
-    refl,
-  },
-  -- copypaste (II) ends and begins
-  cases rin,
-  {
-    exfalso,
-    apply no_Z_in_alpha,
-    rw bef,
-    apply list.mem_append_left,
-    apply list.mem_append_left,
-    apply list.mem_append_right,
-    rw list.mem_singleton,
-    rw rin,
-    refl,
+  iterate 2 {
+    cases rin,
+    {
+      exfalso,
+      apply no_Z_in_alpha,
+      rw bef,
+      apply list.mem_append_left,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      rw list.mem_singleton,
+      rw rin,
+      refl,
+    },
   },
   -- copypaste (II) ends
   cases rin,
@@ -1614,10 +1591,9 @@ begin
   },
 end
 
-private lemma case_3_R_ni_u {g : grammar T}
+private lemma case_3_ni_u {g : grammar T}
     {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} {s : ns T g.nt}
-    (R_ni_wb : R ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map (@symbol.terminal T (nn g.nt)) β)
     (ass :
       list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ ++ [H] ++
         (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
@@ -1632,6 +1608,10 @@ begin
   repeat {
     rw list.count_in_append at count_R,
   },
+  have R_ni_wb : R ∉ list.map symbol.terminal w.join ++ list.map symbol.terminal β,
+  {
+    apply @case_3_ni_wb T g,
+  },
   rw list.count_in_singleton_eq at count_R,
   rw [list.count_in_singleton_neq H_neq_R, add_zero] at count_R,
   rw ←list.count_in_append at count_R,
@@ -1643,18 +1623,21 @@ begin
   linarith,
 end
 
-private lemma case_3_same_length {g : grammar T}
+private lemma case_3_u_same_length {g : grammar T} -- TODO inline
     {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} {s : ns T g.nt}
     (R_ni_u : R ∉ u)
-    (R_ni_wb : R ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map (@symbol.terminal T (nn g.nt)) β)
     (assass :
       list.map symbol.terminal w.join ++ (list.map symbol.terminal β ++ ([R] ++ (list.map wrap_sym γ ++ ([H] ++
-        (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join)))) =
+        list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))))) =
       u ++ ([symbol.nonterminal (sum.inr 2)] ++ ([s] ++ v))
     ) :
   u.length = (list.map symbol.terminal w.join ++ list.map (@symbol.terminal T (nn g.nt)) β).length  :=
 begin
+  have R_ni_wb : R ∉ list.map symbol.terminal w.join ++ list.map symbol.terminal β,
+  {
+    apply @case_3_ni_wb T g,
+  },
   classical,
   have index_of_first_R := congr_arg (list.index_of R) assass,
   rw list.index_of_append_of_notin R_ni_u at index_of_first_R,
@@ -1665,12 +1648,38 @@ begin
   exact index_of_first_R.symm,
 end
 
+private lemma case_3_u_eq_left_side {g : grammar T}
+    {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
+    {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} {s : ns T g.nt}
+    (ass :
+      list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ ++ [H] ++
+        list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)) =
+      u ++ [symbol.nonterminal (sum.inr 2)] ++ [s] ++ v
+    ) :
+  u = list.map symbol.terminal w.join ++ list.map (@symbol.terminal T (nn g.nt)) β  :=
+begin
+  have R_ni_u : R ∉ u,
+  {
+    exact case_3_ni_u ass,
+  },
+  repeat {
+    rw list.append_assoc at ass,
+  },
+  convert congr_arg (list.take u.length) ass.symm,
+  {
+    rw list.take_left,
+  },
+  rw case_3_u_same_length R_ni_u ass,
+  rw ←list.append_assoc,
+  rw list.take_left,
+end
+
 private lemma case_3_gamma_nil {g : grammar T}
     {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
     (ass :
       list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ ++ [H] ++
-        (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
+        list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)) =
       u ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v
     ) :
   γ = []  :=
@@ -1704,18 +1713,11 @@ begin
   },
   have R_ni_u : R ∉ u,
   {
-    exact case_3_R_ni_u R_ni_wb ass,
+    exact case_3_ni_u ass,
   },
   have H_ni_u : H ∉ u,
   {
-    repeat {
-      rw list.append_assoc at ass,
-    },
-    have take_that_length := congr_arg (list.take u.length) ass,
-    rw list.take_left at take_that_length,
-    rw case_3_same_length R_ni_u R_ni_wb ass at take_that_length,
-    rw [←list.append_assoc, list.take_left] at take_that_length,
-    rw take_that_length at H_ni_wb,
+    rw case_3_u_eq_left_side ass,
     exact H_ni_wb,
   },
   classical,
@@ -2100,30 +2102,19 @@ begin
   rcases orig with ⟨r, rin, u, v, bef, aft⟩,
 
   -- copypaste (II) begins
-  cases rin,
-  {
-    exfalso,
-    apply no_Z_in_alpha,
-    rw bef,
-    apply list.mem_append_left,
-    apply list.mem_append_left,
-    apply list.mem_append_right,
-    rw list.mem_singleton,
-    rw rin,
-    refl,
-  },
-  -- copypaste (II) ends and begins
-  cases rin,
-  {
-    exfalso,
-    apply no_Z_in_alpha,
-    rw bef,
-    apply list.mem_append_left,
-    apply list.mem_append_left,
-    apply list.mem_append_right,
-    rw list.mem_singleton,
-    rw rin,
-    refl,
+  iterate 2 {
+    cases rin,
+    {
+      exfalso,
+      apply no_Z_in_alpha,
+      rw bef,
+      apply list.mem_append_left,
+      apply list.mem_append_left,
+      apply list.mem_append_right,
+      rw list.mem_singleton,
+      rw rin,
+      refl,
+    },
   },
   -- copypaste (II) ends
   cases rin,
@@ -2132,10 +2123,10 @@ begin
     dsimp only at bef aft,
     rw list.append_nil at bef,
     have gamma_nil_here := case_3_gamma_nil bef,
-    rw [gamma_nil_here, list.map_nil, list.append_nil] at bef,
     cases x with x₀ L,
     {
       right, right, right, right, left,
+      rw [gamma_nil_here, list.map_nil, list.append_nil] at bef,
       rw [list.map_nil, list.map_nil, list.join, list.append_nil] at bef,
       have v_nil := case_3_v_nil bef,
       rw [v_nil, list.append_nil] at bef aft,
@@ -2147,78 +2138,52 @@ begin
       rw [list.map_append, list.map_map, list.map_map],
       refl,
     },
-    right, right, left,
-    use [[], [], x₀, L],
-    split,
     {
-      intros wᵢ wiin,
-      exfalso,
-      rw list.mem_nil_iff at wiin,
-      exact wiin,
-    },
-    split,
-    {
-      rw [list.map_nil, list.nil_append],
-      apply valid_x,
-      apply list.mem_cons_self,
-    },
-    split,
-    {
-      intros xᵢ xiin,
-      apply valid_x,
-      exact list.mem_cons_of_mem x₀ xiin,
-    },
-    have u_nil : u = [],
-    {
-      -- TODO is it even possible ????????????????
-      sorry,
-    },
-    rw [u_nil, list.nil_append] at bef aft,
-    rw [list.map_nil, list.join, list.map_nil, list.nil_append, list.nil_append],
-    rw aft,
-    have v_from_x : v = (list.map (++ [H]) (list.map (list.map wrap_sym) (x₀ :: L))).join,
-    {
-      have nothing_to_the_left :
-        list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β = [],
-        -- very weird things happen when the type parameter is removed
+      right, right, left,
+      use [w ++ [β], x₀, L],
+      split,
       {
-        have hyp_head := congr_fun (congr_arg list.nth bef) 0,
-        rw list.append_assoc [symbol.nonterminal (sum.inr 2)] [H] v at hyp_head,
-        rw list.singleton_append at hyp_head,
-        rw list.nth at hyp_head,
-        cases w.join with t s,
+        intros wᵢ wiin,
+        rw list.mem_append at wiin,
+        cases wiin,
         {
-          cases β with t' s',
-          {
-            rw list.map_nil,
-            rw list.nil_append,
-          },
-          {
-            exfalso,
-            rw [list.map_nil, list.nil_append, list.map_cons] at hyp_head,
-            repeat {
-              rw list.cons_append at hyp_head,
-            },
-            rw list.nth at hyp_head,
-            exact symbol.no_confusion (option.some.inj hyp_head),
-          },
+          exact valid_w wᵢ wiin,
         },
         {
-          exfalso,
-          rw list.map_cons at hyp_head,
-          repeat {
-            rw list.cons_append at hyp_head,
-          },
-          rw list.nth at hyp_head,
-          exact symbol.no_confusion (option.some.inj hyp_head),
+          rw list.mem_singleton at wiin,
+          rw wiin,
+          rw [gamma_nil_here, list.append_nil] at valid_middle,
+          exact valid_middle,
         },
       },
-      rw [nothing_to_the_left, list.nil_append] at bef,
-      exact (list.append_inj_right bef rfl).symm,
+      split,
+      {
+        rw [list.map_nil, list.nil_append],
+        exact valid_x x₀ (list.mem_cons_self x₀ L),
+      },
+      split,
+      {
+        intros xᵢ xiin,
+        exact valid_x xᵢ (list.mem_cons_of_mem x₀ xiin),
+      },
+      rw [list.map_nil, list.append_nil],
+      rw aft,
+      have u_eq : u = list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map (@symbol.terminal T (nn g.nt)) β,
+      {
+        exact case_3_u_eq_left_side bef,
+      },
+      have v_eq : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) (x₀ :: L))),
+      {
+        rw u_eq at bef,
+        rw [gamma_nil_here, list.map_nil, list.append_nil] at bef,
+        exact (list.append_left_cancel bef).symm,
+      },
+      rw [u_eq, v_eq],
+      rw [list.join_append, list.map_append, list.join_singleton],
+      rw [list.map_cons, list.map_cons, list.join],
+      rw [←list.append_assoc, ←list.append_assoc],
+      refl,
     },
-    rw v_from_x,
-    rw [list.map_cons, list.map_cons, list.join],
-    rw [←list.append_assoc, ←list.append_assoc],
   },
   cases rin,
   {
@@ -2282,22 +2247,9 @@ begin
       {
         apply case_3_ni_wb,
       },
-      have R_ni_u : R ∉ u,
-      {
-        exact case_3_R_ni_u R_ni_wb bef,
-      },
       have u_eq : u = list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
       {
-        repeat {
-          rw list.append_assoc at bef,
-        },
-        convert congr_arg (list.take u.length) bef.symm,
-        {
-          rw list.take_left,
-        },
-        rw case_3_same_length R_ni_u R_ni_wb bef,
-        rw ←list.append_assoc,
-        rw list.take_left,
+        exact case_3_u_eq_left_side bef,
       },
       have v_eq : v = list.join (list.map (++ [H]) (list.map (list.map wrap_sym) (L.reverse ++ [xₘ]))),
       {
@@ -2356,33 +2308,18 @@ begin
     rw ←r_is at bef aft,
     dsimp only at bef aft,
     rw list.append_nil at bef,
-    have R_ni_wb : R ∉ list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
-    {
-      apply case_3_ni_wb,
-    },
-    have R_ni_u : R ∉ u,
-    {
-      exact case_3_R_ni_u R_ni_wb bef,
-    },
-    repeat {
-      rw list.append_assoc at bef,
-    },
     have u_matches : u = list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β,
     {
-      convert congr_arg (list.take u.length) bef.symm,
-      {
-        rw list.take_left,
-      },
-      rw case_3_same_length R_ni_u R_ni_wb bef,
-      rw ←list.append_assoc,
-      rw list.take_left,
+      exact case_3_u_eq_left_side bef,
     },
     have tv_matches :
       [symbol.terminal t] ++ v =
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)),
     {
       rw u_matches at bef,
-      rw list.append_assoc at bef,
+      repeat {
+        rw list.append_assoc at bef,
+      },
       have almost := list.append_left_cancel (list.append_left_cancel (list.append_left_cancel bef)),
       rw ←list.append_assoc at almost,
       exact almost.symm,
@@ -3802,12 +3739,11 @@ begin
   },
 end
 
--- There are circa 516 lines of (nearly) copypasted code in this file.
+-- There are circa 477 lines of (nearly) copypasted code in this file.
 
 /-
-We have 7 sorries in this file:
+We have 6 sorries in this file:
     6 sorries in lemma `case_3_match_rule` second part
-    1 sorry in case 3 subcase 3
 
 Furthemore, there are 2 sorries in `list_utils` out of which one has a proof elsewhere.
 -/
