@@ -1994,12 +1994,13 @@ begin
     -- cannot overlap with `R` therefore it must match the part between `R` and `H`
     -- so `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
     -- is a substring of `γ`
-    obtain ⟨u₁, v₁, gamma_parts⟩ : ∃ γₗ, ∃ γᵣ,
+    obtain ⟨u₁, v₁, gamma_parts⟩ : ∃ u₁, ∃ v₁,
       list.map wrap_sym γ =
-      list.map wrap_sym γₗ ++ (
+      list.map wrap_sym u₁ ++ (
         list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
-      ) ++ list.map wrap_sym γᵣ,
+      ) ++ list.map wrap_sym v₁,
     {
+      -- TODO prove this and then try to make the statement stronger (more concrete)
       sorry,
     },
     -- remaining part of `γ` to the left will become `u₁`
@@ -2007,6 +2008,8 @@ begin
     have z_eq : z = list.map wrap_sym v₁ ++ [H],
     {
       rw gamma_parts at left_half,
+      -- we probably cannot prove it this way
+      -- the rule could have matched at more possible positions in `γ`
       sorry,
     },
     use [u₁, v₁],

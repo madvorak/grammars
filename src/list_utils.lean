@@ -101,12 +101,6 @@ begin
     rw [list.join, list.reverse_append, L_ih, list.map_cons, list.reverse_cons, list.join_append, list.join_singleton],
   },
 end
-/-
-lemma join_reverse (L : list (list α)) :
-  L.reverse.join = (list.map list.reverse L).join.reverse :=
-begin
-  sorry,
-end-/
 
 -- proved in `https://github.com/user7230724/lean-projects/blob/master/src/list_take_join/main.lean#L117`
 lemma take_join_of_lt {L : list (list α)} {n : ℕ} (notall : n < L.join.length) :
