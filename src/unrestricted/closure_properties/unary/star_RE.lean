@@ -1623,31 +1623,6 @@ begin
   linarith,
 end
 
-private lemma case_3_u_same_length {g : grammar T} -- TODO inline
-    {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
-    {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} {s : ns T g.nt}
-    (R_ni_u : R ∉ u)
-    (assass :
-      list.map symbol.terminal w.join ++ (list.map symbol.terminal β ++ ([R] ++ (list.map wrap_sym γ ++ ([H] ++
-        list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)))))) =
-      u ++ ([symbol.nonterminal (sum.inr 2)] ++ ([s] ++ v))
-    ) :
-  u.length = (list.map symbol.terminal w.join ++ list.map (@symbol.terminal T (nn g.nt)) β).length  :=
-begin
-  have R_ni_wb : R ∉ list.map symbol.terminal w.join ++ list.map symbol.terminal β,
-  {
-    apply @case_3_ni_wb T g,
-  },
-  classical,
-  have index_of_first_R := congr_arg (list.index_of R) assass,
-  rw list.index_of_append_of_notin R_ni_u at index_of_first_R,
-  rw @list.singleton_append _ _ ([s] ++ v) at index_of_first_R,
-  rw [←R, list.index_of_cons_self, add_zero] at index_of_first_R,
-  rw [←list.append_assoc, list.index_of_append_of_notin R_ni_wb] at index_of_first_R,
-  rw [list.singleton_append, list.index_of_cons_self, add_zero] at index_of_first_R,
-  exact index_of_first_R.symm,
-end
-
 private lemma case_3_u_eq_left_side {g : grammar T}
     {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)} {s : ns T g.nt}
@@ -1662,6 +1637,10 @@ begin
   {
     exact case_3_ni_u ass,
   },
+  have R_ni_wb : R ∉ list.map symbol.terminal w.join ++ list.map symbol.terminal β,
+  {
+    apply @case_3_ni_wb T g,
+  },
   repeat {
     rw list.append_assoc at ass,
   },
@@ -1669,17 +1648,26 @@ begin
   {
     rw list.take_left,
   },
-  rw case_3_u_same_length R_ni_u ass,
   rw ←list.append_assoc,
-  rw list.take_left,
+  rw list.take_left',
+  {
+    classical,
+    have index_of_first_R := congr_arg (list.index_of R) ass,
+    rw list.index_of_append_of_notin R_ni_u at index_of_first_R,
+    rw @list.singleton_append _ _ ([s] ++ v) at index_of_first_R,
+    rw [←R, list.index_of_cons_self, add_zero] at index_of_first_R,
+    rw [←list.append_assoc, list.index_of_append_of_notin R_ni_wb] at index_of_first_R,
+    rw [list.singleton_append, list.index_of_cons_self, add_zero] at index_of_first_R,
+    exact index_of_first_R,
+  },
 end
 
 private lemma case_3_gamma_nil {g : grammar T}
     {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
     (ass :
-      list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ ++ [H] ++
-        list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)) =
+      list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [symbol.nonterminal (sum.inr 2)] ++
+        list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x)) =
       u ++ [symbol.nonterminal (sum.inr 2)] ++ [H] ++ v
     ) :
   γ = []  :=
@@ -1693,7 +1681,8 @@ begin
     apply @case_3_ni_wb T g,
   },
   have H_ni_wbrg : H ∉
-    list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ,
+    list.map (@symbol.terminal T (nn g.nt)) w.join ++ list.map symbol.terminal β ++
+      [symbol.nonterminal (sum.inr 2)] ++ list.map wrap_sym γ,
   {
     intro contra,
     rw list.mem_append at contra,
@@ -1711,7 +1700,7 @@ begin
       exact H_neq_R contra,
     },
   },
-  have R_ni_u : R ∉ u,
+  have R_ni_u : @symbol.nonterminal T (nn g.nt) (sum.inr 2) ∉ u,
   {
     exact case_3_ni_u ass,
   },
@@ -1727,16 +1716,17 @@ begin
     rw list.append_assoc (list.map symbol.terminal w.join ++ list.map symbol.terminal β) at first_R,
   },
   rw list.append_assoc
-    (list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] ++ list.map wrap_sym γ)
+    (list.map symbol.terminal w.join ++ list.map symbol.terminal β ++
+      [symbol.nonterminal (sum.inr 2)] ++ list.map wrap_sym γ)
     at first_H,
   rw list.index_of_append_of_notin R_ni_wb at first_R,
   rw list.index_of_append_of_notin H_ni_wbrg at first_H,
-  rw [list.cons_append, list.cons_append, list.cons_append, list.index_of_cons_self, add_zero] at first_R,
+  rw [list.cons_append, list.cons_append, list.cons_append, R, list.index_of_cons_self, add_zero] at first_R,
   rw [list.cons_append, list.index_of_cons_self, add_zero] at first_H,
   rw [list.append_assoc u, list.append_assoc u] at first_R first_H,
   rw list.index_of_append_of_notin R_ni_u at first_R,
   rw list.index_of_append_of_notin H_ni_u at first_H,
-  rw [list.append_assoc _ [H], list.singleton_append, R, list.index_of_cons_self, add_zero] at first_R,
+  rw [list.append_assoc _ [H], list.singleton_append, list.index_of_cons_self, add_zero] at first_R,
   rw [list.append_assoc _ [H], list.singleton_append, ←R, list.index_of_cons_ne _ H_neq_R] at first_H,
   rw [list.singleton_append, H, list.index_of_cons_self] at first_H,
   rw ←first_R at first_H,
