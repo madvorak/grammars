@@ -1988,10 +1988,8 @@ begin
     rw v'_eq at right_half,
     rw list.append_assoc _ z at right_half,
     rw list.append_right_inj at right_half,
-    -- so `v'` without the last symbol will become `v₁` modulo wrapping, which also corresponds to `γ`
+    -- so `v'` without the last symbol will become `rᵢ ++ v₁` modulo wrapping
     rw v'_eq at left_half,
-    rw list.append_assoc _ (list.map wrap_sym γ) at left_half,
-    rw list.append_eq_append_iff at left_half,
     -- also `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
     -- cannot overlap with `R` therefore it must match the part between `R` and `H`
     -- so `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
@@ -2005,13 +2003,14 @@ begin
       sorry,
     },
     -- remaining part of `γ` to the left will become `u₁`
-    -- the part `list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R]` will end up `u`
-    use [u₁, v₁],
-    split,
+    -- the part `list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] ++ u₁` will end up `u`
+    have z_eq : z = list.map wrap_sym v₁ ++ [H],
     {
+      rw gamma_parts at left_half,
       sorry,
     },
-    split,
+    use [u₁, v₁],
+    split, swap, split,
     {
       apply wrap_str_inj,
       rwa [
@@ -2020,8 +2019,41 @@ begin
       ] at gamma_parts,
     },
     {
-      sorry,
+      rwa z_eq at right_half,
     },
+    rw gamma_parts at left_half,
+    rw list.append_assoc (list.map wrap_sym u₁) at left_half,
+    rw ←list.append_assoc _ (list.map wrap_sym u₁) at left_half,
+    rw list.append_assoc _ _ [H] at left_half,
+    have left_left := congr_arg (list.take u.length) left_half,
+    rw list.take_left at left_left,
+    rw list.take_left' at left_left,
+    {
+      exact left_left.symm,
+    },
+    have lh_len := congr_arg list.length left_half,
+    repeat {
+      rw list.length_append at lh_len,
+    },
+    repeat {
+      rw list.length_singleton at lh_len,
+    },
+    have cut_off_end : z.length = (list.map wrap_sym v₁).length + 1,
+    {
+      simpa using congr_arg list.length z_eq,
+    },
+    rw cut_off_end at lh_len,
+    repeat {
+      rw list.length_append,
+    },
+    rw list.length_singleton,
+    repeat {
+      rw add_assoc at lh_len,
+    },
+    iterate 3 {
+      rw ←add_assoc at lh_len,
+    },
+    rwa add_left_inj at lh_len,
   },
 end
 

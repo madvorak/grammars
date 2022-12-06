@@ -101,12 +101,12 @@ begin
     rw [list.join, list.reverse_append, L_ih, list.map_cons, list.reverse_cons, list.join_append, list.join_singleton],
   },
 end
-
+/-
 lemma join_reverse (L : list (list α)) :
   L.reverse.join = (list.map list.reverse L).join.reverse :=
 begin
   sorry,
-end
+end-/
 
 -- proved in `https://github.com/user7230724/lean-projects/blob/master/src/list_take_join/main.lean#L117`
 lemma take_join_of_lt {L : list (list α)} {n : ℕ} (notall : n < L.join.length) :
@@ -121,20 +121,12 @@ lemma drop_join_of_lt {L : list (list α)} {n : ℕ} (notall : n < L.join.length
   ∃ m k : ℕ, ∃ mlt : m < L.length, k < (L.nth_le m mlt).length ∧
     L.join.drop n = (L.nth_le m mlt).drop k ++ (L.drop m.succ).join :=
 begin
-  have Lj_split : L.join = L.join.take n ++ L.join.drop n,
+  obtain ⟨m, k, mlt, klt, left_half⟩ := take_join_of_lt notall,
+  use    [m, k, mlt, klt],
+  convert_to drop n (L.join.take n ++ L.join.drop n) = drop k (L.nth_le m mlt) ++ (drop m.succ L).join,
   {
     rw list.take_append_drop,
   },
-  obtain ⟨m, k, mlt, klt, left_half⟩ := take_join_of_lt notall,
-  use    [m, k, mlt, klt],
-  /-obtain ⟨m, k, mlt, klt, foo⟩ := @take_join_of_lt α L.reverse n sorry,
-  rw join_reverse at foo,
-  rw reverse_take at foo,
-  rw reverse_take at foo,
-  rw join_reverse at foo,
-  rw reverse_eq_iff at foo,
-  rw reverse_append at foo,
-  rw reverse_reverse at foo,-/
   sorry,
 end
 
