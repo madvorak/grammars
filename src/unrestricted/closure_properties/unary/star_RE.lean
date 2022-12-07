@@ -2006,49 +2006,34 @@ begin
       },
       rw without_final_H at right_half,
       rw list.append_assoc v'' at right_half,
-      -- `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
-      -- is a prefix of `v''`
-      rw list.append_eq_append_iff at right_half,
-      cases right_half,
+      have key_prop : (list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R).length ≤ v''.length,
       {
-        rcases right_half with ⟨e, v''_eq, -⟩,
-        use e ++ [H],
-        rw v''_eq at without_final_H,
-        rw without_final_H,
-        rw ←list.append_assoc,
+        -- copypaste (XX) begins
+        classical,
+        have first_H := congr_arg (list.index_of H) right_half,
+        rw [very_middle, ←list.map_append_append, list.index_of_append_of_notin map_wrap_never_contains_H] at first_H,
+        -- copypaste (XX) ends
+        have H_not_in_v'' : H ∉ v'',
+        {
+          rw [without_final_H, ←list.append_assoc] at left_half,
+          have := list.append_right_cancel left_half,
+          sorry,
+        },
+        rw list.index_of_append_of_notin H_not_in_v'' at first_H,
+        rw [list.singleton_append, list.index_of_cons_self, add_zero] at first_H,
+        rw [very_middle, ←list.map_append_append],
+        exact nat.le.intro first_H,
       },
-      {
-        exfalso,
-        rcases right_half with ⟨f, part_with_r, part_with_x⟩,
-        -- `part_with_x` implies `f` starts with `H`
-        -- `part_with_r` implies `H` (at the beginning of `f`) would have to match
-        -- either `symbol.nonterminal (sum.inl r₀.input_N)` or the head of `list.map wrap_sym r₀.input_R`
-        -- which both gives contradiction
-        have Hhead := congr_fun (congr_arg list.nth part_with_x) 0,
-        rw [list.singleton_append, list.nth] at Hhead,
-        cases f with d l,
-        {
-          rw list.append_nil at part_with_r,
-          rw ←part_with_r at without_final_H,
-          rw without_final_H at left_half,
-          sorry, -- ???????????????????????????
-        },
-        rw [list.cons_append, list.nth] at Hhead,
-        have imposs := congr_arg ((∈) H) part_with_r,
-        rw [very_middle, ←list.map_append_append] at imposs,
-        apply false_of_true_eq_false,
-        convert imposs.symm,
-        {
-          rw [eq_iff_iff, true_iff],
-          apply list.mem_append_right,
-          rw list.mem_cons_iff,
-          left,
-          exact option.some.inj Hhead,
-        },
-        {
-          rw [eq_iff_iff, false_iff],
-          apply map_wrap_never_contains_H,
-        },
+      obtain ⟨n, key_prop'⟩ := nat.le.dest key_prop,
+      have right_take := congr_arg (list.take v''.length) right_half,
+      rw list.take_left at right_take,
+      rw ←key_prop' at right_take,
+      rw list.take_append at right_take,
+      use list.take n v ++ [H],
+      rw without_final_H,
+      rw ←right_take,
+      repeat {
+        rw ←list.append_assoc,
       },
     },
     rw v'_eq at right_half,
@@ -3999,7 +3984,7 @@ begin
   },
 end
 
--- There are circa 477 lines of (nearly) copypasted code in this file.
+-- There are circa 481 lines of (nearly) copypasted code in this file.
 
 /-
 We have 2 sorries in this file:
