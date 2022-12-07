@@ -1929,10 +1929,16 @@ begin
         rw [very_middle, ←list.map_append_append],
         apply list.length_map,
       },
-      have todo_here : (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length ≤ (list.map wrap_sym x₀).length,
+      have len_rᵢ_le_len_x₀ :
+        (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length ≤ (list.map wrap_sym x₀).length,
       {
-        -- follows from the position of the first `H` in `right_half`
-        sorry,
+        classical,
+        have first_H := congr_arg (list.index_of H) right_half,
+        rw [list.append_assoc _ [H], list.index_of_append_of_notin map_wrap_never_contains_H] at first_H,
+        rw [list.singleton_append, list.index_of_cons_self, add_zero] at first_H,
+        rw [very_middle, ←list.map_append_append, list.index_of_append_of_notin map_wrap_never_contains_H] at first_H,
+        rw list.length_map at first_H,
+        exact nat.le.intro first_H,
       },
       split,
       {
@@ -1950,7 +1956,7 @@ begin
           rw list.take_left' lengths_trivi at right_left,
           rw [←very_middle, right_left],
           rw list.append_assoc _ [H],
-          rw list.take_append_of_le_length todo_here,
+          rw list.take_append_of_le_length len_rᵢ_le_len_x₀,
           rw list.map_take,
         },
         rw list.take_append_drop,
@@ -1962,7 +1968,7 @@ begin
         rw list.drop_left' lengths_trivi at right_right,
         rw right_right,
         rw list.append_assoc _ [H],
-        rw list.drop_append_of_le_length todo_here,
+        rw list.drop_append_of_le_length len_rᵢ_le_len_x₀,
         rw list.map_drop,
         rw list.append_assoc _ [H],
         refl,
@@ -3996,8 +4002,8 @@ end
 -- There are circa 477 lines of (nearly) copypasted code in this file.
 
 /-
-We have 3 sorries in this file:
-    3 sorries in lemma `case_3_match_rule` second part
+We have 2 sorries in this file:
+    2 sorries in lemma `case_3_match_rule` second part
 
 Furthemore, there are 2 sorries in `list_utils` out of which one has a proof elsewhere.
 -/
