@@ -1888,13 +1888,14 @@ begin
   },
   {
     rcases hyp with ⟨v', left_half, right_half⟩,
-    by_cases is_x_nil : x = [],
+    cases x with x₀ xₗ,
     {
-      --exfalso,
-      rw [is_x_nil, list.map_nil, list.map_nil, list.join, list.append_nil] at right_half,
+      rw [list.map_nil, list.map_nil, list.join, list.append_nil] at right_half,
       rw ←right_half at left_half,
+      have whole_thing := left_half,
+      clear right_half left_half,
       right,
-      --rw [is_x_nil, list.map_nil, list.map_nil, list.map_nil, list.join, list.append_nil],
+      --rw [list.map_nil, list.map_nil, list.map_nil, list.join, list.append_nil],
       sorry,
     },
     have very_middle :
@@ -1907,30 +1908,64 @@ begin
     -- thus `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
     -- is a prefix of `v'` according to `left_half`
     by_cases is_v'_nil : v' = [],
-    { -- only one of (?) places stays
+    {
       rw [is_v'_nil, list.nil_append] at right_half,
       rw [is_v'_nil, list.append_nil] at left_half,
       left,
-      have xl_pos := list.length_pos_of_ne_nil is_x_nil,
-      use [0, [], list.drop (list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R).length (x.nth_le 0 xl_pos)],
+      use [0, [], list.drop (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length x₀],
+      rw [list.map_cons, list.map_cons, list.join] at right_half,
       split,
       {
         rw [list.map_nil, list.append_nil],
         rw [list.take_zero, list.map_nil, list.join, list.append_nil],
         exact left_half.symm,
       },
-      split,
+      have lengths_trivi :
+        list.length (
+          list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+        ) =
+        list.length (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R),
       {
-        rw list.nth_le_nth xl_pos,
-        apply congr_arg,
-        rw list.nil_append,
-        -- split `x` into head and tail in `right_half`
-        -- `⊢` will follow easily
+        rw [very_middle, ←list.map_append_append],
+        apply list.length_map,
+      },
+      have todo_here : (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length ≤ (list.map wrap_sym x₀).length,
+      {
+        -- follows from the position of the first `H` in `right_half`
         sorry,
       },
+      split,
       {
-        -- also uses splitting `x` into head and tail in `right_half`
-        sorry,
+        rw list.nth,
+        apply congr_arg,
+        rw list.nil_append,
+        convert_to
+          x₀ = list.take (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length x₀ ++ list.drop (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length x₀,
+        {
+          trim,
+          apply wrap_str_inj,
+          rw list.map_append_append,
+          have right_left :=
+            congr_arg (list.take (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length) right_half,
+          rw list.take_left' lengths_trivi at right_left,
+          rw [←very_middle, right_left],
+          rw list.append_assoc _ [H],
+          rw list.take_append_of_le_length todo_here,
+          rw list.map_take,
+        },
+        rw list.take_append_drop,
+      },
+      {
+        rw [list.map_cons, list.drop_one, list.tail_cons],
+        have right_right :=
+            congr_arg (list.drop (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length) right_half,
+        rw list.drop_left' lengths_trivi at right_right,
+        rw right_right,
+        rw list.append_assoc _ [H],
+        rw list.drop_append_of_le_length todo_here,
+        rw list.map_drop,
+        rw list.append_assoc _ [H],
+        refl,
       },
     },
     right,
@@ -1939,25 +1974,6 @@ begin
     {
       obtain ⟨v'', without_final_H⟩ : ∃ v'', v' = v'' ++ [H],
       {
-        /-by_cases is_v'_nil : v' = [],
-        { -- only one of (?) places stays
-          rw [is_v'_nil, list.nil_append] at right_half,
-          exfalso,
-          apply false_of_true_eq_false,
-          convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) right_half,
-          {
-            rw [eq_iff_iff, true_iff],
-            apply list.mem_append_left,
-            apply list.mem_append_left,
-            apply list.mem_append_right,
-            apply list.mem_singleton_self,
-          },
-          {
-            rw [eq_iff_iff, false_iff],
-            intro contra,
-            sorry,
-          },
-        },-/
         rw list.append_eq_append_iff at left_half,
         cases left_half,
         {
@@ -2009,7 +2025,7 @@ begin
           rw list.append_nil at part_with_r,
           rw ←part_with_r at without_final_H,
           rw without_final_H at left_half,
-          sorry, -- ??
+          sorry, -- ???????????????????????????
         },
         rw [list.cons_append, list.nth] at Hhead,
         have imposs := congr_arg ((∈) H) part_with_r,
@@ -3980,8 +3996,8 @@ end
 -- There are circa 477 lines of (nearly) copypasted code in this file.
 
 /-
-We have 4 sorries in this file:
-    4 sorries in lemma `case_3_match_rule` second part
+We have 3 sorries in this file:
+    3 sorries in lemma `case_3_match_rule` second part
 
 Furthemore, there are 2 sorries in `list_utils` out of which one has a proof elsewhere.
 -/
