@@ -2178,8 +2178,9 @@ begin
         rw list.nth,
         apply congr_arg,
         rw list.nil_append,
-        convert_to
-          x₀ = list.take (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length x₀ ++ list.drop (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length x₀,
+        convert_to  x₀ =
+            list.take (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length x₀ ++
+            list.drop (r₀.input_L ++ [symbol.nonterminal r₀.input_N] ++ r₀.input_R).length x₀,
         {
           trim,
           apply wrap_str_inj,
@@ -2239,7 +2240,11 @@ begin
       },
       rw without_final_H at right_half,
       rw list.append_assoc v'' at right_half,
-      have key_prop : (list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R).length ≤ v''.length,
+      have key_prop :
+        list.length (
+          list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+        ) ≤
+        v''.length,
       {
         -- copypaste (XX) begins
         classical,
@@ -2414,16 +2419,34 @@ begin
       rw ←eq_d'' at lhll',
       clear eq_d'' d'',
       have lhll := congr_arg list.reverse lhll',
-      rw [list.reverse_reverse, list.reverse_append, list.reverse_reverse, list.reverse_append, list.reverse_reverse, list.reverse_reverse] at lhll,
+      rw [list.reverse_reverse, list.reverse_append, list.reverse_reverse, list.reverse_append,
+          list.reverse_reverse, list.reverse_reverse] at lhll,
       rw lhll at *,
       clear lhll u,
       rw list.reverse_cons at lhr,
       rw lve at lhr,
-      use [list.take l''.length γ, list.drop ((l'' ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R).length) γ],
-      have z_expr : z =
-        list.map wrap_sym (list.drop (l'' ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R).length γ) ++ [H],
+      use list.take l''.length γ,
+      use list.drop (l''
+            ++ list.map wrap_sym r₀.input_L
+            ++ [symbol.nonterminal (sum.inl r₀.input_N)]
+            ++ list.map wrap_sym r₀.input_R
+          ).length γ,
+      have z_expr :  z =
+        list.map wrap_sym (
+            list.drop (l''
+              ++ list.map wrap_sym r₀.input_L
+              ++ [symbol.nonterminal (sum.inl r₀.input_N)]
+              ++ list.map wrap_sym r₀.input_R
+            ).length γ
+          ) ++ [H],
       {
-        have lhdr := congr_arg (list.drop (l'' ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R).length) lhr,
+        have lhdr :=
+          congr_arg
+            (list.drop (l''
+              ++ list.map wrap_sym r₀.input_L
+              ++ [symbol.nonterminal (sum.inl r₀.input_N)]
+              ++ list.map wrap_sym r₀.input_R
+            ).length) lhr,
         rw list.drop_append_of_le_length at lhdr,
         {
           rw [list.map_drop, lhdr, ←list.append_assoc, list.drop_left],
@@ -2473,7 +2496,15 @@ begin
         exact z_expr,
       },
       rw z_expr at lhr,
-      have gamma_expr : list.map wrap_sym γ = l'' ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ (list.map wrap_sym r₀.input_R ++ (list.map wrap_sym (list.drop (l'' ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R).length γ))),
+      have gamma_expr :  list.map wrap_sym γ =
+        l'' ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++
+          (list.map wrap_sym r₀.input_R ++
+            (list.map wrap_sym
+              (list.drop (l''
+                ++ list.map wrap_sym r₀.input_L
+                ++ [symbol.nonterminal (sum.inl r₀.input_N)]
+                ++ list.map wrap_sym r₀.input_R
+              ).length γ))),
       {
         repeat {
           rw ←list.append_assoc at lhr,
