@@ -1888,25 +1888,258 @@ begin
   },
   {
     rcases hyp with ⟨v', left_half, right_half⟩,
-    cases x with x₀ xₗ,
-    {
-      rw [list.map_nil, list.map_nil, list.join, list.append_nil] at right_half,
-      rw ←right_half at left_half,
-      have whole_thing := left_half,
-      clear right_half left_half,
-      right,
-      --rw [list.map_nil, list.map_nil, list.map_nil, list.join, list.append_nil],
-      sorry,
-    },
     have very_middle :
       [symbol.nonterminal (sum.inl r₀.input_N)] = list.map wrap_sym [symbol.nonterminal r₀.input_N],
     {
       rw list.map_singleton,
       refl,
     },
-    -- all `H`s must match `v` according to `right_half`
-    -- thus `list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R`
-    -- is a prefix of `v'` according to `left_half`
+    cases x with x₀ xₗ,
+    {
+      rw [list.map_nil, list.map_nil, list.join, list.append_nil] at right_half,
+      rw ←right_half at left_half,
+      have backwards := congr_arg list.reverse left_half,
+      clear right_half left_half,
+      right,
+      repeat {
+        rw list.reverse_append at backwards,
+      },
+      rw [list.reverse_singleton, list.singleton_append] at backwards,
+      rw ←list.reverse_reverse v,
+      cases v.reverse with e z,
+      {
+        exfalso,
+        rw list.nil_append at backwards,
+        rw ←list.map_reverse _ r₀.input_R at backwards,
+        cases r₀.input_R.reverse with d l,
+        {
+          rw [list.map_nil, list.nil_append] at backwards,
+          rw list.reverse_singleton (symbol.nonterminal (sum.inl r₀.input_N)) at backwards,
+          rw list.singleton_append at backwards,
+          have imposs := list.head_eq_of_cons_eq backwards,
+          exact sum.no_confusion (symbol.nonterminal.inj imposs),
+        },
+        {
+          rw [list.map_cons, list.cons_append, list.cons_append] at backwards,
+          have imposs := list.head_eq_of_cons_eq backwards,
+          exact wrap_never_outputs_H imposs.symm,
+        },
+      },
+      rw [list.cons_append, list.cons_append, list.cons.inj_eq] at backwards,
+      cases backwards with He backward,
+      rw ←He at *,
+      clear He e,
+      have forward := congr_arg list.reverse backward,
+      clear backward,
+      repeat {
+        rw list.reverse_append at forward,
+      },
+      repeat {
+        rw list.reverse_reverse at forward,
+      },
+      rw ←list.append_assoc at forward,
+      rw list.append_eq_append_iff at forward,
+      cases forward,
+      swap, {
+        exfalso,
+        rcases forward with ⟨a, imposs, -⟩,
+        -- almost copypaste (XXI) begins
+        apply false_of_true_eq_false,
+        convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) imposs.symm,
+        {
+          rw [eq_iff_iff, true_iff],
+          apply list.mem_append_left,
+          apply list.mem_append_right,
+          apply list.mem_append_left,
+          apply list.mem_append_right,
+          apply list.mem_singleton_self,
+        },
+        {
+          rw [eq_iff_iff, false_iff],
+          rw list.mem_append,
+          push_neg,
+          split,
+          swap, {
+            rw list.mem_singleton,
+            intro impos,
+            exact sum.no_confusion (symbol.nonterminal.inj impos),
+          },
+          rw list.mem_append,
+          push_neg,
+          split;
+          {
+            rw list.mem_map,
+            push_neg,
+            intros,
+            exact not_false,
+          },
+        },
+        -- almost copypaste (XXI) ends
+      },
+      rcases forward with ⟨a', left_side, gamma_is⟩,
+      repeat {
+        rw ←list.append_assoc at left_side,
+      },
+      rw list.append_eq_append_iff at left_side,
+      cases left_side,
+      {
+        exfalso,
+        rcases left_side with ⟨a, imposs, -⟩,
+        -- copypaste (XXI) begins
+        apply false_of_true_eq_false,
+        convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) imposs.symm,
+        {
+          rw [eq_iff_iff, true_iff],
+          apply list.mem_append_left,
+          apply list.mem_append_right,
+          apply list.mem_singleton_self,
+        },
+        {
+          rw [eq_iff_iff, false_iff],
+          rw list.mem_append,
+          push_neg,
+          split,
+          swap, {
+            rw list.mem_singleton,
+            intro impos,
+            exact sum.no_confusion (symbol.nonterminal.inj impos),
+          },
+          rw list.mem_append,
+          push_neg,
+          split;
+          {
+            rw list.mem_map,
+            push_neg,
+            intros,
+            exact not_false,
+          },
+        },
+        -- copypaste (XXI) ends
+      },
+      rcases left_side with ⟨c', the_left, the_a'⟩,
+      rw the_a' at gamma_is,
+      clear the_a' a',
+      rw list.append_assoc at the_left,
+      rw list.append_assoc at the_left,
+      rw list.append_eq_append_iff at the_left,
+      cases the_left,
+      {
+        exfalso,
+        rcases the_left with ⟨a, -, imposs⟩,
+        -- kinda copypaste (XXI) begins
+        apply false_of_true_eq_false,
+        convert congr_arg ((∈) R) imposs.symm,
+        {
+          rw [eq_iff_iff, true_iff],
+          apply list.mem_append_right,
+          apply list.mem_append_left,
+          apply list.mem_singleton_self,
+        },
+        {
+          rw [eq_iff_iff, false_iff],
+          rw list.mem_append,
+          push_neg,
+          split,
+          {
+            rw list.mem_map,
+            push_neg,
+            intros,
+            apply wrap_never_outputs_R,
+          },
+          {
+            rw list.mem_singleton,
+            intro impos,
+            exact sum.no_confusion (symbol.nonterminal.inj impos),
+          },
+        },
+        -- kinda copypaste (XXI) ends
+      },
+      rcases the_left with ⟨u₀, u_eq, rule_side⟩,
+      rw u_eq at *,
+      clear u_eq u,
+      have zr_eq : z.reverse = list.drop (c' ++ list.map wrap_sym r₀.input_R).length (list.map wrap_sym γ),
+      {
+        have gamma_suffix := congr_arg (list.drop (c' ++ list.map wrap_sym r₀.input_R).length) gamma_is,
+        rw list.drop_left at gamma_suffix,
+        exact gamma_suffix.symm,
+      },
+      cases u₀ with d l,
+      {
+        exfalso,
+        rw list.nil_append at rule_side,
+        cases r₀.input_L with d l,
+        {
+          rw [list.map_nil, list.nil_append] at rule_side,
+          have imposs := list.head_eq_of_cons_eq rule_side,
+          exact sum.no_confusion (symbol.nonterminal.inj imposs),
+        },
+        {
+          rw [list.map_cons, list.cons_append] at rule_side,
+          have imposs := list.head_eq_of_cons_eq rule_side,
+          exact wrap_never_outputs_R imposs.symm,
+        },
+      },
+      rw [list.singleton_append, list.cons_append, list.cons.inj_eq] at rule_side,
+      cases rule_side with Rd c'_eq,
+      rw ←Rd at *,
+      clear Rd d,
+      rw c'_eq at gamma_is,
+      use [list.take l.length γ, list.drop (c' ++ list.map wrap_sym r₀.input_R).length γ],
+      split,
+      {
+        rw ←list.singleton_append,
+        have l_from_gamma := congr_arg (list.take l.length) gamma_is,
+        repeat {
+          rw list.append_assoc at l_from_gamma,
+        },
+        rw list.take_left at l_from_gamma,
+        rw list.map_take,
+        rw l_from_gamma,
+        rw ←list.append_assoc,
+      },
+      split,
+      {
+        rw c'_eq,
+        convert_to list.take l.length γ ++ list.drop l.length γ = _,
+        {
+          symmetry,
+          apply list.take_append_drop,
+        },
+        trim,
+        rw zr_eq at gamma_is,
+        rw c'_eq at gamma_is,
+        repeat {
+          rw list.append_assoc at gamma_is,
+        },
+        have gamma_minus_initial_l := congr_arg (list.drop l.length) gamma_is,
+        rw [list.drop_left, very_middle, ←list.map_drop, ←list.map_drop] at gamma_minus_initial_l,
+        repeat {
+          rw ←list.map_append at gamma_minus_initial_l,
+        },
+        rw wrap_str_inj gamma_minus_initial_l,
+        trim,
+        repeat {
+          rw list.length_append,
+        },
+        repeat {
+          rw list.length_map,
+        },
+        repeat {
+          rw list.length_append,
+        },
+        repeat {
+          rw list.length_singleton,
+        },
+        repeat {
+          rw add_assoc,
+        },
+      },
+      {
+        rw [list.map_nil, list.map_nil, list.join, list.append_nil],
+        rw [list.reverse_cons, zr_eq],
+        rw list.map_drop,
+      },
+    },
     by_cases is_v'_nil : v' = [],
     {
       rw [is_v'_nil, list.nil_append] at right_half,
@@ -2016,8 +2249,36 @@ begin
         have H_not_in_v'' : H ∉ v'',
         {
           rw [without_final_H, ←list.append_assoc] at left_half,
-          have := list.append_right_cancel left_half,
-          sorry,
+          intro contra,
+          apply false_of_true_eq_false,
+          convert congr_arg ((∈) H) (list.append_right_cancel left_half).symm,
+          {
+            rw [eq_iff_iff, true_iff],
+            exact list.mem_append_right _ contra,
+          },
+          {
+            clear_except,
+            rw [eq_iff_iff, false_iff],
+            intro contr,
+            iterate 3 {
+              rw list.mem_append at contr,
+              cases contr,
+            },
+            iterate 2 {
+              rw list.mem_map at contr,
+              rcases contr with ⟨t, -, impos⟩,
+              exact symbol.no_confusion impos,
+            },
+            {
+              rw list.mem_singleton at contr,
+              exact H_neq_R contr,
+            },
+            {
+              rw list.mem_map at contr,
+              rcases contr with ⟨s, -, imposs⟩,
+              exact wrap_never_outputs_H imposs,
+            },
+          },
         },
         rw list.index_of_append_of_notin H_not_in_v'' at first_H,
         rw [list.singleton_append, list.index_of_cons_self, add_zero] at first_H,
@@ -3984,11 +4245,4 @@ begin
   },
 end
 
--- There are circa 481 lines of (nearly) copypasted code in this file.
-
-/-
-We have 2 sorries in this file:
-    2 sorries in lemma `case_3_match_rule` second part
-
-Furthemore, there are 2 sorries in `list_utils` out of which one has a proof elsewhere.
--/
+-- There are circa 565 lines of (nearly) copypasted code in this file.
