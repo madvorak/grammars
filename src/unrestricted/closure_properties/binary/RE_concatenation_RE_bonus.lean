@@ -7,19 +7,19 @@ variables {T : Type}
 section bonus_CF
 
 private def wrap_CF_rule₁ {N₁ : Type} (N₂ : Type) (r : (N₁ × list (symbol T N₁))) :
-  ((nnn T N₁ N₂) × list (symbol T (nnn T N₁ N₂))) :=
+  ((nnn T N₁ N₂) × list (nst T N₁ N₂)) :=
 ((sum.inl (some (sum.inl r.fst))), (list.map (wrap_symbol₁ N₂) r.snd))
 
 private def wrap_CF_rule₂ {N₂ : Type} (N₁ : Type) (r : (N₂ × list (symbol T N₂))) :
-  ((nnn T N₁ N₂) × list (symbol T (nnn T N₁ N₂))) :=
+  ((nnn T N₁ N₂) × list (nst T N₁ N₂)) :=
 ((sum.inl (some (sum.inr r.fst))), (list.map (wrap_symbol₂ N₁) r.snd))
 
 private def CF_rules_for_terminals₁ (N₂ : Type) (g : CF_grammar T) :
-  list ((nnn T g.nt N₂) × list (symbol T (nnn T g.nt N₂))) :=
+  list ((nnn T g.nt N₂) × list (nst T g.nt N₂)) :=
 list.map (λ t, ((sum.inr (sum.inl t)), [symbol.terminal t])) (all_used_terminals (grammar_of_cfg g))
 
 private def CF_rules_for_terminals₂ (N₁ : Type) (g : CF_grammar T) :
-  list ((nnn T N₁ g.nt) × list (symbol T (nnn T N₁ g.nt))) :=
+  list ((nnn T N₁ g.nt) × list (nst T N₁ g.nt)) :=
 list.map (λ t, ((sum.inr (sum.inr t)), [symbol.terminal t])) (all_used_terminals (grammar_of_cfg g))
 
 private def big_CF_grammar (g₁ g₂ : CF_grammar T) : CF_grammar T :=

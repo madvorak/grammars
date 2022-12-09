@@ -93,7 +93,7 @@ protected def nnn (T N₁ N₂ : Type) : Type :=
 option (N₁ ⊕ N₂) ⊕ (T ⊕ T)
 
 -- new symbol type
-private def nst (T N₁ N₂ : Type) : Type :=
+protected def nst (T N₁ N₂ : Type) : Type :=
 symbol T (nnn T N₁ N₂)
 
 variables {T : Type}
@@ -1299,39 +1299,10 @@ begin
           rw list.append_nil at inequality_m1,
           exact inequality_m1,
         },
-        have I_cannot_believe_I_had_to_write_it_explicitly :
-          list.nth_le
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_R
-            )
-            (
-              (u ++
-                list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
-                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
-                list.map (wrap_symbol₁ g₂.nt) r₁.input_R
-              ).length - 1
-            )
-            inequality_m1 =
-          list.nth_le
-            (u ++
-              list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
-              [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
-            )
-            (
-              (u ++
-                list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
-                [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
-              ).length - 1
-            )
-            inequality_m0,
-        {
-          simp [ris_third_is_nil],
-        },
-        rw I_cannot_believe_I_had_to_write_it_explicitly at clash,
-        rw list.nth_le_append_right at clash, swap,
-        {
+        simp_rw [ris_third_is_nil] at clash,
+        simp only [list.append_nil] at clash,
+        rw list.nth_le_append_right at clash,
+        swap, {
           apply le_of_eq,
           rw list.length_append _ [_],
           rw list.length_singleton,
@@ -1484,7 +1455,7 @@ begin
         rw [chunk2, chunk3, chunk4, chunk5] at x_equiv,
         clear chunk2 chunk3 chunk4 chunk5,
 
-        obtain ⟨foo, equiv_segment_5⟩ :=
+        obtain ⟨temp_5, equiv_segment_5⟩ :=
           corresponding_strings_split (
               u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
               [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))] ++
@@ -1492,40 +1463,77 @@ begin
             ).length x_equiv,
         clear x_equiv,
         rw list.drop_left at equiv_segment_5,
-        rw list.take_left at foo,
+        rw list.take_left at temp_5,
 
-        obtain ⟨bar, equiv_segment_4⟩ :=
+        obtain ⟨temp_4, equiv_segment_4⟩ :=
           corresponding_strings_split (
               u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L ++
               [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))]
-            ).length foo,
-        clear foo,
+            ).length temp_5,
+        clear temp_5,
         rw list.drop_left at equiv_segment_4,
-        rw list.take_left at bar,
-        rw list.take_take at bar,
+        rw list.take_left at temp_4,
+        rw list.take_take at temp_4,
 
-        obtain ⟨baz, equiv_segment_3⟩ :=
+        obtain ⟨temp_3, equiv_segment_3⟩ :=
           corresponding_strings_split (
               u ++ list.map (wrap_symbol₁ g₂.nt) r₁.input_L
-            ).length bar,
-        clear bar,
+            ).length temp_4,
+        clear temp_4,
         rw list.drop_left at equiv_segment_3,
-        rw list.take_left at baz,
-        rw list.take_take at baz,
+        rw list.take_left at temp_3,
+        rw list.take_take at temp_3,
 
         obtain ⟨equiv_segment_1, equiv_segment_2⟩ :=
-          corresponding_strings_split u.length baz,
-        clear baz,
+          corresponding_strings_split u.length temp_3,
+        clear temp_3,
         rw list.drop_left at equiv_segment_2,
         rw list.take_left at equiv_segment_1,
         rw list.take_take at equiv_segment_1,
 
-        -- This `simp` is dangerous. See `RE_concatenation_RE_simp_goal.txt` for intended result.
-        simp at equiv_segment_1 equiv_segment_2 equiv_segment_3 equiv_segment_4 equiv_segment_5,
+        have equiv_sgmnt_1 :
+          corresponding_strings (list.take u.length (list.map (wrap_symbol₁ g₂.nt) x)) u,
+        {
+          simpa using equiv_segment_1,
+        },
+        have equiv_sgmnt_2 :
+          corresponding_strings
+            (list.drop u.length (list.take (u.length + r₁.input_L.length)
+              (list.map (wrap_symbol₁ g₂.nt) x)))
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_L),
+        {
+          simpa using equiv_segment_2,
+        },
+        have equiv_sgmnt_3 :
+          corresponding_strings
+            (list.drop (u.length + r₁.input_L.length)
+              (list.take (u.length + (r₁.input_L.length + 1)) (list.map (wrap_symbol₁ g₂.nt) x)))
+            [symbol.nonterminal (sum.inl (some (sum.inl r₁.input_N)))],
+        {
+          simpa using equiv_segment_3,
+        },
+        have equiv_sgmnt_4 :
+          corresponding_strings
+            (list.drop (u.length + (r₁.input_L.length + 1))
+              (list.take (u.length + (r₁.input_L.length + (r₁.input_R.length + 1)))
+                (list.map (wrap_symbol₁ g₂.nt) x)))
+            (list.map (wrap_symbol₁ g₂.nt) r₁.input_R),
+        {
+          simpa using equiv_segment_4,
+        },
+        have equiv_sgmnt_5 :
+          corresponding_strings
+            (list.drop (u.length + (r₁.input_L.length + (r₁.input_R.length + 1)))
+              (list.map (wrap_symbol₁ g₂.nt) x))
+            (list.take (x.length - u.length - m) v),
+        {
+          simpa using equiv_segment_5,
+        },
+        clear equiv_segment_1 equiv_segment_2 equiv_segment_3 equiv_segment_4 equiv_segment_5,
 
         have segment_1_eqi : corresponding_strings (list.map (wrap_symbol₁ g₂.nt) (list.take u.length x)) u,
         {
-          convert equiv_segment_1,
+          convert equiv_sgmnt_1,
           rw list.map_take,
         },
         have segment_1_equ := (filter_map_unwrap_of_corresponding_strings₁ segment_1_eqi).symm,
@@ -1534,14 +1542,14 @@ begin
         {
           exact segment_1_equ,
         },
-        clear segment_1_equ segment_1_eqi equiv_segment_1,
+        clear segment_1_equ segment_1_eqi equiv_sgmnt_1,
 
         have segment_2_eqi :
           corresponding_strings
             (list.map (wrap_symbol₁ g₂.nt) (list.take r₁.input_L.length (list.drop u.length x)))
             (list.map (wrap_symbol₁ g₂.nt) r₁.input_L),
         {
-          convert equiv_segment_2,
+          convert equiv_sgmnt_2,
           rw list.map_take,
           rw list.map_drop,
           rw list.drop_take,
@@ -1553,7 +1561,7 @@ begin
         {
           exact segment_2_equ,
         },
-        clear segment_2_equ segment_2_eqi equiv_segment_2,
+        clear segment_2_equ segment_2_eqi equiv_sgmnt_2,
         rw list.drop_drop,
 
         have segment_3_eqi :
@@ -1561,7 +1569,7 @@ begin
             (list.map (wrap_symbol₁ g₂.nt) (list.take 1 (list.drop (r₁.input_L.length + u.length) x)))
             (list.map (wrap_symbol₁ g₂.nt) [symbol.nonterminal r₁.input_N]),
         {
-          convert equiv_segment_3,
+          convert equiv_sgmnt_3,
           rw list.map_take,
           rw list.map_drop,
           rw ←add_assoc,
@@ -1575,7 +1583,7 @@ begin
         {
           exact segment_3_equ,
         },
-        clear segment_3_equ segment_3_eqi equiv_segment_3,
+        clear segment_3_equ segment_3_eqi equiv_sgmnt_3,
         rw list.drop_drop,
 
         have segment_4_eqi :
@@ -1584,7 +1592,7 @@ begin
               (list.drop (1 + (r₁.input_L.length + u.length)) x)))
             (list.map (wrap_symbol₁ g₂.nt) r₁.input_R),
         {
-          convert equiv_segment_4,
+          convert equiv_sgmnt_4,
           rw list.map_take,
           rw list.map_drop,
 
@@ -1613,7 +1621,7 @@ begin
         {
           exact segment_4_equ,
         },
-        clear segment_4_equ segment_4_eqi equiv_segment_4,
+        clear segment_4_equ segment_4_eqi equiv_sgmnt_4,
 
         rw list.drop_drop,
         repeat {
@@ -1688,7 +1696,7 @@ begin
           exact nat.add_sub_of_le critical,
         },
         rw sum_of_min_lengths,
-        clear_except equiv_segment_5,
+        clear_except equiv_sgmnt_5,
 
         have another_rearranging :
           r₁.input_R.length + (1 + (r₁.input_L.length + u.length)) =
@@ -1697,9 +1705,9 @@ begin
           ring,
         },
         rw another_rearranging,
-        rw ←list.map_drop at equiv_segment_5,
+        rw ←list.map_drop at equiv_sgmnt_5,
         symmetry,
-        exact filter_map_unwrap_of_corresponding_strings₁ equiv_segment_5,
+        exact filter_map_unwrap_of_corresponding_strings₁ equiv_sgmnt_5,
       },
       {
         rw list.filter_map_append_append,

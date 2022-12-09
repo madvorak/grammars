@@ -5,7 +5,7 @@ import trim_assoc
 import print_sorry
 
 
-/-- Fundamental datatype; basically `τ ⊕ ν` (something like "Either tau nyy")
+/-- Fundamental datatype; basically `τ ⊕ ν` (something like "Either tau knee")
     where `τ` is the type of terminals and `ν` is the type of nonterminals. -/
 inductive symbol (τ : Type) (ν : Type)
 | terminal    : τ → symbol
