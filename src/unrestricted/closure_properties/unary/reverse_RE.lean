@@ -129,13 +129,11 @@ begin
   {
     intros w hwL,
     change w.reverse ∈ grammar_language g,
-
     exact reversed_word_in_original_language hwL,
   },
   {
     intros w hwL,
     change w.reverse ∈ grammar_language g at hwL,
-
     obtain ⟨g₀, pre_reversal⟩ : ∃ g₀, g = reversal_grammar g₀,
     {
       use reversal_grammar g,

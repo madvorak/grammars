@@ -85,9 +85,7 @@ section translating_derivations
 variables {T : Type}
 
 -- TODO rename as well
-private lemma lift_tran_
-    {lg : lifted_grammar_ T}
-    {input output : list (symbol T lg.g₀.nt)}
+private lemma lift_tran_ {lg : lifted_grammar_ T} {input output : list (symbol T lg.g₀.nt)}
     (hyp : grammar_transforms lg.g₀ input output) :
   grammar_transforms lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
 begin
@@ -116,9 +114,7 @@ begin
 end
 
 -- TODO rename after collision with `cfgLiftSink.lift_deri` disappears
-lemma lift_deri_
-    (lg : lifted_grammar_ T)
-    {input output : list (symbol T lg.g₀.nt)}
+lemma lift_deri_ (lg : lifted_grammar_ T) {input output : list (symbol T lg.g₀.nt)}
     (hyp : grammar_derives lg.g₀ input output) :
   grammar_derives lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
 begin
@@ -144,9 +140,7 @@ def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ s, good_letter_ letter
 
 -- TODO rename as well
-private lemma sink_tran_
-    {lg : lifted_grammar_ T}
-    {input output : list (symbol T lg.g.nt)}
+private lemma sink_tran_ {lg : lifted_grammar_ T} {input output : list (symbol T lg.g.nt)}
     (hyp : grammar_transforms lg.g input output)
     (ok_input : good_string_ input) :
   grammar_transforms lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)
@@ -288,9 +282,7 @@ begin
   },
 end
 
-private lemma sink_deri_aux
-    {lg : lifted_grammar_ T}
-    {input output : list (symbol T lg.g.nt)}
+private lemma sink_deri_aux {lg : lifted_grammar_ T} {input output : list (symbol T lg.g.nt)}
     (hyp : grammar_derives lg.g input output)
     (ok_input : good_string_ input) :
   grammar_derives lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)
@@ -322,12 +314,12 @@ begin
 end
 
 -- TODO rename after collision with `cfgLiftSink.sink_deri` disappears
-lemma sink_deri_
-    (lg : lifted_grammar_ T)
-    {input output : list (symbol T lg.g.nt)}
+lemma sink_deri_ (lg : lifted_grammar_ T) {input output : list (symbol T lg.g.nt)}
     (hyp : grammar_derives lg.g input output)
     (ok_input : good_string_ input) :
   grammar_derives lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output) :=
-(sink_deri_aux hyp ok_input).1
+begin
+  exact (sink_deri_aux hyp ok_input).1
+end
 
 end translating_derivations
