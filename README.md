@@ -22,6 +22,8 @@ Missing proof: [Context-free pumping lemma](https://github.com/madvorak/grammars
 
 ## Recursively-enumerable grammars
 
+(a.k.a. general grammars, a.k.a. unrestricted grammars, a.k.a. type-0 grammars)
+
 [Definition](https://github.com/madvorak/grammars/blob/main/src/unrestricted/grammar.lean)
 
 [Example](https://github.com/madvorak/grammars/blob/main/test/grammar_demo.lean)
@@ -29,5 +31,7 @@ Missing proof: [Context-free pumping lemma](https://github.com/madvorak/grammars
 [Closure under union](https://github.com/madvorak/grammars/blob/main/src/unrestricted/closure_properties/binary/RE_union_RE.lean)
 
 [Closure under concatenation](https://github.com/madvorak/grammars/blob/main/src/unrestricted/closure_properties/binary/RE_concatenation_RE.lean)
+
+[Closure under Kleene star](https://github.com/madvorak/grammars/blob/main/src/unrestricted/closure_properties/unary/star_RE.lean) (was the most difficult proof; see [informal description](https://github.com/madvorak/grammars/blob/main/informal/KleeneStar.pdf) for the big picture)
 
 [Closure under reversal](https://github.com/madvorak/grammars/blob/main/src/unrestricted/closure_properties/unary/reverse_RE.lean)
