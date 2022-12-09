@@ -16,7 +16,7 @@ variables {T : Type}
 section specific_symbols
 
 private def Z {N : Type} : ns T N := symbol.nonterminal (sum.inr 0)
-private def H {N : Type} : ns T N := symbol.nonterminal (sum.inr 1) -- originally denoted by `#`
+private def H {N : Type} : ns T N := symbol.nonterminal (sum.inr 1) -- denoted by `#` in the pdf
 private def R {N : Type} : ns T N := symbol.nonterminal (sum.inr 2)
 
 private def S {g : grammar T} : ns T g.nt := symbol.nonterminal (sum.inl g.initial)
@@ -302,8 +302,8 @@ begin
   have hypp :
     (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join =
     u ++ (
-        list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
-      ) ++ v,
+      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+    ) ++ v,
   {
     simpa [list.append_assoc] using hyp,
   },
@@ -390,8 +390,8 @@ begin
   },
   have urrrl_lt :
     list.length (u ++ (
-        list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
-      )) <
+      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+    )) <
     list.length (list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))),
   {
     have vl_pos : v.length > 0,
@@ -456,9 +456,10 @@ begin
   },
   rw ←hyp_u at count_Hs,
 
-  have hyp_v := congr_arg (list.drop (list.length (u ++ (
-      list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
-    )))) hypp,
+  have hyp_v :=
+    congr_arg (list.drop (list.length (u ++ (
+        list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ list.map wrap_sym r₀.input_R
+      )))) hypp,
   rw list.drop_left at hyp_v,
   rw last_vl at hyp_v,
   rw list.nth_le_map at hyp_v,
@@ -1827,6 +1828,43 @@ begin
   },
 end
 
+private lemma case_3_false_of_wbr_eq_urz {g : grammar T} {r₀ : grule T g.nt}
+    {w : list (list T)} {β : list T} {u z : list (ns T g.nt)}
+    (contradictory_equality :
+      list.map symbol.terminal w.join ++ list.map symbol.terminal β ++ [R] =
+      u ++ list.map wrap_sym r₀.input_L ++ [symbol.nonterminal (sum.inl r₀.input_N)] ++ z) :
+  false :=
+begin
+  apply false_of_true_eq_false,
+  convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) contradictory_equality.symm,
+  {
+    rw [eq_iff_iff, true_iff],
+    apply list.mem_append_left,
+    apply list.mem_append_right,
+    apply list.mem_singleton_self,
+  },
+  {
+    rw [eq_iff_iff, false_iff],
+    rw list.mem_append,
+    push_neg,
+    split,
+    swap, {
+      rw list.mem_singleton,
+      intro impos,
+      exact sum.no_confusion (symbol.nonterminal.inj impos),
+    },
+    rw list.mem_append,
+    push_neg,
+    split;
+    {
+      rw list.mem_map,
+      push_neg,
+      intros,
+      exact not_false,
+    },
+  },
+end
+
 private lemma case_3_match_rule {g : grammar T} {r₀ : grule T g.nt}
     {x : list (list (symbol T g.nt))} {u v : list (ns T g.nt)}
     {w : list (list T)} {β : list T} {γ : list (symbol T g.nt)}
@@ -1943,38 +1981,11 @@ begin
       swap, {
         exfalso,
         rcases forward with ⟨a, imposs, -⟩,
-        -- almost copypaste (XXI) begins
-        apply false_of_true_eq_false,
-        convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) imposs.symm,
-        {
-          rw [eq_iff_iff, true_iff],
-          apply list.mem_append_left,
-          apply list.mem_append_right,
-          apply list.mem_append_left,
-          apply list.mem_append_right,
-          apply list.mem_singleton_self,
-        },
-        {
-          rw [eq_iff_iff, false_iff],
-          rw list.mem_append,
-          push_neg,
-          split,
-          swap, {
-            rw list.mem_singleton,
-            intro impos,
-            exact sum.no_confusion (symbol.nonterminal.inj impos),
-          },
-          rw list.mem_append,
-          push_neg,
-          split;
-          {
-            rw list.mem_map,
-            push_neg,
-            intros,
-            exact not_false,
-          },
-        },
-        -- almost copypaste (XXI) ends
+        rw list.append_assoc u at imposs,
+        rw list.append_assoc _ (list.map wrap_sym r₀.input_R) at imposs,
+        rw ←list.append_assoc u at imposs,
+        rw ←list.append_assoc u at imposs,
+        exact case_3_false_of_wbr_eq_urz imposs,
       },
       rcases forward with ⟨a', left_side, gamma_is⟩,
       repeat {
@@ -1985,36 +1996,7 @@ begin
       {
         exfalso,
         rcases left_side with ⟨a, imposs, -⟩,
-        -- copypaste (XXI) begins
-        apply false_of_true_eq_false,
-        convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) imposs.symm,
-        {
-          rw [eq_iff_iff, true_iff],
-          apply list.mem_append_left,
-          apply list.mem_append_right,
-          apply list.mem_singleton_self,
-        },
-        {
-          rw [eq_iff_iff, false_iff],
-          rw list.mem_append,
-          push_neg,
-          split,
-          swap, {
-            rw list.mem_singleton,
-            intro impos,
-            exact sum.no_confusion (symbol.nonterminal.inj impos),
-          },
-          rw list.mem_append,
-          push_neg,
-          split;
-          {
-            rw list.mem_map,
-            push_neg,
-            intros,
-            exact not_false,
-          },
-        },
-        -- copypaste (XXI) ends
+        exact case_3_false_of_wbr_eq_urz imposs,
       },
       rcases left_side with ⟨c', the_left, the_a'⟩,
       rw the_a' at gamma_is,
@@ -2026,7 +2008,6 @@ begin
       {
         exfalso,
         rcases the_left with ⟨a, -, imposs⟩,
-        -- kinda copypaste (XXI) begins
         apply false_of_true_eq_false,
         convert congr_arg ((∈) R) imposs.symm,
         {
@@ -2052,7 +2033,6 @@ begin
             exact sum.no_confusion (symbol.nonterminal.inj impos),
           },
         },
-        -- kinda copypaste (XXI) ends
       },
       rcases the_left with ⟨u₀, u_eq, rule_side⟩,
       rw u_eq at *,
@@ -2323,34 +2303,7 @@ begin
       swap, {
         exfalso,
         rcases left_half with ⟨c', imposs, -⟩,
-        apply false_of_true_eq_false,
-        convert congr_arg ((∈) (symbol.nonterminal (sum.inl r₀.input_N))) imposs.symm,
-        {
-          rw [eq_iff_iff, true_iff],
-          apply list.mem_append_left,
-          apply list.mem_append_right,
-          apply list.mem_singleton_self,
-        },
-        {
-          rw [eq_iff_iff, false_iff],
-          rw list.mem_append,
-          push_neg,
-          split,
-          swap, {
-            rw list.mem_singleton,
-            intro impos,
-            exact sum.no_confusion (symbol.nonterminal.inj impos),
-          },
-          rw list.mem_append,
-          push_neg,
-          split;
-          {
-            rw list.mem_map,
-            push_neg,
-            intros,
-            exact not_false,
-          },
-        },
+        exact case_3_false_of_wbr_eq_urz imposs,
       },
       rcases left_half with ⟨a', lhl, lhr⟩,
       have lhl' := congr_arg list.reverse lhl,
@@ -4276,4 +4229,4 @@ begin
   },
 end
 
--- There are circa 565 lines of (nearly) copypasted code in this file.
+-- There are circa 477 lines of (nearly) copypasted code in this file.
