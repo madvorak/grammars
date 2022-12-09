@@ -843,7 +843,6 @@ begin
     {
       exact valid,
     },
-    -- copypaste (I) begins
     have u_nil : u = [],
     {
       clear_except bef,
@@ -879,7 +878,6 @@ begin
     },
     rw aft,
     rw [u_nil, v_rest],
-    -- copypaste (I) ends
     refl,
   },
   iterate 2 {
@@ -902,7 +900,6 @@ begin
     rwa ←list.mem_append,
   },
   clear rin,
-  -- nearly copypaste (II) begins
   cases rin',
   {
     exfalso,
@@ -918,7 +915,6 @@ begin
     rw ←form,
     refl,
   },
-  -- nearly copypaste (II) ends
   left,
   rw list.mem_map at rin',
   rcases rin' with ⟨r₀, orig_in, wrap_orig⟩,
@@ -1106,7 +1102,6 @@ begin
     cases imposs;
     exact sum.no_confusion (symbol.nonterminal.inj imposs),
   },
-  -- nearly copypaste (X) begins
   have unn : u ≠ [],
   {
     by_contradiction u_nil,
@@ -1133,14 +1128,12 @@ begin
       },
     },
   },
-  -- nearly copypaste (X) ends
   have hypt := congr_arg list.tail hyp,
   rw list.tail at hypt,
   repeat {
     rw list.append_assoc at hypt,
   },
   rw list.tail_append_of_ne_nil _ _ unn at hypt,
-  -- nearly copypaste (X) begins
   have utnn : u.tail ≠ [],
   {
     by_contradiction ut_nil,
@@ -1167,7 +1160,6 @@ begin
       },
     },
   },
-  -- nearly copypaste (X) ends
   have hyptt := congr_arg list.tail hypt,
   rw list.tail at hyptt,
   rw list.tail_append_of_ne_nil _ _ utnn at hyptt,
@@ -1192,7 +1184,6 @@ begin
     },
     rw list.tail at u_eq,
     rw list.tail at hypt,
-    -- nearly copypaste (XI) begins
     cases l with d' l',
     {
       exfalso,
@@ -1206,7 +1197,6 @@ begin
       exact list.head_eq_of_cons_eq hypt.symm,
     },
     rw list.tail at u_eq,
-    -- nearly copypaste (XI) ends
     rw [headR, tailHead, u_eq, list.cons_append, list.cons_append],
   },
   split,
@@ -1240,7 +1230,6 @@ private lemma star_case_2 {g : grammar T} {α α' : list (symbol T (star_grammar
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R])  ∨
   (∃ ω : list (ns T g.nt), α' = ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α'  :=
 begin
-  -- nearly copypaste (XIII) begins
   rcases hyp with ⟨x, valid, cat⟩,
   have no_Z_in_alpha : Z ∉ α,
   {
@@ -1267,9 +1256,7 @@ begin
   rw cat at *,
   clear cat,
   rcases orig with ⟨r, rin, u, v, bef, aft⟩,
-  -- nearly copypaste (XIII) ends
 
-  -- copypaste (II) begins
   iterate 2 {
     cases rin,
     {
@@ -1284,7 +1271,6 @@ begin
       refl,
     },
   },
-  -- copypaste (II) ends
   cases rin,
   {
     cases x with x₀ L,
@@ -1509,9 +1495,7 @@ begin
   rw ←wrap_orig at *,
   clear wrap_orig,
   dsimp only at bef,
-  rcases case_2_match_rule
-    -- copypaste (XII) begins
-    bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  rcases case_2_match_rule  bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
   clear bef,
   rw [u_eq, v_eq] at aft,
   use (list.take m x ++ [u₁ ++ r₀.output_string ++ v₁] ++ list.drop m.succ x),
@@ -1572,7 +1556,6 @@ begin
   apply congr_arg2,
   {
     rw ←list.map_take,
-    -- copypaste (XII) ends
     refl,
   },
   simp [list.map, list.join, list.singleton_append, list.map_append, list.append_assoc, list.map_map, list.map_drop],
@@ -1800,7 +1783,6 @@ begin
   },
   {
     change _ = _ ++ _ at brtt,
-    -- nearly copypaste (XVI) begins
     have imposs := congr_arg (λ a, H ∈ a) brtt,
     dsimp only at imposs,
     apply false_of_true_eq_false,
@@ -1824,7 +1806,6 @@ begin
         apply symbol.no_confusion,
       },
     },
-    -- nearly copypaste (XVI) ends
   },
 end
 
@@ -2226,11 +2207,9 @@ begin
         ) ≤
         v''.length,
       {
-        -- copypaste (XX) begins
         classical,
         have first_H := congr_arg (list.index_of H) right_half,
         rw [very_middle, ←list.map_append_append, list.index_of_append_of_notin map_wrap_never_contains_H] at first_H,
-        -- copypaste (XX) ends
         have H_not_in_v'' : H ∉ v'',
         {
           rw [without_final_H, ←list.append_assoc] at left_half,
@@ -2591,7 +2570,6 @@ begin
   clear cat,
   rcases orig with ⟨r, rin, u, v, bef, aft⟩,
 
-  -- copypaste (II) begins
   iterate 2 {
     cases rin,
     {
@@ -2606,7 +2584,6 @@ begin
       refl,
     },
   },
-  -- copypaste (II) ends
   cases rin,
   {
     rw rin at bef aft,
@@ -2714,12 +2691,10 @@ begin
         },
       },
       {
-        -- copypaste (XVII) begins
         rw aft,
         have bef_minus_H := list.append_right_cancel bef,
         have bef_minus_RH := list.append_right_cancel bef_minus_H,
         rw ←bef_minus_RH,
-        -- copypaste (XVII) ends
         rw list.map_append,
       },
     },
@@ -2861,7 +2836,6 @@ begin
   clear wrap_orig,
   cases case_3_match_rule bef,
   {
-    -- kinda copypaste (XII) begins
     rcases h with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
     clear bef,
     dsimp only at aft,
@@ -2914,7 +2888,6 @@ begin
         exact list.nth_mem xm_eq,
       },
     },
-    -- kinda copypaste (XII) ends
     {
       rw aft,
       trim,
@@ -3225,7 +3198,6 @@ begin
     rcases rin with ⟨t, -, eq_r⟩,
     rw ←eq_r at bef,
     clear eq_r,
-    -- nearly copypaste (XIV) begins
     dsimp only at bef,
     rw list.append_nil at bef,
     have rev := congr_arg list.reverse bef,
@@ -3277,7 +3249,6 @@ begin
         exact map_wrap_never_contains_R hyp_R_in,
       },
     },
-    -- nearly copypaste (XIV) ends
   },
 end
 
@@ -3387,7 +3358,6 @@ begin
         },
       },
       {
-        -- copypaste (IX) begins
         rw aft,
         intro contra,
         rw list.mem_append at contra,
@@ -3428,7 +3398,6 @@ begin
           rw symbol.nonterminal.inj_eq at imposs,
           exact sum.no_confusion imposs,
         },
-        -- copypaste (IX) ends
       },
     },
     use u ++ r.output_string ++ v.take (v.length - 1),
@@ -3513,7 +3482,6 @@ begin
     rw list.mem_map at rin,
     rcases rin with ⟨t, -, eq_r⟩,
     rw ←eq_r at bef,
-    -- copypaste (XV) begins
     dsimp only at bef,
     rw list.append_nil at bef,
     rw bef at no_R,
@@ -3522,7 +3490,6 @@ begin
     apply list.mem_append_left,
     apply list.mem_append_right,
     apply list.mem_singleton_self,
-    -- copypaste (XV) ends
   },
 end
 
@@ -3672,13 +3639,11 @@ begin
           },
           {
             cases y,
-            -- copypaste (VII) begins
             {
               simp only [sum.get_left] at hyp,
               exfalso,
               exact hyp,
             },
-            -- copypaste (VII) ends
             {
               right,
               refl,
@@ -4054,7 +4019,6 @@ begin
       },
       exact symbol.no_confusion terminal_eq_Z,
     },
-    -- copypaste (IV) begins
     cases result,
     {
       exfalso,
@@ -4070,7 +4034,6 @@ begin
       },
       exact symbol.no_confusion terminal_eq_R,
     },
-    -- copypaste (IV) ends
     cases result,
     {
       exfalso,
@@ -4130,7 +4093,6 @@ begin
     {
       exfalso,
       rcases result with ⟨⟨ω, contr⟩, -⟩,
-      -- copypaste (V) begins
       have last_symbols := congr_fun (congr_arg list.nth (congr_arg list.reverse contr)) 0,
       rw [
         ←list.map_reverse,
@@ -4150,7 +4112,6 @@ begin
         have terminal_eq_H := option.some.inj last_symbols,
         exact symbol.no_confusion terminal_eq_H,
       },
-      -- copypaste (V) ends
     },
   },
   {
@@ -4228,5 +4189,3 @@ begin
     exact terminated v vin t tin,
   },
 end
-
--- There are circa 477 lines of (nearly) copypasted code in this file.
