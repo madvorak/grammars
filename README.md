@@ -14,15 +14,19 @@ Below you find what has been completed so far.
 
 [Closure under reversal](https://github.com/madvorak/grammars/blob/main/src/context_free/closure_properties/unary/reverse_CF.lean)
 
-[Non-closure under intersection](https://github.com/madvorak/grammars/blob/main/src/context_free/closure_properties/binary/CF_intersection_CF.lean)
+[Non-closure under intersection](https://github.com/madvorak/grammars/blob/main/src/context_free/closure_properties/binary/CF_intersection_CF.lean) (*)
 
-[Non-closure under complement](https://github.com/madvorak/grammars/blob/main/src/context_free/closure_properties/unary/complement_CF.lean)
+[Non-closure under complement](https://github.com/madvorak/grammars/blob/main/src/context_free/closure_properties/unary/complement_CF.lean) (*)
 
-Missing proof: [Context-free pumping lemma](https://github.com/madvorak/grammars/blob/main/src/context_free/cfgPumping.lean)
+* missing proof: [Context-free pumping lemma](https://github.com/madvorak/grammars/blob/main/src/context_free/cfgPumping.lean)
 
-## Recursively-enumerable grammars
+## Context-sensitive grammars
 
-(a.k.a. general grammars, a.k.a. unrestricted grammars, a.k.a. type-0 grammars)
+[Example](https://github.com/madvorak/grammars/blob/main/test/csg_demo.lean)
+
+## Unrestricted grammars
+
+(a.k.a. general grammars, a.k.a. recursively-enumerable grammars, a.k.a. type-0 grammars, a.k.a. grammars)
 
 [Definition](https://github.com/madvorak/grammars/blob/main/src/unrestricted/grammar.lean)
 
