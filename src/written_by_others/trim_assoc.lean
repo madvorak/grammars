@@ -1,6 +1,6 @@
-import tactic
+-- Copyright (c) 2022 Damiano Testa. All rights reserved.
 
--- Copyright (c) 2022 Damiano Testa.
+import tactic
 
 private def in_match {α : Type*} [decidable_eq α] : list α → list α → list α
 | [] _ := []

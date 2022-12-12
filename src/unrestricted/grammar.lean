@@ -1,8 +1,7 @@
 import logic.relation
 import computability.language
 import list_utils
-import trim_assoc
-import print_sorry
+import written_by_others.trim_assoc
 
 
 /-- Fundamental datatype; basically `τ ⊕ ν` (something like "Either tau knee")

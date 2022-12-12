@@ -1,5 +1,6 @@
 import context_free.cfg
 import unrestricted.closure_properties.binary.RE_concatenation_RE
+import written_by_others.print_sorries
 
 
 variables {T : Type}
@@ -209,8 +210,8 @@ end
 end bonus_CS
 
 
-#check          bonus_CF_of_CF_c_CF
-#print_sorry_in bonus_CF_of_CF_c_CF
+#check            bonus_CF_of_CF_c_CF
+#print_sorries_in bonus_CF_of_CF_c_CF
 
-#check          bonus_CS_of_CS_c_CS
-#print_sorry_in bonus_CS_of_CS_c_CS
+#check            bonus_CS_of_CS_c_CS
+#print_sorries_in bonus_CS_of_CS_c_CS

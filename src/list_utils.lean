@@ -1,5 +1,5 @@
 import tactic
-import take_join
+import written_by_others.list_take_join
 
 meta def in_list_explicit : tactic unit := `[
   tactic.repeat `[

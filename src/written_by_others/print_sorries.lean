@@ -1,7 +1,7 @@
+-- Copyright (c) 2022 Floris van Doorn. All rights reserved.
+
 import tactic.core
 import data.bool.basic
-
--- Copyright (c) 2022 Floris van Doorn.
 
 namespace tactic
 
@@ -36,13 +36,13 @@ meta def find_all_exprs (env : environment) (test : expr → bool) (exclude : na
 end tactic
 open tactic
 
-meta def print_sorry_in (nm : name) (ignore_mathlib := tt) : tactic unit := do
+meta def print_sorries_in (nm : name) (ignore_mathlib := tt) : tactic unit := do
   env ← get_env,
   dir ← get_mathlib_dir,
   data ← find_all_exprs env (λ e, e.is_sorry.is_some)
     (if ignore_mathlib then env.is_prefix_of_file dir else λ _, ff) nm,
   let to_print : list format := data.map $ λ ⟨nm, contains_sorry, desc⟩,
-    let s1 := if contains_sorry then " contains sorry" else "",
+    let s1 := if contains_sorry then " CONTAINS SORRY" else "",
         s2 := if contains_sorry && !desc.empty then " and" else "",
         s3 := string.join $ (desc.to_list.map to_string).intersperse ", ",
         s4 := if !desc.empty then format!" depends on {s3}" else "" in
@@ -52,7 +52,7 @@ meta def print_sorry_in (nm : name) (ignore_mathlib := tt) : tactic unit := do
 setup_tactic_parser
 
 @[user_command]
-meta def print_sorry_in_cmd (_ : parse $ tk "#print_sorry_in") : parser unit := do
+meta def print_sorries_in_cmd (_ : parse $ tk "#print_sorries_in") : parser unit := do
   nm ← ident,
   nm ← resolve_name nm,
-  print_sorry_in nm.const_name
+  print_sorries_in nm.const_name

@@ -1,7 +1,6 @@
-import tactic
+-- Copyright (c) 2022 Patrick Johnson. All rights reserved.
 
--- copied from `https://github.com/user7230724/lean-projects/blob/master/src/list_take_join/main.lean`
--- TODO cite the author by their name
+import tactic
 
 namespace list
 
