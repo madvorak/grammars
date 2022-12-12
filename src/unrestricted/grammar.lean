@@ -33,10 +33,10 @@ variables {T : Type}
 /-- One step of grammatical transformation. -/
 def grammar_transforms (g : grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :=
 ∃ r : grule T g.nt,
-  r ∈ g.rules ∧
+  r ∈ g.rules  ∧
   ∃ u v : list (symbol T g.nt), and
-    (w₁ = u ++ r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R ++ v)
-    (w₂ = u ++ r.output_string ++ v)
+    (w₁  =  u ++  r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R  ++ v)
+    (w₂  =  u ++  r.output_string  ++ v)
 
 /-- Any number of steps of grammatical transformation; reflexive+transitive closure of `grammar_transforms`. -/
 def grammar_derives (g : grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
@@ -90,8 +90,7 @@ lemma grammar_tran_or_id_of_deri {u w : list (symbol T g.nt)} (ass : grammar_der
 relation.refl_trans_gen.cases_head ass
 
 
-lemma grammar_deri_with_prefix
-    {w₁ w₂ : list (symbol T g.nt)}
+lemma grammar_deri_with_prefix {w₁ w₂ : list (symbol T g.nt)}
     (pᵣ : list (symbol T g.nt))
     (ass : grammar_derives g w₁ w₂) :
   grammar_derives g (pᵣ ++ w₁) (pᵣ ++ w₂) :=
@@ -118,8 +117,7 @@ begin
   simp only [list.append_assoc],
 end
 
-lemma grammar_deri_with_postfix
-    {w₁ w₂ : list (symbol T g.nt)}
+lemma grammar_deri_with_postfix {w₁ w₂ : list (symbol T g.nt)}
     (pₒ : list (symbol T g.nt))
     (ass : grammar_derives g w₁ w₂) :
   grammar_derives g (w₁ ++ pₒ) (w₂ ++ pₒ) :=

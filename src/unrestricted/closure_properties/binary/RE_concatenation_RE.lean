@@ -71,8 +71,8 @@ lemma list_filter_map_eq_of_map_eq_map_some {f : α → option β} :
     list.map f x = list.map option.some y →
       list.filter_map f x = y
 | []       []       := λ _, rfl
-| []       (a₂::l₂) := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp.symm, }
 | (a₁::l₁) []       := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp, }
+| []       (a₂::l₂) := by { intro hyp, exfalso, apply list.cons_ne_nil, exact hyp.symm, }
 | (a₁::l₁) (a₂::l₂) :=
 begin
   intro ass,
