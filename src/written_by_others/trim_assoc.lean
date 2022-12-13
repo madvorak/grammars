@@ -1,4 +1,4 @@
--- Copyright (c) 2022 Damiano Testa. All rights reserved.
+-- Written by Damiano Testa. BSD license applies.
 
 import tactic
 

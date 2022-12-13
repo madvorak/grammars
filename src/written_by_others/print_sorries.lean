@@ -1,4 +1,4 @@
--- Copyright (c) 2022 Floris van Doorn. All rights reserved.
+-- Written by Floris van Doorn. BSD license applies.
 
 import tactic.core
 import data.bool.basic
