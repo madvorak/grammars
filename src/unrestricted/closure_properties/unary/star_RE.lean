@@ -79,6 +79,443 @@ grammar.mk (nn g.nt) (sum.inr 0) (
 end construction
 
 
+section easy_direction
+
+private lemma short_induction {g : grammar T} {w : list (list T)}
+    (ass : ∀ wᵢ ∈ w.reverse, grammar_generates g wᵢ) :
+  grammar_derives (star_grammar g) [Z] (Z ::
+      list.join (list.map (++ [H]) (list.map (list.map symbol.terminal) w.reverse))
+    )  ∧
+  ∀ p ∈ w, ∀ t ∈ p, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)  :=
+begin
+  induction w with v x ih,
+  {
+    split,
+    {
+      apply grammar_deri_self,
+    },
+    {
+      intros p pin,
+      exfalso,
+      exact list.not_mem_nil p pin,
+    },
+  },
+  have vx_reverse : (v :: x).reverse = x.reverse ++ [v],
+  {
+    apply list.reverse_cons,
+  },
+  rw vx_reverse at *,
+  specialize ih (by {
+    intros wᵢ in_reversed,
+    apply ass,
+    apply list.mem_append_left,
+    exact in_reversed,
+  }),
+  specialize ass v (by {
+    apply list.mem_append_right,
+    apply list.mem_singleton_self,
+  }),
+  unfold grammar_generates at ass,
+  split,
+  {
+    apply grammar_deri_of_tran_deri,
+    {
+      use (star_grammar g).rules.nth_le 0 (by dec_trivial),
+      split,
+      {
+        apply list.nth_le_mem,
+      },
+      use [[], []],
+      split;
+      refl,
+    },
+    rw [list.nil_append, list.append_nil, list.map_append, list.map_append],
+    change grammar_derives (star_grammar g) [Z, S, H] _,
+    have ih_plus := grammar_deri_with_postfix ([S, H] : list (symbol T (star_grammar g).nt)) ih.left,
+    apply grammar_deri_of_deri_deri ih_plus,
+    have ass_lifted : grammar_derives (star_grammar g) [S] (list.map symbol.terminal v),
+    {
+      clear_except ass,
+      have wrap_eq_lift : @wrap_sym T g.nt = lift_symbol_ sum.inl,
+      {
+        ext,
+        cases x;
+        refl,
+      },
+      let lifted_g : lifted_grammar_ T :=
+        lifted_grammar_.mk g (star_grammar g) sum.inl sum.get_left (by {
+          intros x y hyp,
+          exact sum.inl.inj hyp,
+        }) (by {
+          intros x y hyp,
+          cases x,
+          {
+            cases y,
+            {
+              simp only [sum.get_left] at hyp,
+              left,
+              congr,
+              exact hyp,
+            },
+            {
+              simp only [sum.get_left] at hyp,
+              exfalso,
+              exact hyp,
+            },
+          },
+          {
+            cases y,
+            {
+              simp only [sum.get_left] at hyp,
+              exfalso,
+              exact hyp,
+            },
+            {
+              right,
+              refl,
+            },
+          },
+        }) (by {
+          intro x,
+          refl,
+        }) (by {
+          intros r rin,
+          apply list.mem_cons_of_mem,
+          apply list.mem_cons_of_mem,
+          apply list.mem_cons_of_mem,
+          apply list.mem_cons_of_mem,
+          apply list.mem_append_left,
+          rw list.mem_map,
+          use r,
+          split,
+          {
+            exact rin,
+          },
+          unfold wrap_gr,
+          unfold lift_rule_,
+          unfold lift_string_,
+          rw wrap_eq_lift,
+        }) (by {
+          rintros r ⟨rin, n, nrn⟩,
+          iterate 4 {
+            cases rin,
+            {
+              exfalso,
+              rw rin at nrn,
+              exact sum.no_confusion nrn,
+            },
+          },
+          change r ∈ list.map wrap_gr g.rules ++ rules_that_scan_terminals g at rin,
+          rw list.mem_append at rin,
+          cases rin,
+          {
+            clear_except rin wrap_eq_lift,
+            rw list.mem_map at rin,
+            rcases rin with ⟨r₀, rin₀, r_of_r₀⟩,
+            use r₀,
+            split,
+            {
+              exact rin₀,
+            },
+            convert r_of_r₀,
+            unfold lift_rule_,
+            unfold wrap_gr,
+            unfold lift_string_,
+            rw wrap_eq_lift,
+          },
+          {
+            exfalso,
+            unfold rules_that_scan_terminals at rin,
+            rw list.mem_map at rin,
+            rcases rin with ⟨t, tin, r_of_tg⟩,
+            rw ←r_of_tg at nrn,
+            exact sum.no_confusion nrn,
+          },
+        }),
+      convert_to
+        grammar_derives lifted_g.g
+          [symbol.nonterminal (sum.inl g.initial)]
+          (lift_string_ lifted_g.lift_nt (list.map symbol.terminal v)),
+      {
+        unfold lift_string_,
+        rw list.map_map,
+        congr,
+      },
+      exact lift_deri_ lifted_g ass,
+    },
+    have ass_postf := grammar_deri_with_postfix ([H] : list (symbol T (star_grammar g).nt)) ass_lifted,
+    rw list.join_append,
+    rw ←list.cons_append,
+    apply grammar_deri_with_prefix,
+    rw list.map_map,
+    rw list.map_singleton,
+    rw list.join_singleton,
+    change grammar_derives (star_grammar g) [S, H] (list.map symbol.terminal v ++ [H]),
+    convert ass_postf,
+  },
+  {
+    intros p pin t tin,
+    cases pin,
+    {
+      rw pin at tin,
+      clear pin,
+      have stin : symbol.terminal t ∈ list.map symbol.terminal v,
+      {
+        rw list.mem_map,
+        use t,
+        split,
+        {
+          exact tin,
+        },
+        {
+          refl,
+        },
+      },
+      cases grammar_generates_only_legit_terminals ass stin with rule_exists imposs,
+      {
+        rcases rule_exists with ⟨r, rin, stirn⟩,
+        rw list.mem_join,
+        use r.output_string,
+        split,
+        {
+          rw list.mem_map,
+          use r,
+          split,
+          {
+            exact rin,
+          },
+          {
+            refl,
+          },
+        },
+        {
+          exact stirn,
+        },
+      },
+      {
+        exfalso,
+        exact symbol.no_confusion imposs,
+      }
+    },
+    {
+      exact ih.right p pin t tin,
+    }
+  },
+end
+
+private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length)
+    (terminals : ∀ v ∈ w, ∀ t ∈ v, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)) :
+  grammar_derives (star_grammar g)
+    ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
+      (list.map (λ v, [H] ++ list.map symbol.terminal v) (list.drop (w.length - n) w)).join ++ [H])
+    (list.map symbol.terminal w.join ++ [R, H])  :=
+begin
+  induction n with k ih,
+  {
+    rw nat.sub_zero,
+    rw list.drop_length,
+    rw list.map_nil,
+    rw list.join,
+    rw list.append_nil,
+    rw list.take_length,
+    rw list.map_join,
+    rw list.append_assoc,
+    apply grammar_deri_self,
+  },
+  specialize ih (nat.le_of_succ_le n_lt_wl),
+  apply grammar_deri_of_deri_deri _ ih,
+  clear ih,
+
+  have wlk_succ : w.length - k = (w.length - k.succ).succ,
+  {
+    omega,
+  },
+  have lt_wl : w.length - k.succ < w.length,
+  {
+    omega,
+  },
+  have split_ldw :
+    list.drop (w.length - k.succ) w =
+    (w.nth (w.length - k.succ)).to_list ++ list.drop (w.length - k) w,
+  {
+    rw wlk_succ,
+    generalize substit : w.length - k.succ = q,
+    rw substit at lt_wl,
+    rw ←list.take_append_drop q w,
+    rw list.nth_append_right,
+    swap, {
+      apply list.length_take_le,
+    },
+    have eq_q : (list.take q w).length = q,
+    {
+      rw list.length_take,
+      exact min_eq_left_of_lt lt_wl,
+    },
+    rw eq_q,
+    rw nat.sub_self,
+    have drop_q_succ :
+      list.drop q.succ (list.take q w ++ list.drop q w) = list.drop 1 (list.drop q w),
+    {
+      rw list.drop_drop,
+      rw list.take_append_drop,
+      rw add_comm,
+    },
+    rw [drop_q_succ, list.drop_left' eq_q, list.drop_drop],
+    rw ←list.take_append_drop (1 + q) w,
+    have q_lt : q < (list.take (1 + q) w).length,
+    {
+      rw list.length_take,
+      exact lt_min (lt_one_add q) lt_wl,
+    },
+    rw list.drop_append_of_le_length (le_of_lt q_lt),
+    apply congr_arg2,
+    {
+      rw list.nth_append,
+      swap, {
+        rw list.length_drop,
+        exact nat.sub_pos_of_lt q_lt,
+      },
+      rw list.nth_drop,
+      rw add_zero,
+      rw list.nth_take (lt_one_add q),
+      rw add_comm,
+      rw list_drop_take_succ lt_wl,
+      rw list.nth_le_nth lt_wl,
+      refl,
+    },
+    {
+      rw list.take_append_drop,
+    },
+  },
+  apply grammar_deri_with_postfix,
+  rw [split_ldw, list.map_append, list.join_append, ←list.append_assoc],
+  apply grammar_deri_with_postfix,
+  rw [wlk_succ, list.take_succ, list.map_append, list.join_append, list.append_assoc, list.append_assoc],
+  apply grammar_deri_with_prefix,
+  clear_except terminals lt_wl,
+  specialize terminals (w.nth_le (w.length - k.succ) lt_wl) (list.nth_le_mem w (w.length - k.succ) lt_wl),
+  rw list.nth_le_nth lt_wl,
+  unfold option.to_list,
+  rw [list.map_singleton, list.join_singleton, ←list.map_join, list.join_singleton],
+  apply grammar_deri_of_tran_deri,
+  {
+    use (star_grammar g).rules.nth_le 2 (by dec_trivial),
+    split_ile,
+    use [[], list.map symbol.terminal (w.nth_le (w.length - k.succ) lt_wl)],
+    split;
+    refl,
+  },
+  rw list.nil_append,
+
+  have scan_segment : ∀ m : ℕ, m ≤ (w.nth_le (w.length - k.succ) lt_wl).length →
+    grammar_derives (star_grammar g)
+      ([R] ++ list.map symbol.terminal (w.nth_le (w.length - k.succ) lt_wl))
+      (list.map symbol.terminal (list.take m (w.nth_le (w.length - k.succ) lt_wl)) ++
+        ([R] ++ list.map symbol.terminal (list.drop m (w.nth_le (w.length - k.succ) lt_wl)))),
+  {
+    intros m small,
+    induction m with n ih,
+    {
+      rw ←list.append_assoc,
+      convert grammar_deri_self,
+    },
+    apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le small)),
+    rw nat.succ_le_iff at small,
+    use ⟨[], (sum.inr 2), [symbol.terminal (list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small)],
+      [symbol.terminal (list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small), R]⟩,
+    split,
+    {
+      iterate 4 {
+        apply list.mem_cons_of_mem,
+      },
+      apply list.mem_append_right,
+      unfold rules_that_scan_terminals,
+      rw list.mem_map,
+      use list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small,
+      split,
+      {
+        unfold all_used_terminals,
+        rw list.mem_filter_map,
+        use (w.nth_le (w.length - k.succ) lt_wl).nth_le n small,
+        split,
+        {
+          apply terminals,
+          apply list.nth_le_mem,
+        },
+        {
+          refl,
+        },
+      },
+      {
+        refl,
+      },
+    },
+    use list.map symbol.terminal (list.take n (w.nth_le (w.length - k.succ) lt_wl)),
+    use list.map symbol.terminal (list.drop n.succ (w.nth_le (w.length - k.succ) lt_wl)),
+    dsimp only,
+    split,
+    {
+      trim,
+      rw list.nil_append,
+      rw list.append_assoc,
+      apply congr_arg2,
+      {
+        refl,
+      },
+      rw ←list.take_append_drop 1 (list.map symbol.terminal (list.drop n (w.nth_le (w.length - k.succ) lt_wl))),
+      apply congr_arg2,
+      {
+        rw ←list.map_take,
+        rw list_take_one_drop,
+        rw list.map_singleton,
+      },
+      {
+        rw ←list.map_drop,
+        rw list.drop_drop,
+        rw add_comm,
+      },
+    },
+    {
+      rw list.take_succ,
+      rw list.map_append,
+      trim,
+      rw list.nth_le_nth small,
+      refl,
+    },
+  },
+  convert scan_segment (w.nth_le (w.length - k.succ) lt_wl).length (by refl),
+  {
+    rw list.take_length,
+  },
+  {
+    rw list.drop_length,
+    rw list.map_nil,
+    refl,
+  },
+end
+
+private lemma terminal_scan_aux {g : grammar T} {w : list (list T)}
+    (terminals : ∀ v ∈ w, ∀ t ∈ v, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)) :
+  grammar_derives (star_grammar g)
+    ([R] ++ (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H])
+    (list.map symbol.terminal w.join ++ [R, H])  :=
+begin
+  rw list.map_map,
+  convert inductive_terminal_scan w.length (by refl) terminals,
+  {
+    rw nat.sub_self,
+    rw list.take_zero,
+    refl,
+  },
+  {
+    rw nat.sub_self,
+    refl,
+  },
+end
+
+end easy_direction
+
+
 section hard_direction
 
 lemma zero_of_not_ge_one {n : ℕ} (not_pos : ¬ (n ≥ 1)) :  n = 0  :=
@@ -93,6 +530,12 @@ begin
   have llz := zero_of_not_ge_one contra,
   rw list.length_eq_zero at llz,
   exact lnn llz,
+end
+
+private lemma nat_eq_tech {a b c : ℕ} (b_lt_c : b < c) (ass : c = a.succ + c - b.succ) :
+  a = b  :=
+begin
+  omega,
 end
 
 private lemma wrap_never_outputs_nt_inr {N : Type} {a : symbol T N} (i : fin 3) :
@@ -280,12 +723,6 @@ private lemma zero_Rs_in_the_long_part {g : grammar T} {x : list (list (symbol T
   list.count_in (list.map (++ [H]) (list.map (list.map wrap_sym) x)).join R = 0  :=
 begin
   exact list.count_in_zero_of_notin R_not_in_join_mpHmmw,
-end
-
-private lemma nat_eq_tech {a b c : ℕ} (b_lt_c : b < c) (ass : c = a.succ + c - b.succ) :
-  a = b  :=
-begin
-  omega,
 end
 
 private lemma cases_1_and_2_and_3a_match_aux {g : grammar T} {r₀ : grule T g.nt}
@@ -1810,22 +2247,19 @@ begin
   },
   {
     rw [eq_iff_iff, false_iff],
-    rw list.mem_append,
-    push_neg,
-    split,
+    intro hyp_N_in,
+    rw list.mem_append at hyp_N_in,
+    cases hyp_N_in,
     swap, {
-      rw list.mem_singleton,
-      intro impos,
-      exact sum.no_confusion (symbol.nonterminal.inj impos),
+      rw list.mem_singleton at hyp_N_in,
+      exact sum.no_confusion (symbol.nonterminal.inj hyp_N_in),
     },
-    rw list.mem_append,
-    push_neg,
-    split;
+    rw list.mem_append at hyp_N_in,
+    cases hyp_N_in;
     {
-      rw list.mem_map,
-      push_neg,
-      intros,
-      exact not_false,
+      rw list.mem_map at hyp_N_in,
+      rcases hyp_N_in with ⟨t, -, impos⟩,
+      exact symbol.no_confusion impos,
     },
   },
 end
@@ -3467,16 +3901,9 @@ begin
   },
   cases ih,
   {
-    have output_1 := star_case_1 orig ih,
-    cases output_1,
-    {
-      left,
-      exact output_1,
-    },
-    {
-      right, left,
-      exact output_1,
-    },
+    rw ←or_assoc,
+    left,
+    exact star_case_1 orig ih,
   },
   cases ih,
   {
@@ -3507,443 +3934,6 @@ end
 end hard_direction
 
 
-section easy_direction
-
-private lemma short_induction {g : grammar T} {w : list (list T)}
-    (ass : ∀ wᵢ ∈ w.reverse, grammar_generates g wᵢ) :
-  grammar_derives (star_grammar g) [Z] (Z ::
-      list.join (list.map (++ [H]) (list.map (list.map symbol.terminal) w.reverse))
-    )  ∧
-  ∀ p ∈ w, ∀ t ∈ p, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)  :=
-begin
-  induction w with v x ih,
-  {
-    split,
-    {
-      apply grammar_deri_self,
-    },
-    {
-      intros p pin,
-      exfalso,
-      exact list.not_mem_nil p pin,
-    },
-  },
-  have vx_reverse : (v :: x).reverse = x.reverse ++ [v],
-  {
-    apply list.reverse_cons,
-  },
-  rw vx_reverse at *,
-  specialize ih (by {
-    intros wᵢ in_reversed,
-    apply ass,
-    apply list.mem_append_left,
-    exact in_reversed,
-  }),
-  specialize ass v (by {
-    apply list.mem_append_right,
-    apply list.mem_singleton_self,
-  }),
-  unfold grammar_generates at ass,
-  split,
-  {
-    apply grammar_deri_of_tran_deri,
-    {
-      use (star_grammar g).rules.nth_le 0 (by dec_trivial),
-      split,
-      {
-        apply list.nth_le_mem,
-      },
-      use [[], []],
-      split;
-      refl,
-    },
-    rw [list.nil_append, list.append_nil, list.map_append, list.map_append],
-    change grammar_derives (star_grammar g) [Z, S, H] _,
-    have ih_plus := grammar_deri_with_postfix ([S, H] : list (symbol T (star_grammar g).nt)) ih.left,
-    apply grammar_deri_of_deri_deri ih_plus,
-    have ass_lifted : grammar_derives (star_grammar g) [S] (list.map symbol.terminal v),
-    {
-      clear_except ass,
-      have wrap_eq_lift : @wrap_sym T g.nt = lift_symbol_ sum.inl,
-      {
-        ext,
-        cases x;
-        refl,
-      },
-      let lifted_g : lifted_grammar_ T :=
-        lifted_grammar_.mk g (star_grammar g) sum.inl sum.get_left (by {
-          intros x y hyp,
-          exact sum.inl.inj hyp,
-        }) (by {
-          intros x y hyp,
-          cases x,
-          {
-            cases y,
-            {
-              simp only [sum.get_left] at hyp,
-              left,
-              congr,
-              exact hyp,
-            },
-            {
-              simp only [sum.get_left] at hyp,
-              exfalso,
-              exact hyp,
-            },
-          },
-          {
-            cases y,
-            {
-              simp only [sum.get_left] at hyp,
-              exfalso,
-              exact hyp,
-            },
-            {
-              right,
-              refl,
-            },
-          },
-        }) (by {
-          intro x,
-          refl,
-        }) (by {
-          intros r rin,
-          apply list.mem_cons_of_mem,
-          apply list.mem_cons_of_mem,
-          apply list.mem_cons_of_mem,
-          apply list.mem_cons_of_mem,
-          apply list.mem_append_left,
-          rw list.mem_map,
-          use r,
-          split,
-          {
-            exact rin,
-          },
-          unfold wrap_gr,
-          unfold lift_rule_,
-          unfold lift_string_,
-          rw wrap_eq_lift,
-        }) (by {
-          rintros r ⟨rin, n, nrn⟩,
-          iterate 4 {
-            cases rin,
-            {
-              exfalso,
-              rw rin at nrn,
-              exact sum.no_confusion nrn,
-            },
-          },
-          change r ∈ list.map wrap_gr g.rules ++ rules_that_scan_terminals g at rin,
-          rw list.mem_append at rin,
-          cases rin,
-          {
-            clear_except rin wrap_eq_lift,
-            rw list.mem_map at rin,
-            rcases rin with ⟨r₀, rin₀, r_of_r₀⟩,
-            use r₀,
-            split,
-            {
-              exact rin₀,
-            },
-            convert r_of_r₀,
-            unfold lift_rule_,
-            unfold wrap_gr,
-            unfold lift_string_,
-            rw wrap_eq_lift,
-          },
-          {
-            exfalso,
-            unfold rules_that_scan_terminals at rin,
-            rw list.mem_map at rin,
-            rcases rin with ⟨t, tin, r_of_tg⟩,
-            rw ←r_of_tg at nrn,
-            exact sum.no_confusion nrn,
-          },
-        }),
-      convert_to
-        grammar_derives lifted_g.g
-          [symbol.nonterminal (sum.inl g.initial)]
-          (lift_string_ lifted_g.lift_nt (list.map symbol.terminal v)),
-      {
-        unfold lift_string_,
-        rw list.map_map,
-        congr,
-      },
-      exact lift_deri_ lifted_g ass,
-    },
-    have ass_postf := grammar_deri_with_postfix ([H] : list (symbol T (star_grammar g).nt)) ass_lifted,
-    rw list.join_append,
-    rw ←list.cons_append,
-    apply grammar_deri_with_prefix,
-    rw list.map_map,
-    rw list.map_singleton,
-    rw list.join_singleton,
-    change grammar_derives (star_grammar g) [S, H] (list.map symbol.terminal v ++ [H]),
-    convert ass_postf,
-  },
-  {
-    intros p pin t tin,
-    cases pin,
-    {
-      rw pin at tin,
-      clear pin,
-      have stin : symbol.terminal t ∈ list.map symbol.terminal v,
-      {
-        rw list.mem_map,
-        use t,
-        split,
-        {
-          exact tin,
-        },
-        {
-          refl,
-        },
-      },
-      cases grammar_generates_only_legit_terminals ass stin with rule_exists imposs,
-      {
-        rcases rule_exists with ⟨r, rin, stirn⟩,
-        rw list.mem_join,
-        use r.output_string,
-        split,
-        {
-          rw list.mem_map,
-          use r,
-          split,
-          {
-            exact rin,
-          },
-          {
-            refl,
-          },
-        },
-        {
-          exact stirn,
-        },
-      },
-      {
-        exfalso,
-        exact symbol.no_confusion imposs,
-      }
-    },
-    {
-      exact ih.right p pin t tin,
-    }
-  },
-end
-
-private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length)
-    (terminals : ∀ v ∈ w, ∀ t ∈ v, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)) :
-  grammar_derives (star_grammar g)
-    ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
-      (list.map (λ v, [H] ++ list.map symbol.terminal v) (list.drop (w.length - n) w)).join ++ [H])
-    (list.map symbol.terminal w.join ++ [R, H])  :=
-begin
-  induction n with k ih,
-  {
-    rw nat.sub_zero,
-    rw list.drop_length,
-    rw list.map_nil,
-    rw list.join,
-    rw list.append_nil,
-    rw list.take_length,
-    rw list.map_join,
-    rw list.append_assoc,
-    apply grammar_deri_self,
-  },
-  specialize ih (nat.le_of_succ_le n_lt_wl),
-  apply grammar_deri_of_deri_deri _ ih,
-  clear ih,
-
-  have wlk_succ : w.length - k = (w.length - k.succ).succ,
-  {
-    omega,
-  },
-  have lt_wl : w.length - k.succ < w.length,
-  {
-    omega,
-  },
-  have split_ldw :
-    list.drop (w.length - k.succ) w =
-    (w.nth (w.length - k.succ)).to_list ++ list.drop (w.length - k) w,
-  {
-    rw wlk_succ,
-    generalize substit : w.length - k.succ = q,
-    rw substit at lt_wl,
-    rw ←list.take_append_drop q w,
-    rw list.nth_append_right,
-    swap, {
-      apply list.length_take_le,
-    },
-    have eq_q : (list.take q w).length = q,
-    {
-      rw list.length_take,
-      exact min_eq_left_of_lt lt_wl,
-    },
-    rw eq_q,
-    rw nat.sub_self,
-    have drop_q_succ :
-      list.drop q.succ (list.take q w ++ list.drop q w) = list.drop 1 (list.drop q w),
-    {
-      rw list.drop_drop,
-      rw list.take_append_drop,
-      rw add_comm,
-    },
-    rw [drop_q_succ, list.drop_left' eq_q, list.drop_drop],
-    rw ←list.take_append_drop (1 + q) w,
-    have q_lt : q < (list.take (1 + q) w).length,
-    {
-      rw list.length_take,
-      exact lt_min (lt_one_add q) lt_wl,
-    },
-    rw list.drop_append_of_le_length (le_of_lt q_lt),
-    apply congr_arg2,
-    {
-      rw list.nth_append,
-      swap, {
-        rw list.length_drop,
-        exact nat.sub_pos_of_lt q_lt,
-      },
-      rw list.nth_drop,
-      rw add_zero,
-      rw list.nth_take (lt_one_add q),
-      rw add_comm,
-      rw list_drop_take_succ lt_wl,
-      rw list.nth_le_nth lt_wl,
-      refl,
-    },
-    {
-      rw list.take_append_drop,
-    },
-  },
-  apply grammar_deri_with_postfix,
-  rw [split_ldw, list.map_append, list.join_append, ←list.append_assoc],
-  apply grammar_deri_with_postfix,
-  rw [wlk_succ, list.take_succ, list.map_append, list.join_append, list.append_assoc, list.append_assoc],
-  apply grammar_deri_with_prefix,
-  clear_except terminals lt_wl,
-  specialize terminals (w.nth_le (w.length - k.succ) lt_wl) (list.nth_le_mem w (w.length - k.succ) lt_wl),
-  rw list.nth_le_nth lt_wl,
-  unfold option.to_list,
-  rw [list.map_singleton, list.join_singleton, ←list.map_join, list.join_singleton],
-  apply grammar_deri_of_tran_deri,
-  {
-    use (star_grammar g).rules.nth_le 2 (by dec_trivial),
-    split_ile,
-    use [[], list.map symbol.terminal (w.nth_le (w.length - k.succ) lt_wl)],
-    split;
-    refl,
-  },
-  rw list.nil_append,
-
-  have scan_segment : ∀ m : ℕ, m ≤ (w.nth_le (w.length - k.succ) lt_wl).length →
-    grammar_derives (star_grammar g)
-      ([R] ++ list.map symbol.terminal (w.nth_le (w.length - k.succ) lt_wl))
-      (list.map symbol.terminal (list.take m (w.nth_le (w.length - k.succ) lt_wl)) ++
-        ([R] ++ list.map symbol.terminal (list.drop m (w.nth_le (w.length - k.succ) lt_wl)))),
-  {
-    intros m small,
-    induction m with n ih,
-    {
-      rw ←list.append_assoc,
-      convert grammar_deri_self,
-    },
-    apply grammar_deri_of_deri_tran (ih (nat.le_of_succ_le small)),
-    rw nat.succ_le_iff at small,
-    use ⟨[], (sum.inr 2), [symbol.terminal (list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small)],
-      [symbol.terminal (list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small), R]⟩,
-    split,
-    {
-      iterate 4 {
-        apply list.mem_cons_of_mem,
-      },
-      apply list.mem_append_right,
-      unfold rules_that_scan_terminals,
-      rw list.mem_map,
-      use list.nth_le (w.nth_le (w.length - k.succ) lt_wl) n small,
-      split,
-      {
-        unfold all_used_terminals,
-        rw list.mem_filter_map,
-        use (w.nth_le (w.length - k.succ) lt_wl).nth_le n small,
-        split,
-        {
-          apply terminals,
-          apply list.nth_le_mem,
-        },
-        {
-          refl,
-        },
-      },
-      {
-        refl,
-      },
-    },
-    use list.map symbol.terminal (list.take n (w.nth_le (w.length - k.succ) lt_wl)),
-    use list.map symbol.terminal (list.drop n.succ (w.nth_le (w.length - k.succ) lt_wl)),
-    dsimp only,
-    split,
-    {
-      trim,
-      rw list.nil_append,
-      rw list.append_assoc,
-      apply congr_arg2,
-      {
-        refl,
-      },
-      rw ←list.take_append_drop 1 (list.map symbol.terminal (list.drop n (w.nth_le (w.length - k.succ) lt_wl))),
-      apply congr_arg2,
-      {
-        rw ←list.map_take,
-        rw list_take_one_drop,
-        rw list.map_singleton,
-      },
-      {
-        rw ←list.map_drop,
-        rw list.drop_drop,
-        rw add_comm,
-      },
-    },
-    {
-      rw list.take_succ,
-      rw list.map_append,
-      trim,
-      rw list.nth_le_nth small,
-      refl,
-    },
-  },
-  convert scan_segment (w.nth_le (w.length - k.succ) lt_wl).length (by refl),
-  {
-    rw list.take_length,
-  },
-  {
-    rw list.drop_length,
-    rw list.map_nil,
-    refl,
-  },
-end
-
-private lemma terminal_scan_aux {g : grammar T} {w : list (list T)}
-    (terminals : ∀ v ∈ w, ∀ t ∈ v, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)) :
-  grammar_derives (star_grammar g)
-    ([R] ++ (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H])
-    (list.map symbol.terminal w.join ++ [R, H])  :=
-begin
-  rw list.map_map,
-  convert inductive_terminal_scan w.length (by refl) terminals,
-  {
-    rw nat.sub_self,
-    rw list.take_zero,
-    refl,
-  },
-  {
-    rw nat.sub_self,
-    refl,
-  },
-end
-
-end easy_direction
-
-
 /-- The class of recursively-enumerable languages is closed under the Kleene star. -/
 theorem RE_of_star_RE (L : language T) :
   is_RE L  →  is_RE L.star  :=
@@ -3953,6 +3943,7 @@ begin
 
   apply set.eq_of_subset_of_subset,
   {
+    -- prove `L.star ⊇` here
     intros w hyp,
     unfold grammar_language at hyp,
     rw set.mem_set_of_eq at hyp,
@@ -4069,6 +4060,7 @@ begin
     },
   },
   {
+    -- prove `L.star ⊆` here
     intros p ass,
     unfold grammar_language,
     rw language.star at ass,

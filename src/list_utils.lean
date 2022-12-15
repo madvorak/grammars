@@ -1,6 +1,8 @@
 import tactic
 import written_by_others.list_take_join
 
+section tactic_in_list_explicit
+
 meta def in_list_explicit : tactic unit := `[
   tactic.repeat `[
     tactic.try `[apply list.mem_cons_self],
@@ -14,6 +16,8 @@ meta def split_ile : tactic unit := `[
     in_list_explicit,
   }
 ]
+
+end tactic_in_list_explicit
 
 namespace list
 
@@ -106,7 +110,7 @@ begin
   },
 end
 
-private lemma drop_of_cons_drop_succ {m : ℕ} (mlt : m < x.length) :
+private lemma cons_drop_succ {m : ℕ} (mlt : m < x.length) :
   drop m x = x.nth_le m mlt :: drop m.succ x :=
 begin
   induction x with d l ih generalizing m,
@@ -139,7 +143,7 @@ begin
   have auxi : (drop m L).join = (L.nth_le m mlt :: drop m.succ L).join,
   {
     apply congr_arg,
-    apply drop_of_cons_drop_succ,
+    apply cons_drop_succ,
   },
   rw join at auxi,
   rw auxi at right_side,
@@ -165,6 +169,27 @@ variables [decidable_eq α]
 
 section list_index_of
 
+lemma index_of_append_of_in {a : α} (yes_on_left : a ∈ x) :
+  index_of a (x ++ y)  =  index_of a x  :=
+begin
+  induction x with d l ih,
+  {
+    exfalso,
+    exact not_mem_nil a yes_on_left,
+  },
+  rw list.cons_append,
+  by_cases ad : a = d,
+  {
+    rw index_of_cons_eq _ ad,
+    rw index_of_cons_eq _ ad,
+  },
+  rw index_of_cons_ne _ ad,
+  rw index_of_cons_ne _ ad,
+  apply congr_arg,
+  apply ih,
+  exact mem_of_ne_of_mem ad yes_on_left,
+end
+
 lemma index_of_append_of_notin {a : α} (not_on_left : a ∉ x) :
   index_of a (x ++ y)  =  x.length  +  index_of a y  :=
 begin
@@ -183,7 +208,7 @@ end
 
 end list_index_of
 
-section countin
+section list_count_in
 
 def count_in (l : list α) (a : α) : ℕ :=
 list.sum (list.map (λ s, ite (s = a) 1 0) l)
@@ -311,6 +336,6 @@ begin
   },
 end
 
-end countin
+end list_count_in
 
 end list
