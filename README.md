@@ -4,7 +4,7 @@
 
 In order to install Lean 3, follow the [manual](https://leanprover-community.github.io/get_started.html).
 
-In order to download this project, run `leanproject get https://github.com/madvorak/grammars` in your Unix-like command line.
+In order to download this project, run `leanproject get madvorak/grammars` in your Unix-like command line.
 
 In order to check that the proofs are correct, run `./mk` from the root directory of this project.\
 The script will output `Result: SUCCESS` if everything builds successfully.
