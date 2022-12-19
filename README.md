@@ -1,8 +1,19 @@
 # Grammars formally in Lean
 
+## Instructions
+
+In order to install Lean 3, follow the [manual](https://leanprover-community.github.io/get_started.html).
+
+In order to download this project, run `leanproject get https://github.com/madvorak/grammars` in your Unix-like command line.
+
+In order to check that the proofs are correct, run `./mk` from the root directory of this project.\
+The script will output `Result: SUCCESS` if everything builds successfully.
+
+## Overview
+
 Below you find what has been completed so far.
 
-## Context-free grammars
+### Context-free grammars
 
 [Definition](https://github.com/madvorak/grammars/blob/main/src/context_free/cfg.lean)
 
@@ -20,11 +31,11 @@ Below you find what has been completed so far.
 
 \* missing proof: [Context-free pumping lemma](https://github.com/madvorak/grammars/blob/main/src/context_free/cfgPumping.lean)
 
-## Context-sensitive grammars
+### Context-sensitive grammars
 
 [Example](https://github.com/madvorak/grammars/blob/main/test/csg_demo.lean)
 
-## Unrestricted grammars
+### Unrestricted grammars
 
 (a.k.a. general grammars, a.k.a. recursively-enumerable grammars, a.k.a. type-0 grammars, a.k.a. grammars)
 
