@@ -4,27 +4,26 @@ import list_utils
 import written_by_others.trim_assoc
 
 
-/-- Fundamental datatype; basically `τ ⊕ ν` (something like "Either tau knee")
-    where `τ` is the type of terminals and `ν` is the type of nonterminals. -/
-inductive symbol (τ : Type) (ν : Type)
-| terminal    : τ → symbol
-| nonterminal : ν → symbol
+/-- The type of symbols is the disjoint union of terminals and nonterminals. -/
+inductive symbol (T : Type) (N : Type)
+| terminal    : T → symbol
+| nonterminal : N → symbol
 
 
 section grammar_definitions
 
 /-- Transformation rule for a grammar without any restrictions. -/
-structure grule (τ : Type) (ν : Type) :=
-(input_L : list (symbol τ ν))
-(input_N : ν)
-(input_R : list (symbol τ ν))
-(output_string : list (symbol τ ν))
+structure grule (T : Type) (N : Type) :=
+(input_L : list (symbol T N))
+(input_N : N)
+(input_R : list (symbol T N))
+(output_string : list (symbol T N))
 
 /-- Grammar (unrestricted) that generates words over the alphabet `termi` (a type of terminals). -/
-structure grammar (termi : Type) :=
-(nt : Type)                     -- type of nonterminals
-(initial : nt)                  -- initial symbol
-(rules : list (grule termi nt)) -- rewriting rules
+structure grammar (T : Type) :=
+(nt : Type)                 -- type of nonterminals
+(initial : nt)              -- initial symbol
+(rules : list (grule T nt)) -- rewrite rules
 
 
 variables {T : Type}

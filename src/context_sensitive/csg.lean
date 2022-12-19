@@ -4,17 +4,17 @@ import unrestricted.grammar
 section csg_definitions
 
 /-- Transformation rule for a context-sensitive grammar. -/
-structure csrule (τ : Type) (ν : Type) :=
-(context_left : list (symbol τ ν))
-(input_nonterminal : ν)
-(context_right : list (symbol τ ν))
-(output_string : list (symbol τ ν)) -- !! TODO require non-empty unless `S` → `[]` where `S` is on no right side !!
+structure csrule (T : Type) (N : Type) :=
+(context_left : list (symbol T N))
+(input_nonterminal : N)
+(context_right : list (symbol T N))
+(output_string : list (symbol T N)) -- !! TODO require non-empty unless `S` → `[]` where `S` is on no right side !!
 
 /-- Context-sensitive grammar that generates words over the alphabet `termi` (a type of terminals). -/
-structure CS_grammar (termi : Type) :=
-(nt : Type)                                  -- type of nonterminals
-(initial : nt)                               -- initial symbol
-(rules : list (csrule termi nt))             -- rewriting rules
+structure CS_grammar (T : Type) :=
+(nt : Type)                   -- type of nonterminals
+(initial : nt)                -- initial symbol
+(rules : list (csrule T nt))  -- rewrite rules
 
 
 variables {T : Type}

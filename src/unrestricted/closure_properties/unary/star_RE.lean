@@ -303,7 +303,7 @@ begin
   },
 end
 
-private lemma inductive_terminal_scan {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length)
+private lemma terminal_scan_ind {g : grammar T} {w : list (list T)} (n : ℕ) (n_lt_wl : n ≤ w.length)
     (terminals : ∀ v ∈ w, ∀ t ∈ v, symbol.terminal t ∈ list.join (list.map grule.output_string g.rules)) :
   grammar_derives (star_grammar g)
     ((list.map (λ u, list.map symbol.terminal u) (list.take (w.length - n) w)).join ++ [R] ++
@@ -501,7 +501,7 @@ private lemma terminal_scan_aux {g : grammar T} {w : list (list T)}
     (list.map symbol.terminal w.join ++ [R, H])  :=
 begin
   rw list.map_map,
-  convert inductive_terminal_scan w.length (by refl) terminals,
+  convert terminal_scan_ind w.length (by refl) terminals,
   {
     rw nat.sub_self,
     rw list.take_zero,
