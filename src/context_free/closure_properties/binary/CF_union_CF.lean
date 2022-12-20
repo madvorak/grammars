@@ -553,26 +553,40 @@ end
 
 private lemma in_language_impossible_case_of_union
     (w : list T)
-    (rule : (union_grammar g₁ g₂).nt × list (symbol T (union_grammar g₁ g₂).nt))
+    (r : (union_grammar g₁ g₂).nt × list (symbol T (union_grammar g₁ g₂).nt))
     (u v: list (symbol T (union_grammar g₁ g₂).nt))
     (hu : u = []) (hv : v = [])
-    (bef: [symbol.nonterminal (union_grammar g₁ g₂).initial] = u ++ [symbol.nonterminal rule.fst] ++ v)
-    (sbi : rule ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules)) :
+    (bef: [symbol.nonterminal (union_grammar g₁ g₂).initial] = u ++ [symbol.nonterminal r.fst] ++ v)
+    (sbi : r ∈ (list.map rule_of_rule₁ g₁.rules ++ list.map rule_of_rule₂ g₂.rules)) :
   w ∈ CF_language g₁ ∨ w ∈ CF_language g₂ :=
 begin
   exfalso,
-  rw hu at bef,
-  rw hv at bef,
-  rw list.nil_append at bef,
-  rw list.append_nil at bef,
-  change [symbol.nonterminal none] = [symbol.nonterminal rule.fst] at bef,
-  have rule_root : rule.fst = none,
+  rw [hu, hv] at bef,
+  rw [list.nil_append, list.append_nil] at bef,
+  change [symbol.nonterminal none] = [symbol.nonterminal r.fst] at bef,
+  have rule_root : r.fst = none,
   {
-    finish,
+    have almost := list.head_eq_of_cons_eq bef,
+    exact symbol.nonterminal.inj almost.symm,
   },
   rw list.mem_append at sbi,
-  cases sbi;
-  finish,
+  cases sbi,
+  {
+    rw list.mem_map at sbi,
+    rcases sbi with ⟨r₁, -, imposs⟩,
+    unfold rule_of_rule₁ at imposs,
+    rw ←imposs at rule_root,
+    unfold prod.fst at rule_root,
+    exact option.no_confusion rule_root,
+  },
+  {
+    rw list.mem_map at sbi,
+    rcases sbi with ⟨r₂, -, imposs⟩,
+    unfold rule_of_rule₂ at imposs,
+    rw ←imposs at rule_root,
+    unfold prod.fst at rule_root,
+    exact option.no_confusion rule_root,
+  },
 end
 
 private lemma in_language_of_in_union (w : list T) :
@@ -586,8 +600,15 @@ begin
     have zeroth := congr_arg (λ p, list.nth p 0) impossible,
     unfold list.nth at zeroth,
     rw list.nth_map at zeroth,
-    cases (w.nth 0);
-    finish,
+    cases (w.nth 0),
+    {
+      rw option.map_none' at zeroth,
+      exact option.no_confusion zeroth,
+    },
+    {
+      rw option.map_some' at zeroth,
+      exact symbol.no_confusion (option.some.inj zeroth),
+    },
   },
   rcases h with ⟨S₁, deri_head, deri_tail⟩,
   rcases deri_head with ⟨rule, ruleok, u, v, h_bef, h_aft⟩,

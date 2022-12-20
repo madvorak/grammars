@@ -2237,7 +2237,7 @@ private lemma big_induction
     (ass :
       grammar_derives (big_grammar g₁ g₂)
         [symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
-        symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
+         symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))]
         w) :
   ∃ x : list (symbol T g₁.nt),
   ∃ y : list (symbol T g₂.nt),
