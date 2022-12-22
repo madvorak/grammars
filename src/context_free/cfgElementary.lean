@@ -235,8 +235,7 @@ begin
     {
       clear implication2,
       intros ass t nq,
-      change CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal w) at ass,
-      unfold CF_generates_str at ass,
+      unfold CF_language CF_generates at ass,
 
       have indu :
         ∀ v : list (symbol T (cfg_symbol_star a).nt),
@@ -301,8 +300,7 @@ begin
     intros w hw,
     cases hw with n hwn,
     rw hwn,
-    convert_to CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal (list.repeat a n)),
-    unfold CF_generates_str,
+    convert_to CF_generates (cfg_symbol_star a) (list.repeat a n),
     clear hwn w,
     have comes_to :
       CF_derives

@@ -87,7 +87,6 @@ begin
   unfold CF_language at *,
   rw set.mem_set_of_eq at *,
   unfold CF_generates at *,
-  unfold CF_generates_str at *,
   rw list.map_reverse,
   exact derives_reversed g (list.map symbol.terminal w) hyp,
 end

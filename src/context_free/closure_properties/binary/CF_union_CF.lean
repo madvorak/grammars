@@ -336,7 +336,6 @@ begin
   unfold CF_language,
   rw set.mem_set_of_eq,
   unfold CF_generates,
-  unfold CF_generates_str,
   unfold CF_derives,
   apply CF_deri_of_deri_deri deri_start,
   exact deri_rest,
@@ -403,7 +402,6 @@ begin
   unfold CF_language,
   rw set.mem_set_of_eq,
   unfold CF_generates,
-  unfold CF_generates_str,
   unfold CF_derives,
   apply CF_deri_of_deri_deri deri_start,
   exact deri_rest,
@@ -431,7 +429,6 @@ begin
   unfold CF_language,
   rw set.mem_set_of_eq,
   unfold CF_generates,
-  unfold CF_generates_str,
 
   let gg₁ := @g₁g T g₁ g₂,
 
@@ -480,7 +477,6 @@ begin
   unfold CF_language,
   rw set.mem_set_of_eq,
   unfold CF_generates,
-  unfold CF_generates_str,
 
   let gg₂ := @g₂g T g₁ g₂,
 
@@ -636,8 +632,7 @@ begin
     rw list.nil_append at deri_tail,
     exact in_language_right_case_of_union deri_tail,
   },
-  exact in_language_impossible_case_of_union w
-    rule u v u_nil v_nil h_bef r_imposs,
+  exact in_language_impossible_case_of_union w rule u v u_nil v_nil h_bef r_imposs,
 end
 
 end lemmata_supset
@@ -672,5 +667,5 @@ begin
       rw ←h₂ at case₂,
       exact in_union_of_in_second w case₂,
     },
-  }
+  },
 end

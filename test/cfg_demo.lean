@@ -1,5 +1,4 @@
 import context_free.cfg
-import tactic
 
 
 private def a_ : fin 3 := 0
@@ -773,7 +772,6 @@ begin
     unfold CF_language,
     rw set.mem_set_of_eq,
     unfold CF_generates,
-    unfold CF_generates_str,
     have obtain_sum :
       CF_derives gr_add
         [symbol.nonterminal gr_add.initial]

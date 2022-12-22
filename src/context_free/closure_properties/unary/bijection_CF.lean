@@ -39,7 +39,6 @@ begin
     unfold CF_language at hw ⊢,
     rw set.mem_set_of_eq at hw ⊢,
     unfold CF_generates at hw ⊢,
-    unfold CF_generates_str at hw ⊢,
 
     have deri_of_deri :
       ∀ v : list (symbol T₂ g'.nt),
@@ -124,11 +123,10 @@ begin
     rw set.mem_set_of_eq at hw,
     unfold CF_generates at hw,
     rw list.map_map at hw,
-    unfold CF_generates_str at hw,
 
     unfold CF_language,
-    change CF_generates_str g' (list.map symbol.terminal w),
-    unfold CF_generates_str,
+    rw set.mem_set_of_eq,
+    unfold CF_generates,
 
     have deri_of_deri :
       ∀ v : list (symbol T₁ g.nt),
