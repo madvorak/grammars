@@ -5,12 +5,9 @@ import tactic
 
 namespace list
 
-noncomputable theory
-open_locale classical
-
 variables {α : Type*}
 
-private def get_max [inhabited α] [linear_order α] (P : α → Prop) :=
+private noncomputable def get_max [inhabited α] [linear_order α] (P : α → Prop) :=
 classical.epsilon (λ (x : α), P x ∧ ∀ (y : α), x < y → ¬P y)
 
 private lemma epsilon_eq [inhabited α] {P : α → Prop} {x : α}

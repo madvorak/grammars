@@ -1,15 +1,17 @@
 import context_free.cfgLiftSink
 
 
-variables {T : Type} {g₁ g₂ : CF_grammar T}
+variables {T : Type}
 
-private def union_grammar (gₗ gᵣ : CF_grammar T) : CF_grammar T :=
-CF_grammar.mk (option (gₗ.nt ⊕ gᵣ.nt)) none (
-  (none, [symbol.nonterminal (some (sum.inl (gₗ.initial)))]) ::
-  (none, [symbol.nonterminal (some (sum.inr (gᵣ.initial)))]) ::
-  ((list.map rule_of_rule₁ gₗ.rules) ++ (list.map rule_of_rule₂ gᵣ.rules))
+private def union_grammar (g₁ g₂ : CF_grammar T) : CF_grammar T :=
+CF_grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
+  (none, [symbol.nonterminal (some (sum.inl (g₁.initial)))]) ::
+  (none, [symbol.nonterminal (some (sum.inr (g₂.initial)))]) ::
+  ((list.map rule_of_rule₁ g₁.rules) ++ (list.map rule_of_rule₂ g₂.rules))
 )
 
+
+variables {g₁ g₂ : CF_grammar T}
 
 section lifted_grammars
 

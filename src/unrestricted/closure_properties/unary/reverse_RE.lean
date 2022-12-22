@@ -7,7 +7,7 @@ variables {T : Type}
 section auxiliary
 
 private def reversal_grule {N : Type} (r : grule T N) : grule T N :=
-⟨r.input_R.reverse, r.input_N, r.input_L.reverse, r.output_string.reverse⟩
+grule.mk r.input_R.reverse r.input_N r.input_L.reverse r.output_string.reverse
 
 private lemma dual_of_reversal_grule {N : Type} (r : grule T N) :
   reversal_grule (reversal_grule r) = r :=
