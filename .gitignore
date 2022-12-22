@@ -3,5 +3,3 @@
 /leanpkg.path
 /test/mwe.lean
 /li
-/informal/*
-!/informal/KleeneStar.pdf

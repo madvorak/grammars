@@ -1,5 +1,7 @@
 # Grammars formally in Lean
 
+This version is for publication.
+
 ## Instructions
 
 In order to install Lean 3, follow the [manual](https://leanprover-community.github.io/get_started.html).
@@ -30,10 +32,6 @@ Below you find what has been completed so far.
 [Non-closure under complement](https://github.com/madvorak/grammars/blob/main/src/context_free/closure_properties/unary/complement_CF.lean) (\*)
 
 \* missing proof: [Context-free pumping lemma](https://github.com/madvorak/grammars/blob/main/src/context_free/cfgPumping.lean)
-
-### Context-sensitive grammars
-
-[Example](https://github.com/madvorak/grammars/blob/main/test/csg_demo.lean)
 
 ### Unrestricted grammars
 
