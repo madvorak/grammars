@@ -1,5 +1,4 @@
 import context_free.cfg
-import tactic
 
 
 private def a_ : fin 3 := 0

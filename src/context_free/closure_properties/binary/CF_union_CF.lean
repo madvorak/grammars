@@ -636,8 +636,7 @@ begin
     rw list.nil_append at deri_tail,
     exact in_language_right_case_of_union deri_tail,
   },
-  exact in_language_impossible_case_of_union w
-    rule u v u_nil v_nil h_bef r_imposs,
+  exact in_language_impossible_case_of_union w rule u v u_nil v_nil h_bef r_imposs,
 end
 
 end lemmata_supset
@@ -672,5 +671,5 @@ begin
       rw ←h₂ at case₂,
       exact in_union_of_in_second w case₂,
     },
-  }
+  },
 end

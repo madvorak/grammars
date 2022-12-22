@@ -298,9 +298,9 @@ end
 theorem CF_subclass_CS {L : language T} :
   is_CF L → is_CS L :=
 begin
-  rintro ⟨g, h⟩,
+  rintro ⟨g, eq_L⟩,
   use csg_of_cfg g,
-  rw ←h,
+  rw ←eq_L,
   rw CF_language_eq_CS_language,
 end
 

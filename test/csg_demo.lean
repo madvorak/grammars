@@ -1,5 +1,4 @@
 import context_sensitive.csg
-import tactic
 
 
 inductive Te

@@ -188,9 +188,9 @@ end
 theorem CS_subclass_RE {L : language T} :
   is_CS L → is_RE L :=
 begin
-  rintro ⟨g, h⟩,
+  rintro ⟨g, eq_L⟩,
   use grammar_of_csg g,
-  rw ←h,
+  rw ←eq_L,
   rw CS_language_eq_grammar_language,
 end
 
