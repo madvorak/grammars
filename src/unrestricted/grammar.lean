@@ -107,10 +107,8 @@ begin
   {
     exact rin,
   },
-  use pᵣ ++ u,
-  use v,
-  rw h_bef,
-  rw h_aft,
+  use [pᵣ ++ u, v],
+  rw [h_bef, h_aft],
   split;
   simp only [list.append_assoc],
 end
@@ -134,10 +132,8 @@ begin
   {
     exact rin,
   },
-  use u,
-  use v ++ pₒ,
-  rw h_bef,
-  rw h_aft,
+  use [u, v ++ pₒ],
+  rw [h_bef, h_aft],
   split;
   simp only [list.append_assoc],
 end

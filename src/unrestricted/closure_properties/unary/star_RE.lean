@@ -136,14 +136,14 @@ begin
     have ass_lifted : grammar_derives (star_grammar g) [S] (list.map symbol.terminal v),
     {
       clear_except ass,
-      have wrap_eq_lift : @wrap_sym T g.nt = lift_symbol_ sum.inl,
+      have wrap_eq_lift : @wrap_sym T g.nt = lift_symbol sum.inl,
       {
         ext,
         cases x;
         refl,
       },
-      let lifted_g : lifted_grammar_ T :=
-        lifted_grammar_.mk g (star_grammar g) sum.inl sum.get_left (by {
+      let lifted_g : lifted_grammar T :=
+        lifted_grammar.mk g (star_grammar g) sum.inl sum.get_left (by {
           intros x y hyp,
           exact sum.inl.inj hyp,
         }) (by {
@@ -192,8 +192,8 @@ begin
             exact rin,
           },
           unfold wrap_gr,
-          unfold lift_rule_,
-          unfold lift_string_,
+          unfold lift_rule,
+          unfold lift_string,
           rw wrap_eq_lift,
         }) (by {
           rintros r ⟨rin, n, nrn⟩,
@@ -218,9 +218,9 @@ begin
               exact rin₀,
             },
             convert r_of_r₀,
-            unfold lift_rule_,
+            unfold lift_rule,
             unfold wrap_gr,
-            unfold lift_string_,
+            unfold lift_string,
             rw wrap_eq_lift,
           },
           {
@@ -235,13 +235,13 @@ begin
       convert_to
         grammar_derives lifted_g.g
           [symbol.nonterminal (sum.inl g.initial)]
-          (lift_string_ lifted_g.lift_nt (list.map symbol.terminal v)),
+          (lift_string lifted_g.lift_nt (list.map symbol.terminal v)),
       {
-        unfold lift_string_,
+        unfold lift_string,
         rw list.map_map,
         congr,
       },
-      exact lift_deri_ lifted_g ass,
+      exact lift_deri lifted_g ass,
     },
     have ass_postf := grammar_deri_with_postfix ([H] : list (symbol T (star_grammar g).nt)) ass_lifted,
     rw list.join_append,
