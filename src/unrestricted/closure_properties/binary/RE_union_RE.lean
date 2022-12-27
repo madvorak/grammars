@@ -3,7 +3,7 @@ import unrestricted.grammarLiftSink
 
 variables {T : Type}
 
-private def union_grammar (g₁ g₂ : grammar T) : grammar T :=
+protected def union_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
   ⟨ [], none, [], [symbol.nonterminal (some (sum.inl (g₁.initial)))] ⟩ :: (
   ⟨ [], none, [], [symbol.nonterminal (some (sum.inr (g₂.initial)))] ⟩ :: (
@@ -224,7 +224,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
 })
 
 
-private lemma in_L₁_or_L₂_of_in_union {w : list T} (ass : w ∈ grammar_language (union_grammar g₁ g₂)) :
+protected lemma in_L₁_or_L₂_of_in_union {w : list T} (ass : w ∈ grammar_language (union_grammar g₁ g₂)) :
   w ∈ grammar_language g₁  ∨  w ∈ grammar_language g₂  :=
 begin
   unfold grammar_language at ass ⊢,
@@ -385,7 +385,7 @@ begin
 end
 
 
-private lemma in_union_of_in_L₁ {w : list T} (ass : w ∈ grammar_language g₁) :
+protected lemma in_union_of_in_L₁ {w : list T} (ass : w ∈ grammar_language g₁) :
   w ∈ grammar_language (union_grammar g₁ g₂) :=
 begin
   unfold grammar_language at ass ⊢,
@@ -419,7 +419,7 @@ begin
   exact lifted,
 end
 
-private lemma in_union_of_in_L₂ {w : list T} (ass : w ∈ grammar_language g₂) :
+protected lemma in_union_of_in_L₂ {w : list T} (ass : w ∈ grammar_language g₂) :
   w ∈ grammar_language (union_grammar g₁ g₂) :=
 begin
   unfold grammar_language at ass ⊢,
