@@ -103,7 +103,7 @@ begin
     unfold lift_string_ at *,
     rw list.map_append_append at lift_bef,
     rw list.map_append_append at lift_bef,
-    convert lift_bef,
+    exact lift_bef,
   },
   {
     have lift_aft := congr_arg (lift_string_ lg.lift_nt) aft,

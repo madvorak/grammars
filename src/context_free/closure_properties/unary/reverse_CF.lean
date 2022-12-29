@@ -1,5 +1,5 @@
 import context_free.cfg
-import language_operations
+import utilities.language_operations
 
 
 variables {T : Type}

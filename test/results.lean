@@ -9,7 +9,7 @@ import unrestricted.closure_properties.binary.RE_concatenation_RE
 import unrestricted.closure_properties.unary.star_RE
 import unrestricted.closure_properties.unary.reverse_RE
 
-import written_by_others.print_sorries
+import utilities.written_by_others.print_sorries
 
 
 section context_free

@@ -47,6 +47,6 @@ Below you find what has been completed so far.
 
 [Closure under concatenation](https://github.com/madvorak/grammars/blob/main/src/unrestricted/closure_properties/binary/RE_concatenation_RE.lean)
 
-[Closure under Kleene star](https://github.com/madvorak/grammars/blob/main/src/unrestricted/closure_properties/unary/star_RE.lean) (was the most difficult proof; see [informal description](https://github.com/madvorak/grammars/blob/main/informal/KleeneStar.pdf) for the big picture)
+[Closure under Kleene star](https://github.com/madvorak/grammars/blob/main/src/unrestricted/closure_properties/unary/star_RE.lean) (was the most difficult proof; see [informal description](https://github.com/madvorak/grammars/blob/main/sketchKleeneStar.pdf) for the big picture)
 
 [Closure under reversal](https://github.com/madvorak/grammars/blob/main/src/unrestricted/closure_properties/unary/reverse_RE.lean)

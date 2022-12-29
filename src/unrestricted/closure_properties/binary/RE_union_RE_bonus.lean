@@ -1,6 +1,6 @@
 import context_free.cfg
 import unrestricted.closure_properties.binary.RE_union_RE
-import written_by_others.print_sorries
+import utilities.written_by_others.print_sorries
 
 
 variables {T : Type}
