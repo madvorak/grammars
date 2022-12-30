@@ -19,18 +19,21 @@ CF_grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
   (list.map (lift_CF_rule₁ g₂.nt) g₁.rules) ++
   (list.map (lift_CF_rule₂ g₁.nt) g₂.rules))))
 
-private lemma union_CF_grammar_same_language (g₁ g₂ : CF_grammar T) :
-  CF_language (union_CF_grammar g₁ g₂) = grammar_language (union_grammar (grammar_of_cfg g₁) (grammar_of_cfg g₂)) :=
+private lemma union_grammar_eq_union_CF_grammar {g₁ g₂ : CF_grammar T} :
+  union_grammar (grammar_of_cfg g₁) (grammar_of_cfg g₂)  =  grammar_of_cfg (union_CF_grammar g₁ g₂)  :=
 begin
-  rw CF_language_eq_grammar_language,
-  congr,
   unfold union_CF_grammar grammar_of_cfg union_grammar,
   dsimp only [list.map],
   congr,
-  repeat {
-    rw list.map_append,
-  },
+  rw list.map_append,
   finish,
+end
+
+private lemma union_CF_grammar_same_language (g₁ g₂ : CF_grammar T) :
+  CF_language (union_CF_grammar g₁ g₂)  =  grammar_language (union_grammar (grammar_of_cfg g₁) (grammar_of_cfg g₂))  :=
+begin
+  rw CF_language_eq_grammar_language,
+  rw union_grammar_eq_union_CF_grammar,
 end
 
 /-- The class of context-free languages is closed under union. -/
