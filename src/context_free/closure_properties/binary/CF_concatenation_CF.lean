@@ -51,6 +51,33 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
   unfold lift_string,
   unfold lsTN_of_lsTN₁,
   five_steps,
+}) oN₁_of_N (by {
+  intros x y ass,
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases x, swap,
+  {
+    right,
+    refl,
+  },
+  cases y,
+  {
+    rw ass,
+    right,
+    refl,
+  },
+  cases y, swap,
+  {
+    tauto,
+  },
+  left,
+  simp only [oN₁_of_N] at ass,
+  apply congr_arg,
+  apply congr_arg,
+  exact ass,
 }) (by {
   intro r,
   rintro ⟨r_in, r_ntype⟩,
@@ -91,33 +118,6 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
     rw option.some_inj at contr,
     exact sum.no_confusion contr,
   },
-}) oN₁_of_N (by {
-  intros x y ass,
-  cases x,
-  {
-    right,
-    refl,
-  },
-  cases x, swap,
-  {
-    right,
-    refl,
-  },
-  cases y,
-  {
-    rw ass,
-    right,
-    refl,
-  },
-  cases y, swap,
-  {
-    tauto,
-  },
-  left,
-  simp only [oN₁_of_N] at ass,
-  apply congr_arg,
-  apply congr_arg,
-  exact ass,
 }) (by { intro, refl })
 
 private def g₂g (g₁ g₂ : CF_grammar T) : @lifted_grammar T :=
@@ -144,6 +144,33 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
   unfold lift_string,
   unfold lsTN_of_lsTN₂,
   five_steps,
+}) oN₂_of_N (by {
+  intros x y ass,
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases y,
+  {
+    right,
+    rw ass,
+    refl,
+  },
+  cases y,
+  {
+    tauto,
+  },
+  left,
+  simp only [oN₂_of_N] at ass,
+  apply congr_arg,
+  apply congr_arg,
+  exact ass,
 }) (by {
   intro r,
   rintro ⟨r_in, r_ntype⟩,
@@ -184,33 +211,6 @@ lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
     ],
     five_steps,
   },
-}) oN₂_of_N (by {
-  intros x y ass,
-  cases x,
-  {
-    right,
-    refl,
-  },
-  cases x,
-  {
-    right,
-    refl,
-  },
-  cases y,
-  {
-    right,
-    rw ass,
-    refl,
-  },
-  cases y,
-  {
-    tauto,
-  },
-  left,
-  simp only [oN₂_of_N] at ass,
-  apply congr_arg,
-  apply congr_arg,
-  exact ass,
 }) (by { intro, refl })
 
 
@@ -1555,7 +1555,7 @@ begin
     },
     rw baz,
     
-    exact lift_deri gg₁ [symbol.nonterminal g₁.initial] (list.map symbol.terminal u) hu,
+    exact lift_deri hu,
   },
   {
     apply CF_deri_with_prefix,
@@ -1581,7 +1581,7 @@ begin
     },
     rw baz,
     
-    exact lift_deri gg₂ [symbol.nonterminal g₂.initial] (list.map symbol.terminal v) hv,
+    exact lift_deri hv,
   },
 end
 

@@ -5,25 +5,20 @@ section functions_lift_sink
 
 variables {T N₀ N : Type}
 
--- TODO rename after collision with `cfgLiftSink.lift_symbol` disappears
 def lift_symbol_ (lift_N : N₀ → N) : symbol T N₀ → symbol T N
 | (symbol.terminal ter) := symbol.terminal ter
 | (symbol.nonterminal nonter) := symbol.nonterminal (lift_N nonter)
 
--- TODO rename after collision with `cfgLiftSink.sink_symbol` disappears
 def sink_symbol_ (sink_N : N → option N₀) : symbol T N → option (symbol T N₀)
 | (symbol.terminal ter) := some (symbol.terminal ter)
 | (symbol.nonterminal nonter) := option.map symbol.nonterminal (sink_N nonter)
 
--- TODO rename after collision with `cfgLiftSink.lift_string` disappears
 def lift_string_ (lift_N : N₀ → N) : list (symbol T N₀) → list (symbol T N) :=
 list.map (lift_symbol_ lift_N)
 
--- TODO rename after collision with `cfgLiftSink.sink_string` disappears
 def sink_string_ (sink_N : N → option N₀) : list (symbol T N) → list (symbol T N₀) :=
 list.filter_map (sink_symbol_ sink_N)
 
--- TODO rename after collision with `cfgLiftSink.lift_rule` disappears
 def lift_rule_ (lift_N : N₀ → N) : grule T N₀ → grule T N :=
 λ r : grule T N₀, grule.mk
   (lift_string_ lift_N r.input_L)
@@ -36,7 +31,6 @@ end functions_lift_sink
 
 section lifting_conditions
 
--- TODO rename after collision with `cfgLiftSink.lifted_grammar` disappears
 structure lifted_grammar_ (T : Type) :=
 (g₀ g : grammar T)
 (lift_nt : g₀.nt → g.nt)
@@ -84,19 +78,18 @@ section translating_derivations
 
 variables {T : Type}
 
--- TODO rename as well
-private lemma lift_tran_ {lg : lifted_grammar_ T} {input output : list (symbol T lg.g₀.nt)}
-    (hyp : grammar_transforms lg.g₀ input output) :
-  grammar_transforms lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
+private lemma lift_tran_ {lg : lifted_grammar_ T} {w₁ w₂ : list (symbol T lg.g₀.nt)}
+    (hyp : grammar_transforms lg.g₀ w₁ w₂) :
+  grammar_transforms lg.g (lift_string_ lg.lift_nt w₁) (lift_string_ lg.lift_nt w₂) :=
 begin
-  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
+  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
   use lift_rule_ lg.lift_nt rule,
   split,
   {
     exact lg.corresponding_rules rule rule_in,
   },
+  use lift_string_ lg.lift_nt u,
   use lift_string_ lg.lift_nt v,
-  use lift_string_ lg.lift_nt w,
   split,
   {
     have lift_bef := congr_arg (lift_string_ lg.lift_nt) bef,
@@ -113,10 +106,9 @@ begin
   },
 end
 
--- TODO rename after collision with `cfgLiftSink.lift_deri` disappears
-lemma lift_deri_ (lg : lifted_grammar_ T) {input output : list (symbol T lg.g₀.nt)}
-    (hyp : grammar_derives lg.g₀ input output) :
-  grammar_derives lg.g (lift_string_ lg.lift_nt input) (lift_string_ lg.lift_nt output) :=
+lemma lift_deri_ (lg : lifted_grammar_ T) {w₁ w₂ : list (symbol T lg.g₀.nt)}
+    (hyp : grammar_derives lg.g₀ w₁ w₂) :
+  grammar_derives lg.g (lift_string_ lg.lift_nt w₁) (lift_string_ lg.lift_nt w₂) :=
 begin
   induction hyp with u v trash orig ih,
   {
@@ -130,23 +122,20 @@ begin
 end
 
 
--- TODO rename after collision with `cfgLiftSink.good_letter` disappears
 def good_letter_ {lg : lifted_grammar_ T} : symbol T lg.g.nt → Prop
 | (symbol.terminal t)     := true
 | (symbol.nonterminal nt) := ∃ n₀ : lg.g₀.nt, lg.sink_nt nt = n₀
 
--- TODO rename after collision with `cfgLiftSink.good_string` disappears
 def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ s, good_letter_ letter
 
--- TODO rename as well
-private lemma sink_tran_ {lg : lifted_grammar_ T} {input output : list (symbol T lg.g.nt)}
-    (hyp : grammar_transforms lg.g input output)
-    (ok_input : good_string_ input) :
-  grammar_transforms lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)
-  ∧ good_string_ output :=
+private lemma sink_tran_ {lg : lifted_grammar_ T} {w₁ w₂ : list (symbol T lg.g.nt)}
+    (hyp : grammar_transforms lg.g w₁ w₂)
+    (ok_input : good_string_ w₁) :
+  grammar_transforms lg.g₀ (sink_string_ lg.sink_nt w₁) (sink_string_ lg.sink_nt w₂)
+  ∧ good_string_ w₂ :=
 begin
-  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
+  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
 
   rcases lg.preimage_of_rules rule (by {
     split,
@@ -218,8 +207,8 @@ begin
   {
     exact pre_in,
   },
+  use sink_string_ lg.sink_nt u,
   use sink_string_ lg.sink_nt v,
-  use sink_string_ lg.sink_nt w,
   have correct_inverse : sink_symbol_ lg.sink_nt ∘ lift_symbol_ lg.lift_nt = option.some,
   {
     ext1,
@@ -282,11 +271,11 @@ begin
   },
 end
 
-private lemma sink_deri_aux {lg : lifted_grammar_ T} {input output : list (symbol T lg.g.nt)}
-    (hyp : grammar_derives lg.g input output)
-    (ok_input : good_string_ input) :
-  grammar_derives lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output)
-  ∧ good_string_ output :=
+private lemma sink_deri_aux {lg : lifted_grammar_ T} {w₁ w₂ : list (symbol T lg.g.nt)}
+    (hyp : grammar_derives lg.g w₁ w₂)
+    (ok_input : good_string_ w₁) :
+  grammar_derives lg.g₀ (sink_string_ lg.sink_nt w₁) (sink_string_ lg.sink_nt w₂)
+  ∧ good_string_ w₂ :=
 begin
   induction hyp with u v trash orig ih,
   {
@@ -313,11 +302,10 @@ begin
   },
 end
 
--- TODO rename after collision with `cfgLiftSink.sink_deri` disappears
-lemma sink_deri_ (lg : lifted_grammar_ T) {input output : list (symbol T lg.g.nt)}
-    (hyp : grammar_derives lg.g input output)
-    (ok_input : good_string_ input) :
-  grammar_derives lg.g₀ (sink_string_ lg.sink_nt input) (sink_string_ lg.sink_nt output) :=
+lemma sink_deri_ (lg : lifted_grammar_ T) {w₁ w₂ : list (symbol T lg.g.nt)}
+    (hyp : grammar_derives lg.g w₁ w₂)
+    (ok_input : good_string_ w₁) :
+  grammar_derives lg.g₀ (sink_string_ lg.sink_nt w₁) (sink_string_ lg.sink_nt w₂) :=
 begin
   exact (sink_deri_aux hyp ok_input).1
 end

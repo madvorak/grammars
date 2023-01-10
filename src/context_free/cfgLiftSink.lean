@@ -31,13 +31,13 @@ structure lifted_grammar :=
   r ∈ g₀.rules →
     lift_rule lift_nt r ∈ g.rules
 )
-(preimage_of_rules : ∀ r : g.nt × list (symbol T g.nt),
-  (r ∈ g.rules ∧ ∃ n₀ : g₀.nt, lift_nt n₀ = r.fst) →
-    (∃ r₀ ∈ g₀.rules, lift_rule lift_nt r₀ = r)
-)
 (sink_nt : g.nt → option g₀.nt)
 (sink_inj : ∀ x y, sink_nt x = sink_nt y →
   x = y  ∨  sink_nt x = none
+)
+(preimage_of_rules : ∀ r : g.nt × list (symbol T g.nt),
+  (r ∈ g.rules ∧ ∃ n₀ : g₀.nt, lift_nt n₀ = r.fst) →
+    (∃ r₀ ∈ g₀.rules, lift_rule lift_nt r₀ = r)
 )
 (lift_nt_sink : ∀ n₀ : g₀.nt, sink_nt (lift_nt n₀) = some n₀)
 
@@ -64,20 +64,18 @@ begin
 end
 
 
-private lemma lift_tran
-    (lg : lifted_grammar)
-    (input output : list (symbol T lg.g₀.nt))
-    (hyp : CF_transforms lg.g₀ input output) :
-  CF_transforms lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
+private lemma lift_tran {lg : lifted_grammar} {w₁ w₂ : list (symbol T lg.g₀.nt)}
+    (hyp : CF_transforms lg.g₀ w₁ w₂) :
+  CF_transforms lg.g (lift_string lg.lift_nt w₁) (lift_string lg.lift_nt w₂) :=
 begin
-  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
+  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
   use lift_rule lg.lift_nt rule,
   split,
   {
     exact lg.corresponding_rules rule rule_in,
   },
+  use lift_string lg.lift_nt u,
   use lift_string lg.lift_nt v,
-  use lift_string lg.lift_nt w,
   split,
   {
     have lift_bef := congr_arg (lift_string lg.lift_nt) bef,
@@ -93,11 +91,9 @@ begin
   },
 end
 
-lemma lift_deri
-    (lg : lifted_grammar)
-    (input output : list (symbol T lg.g₀.nt))
-    (hyp : CF_derives lg.g₀ input output) :
-  CF_derives lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
+lemma lift_deri {lg : lifted_grammar} {w₁ w₂ : list (symbol T lg.g₀.nt)}
+    (hyp : CF_derives lg.g₀ w₁ w₂) :
+  CF_derives lg.g (lift_string lg.lift_nt w₁) (lift_string lg.lift_nt w₂) :=
 begin
   induction hyp with u v trash orig ih,
   {
@@ -107,7 +103,7 @@ begin
   {
     exact ih,
   },
-  exact lift_tran lg u v orig,
+  exact lift_tran orig,
 end
 
 
@@ -118,14 +114,12 @@ def good_letter {lg : @lifted_grammar T} : symbol T lg.g.nt → Prop
 def good_string {lg : @lifted_grammar T} (str : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ str, good_letter letter
 
-private lemma sink_tran
-    (lg : lifted_grammar)
-    (input output : list (symbol T lg.g.nt))
-    (hyp : CF_transforms lg.g input output)
-    (ok_input : good_string input) :
-  CF_transforms lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
+private lemma sink_tran {lg : lifted_grammar} {w₁ w₂ : list (symbol T lg.g.nt)}
+    (hyp : CF_transforms lg.g w₁ w₂)
+    (ok_input : good_string w₁) :
+  CF_transforms lg.g₀ (sink_string lg.sink_nt w₁) (sink_string lg.sink_nt w₂) :=
 begin
-  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
+  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
 
   rcases lg.preimage_of_rules rule (by {
     split,
@@ -153,8 +147,8 @@ begin
   {
     exact pre_in,
   },
+  use sink_string lg.sink_nt u,
   use sink_string lg.sink_nt v,
-  use sink_string lg.sink_nt w,
   have correct_inverse : sink_symbol lg.sink_nt ∘ lift_symbol lg.lift_nt = option.some,
   {
     ext1,
@@ -200,13 +194,11 @@ begin
   },
 end
 
-lemma sink_deri
-    (lg : lifted_grammar)
-    (input output : list (symbol T lg.g.nt))
-    (hyp : CF_derives lg.g input output)
-    (ok_input : good_string input) :
-  CF_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output)
-  ∧ good_string output :=
+lemma sink_deri (lg : lifted_grammar) (w₁ w₂ : list (symbol T lg.g.nt))
+    (hyp : CF_derives lg.g w₁ w₂)
+    (ok_input : good_string w₁) :
+  CF_derives lg.g₀ (sink_string lg.sink_nt w₁) (sink_string lg.sink_nt w₂)
+  ∧ good_string w₂ :=
 begin
   induction hyp with u v trash orig ih,
   {
@@ -224,7 +216,7 @@ begin
     {
       exact ih.left,
     },
-    exact sink_tran lg u v orig ih.right,
+    exact sink_tran orig ih.right,
   },
   {
     intros letter in_v,

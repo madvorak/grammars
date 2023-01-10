@@ -49,6 +49,33 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
   unfold lift_string,
   unfold lsTN_of_lsTN₁,
   five_steps,
+}) oN₁_of_N (by {
+  intros x y ass,
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases x, swap,
+  {
+    right,
+    refl,
+  },
+  cases y,
+  {
+    rw ass,
+    right,
+    refl,
+  },
+  cases y, swap,
+  {
+    tauto,
+  },
+  left,
+  simp only [oN₁_of_N] at ass,
+  apply congr_arg,
+  apply congr_arg,
+  exact ass,
 }) (by {
   intro r,
   rintro ⟨r_in, r_ntype⟩,
@@ -97,33 +124,6 @@ lifted_grammar.mk g₁ (union_grammar g₁ g₂) (some ∘ sum.inl) (by {
     rw option.some_inj at contr,
     exact sum.no_confusion contr,
   },
-}) oN₁_of_N (by {
-  intros x y ass,
-  cases x,
-  {
-    right,
-    refl,
-  },
-  cases x, swap,
-  {
-    right,
-    refl,
-  },
-  cases y,
-  {
-    rw ass,
-    right,
-    refl,
-  },
-  cases y, swap,
-  {
-    tauto,
-  },
-  left,
-  simp only [oN₁_of_N] at ass,
-  apply congr_arg,
-  apply congr_arg,
-  exact ass,
 }) (by { intro, refl })
 
 private def g₂g : @lifted_grammar T :=
@@ -149,6 +149,33 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
   unfold lift_string,
   unfold lsTN_of_lsTN₂,
   five_steps,
+}) oN₂_of_N (by {
+  intros x y ass,
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases x,
+  {
+    right,
+    refl,
+  },
+  cases y,
+  {
+    right,
+    rw ass,
+    refl,
+  },
+  cases y,
+  {
+    tauto,
+  },
+  left,
+  simp only [oN₂_of_N] at ass,
+  apply congr_arg,
+  apply congr_arg,
+  exact ass,
 }) (by {
   intro r,
   rintro ⟨r_in, r_ntype⟩,
@@ -198,33 +225,6 @@ lifted_grammar.mk g₂ (union_grammar g₁ g₂) (some ∘ sum.inr) (by {
     ],
     five_steps,
   },
-}) oN₂_of_N (by {
-  intros x y ass,
-  cases x,
-  {
-    right,
-    refl,
-  },
-  cases x,
-  {
-    right,
-    refl,
-  },
-  cases y,
-  {
-    right,
-    rw ass,
-    refl,
-  },
-  cases y,
-  {
-    tauto,
-  },
-  left,
-  simp only [oN₂_of_N] at ass,
-  apply congr_arg,
-  apply congr_arg,
-  exact ass,
 }) (by { intro, refl })
 
 end lifted_grammars
@@ -232,17 +232,16 @@ end lifted_grammars
 
 section lemmata_subset
 
-private lemma deri₁_more :
-  ∀ output : list (symbol T g₁.nt),
-    CF_derives g₁ [symbol.nonterminal g₁.initial] output →
-      CF_derives
-        (union_grammar g₁ g₂)
-        (lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial])
-        (lsTN_of_lsTN₁ output) :=
+private lemma deri₁_more (w : list (symbol T g₁.nt)) :
+  CF_derives g₁ [symbol.nonterminal g₁.initial] w →
+    CF_derives
+      (union_grammar g₁ g₂)
+      (lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial])
+      (lsTN_of_lsTN₁ w) :=
 begin
-  intros outp ass,
+  intro ass,
   let gg₁ := @g₁g T g₁ g₂,
-  change CF_derives gg₁.g (lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial]) (lsTN_of_lsTN₁ outp),
+  change CF_derives gg₁.g (lsTN_of_lsTN₁ [symbol.nonterminal g₁.initial]) (lsTN_of_lsTN₁ w),
   have techni : lsTN_of_lsTN₁ = lift_string gg₁.lift_nt,
   {
     unfold lsTN_of_lsTN₁,
@@ -251,20 +250,19 @@ begin
     five_steps,
   },
   rw techni,
-  exact lift_deri gg₁ [symbol.nonterminal g₁.initial] outp ass,
+  exact lift_deri ass,
 end
 
-private lemma deri₂_more :
-  ∀ output : list (symbol T g₂.nt),
-    CF_derives g₂ [symbol.nonterminal g₂.initial] output →
-      CF_derives
-        (union_grammar g₁ g₂)
-        (lsTN_of_lsTN₂ [symbol.nonterminal g₂.initial])
-        (lsTN_of_lsTN₂ output) :=
+private lemma deri₂_more (w : list (symbol T g₂.nt)) :
+  CF_derives g₂ [symbol.nonterminal g₂.initial] w →
+    CF_derives
+      (union_grammar g₁ g₂)
+      (lsTN_of_lsTN₂ [symbol.nonterminal g₂.initial])
+      (lsTN_of_lsTN₂ w) :=
 begin
-  intros outp ass,
+  intro ass,
   let gg₂ := @g₂g T g₁ g₂,
-  change CF_derives gg₂.g (lsTN_of_lsTN₂ [symbol.nonterminal g₂.initial]) (lsTN_of_lsTN₂ outp),
+  change CF_derives gg₂.g (lsTN_of_lsTN₂ [symbol.nonterminal g₂.initial]) (lsTN_of_lsTN₂ w),
   have techni : lsTN_of_lsTN₂ = lift_string gg₂.lift_nt,
   {
     unfold lsTN_of_lsTN₂,
@@ -273,7 +271,7 @@ begin
     five_steps,
   },
   rw techni,
-  exact lift_deri gg₂ [symbol.nonterminal g₂.initial] outp ass,
+  exact lift_deri ass,
 end
 
 private lemma in_union_of_in_first (w : list T) :
