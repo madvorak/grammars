@@ -11,7 +11,6 @@ grammar.mk (option (g₁.nt ⊕ g₂.nt)) none (
   (list.map (lift_rule (some ∘ sum.inr)) g₂.rules)
 )))
 
-
 variables {g₁ g₂ : grammar T}
 
 private def oN₁_of_N : (union_grammar g₁ g₂).nt → (option g₁.nt)

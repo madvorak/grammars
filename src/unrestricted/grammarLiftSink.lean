@@ -78,18 +78,18 @@ section translating_derivations
 
 variables {T : Type}
 
-private lemma lift_tran {lg : lifted_grammar T} {input output : list (symbol T lg.g₀.nt)}
-    (hyp : grammar_transforms lg.g₀ input output) :
-  grammar_transforms lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
+private lemma lift_tran {lg : lifted_grammar T} {w₁ w₂ : list (symbol T lg.g₀.nt)}
+    (hyp : grammar_transforms lg.g₀ w₁ w₂) :
+  grammar_transforms lg.g (lift_string lg.lift_nt w₁) (lift_string lg.lift_nt w₂) :=
 begin
-  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
+  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
   use lift_rule lg.lift_nt rule,
   split,
   {
     exact lg.corresponding_rules rule rule_in,
   },
+  use lift_string lg.lift_nt u,
   use lift_string lg.lift_nt v,
-  use lift_string lg.lift_nt w,
   split,
   {
     have lift_bef := congr_arg (lift_string lg.lift_nt) bef,
@@ -106,9 +106,9 @@ begin
   },
 end
 
-lemma lift_deri (lg : lifted_grammar T) {input output : list (symbol T lg.g₀.nt)}
-    (hyp : grammar_derives lg.g₀ input output) :
-  grammar_derives lg.g (lift_string lg.lift_nt input) (lift_string lg.lift_nt output) :=
+lemma lift_deri (lg : lifted_grammar T) {w₁ w₂ : list (symbol T lg.g₀.nt)}
+    (hyp : grammar_derives lg.g₀ w₁ w₂) :
+  grammar_derives lg.g (lift_string lg.lift_nt w₁) (lift_string lg.lift_nt w₂) :=
 begin
   induction hyp with u v trash orig ih,
   {
@@ -129,13 +129,13 @@ def good_letter {lg : lifted_grammar T} : symbol T lg.g.nt → Prop
 def good_string {lg : lifted_grammar T} (s : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ s, good_letter letter
 
-private lemma sink_tran {lg : lifted_grammar T} {input output : list (symbol T lg.g.nt)}
-    (hyp : grammar_transforms lg.g input output)
-    (ok_input : good_string input) :
-  grammar_transforms lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output)
-  ∧ good_string output :=
+private lemma sink_tran {lg : lifted_grammar T} {w₁ w₂ : list (symbol T lg.g.nt)}
+    (hyp : grammar_transforms lg.g w₁ w₂)
+    (ok_input : good_string w₁) :
+  grammar_transforms lg.g₀ (sink_string lg.sink_nt w₁) (sink_string lg.sink_nt w₂)
+  ∧ good_string w₂ :=
 begin
-  rcases hyp with ⟨rule, rule_in, v, w, bef, aft⟩,
+  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
 
   rcases lg.preimage_of_rules rule (by {
     split,
@@ -207,8 +207,8 @@ begin
   {
     exact pre_in,
   },
+  use sink_string lg.sink_nt u,
   use sink_string lg.sink_nt v,
-  use sink_string lg.sink_nt w,
   have correct_inverse : sink_symbol lg.sink_nt ∘ lift_symbol lg.lift_nt = option.some,
   {
     ext1,
@@ -271,11 +271,11 @@ begin
   },
 end
 
-private lemma sink_deri_aux {lg : lifted_grammar T} {input output : list (symbol T lg.g.nt)}
-    (hyp : grammar_derives lg.g input output)
-    (ok_input : good_string input) :
-  grammar_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output)
-  ∧ good_string output :=
+private lemma sink_deri_aux {lg : lifted_grammar T} {w₁ w₂ : list (symbol T lg.g.nt)}
+    (hyp : grammar_derives lg.g w₁ w₂)
+    (ok_input : good_string w₁) :
+  grammar_derives lg.g₀ (sink_string lg.sink_nt w₁) (sink_string lg.sink_nt w₂)
+  ∧ good_string w₂ :=
 begin
   induction hyp with u v trash orig ih,
   {
@@ -302,10 +302,10 @@ begin
   },
 end
 
-lemma sink_deri (lg : lifted_grammar T) {input output : list (symbol T lg.g.nt)}
-    (hyp : grammar_derives lg.g input output)
-    (ok_input : good_string input) :
-  grammar_derives lg.g₀ (sink_string lg.sink_nt input) (sink_string lg.sink_nt output) :=
+lemma sink_deri (lg : lifted_grammar T) {w₁ w₂ : list (symbol T lg.g.nt)}
+    (hyp : grammar_derives lg.g w₁ w₂)
+    (ok_input : good_string w₁) :
+  grammar_derives lg.g₀ (sink_string lg.sink_nt w₁) (sink_string lg.sink_nt w₂) :=
 begin
   exact (sink_deri_aux hyp ok_input).1
 end

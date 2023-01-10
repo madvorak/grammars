@@ -202,7 +202,7 @@ private lemma first_transformation {g₁ g₂ : grammar T} :
       symbol.nonterminal (sum.inl (some (sum.inr g₂.initial)))
     ] :=
 begin
-  use (big_grammar g₁ g₂).rules.nth_le 0 dec_trivial,
+  use (big_grammar g₁ g₂).rules.nth_le 0 (by dec_trivial),
   split,
   {
     change _ ∈ list.cons _ _,
