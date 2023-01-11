@@ -37,8 +37,7 @@ begin
     },
   },
   {
-    rcases h with ⟨v, ⟨rul, rin, prefi, postfi, bef, aft⟩, trash⟩,
-    clear trash,
+    rcases h with ⟨v, ⟨r, rin, -, -, -, -⟩, -⟩,
     cases rin,
   },
 end
@@ -110,8 +109,8 @@ begin
   rcases h with ⟨v, step_init, step_none⟩,
   have v_is_empty_word : v = list.nil,
   {
-    rcases step_init with ⟨rul, rin, pre, pos, bef, aft⟩,
-    have rule : rul = ((0 : fin 1), []),
+    rcases step_init with ⟨r, rin, pre, pos, bef, aft⟩,
+    have rule : r = ((0 : fin 1), []),
     {
       rw ←list.mem_singleton,
       exact rin,
@@ -250,7 +249,7 @@ begin
           rw list.mem_singleton,
           apply symbol.no_confusion,
         },
-        rcases orig with ⟨rul, rin, p, q, bef, aft⟩,
+        rcases orig with ⟨r, rin, p, q, bef, aft⟩,
         rw aft,
         rw bef at ih,
         repeat {
@@ -283,7 +282,7 @@ begin
           exact list.not_mem_nil (@symbol.terminal T (cfg_symbol_star a).nt t) imposs,
         },
         {
-          change rul ∈ [((0 : fin 1), ([] : list (symbol T (cfg_symbol_star a).nt)))] at rin,
+          change r ∈ [((0 : fin 1), ([] : list (symbol T (cfg_symbol_star a).nt)))] at rin,
           rw list.mem_singleton at rin,
           rw rin,
           exact list.not_mem_nil (symbol.terminal t),

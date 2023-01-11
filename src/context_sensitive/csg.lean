@@ -163,8 +163,8 @@ begin
       dsimp only at hyp,
       rcases hyp with ⟨r, rin, u, w, bef, aft⟩,
       rw list.mem_map at rin,
-      rcases rin with ⟨new_rule, new_rule_in, new_rule_def⟩,
-      use new_rule,
+      rcases rin with ⟨r', new_rule_in, new_rule_def⟩,
+      use r',
       split,
       {
         exact new_rule_in,

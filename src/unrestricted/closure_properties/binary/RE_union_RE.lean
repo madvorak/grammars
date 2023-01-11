@@ -247,7 +247,7 @@ begin
       exact symbol.no_confusion nt_eq_ter,
     },
   },
-  rcases hyp with ⟨i, ⟨rul, rin, u, v, bef, aft⟩, deri⟩,
+  rcases hyp with ⟨i, ⟨r, rin, u, v, bef, aft⟩, deri⟩,
 
   have uv_nil :  u = []  ∧  v = [],
   {
@@ -266,19 +266,19 @@ begin
   },
   rw [uv_nil.1, list.nil_append, uv_nil.2, list.append_nil] at bef aft,
 
-  have same_nt : (union_grammar g₁ g₂).initial = rul.input_N,
+  have same_nt : (union_grammar g₁ g₂).initial = r.input_N,
   {
     clear_except bef,
-    have elemeq : [symbol.nonterminal (union_grammar g₁ g₂).initial] = [symbol.nonterminal rul.input_N],
+    have elemeq : [symbol.nonterminal (union_grammar g₁ g₂).initial] = [symbol.nonterminal r.input_N],
     {
       have bef_len := congr_arg list.length bef,
       rw [list.length_append_append, list.length_singleton, list.length_singleton] at bef_len,
-      have rl_first : rul.input_L.length = 0,
+      have rl_first : r.input_L.length = 0,
       {
         clear_except bef_len,
         linarith,
       },
-      have rl_third : rul.input_R.length = 0,
+      have rl_third : r.input_R.length = 0,
       {
         clear_except bef_len,
         linarith,
@@ -339,7 +339,7 @@ begin
   exfalso,
   clear_except rin bef,
 
-  change rul ∈ (
+  change r ∈ (
       list.map (lift_rule_ (some ∘ sum.inl)) g₁.rules ++
       list.map (lift_rule_ (some ∘ sum.inr)) g₂.rules
     ) at rin,

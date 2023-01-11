@@ -4,12 +4,12 @@ import context_free.cfg
 variables {T : Type}
 
 def lift_symbol {N₀ N : Type} (lift_N : N₀ → N) : symbol T N₀ → symbol T N
-| (symbol.terminal ter) := symbol.terminal ter
-| (symbol.nonterminal nonter) := symbol.nonterminal (lift_N nonter)
+| (symbol.terminal t)    := symbol.terminal t
+| (symbol.nonterminal n) := symbol.nonterminal (lift_N n)
 
 def sink_symbol {N₀ N : Type} (sink_N : N → option N₀) : symbol T N → option (symbol T N₀)
-| (symbol.terminal ter) := some (symbol.terminal ter)
-| (symbol.nonterminal nonter) := option.map symbol.nonterminal (sink_N nonter)
+| (symbol.terminal t)    := some (symbol.terminal t)
+| (symbol.nonterminal n) := option.map symbol.nonterminal (sink_N n)
 
 def lift_string {N₀ N : Type} (lift_N : N₀ → N) :
   list (symbol T N₀) → list (symbol T N) :=
@@ -68,11 +68,11 @@ private lemma lift_tran {lg : lifted_grammar} {w₁ w₂ : list (symbol T lg.g�
     (hyp : CF_transforms lg.g₀ w₁ w₂) :
   CF_transforms lg.g (lift_string lg.lift_nt w₁) (lift_string lg.lift_nt w₂) :=
 begin
-  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
-  use lift_rule lg.lift_nt rule,
+  rcases hyp with ⟨r, rin, u, v, bef, aft⟩,
+  use lift_rule lg.lift_nt r,
   split,
   {
-    exact lg.corresponding_rules rule rule_in,
+    exact lg.corresponding_rules r rin,
   },
   use lift_string lg.lift_nt u,
   use lift_string lg.lift_nt v,
@@ -95,7 +95,7 @@ lemma lift_deri {lg : lifted_grammar} {w₁ w₂ : list (symbol T lg.g₀.nt)}
     (hyp : CF_derives lg.g₀ w₁ w₂) :
   CF_derives lg.g (lift_string lg.lift_nt w₁) (lift_string lg.lift_nt w₂) :=
 begin
-  induction hyp with u v trash orig ih,
+  induction hyp with x y trash orig ih,
   {
     apply CF_deri_self,
   },
@@ -108,8 +108,8 @@ end
 
 
 def good_letter {lg : @lifted_grammar T} : symbol T lg.g.nt → Prop
-| (symbol.terminal t)     := true
-| (symbol.nonterminal nt) := ∃ n₀ : lg.g₀.nt, lg.sink_nt nt = n₀
+| (symbol.terminal t)    := true
+| (symbol.nonterminal n) := (∃ n₀ : lg.g₀.nt, lg.sink_nt n = n₀)
 
 def good_string {lg : @lifted_grammar T} (str : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ str, good_letter letter
@@ -119,33 +119,33 @@ private lemma sink_tran {lg : lifted_grammar} {w₁ w₂ : list (symbol T lg.g.n
     (ok_input : good_string w₁) :
   CF_transforms lg.g₀ (sink_string lg.sink_nt w₁) (sink_string lg.sink_nt w₂) :=
 begin
-  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
+  rcases hyp with ⟨r, rin, u, v, bef, aft⟩,
 
-  rcases lg.preimage_of_rules rule (by {
+  rcases lg.preimage_of_rules r (by {
     split,
     {
-      exact rule_in,
+      exact rin,
     },
     rw bef at ok_input,
-    have good_matched_nonterminal : good_letter (symbol.nonterminal rule.fst),
+    have good_matched_nonterminal : good_letter (symbol.nonterminal r.fst),
     {
-      specialize ok_input (symbol.nonterminal rule.fst),
+      specialize ok_input (symbol.nonterminal r.fst),
       finish,
     },
-    change ∃ n₀ : lg.g₀.nt, lg.sink_nt rule.fst = some n₀ at good_matched_nonterminal,
+    change ∃ n₀ : lg.g₀.nt, lg.sink_nt r.fst = some n₀ at good_matched_nonterminal,
     cases good_matched_nonterminal with n₀ hn₀,
     use n₀,
     have almost := congr_arg (option.map lg.lift_nt) hn₀,
-    rw lifted_grammar_inverse lg rule.fst ⟨n₀, hn₀⟩ at almost,
+    rw lifted_grammar_inverse lg r.fst ⟨n₀, hn₀⟩ at almost,
     rw option.map_some' at almost,
     apply option.some_injective,
     exact almost.symm,
-  }) with ⟨pre_rule, pre_in, preimage⟩,
+  }) with ⟨p, pin, preimage⟩,
 
-  use pre_rule,
+  use p,
   split,
   {
-    exact pre_in,
+    exact pin,
   },
   use sink_string lg.sink_nt u,
   use sink_string lg.sink_nt v,
@@ -172,9 +172,9 @@ begin
     unfold lift_rule,
     dsimp only,
     change
-      [symbol.nonterminal pre_rule.fst] =
+      [symbol.nonterminal p.fst] =
       list.filter_map (sink_symbol lg.sink_nt)
-        (list.map (lift_symbol lg.lift_nt) [symbol.nonterminal pre_rule.fst]),
+        (list.map (lift_symbol lg.lift_nt) [symbol.nonterminal p.fst]),
     rw list.filter_map_map,
     rw correct_inverse,
     rw list.filter_map_some,
@@ -200,7 +200,7 @@ lemma sink_deri (lg : lifted_grammar) (w₁ w₂ : list (symbol T lg.g.nt))
   CF_derives lg.g₀ (sink_string lg.sink_nt w₁) (sink_string lg.sink_nt w₂)
   ∧ good_string w₂ :=
 begin
-  induction hyp with u v trash orig ih,
+  induction hyp with x y trash orig ih,
   {
     split,
     {
@@ -219,30 +219,30 @@ begin
     exact sink_tran orig ih.right,
   },
   {
-    intros letter in_v,
+    intros letter in_y,
     have ihr := ih.right letter,
-    rcases orig with ⟨rule, in_rules, w₁, w₂, bef, aft⟩,
+    rcases orig with ⟨r, in_rules, u, y, bef, aft⟩,
     rw bef at ihr,
     rw list.mem_append at ihr,
-    rw aft at in_v,
-    rw list.mem_append at in_v,
-    cases in_v,
-    rw list.mem_append at in_v,
-    cases in_v,
+    rw aft at in_y,
+    rw list.mem_append at in_y,
+    cases in_y,
+    rw list.mem_append at in_y,
+    cases in_y,
     {
       apply ihr,
       rw list.mem_append,
       left,
       left,
-      exact in_v,
+      exact in_y,
     },
     {
-      have exn₀ : ∃ (n₀ : lg.g₀.nt), lg.lift_nt n₀ = rule.fst,
+      have exn₀ : ∃ (n₀ : lg.g₀.nt), lg.lift_nt n₀ = r.fst,
       {
-        by_cases lg.sink_nt rule.fst = none,
+        by_cases lg.sink_nt r.fst = none,
         {
           exfalso,
-          have ruu : symbol.nonterminal rule.fst ∈ u,
+          have ruu : symbol.nonterminal r.fst ∈ x,
           {
             rw bef,
             rw list.mem_append,
@@ -251,9 +251,9 @@ begin
             right,
             apply list.mem_cons_self,
           },
-          have glruf : good_letter (symbol.nonterminal rule.fst),
+          have glruf : good_letter (symbol.nonterminal r.fst),
           {
-            exact ih.right (symbol.nonterminal rule.fst) ruu,
+            exact ih.right (symbol.nonterminal r.fst) ruu,
           },
           unfold good_letter at glruf,
           rw h at glruf,
@@ -262,19 +262,19 @@ begin
         },
         cases (option.ne_none_iff_exists'.mp h) with x ex,
         use x,
-        have gix := lifted_grammar_inverse lg rule.fst ⟨x, ex⟩,
+        have gix := lifted_grammar_inverse lg r.fst ⟨x, ex⟩,
         rw ex at gix,
         rw option.map_some' at gix,
         apply option.some_injective,
         exact gix,
       },
-      rcases lg.preimage_of_rules rule ⟨in_rules, exn₀⟩ with ⟨rul, in0, lif⟩,
-      rw ←lif at in_v,
-      unfold lift_rule at in_v,
-      dsimp only at in_v,
-      unfold lift_string at in_v,
-      rw list.mem_map at in_v,
-      rcases in_v with ⟨s, s_in_rulsnd, symbol_letter⟩,
+      rcases lg.preimage_of_rules r ⟨in_rules, exn₀⟩ with ⟨r₀, in0, lif⟩,
+      rw ←lif at in_y,
+      unfold lift_rule at in_y,
+      dsimp only at in_y,
+      unfold lift_string at in_y,
+      rw list.mem_map at in_y,
+      rcases in_y with ⟨s, s_in_rulsnd, symbol_letter⟩,
       rw ←symbol_letter,
       cases s,
       {
@@ -288,7 +288,7 @@ begin
     {
       apply ihr,
       right,
-      exact in_v,
+      exact in_y,
     },
   },
 end

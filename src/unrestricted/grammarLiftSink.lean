@@ -6,12 +6,12 @@ section functions_lift_sink
 variables {T N₀ N : Type}
 
 def lift_symbol_ (lift_N : N₀ → N) : symbol T N₀ → symbol T N
-| (symbol.terminal ter) := symbol.terminal ter
-| (symbol.nonterminal nonter) := symbol.nonterminal (lift_N nonter)
+| (symbol.terminal t)    := symbol.terminal t
+| (symbol.nonterminal n) := symbol.nonterminal (lift_N n)
 
 def sink_symbol_ (sink_N : N → option N₀) : symbol T N → option (symbol T N₀)
-| (symbol.terminal ter) := some (symbol.terminal ter)
-| (symbol.nonterminal nonter) := option.map symbol.nonterminal (sink_N nonter)
+| (symbol.terminal t)    := some (symbol.terminal t)
+| (symbol.nonterminal n) := option.map symbol.nonterminal (sink_N n)
 
 def lift_string_ (lift_N : N₀ → N) : list (symbol T N₀) → list (symbol T N) :=
 list.map (lift_symbol_ lift_N)
@@ -82,11 +82,11 @@ private lemma lift_tran_ {lg : lifted_grammar_ T} {w₁ w₂ : list (symbol T lg
     (hyp : grammar_transforms lg.g₀ w₁ w₂) :
   grammar_transforms lg.g (lift_string_ lg.lift_nt w₁) (lift_string_ lg.lift_nt w₂) :=
 begin
-  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
-  use lift_rule_ lg.lift_nt rule,
+  rcases hyp with ⟨r, rin, u, v, bef, aft⟩,
+  use lift_rule_ lg.lift_nt r,
   split,
   {
-    exact lg.corresponding_rules rule rule_in,
+    exact lg.corresponding_rules r rin,
   },
   use lift_string_ lg.lift_nt u,
   use lift_string_ lg.lift_nt v,
@@ -123,8 +123,8 @@ end
 
 
 def good_letter_ {lg : lifted_grammar_ T} : symbol T lg.g.nt → Prop
-| (symbol.terminal t)     := true
-| (symbol.nonterminal nt) := ∃ n₀ : lg.g₀.nt, lg.sink_nt nt = n₀
+| (symbol.terminal t)    := true
+| (symbol.nonterminal n) := (∃ n₀ : lg.g₀.nt, lg.sink_nt n = n₀)
 
 def good_string_ {lg : lifted_grammar_ T} (s : list (symbol T lg.g.nt)) :=
 ∀ letter ∈ s, good_letter_ letter
@@ -135,31 +135,31 @@ private lemma sink_tran_ {lg : lifted_grammar_ T} {w₁ w₂ : list (symbol T lg
   grammar_transforms lg.g₀ (sink_string_ lg.sink_nt w₁) (sink_string_ lg.sink_nt w₂)
   ∧ good_string_ w₂ :=
 begin
-  rcases hyp with ⟨rule, rule_in, u, v, bef, aft⟩,
+  rcases hyp with ⟨r, rin, u, v, bef, aft⟩,
 
-  rcases lg.preimage_of_rules rule (by {
+  rcases lg.preimage_of_rules r (by {
     split,
     {
-      exact rule_in,
+      exact rin,
     },
     rw bef at ok_input,
-    have good_matched_nonterminal : good_letter_ (symbol.nonterminal rule.input_N),
+    have good_matched_nonterminal : good_letter_ (symbol.nonterminal r.input_N),
     {
-      apply ok_input (symbol.nonterminal rule.input_N),
+      apply ok_input (symbol.nonterminal r.input_N),
       apply list.mem_append_left,
       apply list.mem_append_left,
       apply list.mem_append_right,
       rw list.mem_singleton,
     },
-    change ∃ n₀ : lg.g₀.nt, lg.sink_nt rule.input_N = some n₀ at good_matched_nonterminal,
+    change ∃ n₀ : lg.g₀.nt, lg.sink_nt r.input_N = some n₀ at good_matched_nonterminal,
     cases good_matched_nonterminal with n₀ hn₀,
     use n₀,
     have almost := congr_arg (option.map lg.lift_nt) hn₀,
-    rw lifted_grammar_inverse lg rule.input_N ⟨n₀, hn₀⟩ at almost,
+    rw lifted_grammar_inverse lg r.input_N ⟨n₀, hn₀⟩ at almost,
     rw option.map_some' at almost,
     apply option.some_injective,
     exact almost.symm,
-  }) with ⟨pre_rule, pre_in, preimage⟩,
+  }) with ⟨r₀, pre_in, preimage⟩,
 
   split, swap,
   {
@@ -202,7 +202,7 @@ begin
     use s,
     exact lg.lift_nt_sink s,
   },
-  use pre_rule,
+  use r₀,
   split,
   {
     exact pre_in,
@@ -241,9 +241,9 @@ begin
     },
     {
       change
-        [symbol.nonterminal pre_rule.input_N] =
+        [symbol.nonterminal r₀.input_N] =
         list.filter_map (sink_symbol_ lg.sink_nt)
-          (list.map (lift_symbol_ lg.lift_nt) [symbol.nonterminal pre_rule.input_N]),
+          (list.map (lift_symbol_ lg.lift_nt) [symbol.nonterminal r₀.input_N]),
       rw list.filter_map_map,
       rw correct_inverse,
       rw list.filter_map_some,
