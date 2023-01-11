@@ -426,17 +426,17 @@ private def lsTN₂_of_lsTN {g₁ g₂ : CF_grammar T} (lis : list (symbol T (op
   list (symbol T g₂.nt) :=
 list.filter_map sTN₂_of_sTN lis
 
-private lemma self_of_sTN₁ {g₁ g₂ : CF_grammar T} (symb : symbol T g₁.nt) :
-  sTN₁_of_sTN (@sTN_of_sTN₁ _ _ g₂ symb) = symb :=
+private lemma self_of_sTN₁ {g₁ g₂ : CF_grammar T} (a : symbol T g₁.nt) :
+  sTN₁_of_sTN (@sTN_of_sTN₁ _ _ g₂ a) = a :=
 begin
-  cases symb;
+  cases a;
   refl,
 end
 
-private lemma self_of_sTN₂ {g₁ g₂ : CF_grammar T} (symb : symbol T g₂.nt) :
-  sTN₂_of_sTN (@sTN_of_sTN₂ _ g₁ _ symb) = symb :=
+private lemma self_of_sTN₂ {g₁ g₂ : CF_grammar T} (a : symbol T g₂.nt) :
+  sTN₂_of_sTN (@sTN_of_sTN₂ _ g₁ _ a) = a :=
 begin
-  cases symb;
+  cases a;
   refl,
 end
 

@@ -450,13 +450,14 @@ begin
     convert_to list.map symbol.terminal w = list.filter_map (λ x, option.some (symbol.terminal x)) w,
     change list.map symbol.terminal w = list.filter_map (option.some ∘ symbol.terminal) w,
     clear hypo,
-    induction w,
+    induction w with d l,
     {
       refl,
     },
     rw list.map,
-    convert_to symbol.terminal w_hd :: list.map symbol.terminal w_tl =
-               symbol.terminal w_hd :: list.filter_map (some ∘ symbol.terminal) w_tl,
+    convert_to
+      symbol.terminal d :: list.map symbol.terminal l =
+      symbol.terminal d :: list.filter_map (some ∘ symbol.terminal) l,
     norm_num,
     exact w_ih,
   },
@@ -499,13 +500,14 @@ begin
     convert_to list.map symbol.terminal w = list.filter_map (λ x, option.some (symbol.terminal x)) w,
     change list.map symbol.terminal w = list.filter_map (option.some ∘ symbol.terminal) w,
     clear hypo,
-    induction w,
+    induction w with d l,
     {
       refl,
     },
     rw list.map,
-    convert_to symbol.terminal w_hd :: list.map symbol.terminal w_tl =
-               symbol.terminal w_hd :: list.filter_map (some ∘ symbol.terminal) w_tl,
+    convert_to
+      symbol.terminal d :: list.map symbol.terminal l =
+      symbol.terminal d :: list.filter_map (some ∘ symbol.terminal) l,
     norm_num,
     exact w_ih,
   },
