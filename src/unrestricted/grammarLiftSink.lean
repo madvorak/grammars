@@ -127,7 +127,7 @@ def good_letter {lg : lifted_grammar T} : symbol T lg.g.nt → Prop
 | (symbol.nonterminal n) := (∃ n₀ : lg.g₀.nt, lg.sink_nt n = n₀)
 
 def good_string {lg : lifted_grammar T} (s : list (symbol T lg.g.nt)) :=
-∀ letter ∈ s, good_letter letter
+∀ a ∈ s, good_letter a
 
 private lemma sink_tran {lg : lifted_grammar T} {w₁ w₂ : list (symbol T lg.g.nt)}
     (hyp : grammar_transforms lg.g w₁ w₂)
