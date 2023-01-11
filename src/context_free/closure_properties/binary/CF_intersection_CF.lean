@@ -611,19 +611,19 @@ begin
         right,
         refl,
       },
-      rcases orig with ⟨rul, rin, p, q, bef, aft⟩,
+      rcases orig with ⟨r, rin, p, q, bef, aft⟩,
       cases hyp_ih with k ih,
       cases ih,
       {
         exfalso,
         rw ih at bef,
-        have yes_in : symbol.nonterminal rul.fst ∈ p ++ [symbol.nonterminal rul.fst] ++ q,
+        have yes_in : symbol.nonterminal r.fst ∈ p ++ [symbol.nonterminal r.fst] ++ q,
         {
           apply list.mem_append_left,
           apply list.mem_append_right,
           apply list.mem_cons_self,
         },
-        have not_in : symbol.nonterminal rul.fst ∉ list.repeat a k ++ list.repeat b k,
+        have not_in : symbol.nonterminal r.fst ∉ list.repeat a k ++ list.repeat b k,
         {
           rw list.mem_append_eq,
           push_neg,
@@ -639,7 +639,7 @@ begin
         exact not_in yes_in,
       },
       
-      have both_rule_rewrite_S : symbol.nonterminal rul.fst = S,
+      have both_rule_rewrite_S : symbol.nonterminal r.fst = S,
       {
         cases rin,
         {

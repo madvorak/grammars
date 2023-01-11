@@ -87,11 +87,11 @@ begin
   {
     exact ih,
   },
-  rcases hyp with ⟨rule, rule_in, v, w, h_bef, h_aft⟩,
-  use rule,
+  rcases hyp with ⟨r, r_in, v, w, h_bef, h_aft⟩,
+  use r,
   split,
   {
-    exact rule_in,
+    exact r_in,
   },
   use pᵣ ++ v,
   use w,
@@ -114,11 +114,11 @@ begin
   {
     exact ih,
   },
-  rcases hyp with ⟨rule, rule_in, v, w, h_bef, h_aft⟩,
-  use rule,
+  rcases hyp with ⟨r, r_in, v, w, h_bef, h_aft⟩,
+  use r,
   split,
   {
-    exact rule_in,
+    exact r_in,
   },
   use v,
   use w ++ pₒ,
