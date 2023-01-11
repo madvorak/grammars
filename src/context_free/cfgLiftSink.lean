@@ -111,8 +111,8 @@ def good_letter {lg : @lifted_grammar T} : symbol T lg.g.nt → Prop
 | (symbol.terminal t)    := true
 | (symbol.nonterminal n) := (∃ n₀ : lg.g₀.nt, lg.sink_nt n = n₀)
 
-def good_string {lg : @lifted_grammar T} (str : list (symbol T lg.g.nt)) :=
-∀ letter ∈ str, good_letter letter
+def good_string {lg : @lifted_grammar T} (s : list (symbol T lg.g.nt)) :=
+∀ a ∈ s, good_letter a
 
 private lemma sink_tran {lg : lifted_grammar} {w₁ w₂ : list (symbol T lg.g.nt)}
     (hyp : CF_transforms lg.g w₁ w₂)
@@ -219,8 +219,8 @@ begin
     exact sink_tran orig ih.right,
   },
   {
-    intros letter in_y,
-    have ihr := ih.right letter,
+    intros a in_y,
+    have ihr := ih.right a,
     rcases orig with ⟨r, in_rules, u, y, bef, aft⟩,
     rw bef at ihr,
     rw list.mem_append at ihr,

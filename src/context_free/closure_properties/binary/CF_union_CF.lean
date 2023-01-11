@@ -414,7 +414,7 @@ section lemmata_supset
 
 meta def good_singleton : tactic unit := `[
   unfold good_string,
-  intros letter in_singleton,
+  intros a in_singleton,
   rw list.mem_singleton at in_singleton,
   rw in_singleton,
   unfold good_letter
