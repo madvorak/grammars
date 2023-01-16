@@ -82,10 +82,10 @@ lemma grammar_deri_of_tran_deri {u v w : list (symbol T g.nt)}
   grammar_derives g u w :=
 grammar_deri_of_deri_deri (grammar_deri_of_tran huv) hvw
 
-lemma grammar_tran_or_id_of_deri {u w : list (symbol T g.nt)} (ass : grammar_derives g u w) :
+lemma grammar_tran_or_id_of_deri {u w : list (symbol T g.nt)} (huw : grammar_derives g u w) :
   (u = w) ∨
   (∃ v : list (symbol T g.nt), (grammar_transforms g u v) ∧ (grammar_derives g v w)) :=
-relation.refl_trans_gen.cases_head ass
+relation.refl_trans_gen.cases_head huw
 
 
 lemma grammar_deri_with_prefix {w₁ w₂ : list (symbol T g.nt)}
