@@ -1,5 +1,4 @@
-import context_free.cfg
-import tactic
+import classes.context_free.cfg
 
 
 variables {T : Type}

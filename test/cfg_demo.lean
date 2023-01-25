@@ -1,4 +1,4 @@
-import context_free.cfg
+import classes.context_free.cfg
 
 
 private def a_ : fin 3 := 0

@@ -1,7 +1,7 @@
 import logic.relation
 import computability.language
-import list_utils
-import written_by_others.trim_assoc
+import utilities.list_utils
+import utilities.written_by_others.trim_assoc
 
 
 /-- The type of symbols is the disjoint union of terminals and nonterminals. -/

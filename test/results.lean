@@ -1,15 +1,15 @@
-import unrestricted.closure_properties.binary.RE_union_RE
-import unrestricted.closure_properties.unary.reverse_RE
-import unrestricted.closure_properties.binary.RE_concatenation_RE
-import unrestricted.closure_properties.unary.star_RE
+import classes.unrestricted.closure_properties.binary.RE_union_RE
+import classes.unrestricted.closure_properties.unary.reverse_RE
+import classes.unrestricted.closure_properties.binary.RE_concatenation_RE
+import classes.unrestricted.closure_properties.unary.star_RE
 
-import context_free.closure_properties.binary.CF_union_CF
-import context_free.closure_properties.unary.reverse_CF
-import context_free.closure_properties.binary.CF_concatenation_CF
-import context_free.closure_properties.binary.CF_intersection_CF
-import context_free.closure_properties.unary.complement_CF
+import classes.context_free.closure_properties.binary.CF_union_CF
+import classes.context_free.closure_properties.unary.reverse_CF
+import classes.context_free.closure_properties.binary.CF_concatenation_CF
+import classes.context_free.closure_properties.binary.CF_intersection_CF
+import classes.context_free.closure_properties.unary.complement_CF
 
-import written_by_others.print_sorries
+import utilities.written_by_others.print_sorries
 
 
 section unrestricted

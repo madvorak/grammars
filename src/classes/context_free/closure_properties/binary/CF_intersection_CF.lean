@@ -1,7 +1,7 @@
-import context_free.cfgPumping
-import context_free.cfgElementary
-import context_free.closure_properties.binary.CF_concatenation_CF
-import context_free.closure_properties.unary.permutation_CF
+import classes.context_free.cfgPumping
+import classes.context_free.cfgElementary
+import classes.context_free.closure_properties.binary.CF_concatenation_CF
+import classes.context_free.closure_properties.unary.permutation_CF
 
 
 section defs_over_fin3

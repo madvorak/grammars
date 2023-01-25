@@ -1,5 +1,5 @@
 import tactic
-import written_by_others.list_take_join
+import utilities.written_by_others.list_take_join
 
 section tactic_in_list_explicit
 

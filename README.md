@@ -17,32 +17,32 @@ The script will output `Result: SUCCESS` if everything builds successfully.
 
 (a.k.a. general grammars, a.k.a. recursively-enumerable grammars, a.k.a. type-0 grammars, a.k.a. grammars)
 
-[Definition](/src/unrestricted/grammar.lean)
+[Definition](/src/classes/unrestricted/grammar.lean)
 
 [Example](/test/grammar_demo.lean)
 
-[Closure under union](/src/unrestricted/closure_properties/binary/RE_union_RE.lean)
+[Closure under union](/src/classes/unrestricted/closure_properties/binary/RE_union_RE.lean)
 
-[Closure under reversal](/src/unrestricted/closure_properties/unary/reverse_RE.lean)
+[Closure under reversal](/src/classes/unrestricted/closure_properties/unary/reverse_RE.lean)
 
-[Closure under concatenation](/src/unrestricted/closure_properties/binary/RE_concatenation_RE.lean)
+[Closure under concatenation](/src/classes/unrestricted/closure_properties/binary/RE_concatenation_RE.lean)
 
-[Closure under Kleene star](/src/unrestricted/closure_properties/unary/star_RE.lean)
+[Closure under Kleene star](/src/classes/unrestricted/closure_properties/unary/star_RE.lean)
 
 ### Context-free grammars
 
-[Definition](/src/context_free/cfg.lean)
+[Definition](/src/classes/context_free/cfg.lean)
 
 [Example](/test/cfg_demo.lean)
 
-[Closure under union](/src/context_free/closure_properties/binary/CF_union_CF.lean)
+[Closure under union](/src/classes/context_free/closure_properties/binary/CF_union_CF.lean)
 
-[Closure under reversal](/src/context_free/closure_properties/unary/reverse_CF.lean)
+[Closure under reversal](/src/classes/context_free/closure_properties/unary/reverse_CF.lean)
 
-[Closure under concatenation](/src/context_free/closure_properties/binary/CF_concatenation_CF.lean)
+[Closure under concatenation](/src/classes/context_free/closure_properties/binary/CF_concatenation_CF.lean)
 
-[Non-closure under intersection](/src/context_free/closure_properties/binary/CF_intersection_CF.lean) (\*)
+[Non-closure under intersection](/src/classes/context_free/closure_properties/binary/CF_intersection_CF.lean) (\*)
 
-[Non-closure under complement](/src/context_free/closure_properties/unary/complement_CF.lean) (\*)
+[Non-closure under complement](/src/classes/context_free/closure_properties/unary/complement_CF.lean) (\*)
 
-\* missing proof: [Context-free pumping lemma](/src/context_free/cfgPumping.lean)
+\* missing proof: [Context-free pumping lemma](/src/classes/context_free/cfgPumping.lean)

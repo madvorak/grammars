@@ -1,4 +1,4 @@
-import unrestricted.grammar
+import classes.unrestricted.grammar
 
 
 section functions_lift_sink

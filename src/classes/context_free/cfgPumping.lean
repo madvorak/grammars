@@ -1,4 +1,4 @@
-import context_free.cfg
+import classes.context_free.cfg
 
 /-- Pumping lemma for context-free languages. -/
 lemma CF_pumping {T : Type} {L : language T} (cf : is_CF L) :

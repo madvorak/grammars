@@ -1,5 +1,5 @@
-import unrestricted.grammar
-import language_operations
+import classes.unrestricted.grammar
+import utilities.language_operations
 
 
 variables {T : Type}
