@@ -1,4 +1,4 @@
-import context_sensitive.csg
+import classes.context_sensitive.csg
 
 
 section cfg_definitions

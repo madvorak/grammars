@@ -1,4 +1,4 @@
-import context_free.cfgLiftSink
+import classes.context_free.cfgLiftSink
 
 
 variables {T : Type}

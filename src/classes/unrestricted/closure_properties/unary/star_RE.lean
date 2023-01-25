@@ -1,5 +1,5 @@
-import unrestricted.grammarLiftSink
-import unrestricted.closure_properties.binary.RE_concatenation_RE
+import classes.unrestricted.grammarLiftSink
+import classes.unrestricted.closure_properties.binary.RE_concatenation_RE
 
 
 -- new nonterminal type
