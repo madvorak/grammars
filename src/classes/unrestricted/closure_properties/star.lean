@@ -1916,7 +1916,7 @@ begin
   rw ←wrap_orig at *,
   clear wrap_orig,
   dsimp only at bef,
-  rcases case_2_match_rule  bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
+  rcases case_2_match_rule bef with ⟨m, u₁, v₁, u_eq, xm_eq, v_eq⟩,
   clear bef,
   rw [u_eq, v_eq] at aft,
   use (list.take m x ++ [u₁ ++ r₀.output_string ++ v₁] ++ list.drop m.succ x),
