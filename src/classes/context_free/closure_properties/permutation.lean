@@ -1,4 +1,4 @@
-import classes.context_free.closure_properties.unary.bijection_CF
+import classes.context_free.closure_properties.bijection
 
 
 /-- The class of context-free languages is closed under permutation of terminals. -/

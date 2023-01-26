@@ -1,4 +1,4 @@
-import classes.unrestricted.grammar
+import classes.unrestricted.toolbox
 
 
 inductive alphabet

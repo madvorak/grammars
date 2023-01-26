@@ -1,5 +1,5 @@
-import classes.context_free.cfg
-import classes.unrestricted.closure_properties.binary.RE_concatenation_RE
+import classes.context_free.inclusion
+import classes.unrestricted.closure_properties.concatenation
 
 
 variables {T : Type}

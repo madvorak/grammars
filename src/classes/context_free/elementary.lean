@@ -1,4 +1,4 @@
-import classes.context_free.cfg
+import classes.context_free.toolbox
 
 
 variables {T : Type}

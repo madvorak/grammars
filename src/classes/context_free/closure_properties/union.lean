@@ -1,5 +1,5 @@
-import classes.context_free.cfg
-import classes.unrestricted.closure_properties.binary.RE_union_RE
+import classes.context_free.inclusion
+import classes.unrestricted.closure_properties.union
 
 
 variables {T : Type}
