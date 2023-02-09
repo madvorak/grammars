@@ -10,7 +10,7 @@ structure csrule (T : Type) (N : Type) :=
 (context_right : list (symbol T N))
 (output_string : list (symbol T N)) -- !! TODO require non-empty unless `S` → `[]` where `S` is on no right side !!
 
-/-- Context-sensitive grammar that generates words over the alphabet `termi` (a type of terminals). -/
+/-- Context-sensitive grammar that generates words over the alphabet `T` (a type of terminals). -/
 structure CS_grammar (T : Type) :=
 (nt : Type)                   -- type of nonterminals
 (initial : nt)                -- initial symbol
