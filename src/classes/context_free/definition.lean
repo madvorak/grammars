@@ -1,7 +1,7 @@
 import classes.unrestricted.definition
 
 
-/-- Context-free grammar that generates words over the alphabet `termi` (a type of terminals). -/
+/-- Context-free grammar that generates words over the alphabet `T` (a type of terminals). -/
 structure CF_grammar (T : Type) :=
 (nt : Type)                                -- type of nonterminals
 (initial : nt)                             -- initial symbol

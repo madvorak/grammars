@@ -16,7 +16,7 @@ structure grule (T : Type) (N : Type) :=
 (input_R : list (symbol T N))
 (output_string : list (symbol T N))
 
-/-- Grammar (unrestricted) that generates words over the alphabet `termi` (a type of terminals). -/
+/-- Grammar (unrestricted) that generates words over the alphabet `T` (a type of terminals). -/
 structure grammar (T : Type) :=
 (nt : Type)                 -- type of nonterminals
 (initial : nt)              -- initial symbol
