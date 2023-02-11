@@ -63,7 +63,7 @@ begin
       {
         ext,
         cases x,
-        --change _ = grule.mk _ _ _ _,
+        change _ = grule.mk _ _ _ _,
         finish,
       },
       refl,
