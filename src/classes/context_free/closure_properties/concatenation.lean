@@ -1,4 +1,5 @@
-import classes.context_free.cfgLiftSink
+import classes.context_free.basics.lifting
+import utilities.written_by_others.trim_assoc
 
 
 variables {T : Type}

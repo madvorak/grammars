@@ -1,4 +1,4 @@
-import classes.unrestricted.grammar
+import classes.unrestricted.basics.definition
 
 
 /-- Transformation rule for a grammar in the Kuroda normal form. -/

@@ -1,5 +1,6 @@
-import classes.context_free.cfg
-import classes.unrestricted.closure_properties.binary.RE_concatenation_RE
+import classes.context_free.basics.inclusion
+import classes.unrestricted.closure_properties.concatenation
+import utilities.written_by_others.trim_assoc
 import utilities.written_by_others.print_sorries
 
 
@@ -66,7 +67,7 @@ end
 
 /-- The class of context-free languages is closed under concatenation.
     This theorem is proved by translation from general grammars.
-    Compare to `context_free.closure_properties.binary.CF_concatenation_CF.lean` which uses
+    Compare to `classes.context_free.closure_properties.concatenation.lean` which uses
     a simpler and more effective construction (based on context-gree grammars only). -/
 private theorem bonus_CF_of_CF_c_CF (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ * L₂)   :=

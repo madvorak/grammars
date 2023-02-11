@@ -1,7 +1,9 @@
-import classes.context_free.cfg
-
+import classes.context_free.basics.toolbox
+import utilities.list_utils
+import utilities.written_by_others.trim_assoc
 
 variables {T : Type}
+
 
 /-- Context-free grammar for the empty language (i.e., `∈` always gives `false`). -/
 def cfg_empty_lang : CF_grammar T :=

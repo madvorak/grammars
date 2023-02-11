@@ -1,4 +1,5 @@
-import classes.unrestricted.grammarLiftSink
+import classes.unrestricted.basics.lifting
+import utilities.list_utils
 
 
 variables {T : Type}

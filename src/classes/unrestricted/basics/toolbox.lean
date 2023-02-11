@@ -1,61 +1,7 @@
-import logic.relation
-import computability.language
-import utilities.list_utils
-import utilities.written_by_others.trim_assoc
+import classes.unrestricted.basics.definition
 
-
-/-- The type of symbols is the disjoint union of terminals and nonterminals. -/
-inductive symbol (T : Type) (N : Type)
-| terminal    : T → symbol
-| nonterminal : N → symbol
-
-
-section grammar_definitions
-
-/-- Transformation rule for a grammar without any restrictions. -/
-structure grule (T : Type) (N : Type) :=
-(input_L : list (symbol T N))
-(input_N : N)
-(input_R : list (symbol T N))
-(output_string : list (symbol T N))
-
-/-- Grammar (unrestricted) that generates words over the alphabet `T` (a type of terminals). -/
-structure grammar (T : Type) :=
-(nt : Type)                 -- type of nonterminals
-(initial : nt)              -- initial symbol
-(rules : list (grule T nt)) -- rewrite rules
-
-
-variables {T : Type}
-
-/-- One step of grammatical transformation. -/
-def grammar_transforms (g : grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :=
-∃ r : grule T g.nt,
-  r ∈ g.rules  ∧
-  ∃ u v : list (symbol T g.nt), and
-    (w₁  =  u ++  r.input_L ++ [symbol.nonterminal r.input_N] ++ r.input_R  ++ v)
-    (w₂  =  u ++  r.output_string  ++ v)
-
-/-- Any number of steps of grammatical transformation; reflexive+transitive closure of `grammar_transforms`. -/
-def grammar_derives (g : grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
-relation.refl_trans_gen (grammar_transforms g)
-
-def grammar_generates (g : grammar T) (w : list T) : Prop :=
-grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
-
-/-- Returns the set of words (lists of terminals) that can be derived from the initial nonterminal. -/
-def grammar_language (g : grammar T) : language T :=
-set_of (grammar_generates g)
-
-/-- Predicate "is recursively-enumerable"; defined by an existence of a grammar for the given language. -/
-def is_RE (L : language T) : Prop :=
-∃ g : grammar T, grammar_language g = L
-
-end grammar_definitions
-
-
-section grammar_utilities
 variables {T : Type} {g : grammar T}
+
 
 /-- The relation `grammar_derives` is reflexive. -/
 lemma grammar_deri_self {w : list (symbol T g.nt)} :
@@ -149,5 +95,3 @@ def as_terminal {N : Type} : symbol T N → option T
 
 def all_used_terminals (g : grammar T) : list T :=
 list.filter_map as_terminal (list.join (list.map grule.output_string g.rules))
-
-end grammar_utilities

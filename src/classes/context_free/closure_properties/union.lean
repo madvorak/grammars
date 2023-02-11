@@ -1,4 +1,4 @@
-import classes.context_free.cfgLiftSink
+import classes.context_free.basics.lifting
 
 
 variables {T : Type}

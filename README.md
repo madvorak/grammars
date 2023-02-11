@@ -15,38 +15,38 @@ Below you find what has been completed so far.
 
 ### Context-free grammars
 
-[Definition](/src/classes/context_free/cfg.lean)
+[Definition](/src/classes/context_free/basics/definition.lean)
 
-[Example](/test/cfg_demo.lean)
+[Example](/test/demo_context_free.lean)
 
-[Closure under union](/src/classes/context_free/closure_properties/binary/CF_union_CF.lean)
+[Closure under union](/src/classes/context_free/closure_properties/union.lean)
 
-[Closure under reversal](/src/classes/context_free/closure_properties/unary/reverse_CF.lean)
+[Closure under reversal](/src/classes/context_free/closure_properties/reverse.lean)
 
-[Closure under concatenation](/src/classes/context_free/closure_properties/binary/CF_concatenation_CF.lean)
+[Closure under concatenation](/src/classes/context_free/closure_properties/concatenation.lean)
 
-[Non-closure under intersection](/src/classes/context_free/closure_properties/binary/CF_intersection_CF.lean) (\*)
+[Non-closure under intersection](/src/classes/context_free/closure_properties/intersection.lean) (\*)
 
-[Non-closure under complement](/src/classes/context_free/closure_properties/unary/complement_CF.lean) (\*)
+[Non-closure under complement](/src/classes/context_free/closure_properties/complement.lean) (\*)
 
-\* missing proof: [Context-free pumping lemma](/src/classes/context_free/cfgPumping.lean)
+\* missing proof: [Context-free pumping lemma](/src/classes/context_free/basics/pumping.lean)
 
 ### Context-sensitive grammars
 
-[Example](/test/csg_demo.lean)
+[Example](/test/demo_context_sensitive.lean)
 
 ### Unrestricted grammars
 
 (a.k.a. general grammars, a.k.a. recursively-enumerable grammars, a.k.a. type-0 grammars, a.k.a. grammars)
 
-[Definition](/src/classes/unrestricted/grammar.lean)
+[Definition](/src/classes/unrestricted/basics/definition.lean)
 
-[Example](/test/grammar_demo.lean)
+[Example](/test/demo_unrestricted.lean)
 
-[Closure under union](/src/classes/unrestricted/closure_properties/binary/RE_union_RE.lean)
+[Closure under union](/src/classes/unrestricted/closure_properties/union.lean)
 
-[Closure under reversal](/src/classes/unrestricted/closure_properties/unary/reverse_RE.lean)
+[Closure under reversal](/src/classes/unrestricted/closure_properties/reverse.lean)
 
-[Closure under concatenation](/src/classes/unrestricted/closure_properties/binary/RE_concatenation_RE.lean)
+[Closure under concatenation](/src/classes/unrestricted/closure_properties/concatenation.lean)
 
-[Closure under Kleene star](/src/classes/unrestricted/closure_properties/unary/star_RE.lean)
+[Closure under Kleene star](/src/classes/unrestricted/closure_properties/star.lean)

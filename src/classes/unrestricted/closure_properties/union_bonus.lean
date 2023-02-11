@@ -1,5 +1,5 @@
-import classes.context_free.cfg
-import classes.unrestricted.closure_properties.binary.RE_union_RE
+import classes.context_free.basics.inclusion
+import classes.unrestricted.closure_properties.union
 import utilities.written_by_others.print_sorries
 
 
@@ -36,7 +36,7 @@ end
 
 /-- The class of context-free languages is closed under union.
     This theorem is proved by translation from general grammars.
-    Compare to `context_free.closure_properties.binary.CF_union_CF.lean`
+    Compare to `classes.context_free.closure_properties.union.lean`
     which uses a direct proof for context-free grammars. -/
 private theorem bonus_CF_of_CF_u_CF (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂)   :=

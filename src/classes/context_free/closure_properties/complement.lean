@@ -1,5 +1,5 @@
-import classes.context_free.closure_properties.binary.CF_union_CF
-import classes.context_free.closure_properties.binary.CF_intersection_CF
+import classes.context_free.closure_properties.union
+import classes.context_free.closure_properties.intersection
 
 
 /-- The class of context-free languages isn't closed under complement. -/

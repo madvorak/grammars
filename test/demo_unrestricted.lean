@@ -1,4 +1,6 @@
-import classes.unrestricted.grammar
+import classes.unrestricted.basics.toolbox
+import utilities.list_utils
+import utilities.written_by_others.trim_assoc
 
 
 inductive alphabet
