@@ -35,6 +35,7 @@ def grammar_transforms (g : grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop
 def grammar_derives (g : grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (grammar_transforms g)
 
+/-- Accepts a word (a list of terminals) iff it can be derived from the initial nonterminal. -/
 def grammar_generates (g : grammar T) (w : list T) : Prop :=
 grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
 
