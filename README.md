@@ -1,6 +1,6 @@
 # Grammars formally in Lean
 
-This version is for publication.
+This version is synchronized with our [technical report](https://arxiv.org/abs/2302.06420).
 
 ## Instructions
 
