@@ -91,9 +91,9 @@ end
 private theorem bonus_CS_of_CS_c_CS (L₁ : language T) (L₂ : language T) :
   is_CS L₁  ∧  is_CS L₂   →   is_CS (L₁ * L₂)   :=
 begin
-  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
-  rw CS_language_eq_grammar_language g₁ at h₁,
-  rw CS_language_eq_grammar_language g₂ at h₂,
+  rintro ⟨⟨g₁, eq_L₁⟩, ⟨g₂, eq_L₂⟩⟩,
+  rw CS_language_eq_grammar_language g₁ at eq_L₁,
+  rw CS_language_eq_grammar_language g₂ at eq_L₂,
 
   use big_CS_grammar g₁ g₂,
   rw big_CS_grammar_same_language,
@@ -101,14 +101,14 @@ begin
   apply set.eq_of_subset_of_subset,
   {
     intros w hyp,
-    rw ←h₁,
-    rw ←h₂,
+    rw ←eq_L₁,
+    rw ←eq_L₂,
     exact in_concatenated_of_in_big hyp,
   },
   {
     intros w hyp,
-    rw ←h₁ at hyp,
-    rw ←h₂ at hyp,
+    rw ←eq_L₁ at hyp,
+    rw ←eq_L₂ at hyp,
     exact in_big_of_in_concatenated hyp,
   },
 end

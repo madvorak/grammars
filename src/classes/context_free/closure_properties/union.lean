@@ -646,7 +646,7 @@ end lemmata_supset
 theorem CF_of_CF_u_CF {T : Type} (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ + L₂)   :=
 begin
-  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
+  rintro ⟨⟨g₁, eq_L₁⟩, ⟨g₂, eq_L₂⟩⟩,
 
   use union_grammar g₁ g₂,
 
@@ -655,8 +655,8 @@ begin
     -- prove `L₁ + L₂ ⊇ `
     intros w hyp,
     rw language.mem_add,
-    rw ←h₁,
-    rw ←h₂,
+    rw ←eq_L₁,
+    rw ←eq_L₂,
     exact in_language_of_in_union w hyp,
   },
   {
@@ -664,11 +664,11 @@ begin
     intros w hyp,
     cases hyp with case₁ case₂,
     {
-      rw ←h₁ at case₁,
+      rw ←eq_L₁ at case₁,
       exact in_union_of_in_first w case₁,
     },
     {
-      rw ←h₂ at case₂,
+      rw ←eq_L₂ at case₂,
       exact in_union_of_in_second w case₂,
     },
   },

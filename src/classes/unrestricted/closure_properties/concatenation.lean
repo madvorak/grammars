@@ -3056,7 +3056,7 @@ end hard_direction
 theorem RE_of_RE_c_RE (L₁ : language T) (L₂ : language T) :
   is_RE L₁  ∧  is_RE L₂   →   is_RE (L₁ * L₂)   :=
 begin
-  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
+  rintro ⟨⟨g₁, eq_L₁⟩, ⟨g₂, eq_L₂⟩⟩,
 
   use big_grammar g₁ g₂,
 
@@ -3064,15 +3064,15 @@ begin
   {
     -- prove `L₁ * L₂ ⊇` here
     intros w hyp,
-    rw ←h₁,
-    rw ←h₂,
+    rw ←eq_L₁,
+    rw ←eq_L₂,
     exact in_concatenated_of_in_big hyp,
   },
   {
     -- prove `L₁ * L₂ ⊆` here
     intros w hyp,
-    rw ←h₁ at hyp,
-    rw ←h₂ at hyp,
+    rw ←eq_L₁ at hyp,
+    rw ←eq_L₂ at hyp,
     exact in_big_of_in_concatenated hyp,
   },
 end

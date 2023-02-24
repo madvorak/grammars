@@ -245,7 +245,7 @@ begin
     have nth_equ := congr_fun (congr_arg list.nth ass) n,
     rw list.nth_take h,
     rw list.nth_take h at nth_equ,
-    have h' : n < w.length,
+    have n_lt_wl : n < w.length,
     {
       exact gt_of_ge_of_gt len h,
     },
@@ -257,12 +257,12 @@ begin
     have trig : n < (list.map (@symbol.terminal T g₁.nt) w).length,
     {
       rw list.length_map,
-      exact h',
+      exact n_lt_wl,
     },
     have trin : n < (list.map (@symbol.terminal T (option (g₁.nt ⊕ g₂.nt))) w).length,
     {
       rw list.length_map,
-      exact h',
+      exact n_lt_wl,
     },
     rw list.nth_le_nth triv at nth_equ,
     rw list.nth_le_nth trin at nth_equ,
@@ -273,7 +273,7 @@ begin
     },
     rw list.nth_le_map at nth_equ, swap,
     {
-      exact h',
+      exact n_lt_wl,
     },
     rw list.nth_le_nth, swap,
     {
@@ -1591,7 +1591,7 @@ end
 theorem CF_of_CF_c_CF (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ * L₂)   :=
 begin
-  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
+  rintro ⟨⟨g₁, eq_L₁⟩, ⟨g₂, eq_L₂⟩⟩,
 
   use combined_grammar g₁ g₂,
 
@@ -1599,15 +1599,15 @@ begin
   {
     -- prove `L₁ * L₂ ⊇ ` here
     intros w hyp,
-    rw ←h₁,
-    rw ←h₂,
+    rw ←eq_L₁,
+    rw ←eq_L₂,
     exact in_concatenated_of_in_combined hyp,
   },
   {
     -- prove `L₁ * L₂ ⊆ ` here
     intros w hyp,
-    rw ←h₁ at hyp,
-    rw ←h₂ at hyp,
+    rw ←eq_L₁ at hyp,
+    rw ←eq_L₂ at hyp,
     exact in_combined_of_in_concatenated hyp,
   },
 end

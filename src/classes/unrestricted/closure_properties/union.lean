@@ -460,7 +460,7 @@ end
 theorem RE_of_RE_u_RE (L₁ : language T) (L₂ : language T) :
   is_RE L₁  ∧  is_RE L₂   →   is_RE (L₁ + L₂)   :=
 begin
-  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
+  rintro ⟨⟨g₁, eq_L₁⟩, ⟨g₂, eq_L₂⟩⟩,
 
   unfold is_RE,
   use union_grammar g₁ g₂,
@@ -469,18 +469,18 @@ begin
   {
     intros w ass,
     rw language.mem_add,
-    rw [←h₁, ←h₂],
+    rw [←eq_L₁, ←eq_L₂],
     exact in_L₁_or_L₂_of_in_union ass,
   },
   {
     intros w ass,
     cases ass with case₁ case₂,
     {
-      rw ←h₁ at case₁,
+      rw ←eq_L₁ at case₁,
       exact in_union_of_in_L₁ case₁,
     },
     {
-      rw ←h₂ at case₂,
+      rw ←eq_L₂ at case₂,
       exact in_union_of_in_L₂ case₂,
     },
   },

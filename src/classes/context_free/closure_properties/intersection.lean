@@ -1052,7 +1052,7 @@ end yes_CF
 section intersection_inclusions
 
 private lemma intersection_of_lang_eq_eq {w : list (fin 3)} :
-  w ∈ lang_eq_eq  →  w ∈ lang_eq_any ⊓ lang_any_eq :=
+  w ∈ lang_eq_eq  →  w ∈ lang_eq_any ⊓ lang_any_eq  :=
 begin
   intro h,
   cases h with n hyp,
@@ -1221,10 +1221,10 @@ begin
 end
 
 private lemma lang_eq_eq_of_intersection {w : list (fin 3)} :
-  w ∈ lang_eq_any ⊓ lang_any_eq  →  w ∈ lang_eq_eq :=
+  w ∈ lang_eq_any ⊓ lang_any_eq  →  w ∈ lang_eq_eq  :=
 begin
-  rintro ⟨⟨n₁, m₁, h₁⟩, ⟨n₂, m₂, h₂⟩⟩,
-  have equ := eq.trans h₁.symm h₂,
+  rintro ⟨⟨n₁, m₁, w_eq₁⟩, ⟨n₂, m₂, w_eq₂⟩⟩,
+  have equ := eq.trans w_eq₁.symm w_eq₂,
 
   by_cases hn₁ : n₁ = 0,
   {
@@ -1263,9 +1263,9 @@ begin
       exact neq_bc b_in_equ.right,
     },
     use 0,
-    rw hn₂ at h₂,
-    rw hm₂ at h₂,
-    exact h₂,
+    rw hn₂ at w_eq₂,
+    rw hm₂ at w_eq₂,
+    exact w_eq₂,
   },
   have n₁pos : n₁ > 0 := pos_iff_ne_zero.mpr hn₁,
 
@@ -1429,9 +1429,9 @@ begin
     rw add_right_inj at sum_lengs,
     exact sum_lengs,
   },
-  rw eq₂ at h₂,
+  rw eq₂ at w_eq₂,
   use m₂,
-  exact h₂,    
+  exact w_eq₂,
 end
 
 end intersection_inclusions

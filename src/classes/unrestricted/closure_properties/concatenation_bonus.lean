@@ -70,9 +70,9 @@ end
 private theorem bonus_CF_of_CF_c_CF (L₁ : language T) (L₂ : language T) :
   is_CF L₁  ∧  is_CF L₂   →   is_CF (L₁ * L₂)   :=
 begin
-  rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
-  rw CF_language_eq_grammar_language g₁ at h₁,
-  rw CF_language_eq_grammar_language g₂ at h₂,
+  rintro ⟨⟨g₁, eq_L₁⟩, ⟨g₂, eq_L₂⟩⟩,
+  rw CF_language_eq_grammar_language g₁ at eq_L₁,
+  rw CF_language_eq_grammar_language g₂ at eq_L₂,
 
   use big_CF_grammar g₁ g₂,
   rw big_CF_grammar_same_language,
@@ -80,14 +80,14 @@ begin
   apply set.eq_of_subset_of_subset,
   {
     intros w hyp,
-    rw ←h₁,
-    rw ←h₂,
+    rw ←eq_L₁,
+    rw ←eq_L₂,
     exact in_concatenated_of_in_big hyp,
   },
   {
     intros w hyp,
-    rw ←h₁ at hyp,
-    rw ←h₂ at hyp,
+    rw ←eq_L₁ at hyp,
+    rw ←eq_L₂ at hyp,
     exact in_big_of_in_concatenated hyp,
   },
 end
