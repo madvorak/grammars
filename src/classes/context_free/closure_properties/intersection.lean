@@ -936,10 +936,10 @@ begin
       exact hnm.symm,
     },
     {
-      rintro ⟨u, v, ⟨n, hu⟩, ⟨m, hv⟩, h⟩,
+      rintro ⟨u, v, ⟨n, u_eq⟩, ⟨m, v_eq⟩, eq_w⟩,
       use n,
       use m,
-      rw [←h, ←hu, ←hv],
+      rw [←eq_w, ←u_eq, ←v_eq],
     },
   },
   rw concatenated,
