@@ -14,17 +14,17 @@ import utilities.written_by_others.print_sorries
 
 section unrestricted
 
-#check            RE_of_RE_u_RE
-#print_sorries_in RE_of_RE_u_RE
+#check            T0_of_T0_u_T0
+#print_sorries_in T0_of_T0_u_T0
 
-#check            RE_of_reverse_RE
-#print_sorries_in RE_of_reverse_RE
+#check            T0_of_reverse_T0
+#print_sorries_in T0_of_reverse_T0
 
-#check            RE_of_RE_c_RE
-#print_sorries_in RE_of_RE_c_RE
+#check            T0_of_T0_c_T0
+#print_sorries_in T0_of_T0_c_T0
 
-#check            RE_of_star_RE
-#print_sorries_in RE_of_star_RE
+#check            T0_of_star_T0
+#print_sorries_in T0_of_star_T0
 
 end unrestricted
 

@@ -3052,9 +3052,9 @@ end very_complicated
 end hard_direction
 
 
-/-- The class of recursively-enumerable languages is closed under concatenation. -/
-theorem RE_of_RE_c_RE (L₁ : language T) (L₂ : language T) :
-  is_RE L₁  ∧  is_RE L₂   →   is_RE (L₁ * L₂)   :=
+/-- The class of type-0 languages is closed under concatenation. -/
+theorem T0_of_T0_c_T0 (L₁ : language T) (L₂ : language T) :
+  is_T0 L₁  ∧  is_T0 L₂   →   is_T0 (L₁ * L₂)   :=
 begin
   rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
 

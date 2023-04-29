@@ -3934,9 +3934,9 @@ end
 end hard_direction
 
 
-/-- The class of recursively-enumerable languages is closed under the Kleene star. -/
-theorem RE_of_star_RE (L : language T) :
-  is_RE L  →  is_RE L.star  :=
+/-- The class of type-0 languages is closed under the Kleene star. -/
+theorem T0_of_star_T0 (L : language T) :
+  is_T0 L  →  is_T0 L.star  :=
 begin
   rintro ⟨g, hg⟩,
   use star_grammar g,

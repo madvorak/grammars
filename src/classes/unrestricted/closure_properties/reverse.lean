@@ -115,9 +115,9 @@ end
 end auxiliary
 
 
-/-- The class of resursively-enumerable languages is closed under reversal. -/
-theorem RE_of_reverse_RE (L : language T) :
-  is_RE L  →  is_RE (reverse_lang L)  :=
+/-- The class of type-0 languages is closed under reversal. -/
+theorem T0_of_reverse_T0 (L : language T) :
+  is_T0 L  →  is_T0 (reverse_lang L)  :=
 begin
   rintro ⟨g, hgL⟩,
   rw ←hgL,

@@ -71,7 +71,7 @@ begin
 end
 
 theorem CF_subclass_RE {L : language T} :
-  is_CF L → is_RE L :=
+  is_CF L → is_T0 L :=
 begin
   rintro ⟨g, eq_L⟩,
   use grammar_of_cfg g,

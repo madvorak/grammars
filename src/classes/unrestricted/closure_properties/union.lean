@@ -454,13 +454,13 @@ begin
 end
 
 
-/-- The class of recursively-enumerable languages is closed under union. -/
-theorem RE_of_RE_u_RE (L₁ : language T) (L₂ : language T) :
-  is_RE L₁  ∧  is_RE L₂   →   is_RE (L₁ + L₂)   :=
+/-- The class of type-0 languages is closed under union. -/
+theorem T0_of_T0_u_T0 (L₁ : language T) (L₂ : language T) :
+  is_T0 L₁  ∧  is_T0 L₂   →   is_T0 (L₁ + L₂)   :=
 begin
   rintro ⟨⟨g₁, h₁⟩, ⟨g₂, h₂⟩⟩,
 
-  unfold is_RE,
+  unfold is_T0,
   use union_grammar g₁ g₂,
 
   apply set.eq_of_subset_of_subset,
