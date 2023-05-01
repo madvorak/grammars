@@ -70,7 +70,7 @@ begin
   },
 end
 
-theorem CF_subclass_RE {L : language T} :
+theorem CF_subclass_T0 {L : language T} :
   is_CF L → is_T0 L :=
 begin
   rintro ⟨g, eq_L⟩,
