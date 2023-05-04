@@ -1,6 +1,7 @@
-import classes.unrestricted.toolbox
+import classes.general.basics.toolbox
 import utilities.language_operations
 
+namespace grammars
 
 variables {T : Type}
 
@@ -146,3 +147,5 @@ begin
     exact finished_up_to_reverses,
   },
 end
+
+end grammars

@@ -1,5 +1,6 @@
-import classes.unrestricted.toolbox
+import classes.general.basics.toolbox
 
+namespace grammars
 
 section list_technicalities
 
@@ -90,11 +91,11 @@ end list_technicalities
 
 
 -- new nonterminal type
-protected def nnn (T N₁ N₂ : Type) : Type :=
+def nnn (T N₁ N₂ : Type) : Type :=
 option (N₁ ⊕ N₂) ⊕ (T ⊕ T)
 
 -- new symbol type
-protected def nst (T N₁ N₂ : Type) : Type :=
+def nst (T N₁ N₂ : Type) : Type :=
 symbol T (nnn T N₁ N₂)
 
 variables {T : Type}
@@ -102,11 +103,11 @@ variables {T : Type}
 
 section the_construction
 
-protected def wrap_symbol₁ {N₁ : Type} (N₂ : Type) : symbol T N₁ → nst T N₁ N₂
+def wrap_symbol₁ {N₁ : Type} (N₂ : Type) : symbol T N₁ → nst T N₁ N₂
 | (symbol.terminal t)    := symbol.nonterminal (sum.inr (sum.inl t))
 | (symbol.nonterminal n) := symbol.nonterminal (sum.inl (some (sum.inl n)))
 
-protected def wrap_symbol₂ {N₂ : Type} (N₁ : Type) : symbol T N₂ → nst T N₁ N₂
+def wrap_symbol₂ {N₂ : Type} (N₁ : Type) : symbol T N₂ → nst T N₁ N₂
 | (symbol.terminal t)    := symbol.nonterminal (sum.inr (sum.inr t))
 | (symbol.nonterminal n) := symbol.nonterminal (sum.inl (some (sum.inr n)))
 
@@ -124,14 +125,14 @@ grule.mk
   (list.map (wrap_symbol₂ N₁) r.input_R)
   (list.map (wrap_symbol₂ N₁) r.output_string)
 
-protected def rules_for_terminals₁ (N₂ : Type) (g : grammar T) : list (grule T (nnn T g.nt N₂)) :=
+def rules_for_terminals₁ (N₂ : Type) (g : grammar T) : list (grule T (nnn T g.nt N₂)) :=
 list.map (λ t, grule.mk [] (sum.inr (sum.inl t)) [] [symbol.terminal t]) (all_used_terminals g)
 
-protected def rules_for_terminals₂ (N₁ : Type) (g : grammar T) : list (grule T (nnn T N₁ g.nt)) :=
+def rules_for_terminals₂ (N₁ : Type) (g : grammar T) : list (grule T (nnn T N₁ g.nt)) :=
 list.map (λ t, grule.mk [] (sum.inr (sum.inr t)) [] [symbol.terminal t]) (all_used_terminals g)
 
 -- the grammar for concatenation of `g₁` and `g₂` languages
-protected def big_grammar (g₁ g₂ : grammar T) : grammar T :=
+def big_grammar (g₁ g₂ : grammar T) : grammar T :=
 grammar.mk (nnn T g₁.nt g₂.nt) (sum.inl none) (
   (grule.mk [] (sum.inl none) [] [
     symbol.nonterminal (sum.inl (some (sum.inl g₁.initial))),
@@ -261,7 +262,7 @@ begin
   },
 end
 
-protected lemma in_big_of_in_concatenated
+lemma in_big_of_in_concatenated
     {g₁ g₂ : grammar T}
     {w : list T}
     (ass : w ∈ grammar_language g₁ * grammar_language g₂) :
@@ -2647,7 +2648,7 @@ begin
   },
 end
 
-protected lemma in_concatenated_of_in_big
+lemma in_concatenated_of_in_big
     {g₁ g₂ : grammar T}
     {w : list T}
     (ass : w ∈ grammar_language (big_grammar g₁ g₂)) :
@@ -3076,3 +3077,5 @@ begin
     exact in_big_of_in_concatenated hyp,
   },
 end
+
+end grammars

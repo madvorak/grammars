@@ -1,6 +1,7 @@
-import classes.context_free.inclusion
-import classes.unrestricted.closure_properties.union
+import classes.context_free.basics.inclusion
+import classes.general.closure_properties.union
 
+namespace grammars
 
 variables {T : Type}
 
@@ -66,3 +67,5 @@ begin
     },
   },
 end
+
+end grammars

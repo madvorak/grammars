@@ -1,4 +1,6 @@
-import classes.context_free.definition
+import classes.context_free.basics.definition
+
+namespace grammars
 
 /-- Pumping lemma for context-free languages. -/
 lemma CF_pumping {T : Type} {L : language T} (cf : is_CF L) :
@@ -10,3 +12,5 @@ lemma CF_pumping {T : Type} {L : language T} (cf : is_CF L) :
       (∀ i : ℕ, u ++ v ^ i ++ x ++ y ^ i ++ z ∈ L)
   ) :=
 sorry
+
+end grammars

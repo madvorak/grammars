@@ -1,5 +1,6 @@
-import classes.context_free.toolbox
+import classes.context_free.basics.toolbox
 
+open grammars
 
 private def a_ : fin 3 := 0
 private def a : symbol (fin 3) (fin 2) := symbol.terminal a_

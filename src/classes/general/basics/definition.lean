@@ -3,20 +3,21 @@ import computability.language
 import utilities.list_utils
 import utilities.written_by_others.trim_assoc
 
+namespace grammars
 
 /-- The type of symbols is the disjoint union of terminals and nonterminals. -/
 inductive symbol (T : Type) (N : Type)
 | terminal    : T → symbol
 | nonterminal : N → symbol
 
-/-- Transformation rule for a grammar without any restrictions. -/
+/-- Transformation rule for a general grammar. -/
 structure grule (T : Type) (N : Type) :=
 (input_L : list (symbol T N))
 (input_N : N)
 (input_R : list (symbol T N))
 (output_string : list (symbol T N))
 
-/-- Grammar (unrestricted) that generates words over the alphabet `T` (a type of terminals). -/
+/-- Grammar (general) that generates words over the alphabet `T` (a type of terminals). -/
 structure grammar (T : Type) :=
 (nt : Type)                 -- type of nonterminals
 (initial : nt)              -- initial symbol
@@ -48,3 +49,5 @@ set_of (grammar_generates g)
 /-- Predicate "is type-0"; defined by an existence of a grammar for the given language. -/
 def is_T0 (L : language T) : Prop :=
 ∃ g : grammar T, grammar_language g = L
+
+end grammars

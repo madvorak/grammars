@@ -1,7 +1,7 @@
-import classes.unrestricted.closure_properties.union
-import classes.unrestricted.closure_properties.reverse
-import classes.unrestricted.closure_properties.concatenation
-import classes.unrestricted.closure_properties.star
+import classes.general.closure_properties.union
+import classes.general.closure_properties.reverse
+import classes.general.closure_properties.concatenation
+import classes.general.closure_properties.star
 
 import classes.context_free.closure_properties.union
 import classes.context_free.closure_properties.reverse
@@ -11,6 +11,7 @@ import classes.context_free.closure_properties.complement
 
 import utilities.written_by_others.print_sorries
 
+open grammars
 
 section unrestricted
 

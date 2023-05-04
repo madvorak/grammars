@@ -1,5 +1,7 @@
 import computability.language
 
+namespace grammars
+
 variables {T : Type}
 
 def reverse_lang (L : language T) : language T :=
@@ -10,3 +12,5 @@ def bijemap_lang {T' : Type} (L : language T) (π : equiv T T') : language T' :=
 
 def permute_lang (L : language T) (π : equiv.perm T) : language T :=
 bijemap_lang L π
+
+end grammars

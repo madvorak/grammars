@@ -1,6 +1,7 @@
-import classes.context_free.inclusion
-import classes.unrestricted.closure_properties.concatenation
+import classes.context_free.basics.inclusion
+import classes.general.closure_properties.concatenation
 
+namespace grammars
 
 variables {T : Type}
 
@@ -85,3 +86,5 @@ begin
     exact in_big_of_in_concatenated hyp,
   },
 end
+
+end grammars

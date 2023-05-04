@@ -1,6 +1,7 @@
-import classes.context_free.toolbox
+import classes.context_free.basics.toolbox
 import utilities.language_operations
 
+namespace grammars
 
 variables {T₁ T₂ N : Type}
 
@@ -188,3 +189,5 @@ begin
     rw equiv.right_inv,
   },
 end
+
+end grammars

@@ -1,6 +1,7 @@
 import classes.context_free.closure_properties.union
 import classes.context_free.closure_properties.intersection
 
+namespace grammars
 
 /-- The class of context-free languages isn't closed under complement. -/
 theorem nnyCF_of_complement_CF : ¬ (∀ T : Type, ∀ L : language T,
@@ -18,3 +19,5 @@ begin
   -- golfed by Eric Wieser
   rwa [language.add_def, set.compl_union, compl_compl, compl_compl] at contra,
 end
+
+end grammars

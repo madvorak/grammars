@@ -1,6 +1,7 @@
-import classes.context_free.toolbox
+import classes.context_free.basics.toolbox
 import utilities.language_operations
 
+namespace grammars
 
 variables {T : Type}
 
@@ -128,3 +129,5 @@ begin
     exact finished_modulo_reverses,
   },
 end
+
+end grammars

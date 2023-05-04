@@ -1,8 +1,9 @@
-import classes.context_free.pumping
-import classes.context_free.elementary
+import classes.context_free.basics.pumping
+import classes.context_free.basics.elementary
 import classes.context_free.closure_properties.concatenation
 import classes.context_free.closure_properties.permutation
 
+namespace grammars
 
 section defs_over_fin3
 
@@ -1455,3 +1456,5 @@ begin
     apply lang_eq_eq_of_intersection,
   },
 end
+
+end grammars

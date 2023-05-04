@@ -1,6 +1,7 @@
-import classes.unrestricted.lifting
-import classes.unrestricted.closure_properties.concatenation
+import classes.general.basics.lifting
+import classes.general.closure_properties.concatenation
 
+namespace grammars
 
 -- new nonterminal type
 private def nn (N : Type) : Type :=
@@ -65,7 +66,6 @@ list.map (λ t, grule.mk
     [] (sum.inr 2) [symbol.terminal t] [symbol.terminal t, R]
   ) (all_used_terminals g)
 
--- based on `/informal/KleeneStar.pdf`
 private def star_grammar (g : grammar T) : grammar T :=
 grammar.mk (nn g.nt) (sum.inr 0) (
   grule.mk [] (sum.inr 0) [] [Z, S, H] ::
@@ -4135,3 +4135,5 @@ begin
     exact terminated v vin t tin,
   },
 end
+
+end grammars

@@ -1,5 +1,6 @@
-import classes.context_free.definition
+import classes.context_free.basics.definition
 
+namespace grammars
 
 variables {T : Type} {g : CF_grammar T}
 
@@ -101,3 +102,5 @@ begin
   apply CF_deri_with_prefix,
   exact ass,
 end
+
+end grammars

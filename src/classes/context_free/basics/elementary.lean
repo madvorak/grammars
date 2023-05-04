@@ -1,5 +1,6 @@
-import classes.context_free.toolbox
+import classes.context_free.basics.toolbox
 
+namespace grammars
 
 variables {T : Type}
 
@@ -359,3 +360,5 @@ begin
     simp,
   }
 end
+
+end grammars

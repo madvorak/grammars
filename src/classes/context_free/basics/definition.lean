@@ -1,5 +1,6 @@
-import classes.unrestricted.definition
+import classes.general.basics.definition
 
+namespace grammars
 
 /-- Context-free grammar that generates words over the alphabet `T` (a type of terminals). -/
 structure CF_grammar (T : Type) :=
@@ -31,3 +32,5 @@ set_of (CF_generates g)
 /-- Predicate "is context-free"; defined by an existence of a context-free grammar for the given language. -/
 def is_CF (L : language T) : Prop :=
 ∃ g : CF_grammar T, CF_language g = L
+
+end grammars

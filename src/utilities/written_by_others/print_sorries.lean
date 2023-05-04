@@ -5,14 +5,14 @@ import data.bool.basic
 
 namespace tactic
 
-meta structure find_all_expr_data :=
+private meta structure find_all_expr_data :=
 (matching_subexpr : bool)
 (test_passed : bool)
 (descendants : list (name × bool × name_set))
 (name_map : name_map bool)
 (direct_descendants : name_set)
 
-meta def find_all_exprs_aux (env : environment) (f : expr → bool) (g : name → bool) : name →
+private meta def find_all_exprs_aux (env : environment) (f : expr → bool) (g : name → bool) : name →
   find_all_expr_data → tactic find_all_expr_data
 | n ⟨b₀, b₁, l, ns, desc⟩ :=
   match ns.find n with
@@ -28,15 +28,12 @@ meta def find_all_exprs_aux (env : environment) (f : expr → bool) (g : name �
       if b then desc.insert n else desc⟩
   end
 
-meta def find_all_exprs (env : environment) (test : expr → bool) (exclude : name → bool)
+private meta def find_all_exprs (env : environment) (test : expr → bool) (exclude : name → bool)
   (nm : name) : tactic $ list $ name × bool × name_set := do
   ⟨_, _, l, _, _⟩ ← find_all_exprs_aux env test exclude nm ⟨ff, ff, [], mk_name_map, mk_name_set⟩,
   pure l
 
-end tactic
-open tactic
-
-meta def print_sorries_in (nm : name) (ignore_mathlib := tt) : tactic unit := do
+private meta def print_sorries_in (nm : name) (ignore_mathlib := tt) : tactic unit := do
   env ← get_env,
   dir ← get_mathlib_dir,
   data ← find_all_exprs env (λ e, e.is_sorry.is_some)
@@ -56,3 +53,5 @@ meta def print_sorries_in_cmd (_ : parse $ tk "#print_sorries_in") : parser unit
   nm ← ident,
   nm ← resolve_name nm,
   print_sorries_in nm.const_name
+
+end tactic

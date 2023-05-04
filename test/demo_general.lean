@@ -1,5 +1,6 @@
-import classes.unrestricted.toolbox
+import classes.general.basics.toolbox
 
+open grammars
 
 inductive alphabet
 | _a : alphabet

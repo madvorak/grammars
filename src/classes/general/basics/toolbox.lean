@@ -1,8 +1,8 @@
-import classes.unrestricted.definition
+import classes.general.basics.definition
 
+namespace grammars
 
 variables {T : Type} {g : grammar T}
-
 
 /-- The relation `grammar_derives` is reflexive. -/
 lemma grammar_deri_self {w : list (symbol T g.nt)} :
@@ -92,3 +92,5 @@ def as_terminal {N : Type} : symbol T N → option T
 
 def all_used_terminals (g : grammar T) : list T :=
 list.filter_map as_terminal (list.join (list.map grule.output_string g.rules))
+
+end grammars

@@ -1,7 +1,5 @@
 # Grammars formally in Lean
 
-This version is synchronized with our [technical report](https://arxiv.org/abs/2302.06420).
-
 ## Instructions
 
 In order to install Lean 3, follow the [manual](https://leanprover-community.github.io/get_started.html).
@@ -13,25 +11,25 @@ The script will output `Result: SUCCESS` if everything builds successfully.
 
 ## Overview
 
-### Unrestricted grammars
+### General grammars
 
-(a.k.a. general grammars, a.k.a. recursively-enumerable grammars, a.k.a. type-0 grammars, a.k.a. grammars)
+(a.k.a. unrestricted grammars, a.k.a. type-0 grammars, a.k.a. recursively-enumerable grammars, a.k.a. grammars)
 
-[Definition](/src/classes/unrestricted/definition.lean)
+[Definition](/src/classes/general/basics/definition.lean)
 
-[Example](/test/demo_unrestricted.lean)
+[Example](/test/demo_general.lean)
 
-[Closure under union](/src/classes/unrestricted/closure_properties/union.lean)
+[Closure under union](/src/classes/general/closure_properties/union.lean)
 
-[Closure under reversal](/src/classes/unrestricted/closure_properties/reverse.lean)
+[Closure under reversal](/src/classes/general/closure_properties/reverse.lean)
 
-[Closure under concatenation](/src/classes/unrestricted/closure_properties/concatenation.lean)
+[Closure under concatenation](/src/classes/general/closure_properties/concatenation.lean)
 
-[Closure under Kleene star](/src/classes/unrestricted/closure_properties/star.lean)
+[Closure under Kleene star](/src/classes/general/closure_properties/star.lean)
 
 ### Context-free grammars
 
-[Definition](/src/classes/context_free/definition.lean)
+[Definition](/src/classes/context_free/basics/definition.lean)
 
 [Example](/test/demo_context_free.lean)
 

@@ -1,5 +1,6 @@
-import classes.unrestricted.toolbox
+import classes.general.basics.toolbox
 
+namespace grammars
 
 section functions_lift_sink
 
@@ -311,3 +312,5 @@ begin
 end
 
 end translating_derivations
+
+end grammars

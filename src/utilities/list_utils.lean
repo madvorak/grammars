@@ -2,6 +2,7 @@ import tactic
 import utilities.written_by_others.list_take_join
 
 section tactic_in_list_explicit
+namespace grammars
 
 meta def in_list_explicit : tactic unit := `[
   tactic.repeat `[
@@ -17,6 +18,7 @@ meta def split_ile : tactic unit := `[
   }
 ]
 
+end grammars
 end tactic_in_list_explicit
 
 namespace list

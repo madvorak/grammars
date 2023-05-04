@@ -1,6 +1,7 @@
-import classes.context_free.toolbox
-import classes.unrestricted.toolbox
+import classes.context_free.basics.toolbox
+import classes.general.basics.toolbox
 
+namespace grammars
 
 variables {T : Type}
 
@@ -78,3 +79,5 @@ begin
   rw ←eq_L,
   rw CF_language_eq_grammar_language,
 end
+
+end grammars
