@@ -1,8 +1,10 @@
 # Grammars formally in Lean
 
+This commit is synchronized with our [paper](https://arxiv.org/abs/2302.06420) [v2].
+
 ## Instructions
 
-In order to install Lean 3, follow the [manual](https://leanprover-community.github.io/get_started.html).
+In order to install Lean 3, follow the [manual](https://github.com/leanprover-community/leanprover-community.github.io/blob/662aaab1d374a90d85a26e405a1fac698304a281/templates/get_started.md).
 
 In order to download this project, run `leanproject get madvorak/grammars` in your Unix-like command line.
 
@@ -43,4 +45,4 @@ The script will output `Result: SUCCESS` if everything builds successfully.
 
 [Non-closure under complement](/src/classes/context_free/closure_properties/complement.lean) (\*)
 
-\* missing proof: [Context-free pumping lemma](/src/classes/context_free/pumping.lean)
+\* missing proof: [Context-free pumping lemma](/src/classes/context_free/basics/pumping.lean)

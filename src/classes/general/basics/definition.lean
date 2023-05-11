@@ -42,11 +42,11 @@ relation.refl_trans_gen (grammar_transforms g)
 def grammar_generates (g : grammar T) (w : list T) : Prop :=
 grammar_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
 
-/-- Returns the set of words (lists of terminals) that can be derived from the initial nonterminal. -/
+/-- The set of words that can be derived from the initial nonterminal. -/
 def grammar_language (g : grammar T) : language T :=
 set_of (grammar_generates g)
 
-/-- Predicate "is type-0"; defined by an existence of a grammar for the given language. -/
+/-- Predicate "is type-0"; defined by existence of a grammar for the given language. -/
 def is_T0 (L : language T) : Prop :=
 ∃ g : grammar T, grammar_language g = L
 

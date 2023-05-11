@@ -25,11 +25,11 @@ relation.refl_trans_gen (CF_transforms g)
 def CF_generates (g : CF_grammar T) (w : list T) : Prop :=
 CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
 
-/-- Context-free language; just a wrapper around `CF_generates`. -/
+/-- The set of words that can be derived from the initial nonterminal. -/
 def CF_language (g : CF_grammar T) : language T :=
 set_of (CF_generates g)
 
-/-- Predicate "is context-free"; defined by an existence of a context-free grammar for the given language. -/
+/-- Predicate "is context-free"; defined by existence of a context-free grammar for the given language. -/
 def is_CF (L : language T) : Prop :=
 ∃ g : CF_grammar T, CF_language g = L
 
