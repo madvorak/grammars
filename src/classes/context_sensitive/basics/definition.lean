@@ -27,10 +27,10 @@ def CS_transforms (g : CS_grammar T) (w₁ w₂ : list (symbol T g.nt)) : Prop :
 def CS_derives (g : CS_grammar T) : list (symbol T g.nt) → list (symbol T g.nt) → Prop :=
 relation.refl_trans_gen (CS_transforms g)
 
-/-- Returns the set of words (lists of terminals) that can be derived from the initial nonterminal. -/
+/-- The set of words that can be derived from the initial nonterminal. -/
 def CS_language (g : CS_grammar T) : language T :=
 λ w : list T, CS_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w)
 
-/-- Predicate "is context-sensitive"; defined by an existence of a context-sensitive grammar for the given language. -/
+/-- Predicate "is context-sensitive"; defined by existence of a context-sensitive grammar for the given language. -/
 def is_CS (L : language T) : Prop :=
 ∃ g : CS_grammar T, CS_language g = L
