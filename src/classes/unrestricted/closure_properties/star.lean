@@ -1,3 +1,4 @@
+--import algebra.order.kleene
 import classes.unrestricted.basics.lifting
 import classes.unrestricted.closure_properties.concatenation
 import utilities.written_by_others.trim_assoc
@@ -954,7 +955,7 @@ begin
     },
     simp_rw inside_one at count_Hs,
     repeat {
-      rw [list.map_const, list.sum_const_nat, one_mul] at count_Hs,
+      rw [list.map_const, list.sum_const_nat, mul_one] at count_Hs,
     },
     rw [list.length_take, list.length_drop, list.nth_le_map', list.nth_le_map'] at count_Hs,
     rw min_eq_left (le_of_lt mxl) at count_Hs,
@@ -1650,7 +1651,7 @@ private lemma star_case_2 {g : grammar T} {α α' : list (symbol T (star_grammar
     (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
     (α' = list.map symbol.terminal (list.join w) ++ list.map symbol.terminal β ++ [R] ++
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))))  ∨
-  (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u)  ∨
+  (∃ u : list T, u ∈ has_kstar.kstar (grammar_language g) ∧ α' = list.map symbol.terminal u)  ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R])  ∨
   (∃ ω : list (ns T g.nt), α' = ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α'  :=
 begin
@@ -1786,7 +1787,7 @@ begin
       rw [
         u_nil, list.nil_append, v_eq, rin, list.nil_append,
         list.map_cons, list.map_cons, list.join,
-        list.append_assoc, list.append_join_append, ←list.append_assoc
+        list.append_assoc, list.append_join_map_append, ←list.append_assoc
       ] at aft,
       split,
       {
@@ -1794,7 +1795,7 @@ begin
         rw aft,
         trim,
       },
-      rw [list.append_assoc, ←list.append_join_append] at aft,
+      rw [list.append_assoc, ←list.append_join_map_append] at aft,
       rw aft,
       split;
       intro contra;
@@ -2059,10 +2060,10 @@ begin
   {
     classical,
     have index_of_first_R := congr_arg (list.index_of R) ass,
-    rw list.index_of_append_of_notin R_ni_u at index_of_first_R,
+    rw list.index_of_append_of_not_mem R_ni_u at index_of_first_R,
     rw @list.singleton_append _ _ ([s] ++ v) at index_of_first_R,
     rw [←R, list.index_of_cons_self, add_zero] at index_of_first_R,
-    rw [←list.append_assoc, list.index_of_append_of_notin R_ni_wb] at index_of_first_R,
+    rw [←list.append_assoc, list.index_of_append_of_not_mem R_ni_wb] at index_of_first_R,
     rw [list.singleton_append, list.index_of_cons_self, add_zero] at index_of_first_R,
     exact index_of_first_R,
   },
@@ -2125,13 +2126,13 @@ begin
     (list.map symbol.terminal w.join ++ list.map symbol.terminal β ++
       [symbol.nonterminal (sum.inr 2)] ++ list.map wrap_sym γ)
     at first_H,
-  rw list.index_of_append_of_notin R_ni_wb at first_R,
-  rw list.index_of_append_of_notin H_ni_wbrg at first_H,
+  rw list.index_of_append_of_not_mem R_ni_wb at first_R,
+  rw list.index_of_append_of_not_mem H_ni_wbrg at first_H,
   rw [list.cons_append, list.cons_append, list.cons_append, R, list.index_of_cons_self, add_zero] at first_R,
   rw [list.cons_append, list.index_of_cons_self, add_zero] at first_H,
   rw [list.append_assoc u, list.append_assoc u] at first_R first_H,
-  rw list.index_of_append_of_notin R_ni_u at first_R,
-  rw list.index_of_append_of_notin H_ni_u at first_H,
+  rw list.index_of_append_of_not_mem R_ni_u at first_R,
+  rw list.index_of_append_of_not_mem H_ni_u at first_H,
   rw [list.append_assoc _ [H], list.singleton_append, list.index_of_cons_self, add_zero] at first_R,
   rw [list.append_assoc _ [H], list.singleton_append, ←R, list.index_of_cons_ne _ H_neq_R] at first_H,
   rw [list.singleton_append, H, list.index_of_cons_self] at first_H,
@@ -2547,9 +2548,9 @@ begin
       {
         classical,
         have first_H := congr_arg (list.index_of H) right_half,
-        rw [list.append_assoc _ [H], list.index_of_append_of_notin map_wrap_never_contains_H] at first_H,
+        rw [list.append_assoc _ [H], list.index_of_append_of_not_mem map_wrap_never_contains_H] at first_H,
         rw [list.singleton_append, list.index_of_cons_self, add_zero] at first_H,
-        rw [very_middle, ←list.map_append_append, list.index_of_append_of_notin map_wrap_never_contains_H] at first_H,
+        rw [very_middle, ←list.map_append_append, list.index_of_append_of_not_mem map_wrap_never_contains_H] at first_H,
         rw list.length_map at first_H,
         exact nat.le.intro first_H,
       },
@@ -2628,7 +2629,7 @@ begin
       {
         classical,
         have first_H := congr_arg (list.index_of H) right_half,
-        rw [very_middle, ←list.map_append_append, list.index_of_append_of_notin map_wrap_never_contains_H] at first_H,
+        rw [very_middle, ←list.map_append_append, list.index_of_append_of_not_mem map_wrap_never_contains_H] at first_H,
         have H_not_in_v'' : H ∉ v'',
         {
           rw [without_final_H, ←list.append_assoc] at left_half,
@@ -2663,7 +2664,7 @@ begin
             },
           },
         },
-        rw list.index_of_append_of_notin H_not_in_v'' at first_H,
+        rw list.index_of_append_of_not_mem H_not_in_v'' at first_H,
         rw [list.singleton_append, list.index_of_cons_self, add_zero] at first_H,
         rw [very_middle, ←list.map_append_append],
         exact nat.le.intro first_H,
@@ -2937,7 +2938,7 @@ private lemma star_case_3 {g : grammar T} {α α' : list (ns T g.nt)}
     (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
     (α' = list.map symbol.terminal (list.join w) ++ list.map symbol.terminal β ++ [R] ++
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))))  ∨
-  (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α' = list.map symbol.terminal u)  ∨
+  (∃ u : list T, u ∈ has_kstar.kstar (grammar_language g) ∧ α' = list.map symbol.terminal u)  ∨
   (∃ σ : list (symbol T g.nt), α' = list.map wrap_sym σ ++ [R])  ∨
   (∃ ω : list (ns T g.nt), α' = ω ++ [H]) ∧ Z ∉ α' ∧ R ∉ α'  :=
 begin
@@ -3359,7 +3360,7 @@ end
 
 private lemma star_case_4 {g : grammar T} {α α' : list (ns T g.nt)}
     (orig : grammar_transforms (star_grammar g) α α')
-    (hyp : ∃ u : list T, u ∈ (grammar_language g).star ∧ α = list.map symbol.terminal u) :
+    (hyp : ∃ u : list T, u ∈ has_kstar.kstar (grammar_language g) ∧ α = list.map symbol.terminal u) :
   false :=
 begin
   rcases hyp with ⟨w, -, alpha_of_w⟩,
@@ -3882,7 +3883,7 @@ private lemma star_induction {g : grammar T} {α : list (ns T g.nt)}
     (∀ xᵢ ∈ x, grammar_derives g [symbol.nonterminal g.initial] xᵢ) ∧
     (α = list.map symbol.terminal (list.join w) ++ list.map symbol.terminal β ++ [R] ++
       list.map wrap_sym γ ++ [H] ++ list.join (list.map (++ [H]) (list.map (list.map wrap_sym) x))))  ∨
-  (∃ u : list T, u ∈ language.star (grammar_language g) ∧ α = list.map symbol.terminal u)  ∨
+  (∃ u : list T, u ∈ has_kstar.kstar (grammar_language g) ∧ α = list.map symbol.terminal u)  ∨
   (∃ σ : list (symbol T g.nt), α = list.map wrap_sym σ ++ [R])  ∨
   (∃ ω : list (ns T g.nt), α = ω ++ [H]) ∧ Z ∉ α ∧ R ∉ α  :=
 begin
@@ -3937,7 +3938,7 @@ end hard_direction
 
 /-- The class of recursively-enumerable languages is closed under the Kleene star. -/
 theorem RE_of_star_RE (L : language T) :
-  is_RE L  →  is_RE L.star  :=
+  is_RE L  →  is_RE (has_kstar.kstar L)  :=
 begin
   rintro ⟨g, hg⟩,
   use star_grammar g,
@@ -4064,7 +4065,7 @@ begin
     -- prove `L.star ⊆` here
     intros p ass,
     unfold grammar_language,
-    rw language.star at ass,
+    unfold has_kstar.kstar at ass,
     rw set.mem_set_of_eq at ⊢ ass,
     rcases ass with ⟨w, w_join, parts_in_L⟩,
     let v := w.reverse,
@@ -4127,7 +4128,7 @@ begin
       [H] ++ (list.map (++ [H]) (list.map (list.map symbol.terminal) w)).join =
       (list.map (λ v, [H] ++ v) (list.map (list.map symbol.terminal) w)).join ++ [H],
     {
-      apply list.append_join_append,
+      apply list.append_join_map_append,
     },
     rw rebracket,
     apply terminal_scan_aux,

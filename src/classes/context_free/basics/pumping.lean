@@ -9,6 +9,6 @@ lemma CF_pumping {T : Type} {L : language T} (cf : is_CF L) :
       (w = u ++ v ++ x ++ y ++ z) ∧
       (v ++ y).length > 0         ∧
       (v ++ x ++ y).length ≤ n    ∧
-      (∀ i : ℕ, u ++ v ^ i ++ x ++ y ^ i ++ z ∈ L)
+      (∀ i : ℕ, u ++ v ^^ i ++ x ++ y ^^ i ++ z ∈ L)
   ) :=
 sorry

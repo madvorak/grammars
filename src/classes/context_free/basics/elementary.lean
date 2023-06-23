@@ -186,7 +186,7 @@ CF_grammar.mk (fin 1) 0 [(0, [symbol.terminal a, symbol.nonterminal 0]), (0, [])
 
 /-- Characterization of the `{a}.star` language. -/
 lemma language_of_cfg_symbol_star (a : T) :
-  CF_language (cfg_symbol_star a) = λ w, ∃ n : ℕ, w = list.repeat a n :=
+  CF_language (cfg_symbol_star a) = λ w, ∃ n : ℕ, w = list.replicate n a :=
 begin
   apply set.eq_of_subset_of_subset,
   {
@@ -195,10 +195,10 @@ begin
       We prove this inclusion as follows:
       (1) `w ∈ CF_language (cfg_symbol_star a)` →
       (2) `w` contains only `a`s →
-      (3) `∃ (n : ℕ), w = list.repeat a n)` □
+      (3) `∃ (n : ℕ), w = list.replicate a n)` □
     -/
 
-    have implication2 : (∀ t : T, t ≠ a → t ∉ w) → (∃ (n : ℕ), w = list.repeat a n),
+    have implication2 : (∀ t : T, t ≠ a → t ∉ w) → (∃ (n : ℕ), w = list.replicate n a),
     {
       contrapose,
       intros contr ass,
@@ -206,13 +206,13 @@ begin
       specialize contr w.length,
 
       have different :
-        ∃ n : ℕ, ∃ hl : n < w.length, ∃ hr : n < (list.repeat a w.length).length,
-          w.nth_le n hl ≠ (list.repeat a w.length).nth_le n hr,
+        ∃ n : ℕ, ∃ hl : n < w.length, ∃ hr : n < (list.replicate w.length a).length,
+          w.nth_le n hl ≠ (list.replicate w.length a).nth_le n hr,
       {
         by_contradiction isnt,
-        have same_len : w.length = (list.repeat a w.length).length,
+        have same_len : w.length = (list.replicate w.length a).length,
         {
-          rw list.length_repeat,
+          rw list.length_replicate,
         },
         apply contr,
         apply list.ext_le same_len,
@@ -226,7 +226,7 @@ begin
       },
       rcases different with ⟨n, hl, hr, nq⟩,
 
-      rw list.nth_le_repeat a hr at nq,
+      rw list.nth_le_replicate a hr at nq,
       specialize ass (w.nth_le n hl) nq,
       exact ass (list.nth_le_mem w n hl),
     },
@@ -301,14 +301,14 @@ begin
     intros w hw,
     cases hw with n hwn,
     rw hwn,
-    convert_to CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal (list.repeat a n)),
+    convert_to CF_generates_str (cfg_symbol_star a) (list.map symbol.terminal (list.replicate n a)),
     unfold CF_generates_str,
     clear hwn w,
     have comes_to :
       CF_derives
         (cfg_symbol_star a)
         [symbol.nonterminal (cfg_symbol_star a).initial]
-        (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]),
+        (list.replicate n (symbol.terminal a) ++ [symbol.nonterminal (0 : fin 1)]),
     {
       induction n with n ih,
       {
@@ -320,33 +320,33 @@ begin
       {
         apply list.mem_cons_self,
       },
-      use [list.repeat (symbol.terminal a) n, []],
+      use [list.replicate n (symbol.terminal a), []],
       split,
       {
         rw list.append_nil,
       },
       rw list.append_nil,
       change
-        symbol.terminal a :: (list.repeat (symbol.terminal a) n ++ [symbol.nonterminal (0 : fin 1)]) =
-        list.repeat (symbol.terminal a) n ++ ([symbol.terminal a] ++ [symbol.nonterminal 0]),
+        symbol.terminal a :: (list.replicate n (symbol.terminal a) ++ [symbol.nonterminal (0 : fin 1)]) =
+        list.replicate n (symbol.terminal a) ++ ([symbol.terminal a] ++ [symbol.nonterminal 0]),
       rw ←list.cons_append,
       trim,
       have count_succ_left :
-        @symbol.terminal T (fin 1) a :: list.repeat (symbol.terminal a) n =
-        list.repeat (symbol.terminal a) (n + 1),
+        @symbol.terminal T (fin 1) a :: list.replicate n (symbol.terminal a) =
+        list.replicate (n + 1) (symbol.terminal a),
       {
         symmetry,
-        apply list.repeat_succ,
+        apply list.replicate_succ,
       },
       have count_succ_right :
-        list.repeat (symbol.terminal a) n ++ [symbol.terminal a] =
-        list.repeat (symbol.terminal a) (n + 1),
+        list.replicate n (symbol.terminal a) ++ [symbol.terminal a] =
+        list.replicate (n + 1) (symbol.terminal a),
       {
         change
-          list.repeat (symbol.terminal a) n ++ list.repeat (symbol.terminal a) 1 =
-          list.repeat (symbol.terminal a) (n + 1),
+          list.replicate n (symbol.terminal a) ++ list.replicate 1 (symbol.terminal a) =
+          list.replicate (n + 1) (symbol.terminal a),
         symmetry,
-        apply list.repeat_add,
+        apply list.replicate_add,
       },
       rw count_succ_left,
       rw count_succ_right,
@@ -358,7 +358,7 @@ begin
       apply list.mem_cons_of_mem,
       apply list.mem_cons_self,
     },
-    use [list.repeat (symbol.terminal a) n, []],
+    use [list.replicate n (symbol.terminal a), []],
     split;
     simp,
   }

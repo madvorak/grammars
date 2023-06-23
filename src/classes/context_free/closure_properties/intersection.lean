@@ -23,13 +23,13 @@ private lemma neq_cb : c_ ≠ b_ := neq_bc.symm
 
 
 private def lang_eq_any : language (fin 3) :=
-λ w, ∃ n m : ℕ, w = list.repeat a_ n ++ list.repeat b_ n ++ list.repeat c_ m
+λ w, ∃ n m : ℕ, w = list.replicate n a_ ++ list.replicate n b_ ++ list.replicate m c_
 
 private def lang_any_eq : language (fin 3) :=
-λ w, ∃ n m : ℕ, w = list.repeat a_ n ++ list.repeat b_ m ++ list.repeat c_ m
+λ w, ∃ n m : ℕ, w = list.replicate n a_ ++ list.replicate m b_ ++ list.replicate m c_
 
 private def lang_eq_eq : language (fin 3) :=
-λ w, ∃ n : ℕ, w = list.repeat a_ n ++ list.repeat b_ n ++ list.repeat c_ n
+λ w, ∃ n : ℕ, w = list.replicate n a_ ++ list.replicate n b_ ++ list.replicate n c_
 
 end defs_over_fin3
 
@@ -45,7 +45,7 @@ private lemma false_of_uvvxyyz
     (counted_a : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _a = n + 1 + list.count_in (v ++ y) _a)
     (counted_b : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _b = n + 1 + list.count_in (v ++ y) _b)
     (counted_c : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) _c = n + 1 + list.count_in (v ++ y) _c)
-    (pumping : u ++ v ^ 2 ++ x ++ y ^ 2 ++ z ∈ lang_eq_eq) :
+    (pumping : u ++ v ^^ 2 ++ x ++ y ^^ 2 ++ z ∈ lang_eq_eq) :
   false :=
 begin
   have extra_not_a : _b ∈ (v ++ y) ∨ _c ∈ (v ++ y),
@@ -81,11 +81,11 @@ begin
       apply list.nth_le_mem,
     },
   },
-  have hab := counts_ab (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
-  have hac := counts_ac (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) pumping,
+  have hab := counts_ab (u ++ v ^^ 2 ++ x ++ y ^^ 2 ++ z) pumping,
+  have hac := counts_ac (u ++ v ^^ 2 ++ x ++ y ^^ 2 ++ z) pumping,
 
   cases pumping with n' pump',
-  have count_a : list.count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _a = n + 1,
+  have count_a : list.count_in (u ++ v ^^ 2 ++ x ++ y ^^ 2 ++ z) _a = n + 1,
   {
     unfold list.n_times,
     simp [- list.append_assoc],
@@ -124,7 +124,7 @@ begin
   
   cases extra_not_a with extra_b extra_c,
   {
-    have count_b : list.count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _b > n + 1,
+    have count_b : list.count_in (u ++ v ^^ 2 ++ x ++ y ^^ 2 ++ z) _b > n + 1,
     {
       unfold list.n_times,
       simp [- list.append_assoc],
@@ -155,7 +155,7 @@ begin
     exact has_lt.lt.false count_b,
   },
   {
-    have count_c : list.count_in (u ++ v ^ 2 ++ x ++ y ^ 2 ++ z) _c > n + 1,
+    have count_c : list.count_in (u ++ v ^^ 2 ++ x ++ y ^^ 2 ++ z) _c > n + 1,
     {
       unfold list.n_times,
       simp [- list.append_assoc],
@@ -193,11 +193,11 @@ begin
 
   have pum := CF_pumping h,
   cases pum with n pump,
-  specialize pump (list.repeat a_ (n+1) ++ list.repeat b_ (n+1) ++ list.repeat c_ (n+1)),
+  specialize pump (list.replicate (n+1) a_ ++ list.replicate (n+1) b_ ++ list.replicate (n+1) c_),
   specialize pump (by { use n + 1, }) (by {
     rw list.length_append,
-    rw list.length_repeat,
-    calc (list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)).length + (n + 1)
+    rw list.length_replicate,
+    calc (list.replicate (n + 1) a_ ++ list.replicate (n + 1) b_).length + (n + 1)
         ≥ n + 1 : le_add_self
     ... ≥ n     : nat.le_succ n,
   }),
@@ -222,7 +222,7 @@ begin
           rw list.length_append at total_length,
         },
         repeat {
-          rw list.length_repeat at total_length,
+          rw list.length_replicate at total_length,
         },
         ring_nf at total_length,
         rw ←add_assoc x.length at total_length,
@@ -282,7 +282,7 @@ begin
 
         have orig_nth_le_eq_a :
           ∃ proofoo,
-            (list.repeat a_ (n + 1) ++ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1))).nth_le
+            (list.replicate (n + 1) a_ ++ (list.replicate (n + 1) b_ ++ list.replicate (n + 1) c_)).nth_le
               (nₐ + u.length) proofoo =
             a_,
         {
@@ -298,11 +298,11 @@ begin
         cases orig_nth_le_eq_a with rrr_nth_le_eq_a_pr rrr_nth_le_eq_a,
 
         rw @list.nth_le_append_right (fin 3)
-          (list.repeat a_ (n + 1))
-          (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1))
+          (list.replicate (n + 1) a_)
+          (list.replicate (n + 1) b_ ++ list.replicate (n + 1) c_)
           (nₐ + u.length)
           (by {
-            rw list.length_repeat,
+            rw list.length_replicate,
             calc n + 1 ≤ u.length      : u_too_much
                  ...   ≤ nₐ + u.length : le_add_self,
           })
@@ -314,7 +314,7 @@ begin
             exact lt_len,
           }) at rrr_nth_le_eq_a,
         
-        have a_in_rb_rc : a_ ∈ (list.repeat b_ (n + 1) ++ list.repeat c_ (n + 1)),
+        have a_in_rb_rc : a_ ∈ (list.replicate (n + 1) b_ ++ list.replicate (n + 1) c_),
         {
           rw ←rrr_nth_le_eq_a,
           apply list.nth_le_mem,
@@ -322,11 +322,11 @@ begin
         rw list.mem_append at a_in_rb_rc,
         cases a_in_rb_rc,
         {
-          rw list.mem_repeat at a_in_rb_rc,
+          rw list.mem_replicate at a_in_rb_rc,
           exact neq_ab a_in_rb_rc.right,
         },
         {
-          rw list.mem_repeat at a_in_rb_rc,
+          rw list.mem_replicate at a_in_rb_rc,
           exact neq_ac a_in_rb_rc.right,
         },
       },
@@ -366,7 +366,7 @@ begin
           {
             have orig_mth_is_c :
               ∃ proofoo,
-                ((list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)) ++ list.repeat c_ (n + 1)).nth_le
+                ((list.replicate (n + 1) a_ ++ list.replicate (n + 1) b_) ++ list.replicate (n + 1) c_).nth_le
                   m proofoo =
                 c_,
             {
@@ -387,18 +387,18 @@ begin
 
             by_contradiction mle,
             push_neg at mle,
-            have m_lt_len : m < (list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)).length,
+            have m_lt_len : m < (list.replicate (n + 1) a_ ++ list.replicate (n + 1) b_).length,
             {
               rw list.length_append,
-              rw list.length_repeat,
-              rw list.length_repeat,
+              rw list.length_replicate,
+              rw list.length_replicate,
               ring_nf,
               exact mle,
             },
 
             rw list.nth_le_append _ m_lt_len at mth_is_c,
             {
-              have c_in_ra_rb : c_ ∈ (list.repeat a_ (n + 1) ++ list.repeat b_ (n + 1)),
+              have c_in_ra_rb : c_ ∈ (list.replicate (n + 1) a_ ++ list.replicate (n + 1) b_),
               {
                 rw ←mth_is_c,
                 apply list.nth_le_mem,
@@ -406,11 +406,11 @@ begin
               rw list.mem_append at c_in_ra_rb,
               cases c_in_ra_rb with c_in_ra c_in_rb,
               {
-                rw list.mem_repeat at c_in_ra,
+                rw list.mem_replicate at c_in_ra,
                 exact neq_ca c_in_ra.right,
               },
               {
-                rw list.mem_repeat at c_in_rb,
+                rw list.mem_replicate at c_in_rb,
                 exact neq_cb c_in_rb.right,
               },
             },
@@ -439,12 +439,12 @@ begin
     repeat {
       rw list.count_in_append,
     },
-    rw list.count_in_repeat_neq neq_ab,
-    rw list.count_in_repeat_neq neq_ba,
-    rw list.count_in_repeat_neq neq_ca,
-    rw list.count_in_repeat_neq neq_cb,
-    rw list.count_in_repeat_eq a_,
-    rw list.count_in_repeat_eq b_,
+    rw list.count_in_replicate_neq neq_ab,
+    rw list.count_in_replicate_neq neq_ba,
+    rw list.count_in_replicate_neq neq_ca,
+    rw list.count_in_replicate_neq neq_cb,
+    rw list.count_in_replicate_eq a_,
+    rw list.count_in_replicate_eq b_,
     repeat {
       rw add_zero,
     },
@@ -458,12 +458,12 @@ begin
     repeat {
       rw list.count_in_append,
     },
-    rw list.count_in_repeat_neq neq_ac,
-    rw list.count_in_repeat_neq neq_ca,
-    rw list.count_in_repeat_neq neq_ba,
-    rw list.count_in_repeat_neq neq_bc,
-    rw list.count_in_repeat_eq a_,
-    rw list.count_in_repeat_eq c_,
+    rw list.count_in_replicate_neq neq_ac,
+    rw list.count_in_replicate_neq neq_ca,
+    rw list.count_in_replicate_neq neq_ba,
+    rw list.count_in_replicate_neq neq_bc,
+    rw list.count_in_replicate_eq a_,
+    rw list.count_in_replicate_eq c_,
     repeat {
       rw add_zero,
     },
@@ -496,8 +496,8 @@ begin
 
   have counted_letter : ∀ s,
     list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) s =
-    list.count_in (list.repeat a_ (n+1)) s + list.count_in (list.repeat b_ (n+1)) s +
-      list.count_in (list.repeat c_ (n+1)) s + list.count_in (v ++ y) s,
+    list.count_in (list.replicate (n+1) a_) s + list.count_in (list.replicate (n+1) b_) s +
+      list.count_in (list.replicate (n+1) c_) s + list.count_in (v ++ y) s,
   {
     intro s,
     rw ←concatenating,
@@ -508,24 +508,24 @@ begin
   have counted_a : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) a_ = n + 1 + list.count_in (v ++ y) a_,
   {
     rw counted_letter,
-    rw list.count_in_repeat_eq a_,
-    rw list.count_in_repeat_neq neq_ba,
-    rw list.count_in_repeat_neq neq_ca,
+    rw list.count_in_replicate_eq a_,
+    rw list.count_in_replicate_neq neq_ba,
+    rw list.count_in_replicate_neq neq_ca,
   },
   have counted_b : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) b_ = n + 1 + list.count_in (v ++ y) b_,
   {
     rw counted_letter,
-    rw list.count_in_repeat_eq b_,
-    rw list.count_in_repeat_neq neq_cb,
-    rw list.count_in_repeat_neq neq_ab,
+    rw list.count_in_replicate_eq b_,
+    rw list.count_in_replicate_neq neq_cb,
+    rw list.count_in_replicate_neq neq_ab,
     rw zero_add,
   },
   have counted_c : list.count_in (u ++ v ++ x ++ y ++ z ++ (v ++ y)) c_ = n + 1 + list.count_in (v ++ y) c_,
   {
     rw counted_letter,
-    rw list.count_in_repeat_eq c_,
-    rw list.count_in_repeat_neq neq_ac,
-    rw list.count_in_repeat_neq neq_bc,
+    rw list.count_in_replicate_eq c_,
+    rw list.count_in_replicate_neq neq_ac,
+    rw list.count_in_replicate_neq neq_bc,
     rw zero_add,
   },
 
@@ -579,7 +579,7 @@ end not_CF
 section yes_CF
 
 private def lang_aux_ab : language (fin 3) :=
-λ w, ∃ n : ℕ, w = list.repeat a_ n ++ list.repeat b_ n
+λ w, ∃ n : ℕ, w = list.replicate n a_ ++ list.replicate n b_
 
 private lemma CF_lang_aux_ab : is_CF lang_aux_ab :=
 begin
@@ -601,8 +601,8 @@ begin
       ∀ v : list (symbol (fin 3) (fin 1)),
         CF_derives g [S] v →
           ∃ n : ℕ,
-            v = list.repeat a n ++ list.repeat b n   ∨
-            v = list.repeat a n ++ [S] ++ list.repeat b n,
+            v = list.replicate n a ++ list.replicate n b   ∨
+            v = list.replicate n a ++ [S] ++ list.replicate n b,
     {
       intros v hyp,
       induction hyp with u u' trash orig hyp_ih,
@@ -623,13 +623,13 @@ begin
           apply list.mem_append_right,
           apply list.mem_cons_self,
         },
-        have not_in : symbol.nonterminal r.fst ∉ list.repeat a k ++ list.repeat b k,
+        have not_in : symbol.nonterminal r.fst ∉ list.replicate k a ++ list.replicate k b,
         {
           rw list.mem_append_eq,
           push_neg,
           split;
           {
-            rw list.mem_repeat,
+            rw list.mem_replicate,
             push_neg,
             intro trash,
             apply symbol.no_confusion,
@@ -671,19 +671,19 @@ begin
         cases lt_or_gt_of_ne contra,
         {
           have plengthth_is_a :
-            (list.repeat a k ++ [S] ++ list.repeat b k).nth p.length =
+            (list.replicate k a ++ [S] ++ list.replicate k b).nth p.length =
             some a,
           {
             rw list.append_assoc,
-            have plength_small : p.length < (list.repeat a k).length,
+            have plength_small : p.length < (list.replicate k a).length,
             {
-              rw list.length_repeat,
+              rw list.length_replicate,
               exact h,
             },
             rw list.nth_append plength_small,
             rw list.nth_le_nth plength_small,
             apply congr_arg,
-            exact list.nth_le_repeat a plength_small,
+            exact list.nth_le_replicate a plength_small,
           },
           rw plengthth_is_a at kth_eq,
           have S_neq_a : S ≠ a,
@@ -695,20 +695,20 @@ begin
         },
         {
           have plengthth_is_b :
-            (list.repeat a k ++ [S] ++ list.repeat b k).nth p.length =
+            (list.replicate k a ++ [S] ++ list.replicate k b).nth p.length =
             some b,
           {
-            have plength_big : (list.repeat a k ++ [S]).length ≤ p.length,
+            have plength_big : (list.replicate k a ++ [S]).length ≤ p.length,
             {
               rw list.length_append,
-              rw list.length_repeat,
+              rw list.length_replicate,
               exact nat.succ_le_iff.mpr h,
             },
             rw list.nth_append_right plength_big,
-            have len_within_list : p.length - (list.repeat a k ++ [S]).length < (list.repeat b k).length,
+            have len_within_list : p.length - (list.replicate k a ++ [S]).length < (list.replicate k b).length,
             {
               have ihlen := congr_arg list.length ih,
-              simp only [list.length_repeat, list.length_append, list.length_singleton] at *,
+              simp only [list.length_replicate, list.length_append, list.length_singleton] at *,
               have ihlen' : p.length + 1 ≤ k + 1 + k,
               {
                 exact nat.le.intro ihlen,
@@ -722,7 +722,7 @@ begin
             },
             rw list.nth_le_nth len_within_list,
             apply congr_arg,
-            exact list.nth_le_repeat b len_within_list,
+            exact list.nth_le_replicate b len_within_list,
           },
           rw plengthth_is_b at kth_eq,
           have S_neq_b : S ≠ b,
@@ -739,25 +739,25 @@ begin
         rw p_len,
         refl,
       },
-      have ihr_len : (list.repeat a k ++ [S]).length = k + 1,
+      have ihr_len : (list.replicate k a ++ [S]).length = k + 1,
       {
         rw list.length_append,
-        rw list.length_repeat,
+        rw list.length_replicate,
         refl,
       },
-      have qb : q = list.repeat b k,
+      have qb : q = list.replicate k b,
       {
         apply list.append_inj_right ih,
         rw ihl_len,
         rw ihr_len,
       },
-      have ih_reduced : p ++ [symbol.nonterminal S_] = list.repeat a k ++ [S],
+      have ih_reduced : p ++ [symbol.nonterminal S_] = list.replicate k a ++ [S],
       {
         rw qb at ih,
         rw list.append_left_inj at ih,
         exact ih,
       },
-      have pa : p = list.repeat a k,
+      have pa : p = list.replicate k a,
       {
         rw list.append_left_inj at ih_reduced,
         exact ih_reduced,
@@ -771,12 +771,12 @@ begin
         rw rin,
         convert_to
           p ++ (S_, [a, S, b]).snd ++ q =
-          list.repeat a k ++ [a] ++ [S] ++ [b] ++ list.repeat b k,
+          list.replicate k a ++ [a] ++ [S] ++ [b] ++ list.replicate k b,
         {
-          rw list.repeat_add,
+          rw list.replicate_add,
           rw add_comm,
-          rw list.repeat_add,
-          simp only [list.repeat, list.append_assoc],
+          rw list.replicate_add,
+          simp only [list.replicate, list.append_assoc],
         },
         rw [pa, qb],
         simp only [list.append_assoc, list.cons_append, list.singleton_append],
@@ -817,14 +817,14 @@ begin
         {
           refl,
         },
-        rw list.repeat_succ,
-        rw list.repeat_succ,
+        rw list.replicate_succ,
+        rw list.replicate_succ,
         rw list.filter_map_cons,
         simp only [eq_self_iff_true, true_and, ih],
       },
     },
     exfalso,
-    have yes_in : S ∈ list.repeat a n ++ [S] ++ list.repeat b n,
+    have yes_in : S ∈ list.replicate n a ++ [S] ++ list.replicate n b,
     {
       apply list.mem_append_left,
       apply list.mem_append_right,
@@ -849,7 +849,7 @@ begin
     intros w ass,
     cases ass with n hw,
     change CF_derives g [symbol.nonterminal g.initial] (list.map symbol.terminal w),
-    rw [hw, list.map_append, list.map_repeat, list.map_repeat, ←a, ←b],
+    rw [hw, list.map_append, list.map_replicate, list.map_replicate, ←a, ←b],
     clear hw,
     induction n with n ih,
     {
@@ -866,12 +866,12 @@ begin
         [symbol.nonterminal g.initial]
         (list.map
           symbol.terminal
-          ([a_] ++ (list.repeat a_ n ++ list.repeat b_ n) ++ [b_])
+          ([a_] ++ (list.replicate n a_ ++ list.replicate n b_) ++ [b_])
         ),
     {
       convert_to
-        list.repeat a (1 + n) ++ list.repeat b (n + 1) =
-        list.map symbol.terminal ([a_] ++ (list.repeat a_ n ++ list.repeat b_ n) ++ [b_]),
+        list.replicate (1 + n) a ++ list.replicate (n + 1) b =
+        list.map symbol.terminal ([a_] ++ (list.replicate n a_ ++ list.replicate n b_) ++ [b_]),
       {
         rw add_comm,
       },
@@ -879,11 +879,11 @@ begin
         list.map_append_append,
         list.map_singleton,
         list.map_singleton,
-        list.repeat_add,
-        list.repeat_add,
+        list.replicate_add,
+        list.replicate_add,
         a, b
       ],
-      simp only [list.repeat, list.append_assoc, list.map_append, list.map_repeat],
+      simp only [list.replicate, list.append_assoc, list.map_append, list.map_replicate],
     },
     apply CF_deri_of_tran_deri,
     {
@@ -897,15 +897,15 @@ begin
     change
       CF_derives g
         ([a] ++ [S] ++ [b])
-        ([a] ++ list.map symbol.terminal (list.repeat a_ n ++ list.repeat b_ n) ++ [b]),
+        ([a] ++ list.map symbol.terminal (list.replicate n a_ ++ list.replicate n b_) ++ [b]),
     apply CF_deri_with_prefix_and_postfix,
     convert ih,
-    rw [list.map_append, list.map_repeat, list.map_repeat, a, b],
+    rw [list.map_append, list.map_replicate, list.map_replicate, a, b],
   },
 end
 
 private def lang_aux_c : language (fin 3) :=
-λ w, ∃ n : ℕ, w = list.repeat c_ n
+λ w, ∃ n : ℕ, w = list.replicate n c_
 
 private lemma CF_lang_aux_c : is_CF lang_aux_c :=
 begin
@@ -923,8 +923,8 @@ begin
     {
       rintro ⟨n, m, hnm⟩,
       fconstructor,
-        use list.repeat a_ n ++ list.repeat b_ n,
-        use list.repeat c_ m,
+        use list.replicate n a_ ++ list.replicate n b_,
+        use list.replicate m c_,
       split,
       {
         use n,
@@ -949,7 +949,7 @@ end
 
 
 private def lang_aux_a : language (fin 3) :=
-λ w, ∃ n : ℕ, w = list.repeat a_ n
+λ w, ∃ n : ℕ, w = list.replicate n a_
 
 private lemma CF_lang_aux_a : is_CF lang_aux_a :=
 begin
@@ -959,7 +959,7 @@ begin
 end
 
 private def lang_aux_bc : language (fin 3) :=
-λ w, ∃ n : ℕ, w = list.repeat b_ n ++ list.repeat c_ n
+λ w, ∃ n : ℕ, w = list.replicate n b_ ++ list.replicate n c_
 
 private def permut : equiv.perm (fin 3) := equiv.mk
   (λ x, ite (x = 2) 0 (x + 1))
@@ -1002,8 +1002,8 @@ begin
         rw other_case,
       },
       rw list.map_append,
-      rw list.map_repeat,
-      rw list.map_repeat,
+      rw list.map_replicate,
+      rw list.map_replicate,
       apply congr_arg2;
       refl,
     },
@@ -1021,8 +1021,8 @@ begin
     {
       rintro ⟨n, m, hnm⟩,
       fconstructor,
-        use list.repeat a_ n,
-        use list.repeat b_ m ++ list.repeat c_ m,
+        use list.replicate n a_,
+        use list.replicate m b_ ++ list.replicate m c_,
       split,
       {
         use n,
@@ -1068,25 +1068,25 @@ private lemma doubled_le_singled
     (n₁ m₁ n₂ m₂ : ℕ) (n₁pos : n₁ > 0)
     (a_ b_ c_ : fin 3) (a_neq_b : a_ ≠ b_) (a_neq_c : a_ ≠ c_)
     (equ :
-      list.repeat a_ n₁ ++ list.repeat b_ n₁ ++ list.repeat c_ m₁ =
-      list.repeat a_ n₂ ++ list.repeat b_ m₂ ++ list.repeat c_ m₂
+      list.replicate n₁ a_ ++ list.replicate n₁ b_ ++ list.replicate m₁ c_ =
+      list.replicate n₂ a_ ++ list.replicate m₂ b_ ++ list.replicate m₂ c_
     ) :
   n₁ ≤ n₂ :=
 begin
   by_contradiction contr,
   push_neg at contr,
 
-  have n₁_le_len₁ : (n₁ - 1) < (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).length,
+  have n₁_le_len₁ : (n₁ - 1) < (list.replicate n₁ a_ ++ (list.replicate n₁ b_ ++ list.replicate m₁ c_)).length,
   {
     rw ←list.append_assoc,
     rw list.length_append,
     rw list.length_append,
-    rw list.length_repeat,
+    rw list.length_replicate,
     rw add_assoc,
     apply nat.lt_add_right,
     exact nat.sub_lt n₁pos (nat.succ_pos 0),
   },
-  have n₁_le_len₂ : (n₁ - 1) < (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).length,
+  have n₁_le_len₂ : (n₁ - 1) < (list.replicate n₂ a_ ++ (list.replicate m₂ b_ ++ list.replicate m₂ c_)).length,
   {
     rw ←list.append_assoc,
     have equ_len := congr_arg list.length equ,
@@ -1095,33 +1095,33 @@ begin
     exact n₁_le_len₁,
   },
   have n₁th :
-    (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth_le (n₁ - 1) n₁_le_len₁ =
-    (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth_le (n₁ - 1) n₁_le_len₂,
+    (list.replicate n₁ a_ ++ (list.replicate n₁ b_ ++ list.replicate m₁ c_)).nth_le (n₁ - 1) n₁_le_len₁ =
+    (list.replicate n₂ a_ ++ (list.replicate m₂ b_ ++ list.replicate m₂ c_)).nth_le (n₁ - 1) n₁_le_len₂,
   {
     rw list.append_assoc at equ,
     rw list.append_assoc at equ,
     exact list.nth_le_of_eq equ n₁_le_len₁,
   },
-  have n₁th₁ : (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth_le (n₁ - 1) n₁_le_len₁ = a_,
+  have n₁th₁ : (list.replicate n₁ a_ ++ (list.replicate n₁ b_ ++ list.replicate m₁ c_)).nth_le (n₁ - 1) n₁_le_len₁ = a_,
   {
-    have foo : (n₁ - 1) < (list.repeat a_ n₁).length,
+    have foo : (n₁ - 1) < (list.replicate n₁ a_).length,
     {
-      rw list.length_repeat,
+      rw list.length_replicate,
       exact nat.sub_lt n₁pos (nat.succ_pos 0),
     },
     rw list.nth_le_append n₁_le_len₁ foo,
-    exact list.nth_le_repeat a_ foo,
+    exact list.nth_le_replicate a_ foo,
   },
-  have n₁th₂ : (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth_le (n₁ - 1) n₁_le_len₂ ≠ a_,
+  have n₁th₂ : (list.replicate n₂ a_ ++ (list.replicate m₂ b_ ++ list.replicate m₂ c_)).nth_le (n₁ - 1) n₁_le_len₂ ≠ a_,
   {
-    have foo : (list.repeat a_ n₂).length ≤ (n₁ - 1),
+    have foo : (list.replicate n₂ a_).length ≤ (n₁ - 1),
     {
-      rw list.length_repeat,
+      rw list.length_replicate,
       exact nat.le_pred_of_lt contr,
     },
     rw list.nth_le_append_right foo n₁_le_len₂,
     by_contradiction,
-    have a_in_bc : a_ ∈ (list.repeat b_ m₂ ++ list.repeat c_ m₂),
+    have a_in_bc : a_ ∈ (list.replicate m₂ b_ ++ list.replicate m₂ c_),
     {
       rw ←h,
       apply list.nth_le_mem,
@@ -1129,11 +1129,11 @@ begin
     rw list.mem_append at a_in_bc,
     cases a_in_bc,
     {
-      rw list.mem_repeat at a_in_bc,
+      rw list.mem_replicate at a_in_bc,
       exact a_neq_b a_in_bc.right,
     },
     {
-      rw list.mem_repeat at a_in_bc,
+      rw list.mem_replicate at a_in_bc,
       exact a_neq_c a_in_bc.right,
     },
   },
@@ -1146,25 +1146,25 @@ private lemma doubled_ge_singled
     (n₁ m₁ n₂ m₂ : ℕ) (n₂pos : n₂ > 0)
     (a_ b_ c_ : fin 3) (a_neq_b : a_ ≠ b_) (a_neq_c : a_ ≠ c_)
     (equ :
-      list.repeat a_ n₁ ++ list.repeat b_ n₁ ++ list.repeat c_ m₁ =
-      list.repeat a_ n₂ ++ list.repeat b_ m₂ ++ list.repeat c_ m₂
+      list.replicate n₁ a_ ++ list.replicate n₁ b_ ++ list.replicate m₁ c_ =
+      list.replicate n₂ a_ ++ list.replicate m₂ b_ ++ list.replicate m₂ c_
     ) :
   n₁ ≥ n₂ :=
 begin
   by_contradiction contr,
   push_neg at contr,
 
-  have n₂_le_len₂ : (n₂ - 1) < (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).length,
+  have n₂_le_len₂ : (n₂ - 1) < (list.replicate n₂ a_ ++ (list.replicate m₂ b_ ++ list.replicate m₂ c_)).length,
   {
     rw ←list.append_assoc,
     rw list.length_append,
     rw list.length_append,
-    rw list.length_repeat,
+    rw list.length_replicate,
     rw add_assoc,
     apply nat.lt_add_right,
     exact nat.sub_lt n₂pos (nat.succ_pos 0),
   },
-  have n₂_le_len₁ : (n₂ - 1) < (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).length,
+  have n₂_le_len₁ : (n₂ - 1) < (list.replicate n₁ a_ ++ (list.replicate n₁ b_ ++ list.replicate m₁ c_)).length,
   {
     rw ←list.append_assoc,
     have equ_len := congr_arg list.length equ,
@@ -1173,33 +1173,33 @@ begin
     exact n₂_le_len₂,
   },
   have n₂th :
-    (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth_le (n₂ - 1) n₂_le_len₁ =
-    (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth_le (n₂ - 1) n₂_le_len₂,
+    (list.replicate n₁ a_ ++ (list.replicate n₁ b_ ++ list.replicate m₁ c_)).nth_le (n₂ - 1) n₂_le_len₁ =
+    (list.replicate n₂ a_ ++ (list.replicate m₂ b_ ++ list.replicate m₂ c_)).nth_le (n₂ - 1) n₂_le_len₂,
   {
     rw list.append_assoc at equ,
     rw list.append_assoc at equ,
     exact list.nth_le_of_eq equ n₂_le_len₁,
   },
-  have n₂th₂ : (list.repeat a_ n₂ ++ (list.repeat b_ m₂ ++ list.repeat c_ m₂)).nth_le (n₂ - 1) n₂_le_len₂ = a_,
+  have n₂th₂ : (list.replicate n₂ a_ ++ (list.replicate m₂ b_ ++ list.replicate m₂ c_)).nth_le (n₂ - 1) n₂_le_len₂ = a_,
   {
-    have foo : (n₂ - 1) < (list.repeat a_ n₂).length,
+    have foo : (n₂ - 1) < (list.replicate n₂ a_).length,
     {
-      rw list.length_repeat,
+      rw list.length_replicate,
       exact nat.sub_lt n₂pos (nat.succ_pos 0),
     },
     rw list.nth_le_append n₂_le_len₂ foo,
-    exact list.nth_le_repeat a_ foo,
+    exact list.nth_le_replicate a_ foo,
   },
-  have n₂th₁ : (list.repeat a_ n₁ ++ (list.repeat b_ n₁ ++ list.repeat c_ m₁)).nth_le (n₂ - 1) n₂_le_len₁ ≠ a_,
+  have n₂th₁ : (list.replicate n₁ a_ ++ (list.replicate n₁ b_ ++ list.replicate m₁ c_)).nth_le (n₂ - 1) n₂_le_len₁ ≠ a_,
   {
-    have foo : (list.repeat a_ n₁).length ≤ (n₂ - 1),
+    have foo : (list.replicate n₁ a_).length ≤ (n₂ - 1),
     {
-      rw list.length_repeat,
+      rw list.length_replicate,
       exact nat.le_pred_of_lt contr,
     },
     rw list.nth_le_append_right foo n₂_le_len₁,
     by_contradiction,
-    have a_in_bc : a_ ∈ (list.repeat b_ n₁ ++ list.repeat c_ m₁),
+    have a_in_bc : a_ ∈ (list.replicate n₁ b_ ++ list.replicate m₁ c_),
     {
       rw ←h,
       apply list.nth_le_mem,
@@ -1207,11 +1207,11 @@ begin
     rw list.mem_append at a_in_bc,
     cases a_in_bc,
     {
-      rw list.mem_repeat at a_in_bc,
+      rw list.mem_replicate at a_in_bc,
       exact a_neq_b a_in_bc.right,
     },
     {
-      rw list.mem_repeat at a_in_bc,
+      rw list.mem_replicate at a_in_bc,
       exact a_neq_c a_in_bc.right,
     },
   },
@@ -1236,13 +1236,13 @@ begin
       have a_in_equ := congr_arg (λ lis, a_ ∈ lis) equ,
       clear equ,
       rw hn₁ at a_in_equ,
-      have a_yes : a_ ∈ list.repeat a_ n₂,
+      have a_yes : a_ ∈ list.replicate n₂ a_,
       {
-        rw list.mem_repeat,
+        rw list.mem_replicate,
         exact and.intro (ne_of_lt pos).symm rfl,
       },
       simp [a_yes] at a_in_equ,
-      rw list.mem_repeat at a_in_equ,
+      rw list.mem_replicate at a_in_equ,
       exact neq_ac a_in_equ.right,
     },
     have hm₂ : m₂ = 0,
@@ -1253,13 +1253,13 @@ begin
       have b_in_equ := congr_arg (λ lis, b_ ∈ lis) equ,
       clear equ,
       rw hn₁ at b_in_equ,
-      have b_yes : b_ ∈ list.repeat b_ m₂,
+      have b_yes : b_ ∈ list.replicate m₂ b_,
       {
-        rw list.mem_repeat,
+        rw list.mem_replicate,
         exact and.intro (ne_of_lt pos).symm rfl,
       },
       simp [b_yes] at b_in_equ,
-      rw list.mem_repeat at b_in_equ,
+      rw list.mem_replicate at b_in_equ,
       exact neq_bc b_in_equ.right,
     },
     use 0,
@@ -1275,15 +1275,15 @@ begin
     have n₂zero : n₂ = 0,
     {
       push_neg at h,
-      rw nat.le_zero_iff at h,
+      rw le_zero_iff at h,
       exact h,
     },
     clear h,
     rw n₂zero at equ,
-    simp only [list.repeat_zero, list.nil_append] at equ,
+    simp only [list.replicate_zero, list.nil_append] at equ,
     have a_in_equ := congr_arg (λ lis, a_ ∈ lis) equ,
     clear equ,
-    simp only [list.mem_append, eq_iff_iff, list.mem_repeat, or_assoc] at a_in_equ,
+    simp only [list.mem_append, eq_iff_iff, list.mem_replicate, or_assoc] at a_in_equ,
     have rs_false : (m₂ ≠ 0 ∧ a_ = b_ ∨ m₂ ≠ 0 ∧ a_ = c_) = false,
     {
       apply eq_false_intro,
@@ -1315,15 +1315,15 @@ begin
     have m₂zero : m₂ = 0,
     {
       push_neg at h,
-      rw nat.le_zero_iff at h,
+      rw le_zero_iff at h,
       exact h,
     },
     clear h,
     rw m₂zero at equ,
-    simp only [list.repeat_zero, list.append_nil] at equ,
+    simp only [list.replicate_zero, list.append_nil] at equ,
     have b_in_equ := congr_arg (λ lis, b_ ∈ lis) equ,
     clear equ,
-    simp only [list.mem_append, eq_iff_iff, list.mem_repeat] at b_in_equ,
+    simp only [list.mem_append, eq_iff_iff, list.mem_replicate] at b_in_equ,
     have := neq_ba,
     tauto,
   },
@@ -1333,15 +1333,15 @@ begin
     have m₁zero : m₁ = 0,
     {
       push_neg at h,
-      rw nat.le_zero_iff at h,
+      rw le_zero_iff at h,
       exact h,
     },
     clear h,
     rw m₁zero at equ,
-    simp only [list.repeat_zero, list.append_nil] at equ,
+    simp only [list.replicate_zero, list.append_nil] at equ,
     have c_in_equ := congr_arg (λ lis, c_ ∈ lis) equ,
     clear equ,
-    simp only [list.mem_append, eq_iff_iff, list.mem_repeat, or_assoc] at c_in_equ,
+    simp only [list.mem_append, eq_iff_iff, list.mem_replicate, or_assoc] at c_in_equ,
     have ls_false : (n₁ ≠ 0 ∧ c_ = a_ ∨ n₁ ≠ 0 ∧ c_ = b_) = false,
     {
       apply eq_false_intro,
@@ -1385,7 +1385,7 @@ begin
       rw list.reverse_append at rev,
     },
     repeat {
-      rw list.reverse_repeat at rev,
+      rw list.reverse_replicate at rev,
     },
     rw ←list.append_assoc at rev,
     rw ←list.append_assoc at rev,
@@ -1399,7 +1399,7 @@ begin
       rw list.reverse_append at rev,
     },
     repeat {
-      rw list.reverse_repeat at rev,
+      rw list.reverse_replicate at rev,
     },
     rw ←list.append_assoc at rev,
     rw ←list.append_assoc at rev,
@@ -1417,7 +1417,7 @@ begin
       rw list.length_append at lengs,
     },
     repeat {
-      rw list.length_repeat at lengs,
+      rw list.length_replicate at lengs,
     },
     exact lengs,
   },

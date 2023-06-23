@@ -308,7 +308,7 @@ lemma sink_deri_ (lg : lifted_grammar_ T) {w₁ w₂ : list (symbol T lg.g.nt)}
     (ok_input : good_string_ w₁) :
   grammar_derives lg.g₀ (sink_string_ lg.sink_nt w₁) (sink_string_ lg.sink_nt w₂) :=
 begin
-  exact (sink_deri_aux hyp ok_input).1
+  exact (sink_deri_aux hyp ok_input).1,
 end
 
 end translating_derivations

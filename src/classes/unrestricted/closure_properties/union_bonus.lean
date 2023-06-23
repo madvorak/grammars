@@ -1,6 +1,5 @@
 import classes.context_free.basics.inclusion
 import classes.unrestricted.closure_properties.union
-import utilities.written_by_others.print_sorries
 
 
 variables {T : Type}
@@ -67,6 +66,3 @@ begin
     },
   },
 end
-
-#check            bonus_CF_of_CF_u_CF
-#print_sorries_in bonus_CF_of_CF_u_CF

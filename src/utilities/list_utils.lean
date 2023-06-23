@@ -55,60 +55,25 @@ by rw [list.join_append, list.join_append]
 
 end list_append_append
 
-section list_repeat
+section list_replicate
 
-lemma repeat_zero (s : α) :
-  list.repeat s 0 = [] :=
-rfl
-
-lemma repeat_succ_eq_singleton_append (s : α) (n : ℕ) :
-  list.repeat s n.succ = [s] ++ list.repeat s n :=
-rfl
-
-lemma repeat_succ_eq_append_singleton (s : α) (n : ℕ) :
-  list.repeat s n.succ = list.repeat s n ++ [s] :=
+lemma replicate_succ_eq_singleton_append (s : α) (n : ℕ) :
+  list.replicate n.succ s = [s] ++ list.replicate n s :=
 begin
-  change list.repeat s (n + 1) = list.repeat s n ++ [s],
-  rw list.repeat_add,
   refl,
 end
 
-end list_repeat
+lemma replicate_succ_eq_append_singleton (s : α) (n : ℕ) :
+  list.replicate n.succ s = list.replicate n s ++ [s] :=
+begin
+  change list.replicate (n + 1) s = list.replicate n s ++ [s],
+  rw list.replicate_add,
+  refl,
+end
+
+end list_replicate
 
 section list_join
-
-lemma join_singleton : [x].join = x :=
-by rw [list.join, list.join, list.append_nil]
-
-lemma append_join_append (L : list (list α)) :
-  x ++ (list.map (λ l, l ++ x) L).join = (list.map (λ l, x ++ l) L).join ++ x :=
-begin
-  induction L,
-  {
-    rw [list.map_nil, list.join, list.append_nil, list.map_nil, list.join, list.nil_append],
-  },
-  {
-    rw [
-      list.map_cons, list.join, list.map_cons, list.join, list.append_assoc, L_ih,
-      list.append_assoc, list.append_assoc
-    ],
-  },
-end
-
-lemma reverse_join (L : list (list α)) :
-  L.join.reverse = (list.map list.reverse L).reverse.join :=
-begin
-  induction L,
-  {
-    refl,
-  },
-  {
-    rw [
-      list.join, list.reverse_append, L_ih,
-      list.map_cons, list.reverse_cons, list.join_append, list.join_singleton
-    ],
-  },
-end
 
 private lemma cons_drop_succ {m : ℕ} (mlt : m < x.length) :
   drop m x = x.nth_le m mlt :: drop m.succ x :=
@@ -159,54 +124,13 @@ begin
 end
 
 def n_times (l : list α) (n : ℕ) : list α :=
-(list.repeat l n).join
+(list.replicate n l).join
 
-infix ` ^ ` : 100 := n_times
+infix ` ^^ ` : 100 := n_times
 
 end list_join
 
 variables [decidable_eq α]
-
-section list_index_of
-
-lemma index_of_append_of_in {a : α} (yes_on_left : a ∈ x) :
-  index_of a (x ++ y)  =  index_of a x  :=
-begin
-  induction x with d l ih,
-  {
-    exfalso,
-    exact not_mem_nil a yes_on_left,
-  },
-  rw list.cons_append,
-  by_cases ad : a = d,
-  {
-    rw index_of_cons_eq _ ad,
-    rw index_of_cons_eq _ ad,
-  },
-  rw index_of_cons_ne _ ad,
-  rw index_of_cons_ne _ ad,
-  apply congr_arg,
-  apply ih,
-  exact mem_of_ne_of_mem ad yes_on_left,
-end
-
-lemma index_of_append_of_notin {a : α} (not_on_left : a ∉ x) :
-  index_of a (x ++ y)  =  x.length  +  index_of a y  :=
-begin
-  induction x with d l ih,
-  {
-    rw [list.nil_append, list.length, zero_add],
-  },
-  rw [
-    list.cons_append,
-    index_of_cons_ne _ (ne_of_not_mem_cons not_on_left),
-    list.length,
-    ih (not_mem_of_not_mem_cons not_on_left),
-    nat.succ_add
-  ],
-end
-
-end list_index_of
 
 section list_count_in
 
@@ -235,28 +159,28 @@ begin
   rw list.sum_append,
 end
 
-lemma count_in_repeat_eq (a : α) (n : ℕ) :
-  count_in (list.repeat a n) a  =  n  :=
+lemma count_in_replicate_eq (a : α) (n : ℕ) :
+  count_in (list.replicate n a) a  =  n  :=
 begin
   unfold count_in,
   induction n with m ih,
   {
     refl,
   },
-  rw [list.repeat_succ, list.map_cons, list.sum_cons, ih],
+  rw [list.replicate_succ, list.map_cons, list.sum_cons, ih],
   rw if_pos rfl,
   apply nat.one_add,
 end
 
-lemma count_in_repeat_neq {a b : α} (hyp : a ≠ b) (n : ℕ) :
-  count_in (list.repeat a n) b  =  0  :=
+lemma count_in_replicate_neq {a b : α} (hyp : a ≠ b) (n : ℕ) :
+  count_in (list.replicate n a) b  =  0  :=
 begin
   unfold count_in,
   induction n with m ih,
   {
     refl,
   },
-  rw [list.repeat_succ, list.map_cons, list.sum_cons, ih, add_zero],
+  rw [list.replicate_succ, list.map_cons, list.sum_cons, ih, add_zero],
   rw ite_eq_right_iff,
   intro impos,
   exfalso,
@@ -266,13 +190,13 @@ end
 lemma count_in_singleton_eq (a : α) :
   count_in [a] a  =  1  :=
 begin
-  exact list.count_in_repeat_eq a 1,
+  exact list.count_in_replicate_eq a 1,
 end
 
 lemma count_in_singleton_neq {a b : α} (hyp : a ≠ b) :
   count_in [a] b  =  0  :=
 begin
-  exact list.count_in_repeat_neq hyp 1,
+  exact list.count_in_replicate_neq hyp 1,
 end
 
 lemma count_in_pos_of_in {a : α} (hyp : a ∈ x) :
@@ -286,7 +210,7 @@ begin
   },
   by_contradiction contr,
   rw not_lt at contr,
-  rw nat.le_zero_iff at contr,
+  rw le_zero_iff at contr,
   rw list.mem_cons_eq at hyp,
   unfold count_in at contr,
   unfold list.map at contr,

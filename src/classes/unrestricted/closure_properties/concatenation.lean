@@ -597,7 +597,8 @@ list.forall₂ corresponding_symbols
 private lemma corresponding_strings_self {N₁ N₂ : Type} {x : list (nst T N₁ N₂)} :
   corresponding_strings x x :=
 begin
-  apply list.forall₂_same,
+  unfold corresponding_strings,
+  rw list.forall₂_same,
   intros s trash,
   exact corresponding_symbols_self s,
 end
@@ -631,7 +632,7 @@ private lemma corresponding_strings_length {N₁ N₂ : Type} {x y : list (nst T
   x.length = y.length :=
 begin
   unfold corresponding_strings at ass,
-  exact list.forall₂_length_eq ass,
+  exact list.forall₂.length_eq ass,
 end
 
 private lemma corresponding_strings_nth_le {N₁ N₂ : Type} {x y : list (nst T N₁ N₂)} {i : ℕ}

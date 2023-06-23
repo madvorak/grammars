@@ -1,7 +1,6 @@
 import classes.context_free.basics.inclusion
 import classes.unrestricted.closure_properties.concatenation
 import utilities.written_by_others.trim_assoc
-import utilities.written_by_others.print_sorries
 
 variables {T : Type}
 
@@ -91,7 +90,3 @@ begin
     exact in_big_of_in_concatenated hyp,
   },
 end
-
-
-#check            bonus_CF_of_CF_c_CF
-#print_sorries_in bonus_CF_of_CF_c_CF
