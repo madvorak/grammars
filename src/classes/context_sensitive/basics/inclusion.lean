@@ -26,8 +26,8 @@ begin
           grammar_derives (grammar_of_csg g) [symbol.nonterminal (grammar_of_csg g).initial] v,
     {
       clear w,
-      intros v h,
-      induction h with x y trash hyp ih,
+      intros v hypo,
+      induction hypo with x y trash hyp ih,
       {
         apply grammar_deri_self,
       },
@@ -72,8 +72,8 @@ begin
           CS_derives g [symbol.nonterminal g.initial] v,
     {
       clear w,
-      intros v h,
-      induction h with x y trash hyp ih,
+      intros v hypo,
+      induction hypo with x y trash hyp ih,
       {
         apply CS_deri_self,
       },

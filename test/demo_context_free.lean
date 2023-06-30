@@ -103,8 +103,8 @@ begin
         (∃ i j : ℕ, w = list.repeat a i ++ list.repeat b j ++ [R] ++ list.repeat c (i + j)) ∨
         (∃ i j : ℕ, w = list.repeat a i ++ list.repeat b j ++ list.repeat c (i + j)),
     {
-      intros w h,
-      induction h with y z irr step ih,
+      intros w hyp,
+      induction hyp with y z irr step ih,
       {
         left,
         use 0,
@@ -478,18 +478,18 @@ begin
                   {
                     apply symbol.no_confusion,
                   },
-                  by_contradiction,
-                  rw list.mem_repeat at h,
-                  exact nidRa h.right,
+                  by_contradiction hyp,
+                  rw list.mem_repeat at hyp,
+                  exact nidRa hyp.right,
                 },
                 {
                   have nidRb : R ≠ b,
                   {
                     apply symbol.no_confusion,
                   },
-                  by_contradiction,
-                  rw list.mem_repeat at h,
-                  exact nidRb h.right,
+                  by_contradiction hyp,
+                  rw list.mem_repeat at hyp,
+                  exact nidRb hyp.right,
                 },
               },
               exact not_R yes_R,
@@ -541,13 +541,13 @@ begin
               },
               have not_Rc : R ∉ list.repeat c (i + j),
               {
-                by_contradiction,
-                rw list.mem_repeat at h,
+                by_contradiction hyp,
+                rw list.mem_repeat at hyp,
                 have nidRc : R ≠ c,
                 {
                   apply symbol.no_confusion,
                 },
-                exact nidRc h.right,
+                exact nidRc hyp.right,
               },
               exact not_Rc yes_Rc,
             },

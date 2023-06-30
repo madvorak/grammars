@@ -31,20 +31,20 @@ private def oN₂_of_N {g₁ g₂ : CF_grammar T} : (combined_grammar g₁ g₂)
 private def g₁g (g₁ g₂ : CF_grammar T) : @lifted_grammar T :=
 lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
   -- prove `function.injective (some ∘ sum.inl)` here
-  intros x y h,
+  intros x y hyp,
   apply sum.inl_injective,
   apply option.some_injective,
-  exact h,
+  exact hyp,
 }) (by {
   -- prove `∀ r ∈ g₁.rules` we have `lift_rule (some ∘ sum.inl) r ∈ list.map rule_of_rule₁ g₁.rules` here
-  intros r h,
+  intros r hyp,
   apply list.mem_cons_of_mem,
   apply list.mem_append_left,
   rw list.mem_map,
   use r,
   split,
   {
-    exact h,
+    exact hyp,
   },
   unfold rule_of_rule₁,
   unfold lift_rule,
@@ -124,20 +124,20 @@ lifted_grammar.mk g₁ (combined_grammar g₁ g₂) (some ∘ sum.inl) (by {
 private def g₂g (g₁ g₂ : CF_grammar T) : @lifted_grammar T :=
 lifted_grammar.mk g₂ (combined_grammar g₁ g₂) (some ∘ sum.inr) (by {
   -- prove `function.injective (some ∘ sum.inr)` here
-  intros x y h,
+  intros x y hyp,
   apply sum.inr_injective,
   apply option.some_injective,
-  exact h,
+  exact hyp,
 }) (by {
   -- prove `∀ r ∈ g₂.rules` we have `lift_rule (some ∘ sum.inr) r ∈ list.map rule_of_rule₂ g₂.rules` here
-  intros r h,
+  intros r hyp,
   apply list.mem_cons_of_mem,
   apply list.mem_append_right,
   rw list.mem_map,
   use r,
   split,
   {
-    exact h,
+    exact hyp,
   },
   unfold rule_of_rule₂,
   unfold lift_rule,

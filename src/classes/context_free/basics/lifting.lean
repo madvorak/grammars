@@ -44,11 +44,11 @@ structure lifted_grammar :=
 
 private lemma lifted_grammar_inverse (lg : @lifted_grammar T) :
   ∀ x : lg.g.nt,
-    (∃ val, lg.sink_nt x = some val) →
+    (∃ n₀, lg.sink_nt x = some n₀) →
       option.map lg.lift_nt (lg.sink_nt x) = x :=
 begin
-  intros x h,
-  cases h with valu ass,
+  intros x hyp,
+  cases hyp with valu ass,
   rw ass,
   rw option.map_some',
   apply congr_arg,

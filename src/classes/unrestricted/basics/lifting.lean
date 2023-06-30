@@ -52,11 +52,11 @@ structure lifted_grammar_ (T : Type) :=
 
 private lemma lifted_grammar_inverse {T : Type} (lg : lifted_grammar_ T) :
   ∀ x : lg.g.nt,
-    (∃ val, lg.sink_nt x = some val) →
+    (∃ n₀, lg.sink_nt x = some n₀) →
       option.map lg.lift_nt (lg.sink_nt x) = x :=
 begin
-  intros x h,
-  cases h with valu ass,
+  intros x hyp,
+  cases hyp with valu ass,
   rw ass,
   rw option.map_some',
   apply congr_arg,
@@ -308,7 +308,7 @@ lemma sink_deri_ (lg : lifted_grammar_ T) {w₁ w₂ : list (symbol T lg.g.nt)}
     (ok_input : good_string_ w₁) :
   grammar_derives lg.g₀ (sink_string_ lg.sink_nt w₁) (sink_string_ lg.sink_nt w₂) :=
 begin
-  exact (sink_deri_aux hyp ok_input).1
+  exact (sink_deri_aux hyp ok_input).1,
 end
 
 end translating_derivations

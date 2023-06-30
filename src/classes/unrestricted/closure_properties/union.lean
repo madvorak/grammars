@@ -29,10 +29,10 @@ private def oN₂_of_N : (union_grammar g₁ g₂).nt → (option g₂.nt)
 private def lg₁ : lifted_grammar_ T :=
 lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN₁_of_N (by
 {
-  intros x y h,
+  intros x y hyp,
   apply sum.inl_injective,
   apply option.some_injective,
-  exact h,
+  exact hyp,
 }
 ) (by
 {
@@ -70,7 +70,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
 }
 ) (by
 {
-  intros r h,
+  intros r hyp,
   apply list.mem_cons_of_mem,
   apply list.mem_cons_of_mem,
   apply list.mem_append_left,
@@ -78,7 +78,7 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
   use r,
   split,
   {
-    exact h,
+    exact hyp,
   },
   refl,
 }
@@ -128,10 +128,10 @@ lifted_grammar_.mk g₁ (union_grammar g₁ g₂) (option.some ∘ sum.inl) oN�
 private def lg₂ : lifted_grammar_ T :=
 lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN₂_of_N (by
 {
-  intros x y h,
+  intros x y hyp,
   apply sum.inr_injective,
   apply option.some_injective,
-  exact h,
+  exact hyp,
 }
 ) (by
 {
@@ -169,7 +169,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
 }
 ) (by
 {
-  intros r h,
+  intros r hyp,
   apply list.mem_cons_of_mem,
   apply list.mem_cons_of_mem,
   apply list.mem_append_right,
@@ -177,7 +177,7 @@ lifted_grammar_.mk g₂ (union_grammar g₁ g₂) (option.some ∘ sum.inr) oN�
   use r,
   split,
   {
-    exact h,
+    exact hyp,
   },
   refl,
 }

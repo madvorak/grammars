@@ -17,9 +17,9 @@ begin
   ext1 w,
   split, swap,
   {
-    intro h,
+    intro hyp,
     exfalso,
-    exact set.not_mem_empty w h,
+    exact set.not_mem_empty w hyp,
   },
   intro hw,
   change CF_derives cfg_empty_lang [symbol.nonterminal cfg_empty_lang.initial] (list.map symbol.terminal w) at hw,
@@ -55,13 +55,13 @@ begin
   ext1 w,
   split, swap,
   {
-    intro h,
-    rw set.mem_singleton_iff at h,
+    intro hyp,
+    rw set.mem_singleton_iff at hyp,
     change CF_derives cfg_empty_word [symbol.nonterminal cfg_empty_lang.initial] (list.map symbol.terminal w),
     apply @CF_deri_of_tran,
     use ((0 : fin 1), []),
     use [[], []],
-    rw h,
+    rw hyp,
     split;
     refl,
     exact T,
