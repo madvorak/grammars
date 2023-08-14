@@ -37,7 +37,7 @@ Below you find what has been completed so far.
 
 ### Unrestricted grammars
 
-(a.k.a. general grammars, a.k.a. recursively-enumerable grammars, a.k.a. type-0 grammars, a.k.a. grammars)
+(a.k.a. general grammars, a.k.a. type-0 grammars, a.k.a. recursively-enumerable grammars, a.k.a. phrase-structure grammars, a.k.a. grammars)
 
 [Definition](/src/classes/unrestricted/basics/definition.lean)
 
